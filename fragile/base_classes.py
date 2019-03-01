@@ -6,10 +6,13 @@ class BaseEnvironment:
     def n_actions(self):
         raise NotImplementedError
 
-    def step(self, actions, env_states):
+    def step(self, actions, env_states, *args, **kwargs):
         raise NotImplementedError
 
     def reset(self, batch_size: int = 1):
+        raise NotImplementedError
+
+    def get_params_dict(self) -> dict:
         raise NotImplementedError
 
 
@@ -25,15 +28,13 @@ class BaseModel:
     def n_actions(self):
         raise NotImplementedError
 
+    def get_params_dict(self) -> dict:
+        raise NotImplementedError
+
     def reset(self, batch_size: int = 1):
         raise NotImplementedError
 
     def predict(self, model_states, env_states):
-        """
-        Given a state return the next action to be taken.
-        :param state:
-        :return:
-        """
         raise NotImplementedError
 
     def actor_pred(self, *args, **kwargs):
@@ -99,22 +100,16 @@ class BaseWalkers:
     def calc_distances(self):
         raise NotImplementedError
 
-    def calc_scores(self):
+    def calc_virtual_reward(self):
         raise NotImplementedError
 
-    def clone(self, clone_ix, will_clone):
+    def update_clone_probs(self, clone_ix, will_clone):
         raise NotImplementedError
 
     def get_alive_compas(self):
         raise NotImplementedError
 
     def update_obs(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def update_env_states(self, *env_states, **kwargs):
-        raise NotImplementedError
-
-    def update_model_states(self, *env_states, **kwargs):
         raise NotImplementedError
 
 

@@ -2,7 +2,7 @@ import pytest
 import torch
 import numpy as np
 from fragile.states import States
-from fragile.swarm import Walkers
+from fragile.walkers import Walkers
 from fragile.utils import relativize
 
 
