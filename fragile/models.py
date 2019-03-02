@@ -25,7 +25,7 @@ class RandomDiscrete(BaseModel):
         actions = np.random.randint(0, self.n_actions, size=batch_size)
         return actions, states
 
-    def predict(self, env_states, batch_size: int=1, model_states=None) -> np.ndarray:
+    def predict(self, env_states, batch_size: int = 1, model_states=None) -> np.ndarray:
         actions = np.random.randint(0, self.n_actions, size=len(env_states.rewards))
         return actions
 

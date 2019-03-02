@@ -3,6 +3,8 @@ from typing import Callable
 from fragile.states import States
 from fragile.walkers import Walkers
 
+# from line_profiler import profile
+
 
 class Swarm:
     def __init__(
@@ -13,7 +15,8 @@ class Swarm:
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
         skipframe: int = 1,
-        *args, **kwargs
+        *args,
+        **kwargs
     ):
         self._walkers = None
         self._model = None
@@ -25,7 +28,9 @@ class Swarm:
             model_callabe=model,
             n_walkers=n_walkers,
             reward_scale=reward_scale,
-            dist_scale=dist_scale, *args, **kwargs
+            dist_scale=dist_scale,
+            *args,
+            **kwargs
         )
 
     @property
@@ -47,7 +52,8 @@ class Swarm:
         n_walkers: int,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
-        *args, **kwargs
+        *args,
+        **kwargs
     ):
         self._env = env_callable()
         self._model = model_callabe(self._env.n_actions)
@@ -60,7 +66,8 @@ class Swarm:
             n_walkers=n_walkers,
             reward_scale=reward_scale,
             dist_scale=dist_scale,
-            *args, **kwargs
+            *args,
+            **kwargs
         )
 
     def init_walkers(self, model_states: "States" = None, env_states: "States" = None):
@@ -75,23 +82,28 @@ class Swarm:
         model_states.update(init_actions=actions)
         self.walkers.reset(env_states=env_sates, model_states=model_states)
 
+    # @profile
     def run_swarm(self, model_states: "States" = None, env_states: "States" = None):
         self.init_walkers(model_states=model_states, env_states=env_states)
         while not self.walkers.calculate_end_cond():
             self.step_walkers()
             self.walkers.balance()
+
         return self.calculate_action()
 
+    # @profile
     def step_walkers(self):
         # model_states = self.walkers.get_model_states()
         env_states = self.walkers.get_env_states()
         # model_dt, act_dt = self.model.calculate_dt(model_states, env_states)
 
         actions = self.model.predict(env_states, batch_size=self.walkers.n)
-        env_states = self.env.step(actions=actions, env_states=env_states,
-                                   n_repeat_action=self.skipframe)
+        env_states = self.env.step(
+            actions=actions, env_states=env_states, n_repeat_action=self.skipframe
+        )
         # model_states.update(actions=actions)
         self.walkers.update_states(env_states=env_states)  # , model_states=model_states)
+        self.walkers.update_end_condition(env_states.ends)
 
     def calculate_action(self):
         return

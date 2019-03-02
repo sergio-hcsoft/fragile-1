@@ -3,7 +3,7 @@ import torch
 from plangym.env import Environment
 from fragile.base_classes import BaseEnvironment
 from fragile.swarm import States
-from fragile.utils import to_numpy
+from fragile.utils import to_numpy, device
 
 
 class DiscreteEnv(BaseEnvironment):
@@ -24,6 +24,7 @@ class DiscreteEnv(BaseEnvironment):
         }
         return params
 
+    # @profile
     def step(self, actions, env_states, n_repeat_action: int = 1, *args, **kwargs) -> States:
         states = to_numpy(env_states.states)
         actions = to_numpy(actions).astype(np.int32)
@@ -34,6 +35,7 @@ class DiscreteEnv(BaseEnvironment):
         new_state = self._get_new_states(new_states, observs, rewards, ends, len(actions))
         return new_state
 
+    # @profile
     def reset(self, batch_size: int = 1) -> States:
         state, obs = self._env.reset()
         states = np.array([state.copy() for _ in range(batch_size)])
@@ -43,6 +45,7 @@ class DiscreteEnv(BaseEnvironment):
         new_states = self._get_new_states(states, observs, rewards, ends, batch_size)
         return new_states
 
+    # @profile
     def _get_new_states(self, states, observs, rewards, ends, batch_size) -> States:
         ends = np.array(ends, dtype=np.uint8).reshape(-1, 1)
         rewards = np.array(rewards, dtype=np.float32).reshape(-1, 1)
