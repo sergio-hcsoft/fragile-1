@@ -89,8 +89,10 @@ class TestWalkers:
         walkers.reset()
         walkers.virtual_rewards[:] = relativize(torch.arange(walkers.n).float().view(-1, 1))
         walkers.update_clone_probs()
-        assert 0 < torch.sum(walkers.clone_probs == walkers.clone_probs[0]).cpu().item(),   \
-            (walkers.virtual_rewards, walkers.clone_probs)
+        assert 0 < torch.sum(walkers.clone_probs == walkers.clone_probs[0]).cpu().item(), (
+            walkers.virtual_rewards,
+            walkers.clone_probs,
+        )
         walkers.reset()
         walkers.update_clone_probs()
         assert torch.sum(walkers.clone_probs == walkers.clone_probs[0]).item() == walkers.n
@@ -106,4 +108,8 @@ class TestWalkers:
     def test_accumulate_rewards(self, walkers):
         walkers.reset()
 
-
+    def test_distances(self, walkers):
+        walkers.calc_distances()
+        assert len(walkers.distances.shape) == 2
+        assert walkers.distances.shape[0] == walkers.n
+        assert walkers.distances.shape[1] == 1, walkers.distances.shape

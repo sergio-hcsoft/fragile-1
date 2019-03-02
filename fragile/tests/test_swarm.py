@@ -3,21 +3,23 @@ from fragile.tests.test_env import plangym_env, create_env
 from fragile import DiscreteEnv, Swarm, BaseEnvironment, Walkers
 from fragile.models import RandomDiscrete
 
+
 @pytest.fixture(scope="module")
 def environment_fact(plangym_env):
     env = DiscreteEnv(plangym_env)
-    return lambda : env
+    return lambda: env
+
 
 @pytest.fixture(scope="module")
 def swarm(environment_fact):
-    n_walkers = 30
-    swarm = Swarm(model=lambda x: RandomDiscrete(x),
-                  env=environment_fact, n_walkers=n_walkers, max_iters=10)
+    n_walkers = 50
+    swarm = Swarm(
+        model=lambda x: RandomDiscrete(x), env=environment_fact, n_walkers=n_walkers, max_iters=10
+    )
     return swarm
 
 
 class TestSwarm:
-
     def test_init_not_crashes(self, swarm):
         assert swarm is not None
 
@@ -43,9 +45,7 @@ class TestSwarm:
 
     def test_score_gets_higher(self, swarm):
         swarm.init_walkers()
-        swarm.max_iters = 500
+        swarm.walkers.max_iters = 500
         swarm.run_swarm()
         reward = swarm.walkers.cum_rewards.max().item()
-        assert reward > 100
-        assert reward is None
-
+        assert reward > 100, "ITERS: {}".format(swarm.walkers.n_iters)

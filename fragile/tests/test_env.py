@@ -6,10 +6,8 @@ from fragile import DiscreteEnv, States
 
 @pytest.fixture(scope="module")
 def create_env(name="classic"):
-
     def atari_env():
-        env = AtariEnvironment(name="MsPacman-v0",
-                               clone_seeds=True, autoreset=True)
+        env = AtariEnvironment(name="MsPacman-v0", clone_seeds=True, autoreset=True)
 
         _ = env.reset()
         return env
@@ -39,7 +37,6 @@ def environment(plangym_env):
 
 
 class TestEnvironment:
-
     def test_reset(self, environment):
         states = environment.reset()
         assert isinstance(states, States), states
