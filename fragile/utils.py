@@ -34,8 +34,7 @@ def to_numpy(x: [np.ndarray, torch.Tensor, list]) -> np.ndarray:
         return np.ndarray(x)
 
 
-def to_tensor(x: [torch.Tensor, np.ndarray, list],
-              device=device, *args, **kwargs) -> torch.Tensor:
+def to_tensor(x: [torch.Tensor, np.ndarray, list], device=device, *args, **kwargs) -> torch.Tensor:
     if isinstance(x, torch.Tensor):
         return x
     elif isinstance(x, np.ndarray):
@@ -43,3 +42,6 @@ def to_tensor(x: [torch.Tensor, np.ndarray, list],
     else:
         return torch.Tensor(x, device=device, *args, **kwargs)
 
+
+def statistics_from_array(x: np.ndarray):
+    return x.mean(), x.std(), x.max(), x.min()
