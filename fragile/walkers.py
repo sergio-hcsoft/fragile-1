@@ -73,8 +73,6 @@ class Walkers(BaseWalkers):
 
     def print_stats(self) -> str:
         text = "{} iteration {}\n".format(self.__class__.__name__, self.n_iters)
-        stats = statistics_from_array(self.cum_rewards.cpu().numpy())
-        text += "Rewards: Mean: {:.2f}, Std: {:.2f}, Max: {:.2f} Min: {:.2f}\n".format(*stats)
         stats = statistics_from_array(self.virtual_rewards.cpu().numpy())
         text += "Virtual Rewards: Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(
             *stats
@@ -87,10 +85,23 @@ class Walkers(BaseWalkers):
         )
         return text
 
+    @staticmethod
+    def __repr_state(state):
+        string = "\n"
+        for k, v in state.items():
+            if k in ["observs", "states"]:
+                continue
+            shape = v.shape if hasattr(v, "shape") else None
+            new_str = "{} shape {} Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(
+                k, shape, *statistics_from_array(v.cpu().numpy())
+            )
+            string += new_str
+        return string
+
     def __repr__(self) -> str:
         text = self.print_stats()
-        text += "Env {}\n".format(self._env_states.__repr__())
-        text += "Model {}\n".format(self._model_states.__repr__())
+        text += "Env: {}\n".format(self.__repr_state(self._env_states))
+        text += "Model {}\n".format(self.__repr_state(self._model_states))
         return text
 
     @property
