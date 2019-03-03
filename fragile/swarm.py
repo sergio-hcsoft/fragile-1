@@ -93,16 +93,16 @@ class Swarm:
 
     # @profile
     def step_walkers(self):
-        # model_states = self.walkers.get_model_states()
+        model_states = self.walkers.get_model_states()
         env_states = self.walkers.get_env_states()
-        # model_dt, act_dt = self.model.calculate_dt(model_states, env_states)
+        act_dt, model_states = self.model.calculate_dt(model_states, env_states)
 
-        actions = self.model.predict(env_states, batch_size=self.walkers.n)
-        env_states = self.env.step(
-            actions=actions, env_states=env_states, n_repeat_action=self.skipframe
+        actions, model_states = self.model.predict(
+            env_states=env_states, model_states=model_states, batch_size=self.walkers.n
         )
-        # model_states.update(actions=actions)
-        self.walkers.update_states(env_states=env_states)  # , model_states=model_states)
+        env_states = self.env.step(actions=actions, env_states=env_states, n_repeat_action=act_dt)
+        model_states.update(actions=actions)
+        self.walkers.update_states(env_states=env_states, model_states=model_states)
         self.walkers.update_end_condition(env_states.ends)
 
     def calculate_action(self):

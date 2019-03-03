@@ -71,8 +71,16 @@ class Walkers(BaseWalkers):
                 sys.exc_info()[2]
             )
 
+    def __repr__(self) -> str:
+        text = self.print_stats()
+        text += "Env: {}\n".format(self.__repr_state(self._env_states))
+        text += "Model {}\n".format(self.__repr_state(self._model_states))
+        return text
+
     def print_stats(self) -> str:
         text = "{} iteration {}\n".format(self.__class__.__name__, self.n_iters)
+        stats = statistics_from_array(self.cum_rewards.cpu().numpy())
+        text += "Total Reward: Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(*stats)
         stats = statistics_from_array(self.virtual_rewards.cpu().numpy())
         text += "Virtual Rewards: Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(
             *stats
@@ -80,7 +88,7 @@ class Walkers(BaseWalkers):
         stats = statistics_from_array(self.distances.cpu().numpy())
         text += "Distances: Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(*stats)
 
-        text += "Dead walkers: {:.2f}% Cloned: {:.2f}%".format(
+        text += "Dead walkers: {:.2f}% Cloned: {:.2f}%\n".format(
             100 * self.end_condition.sum() / self.n, 100 * self.will_clone.sum() / self.n
         )
         return text
@@ -97,12 +105,6 @@ class Walkers(BaseWalkers):
             )
             string += new_str
         return string
-
-    def __repr__(self) -> str:
-        text = self.print_stats()
-        text += "Env: {}\n".format(self.__repr_state(self._env_states))
-        text += "Model {}\n".format(self.__repr_state(self._model_states))
-        return text
 
     @property
     def obs(self) -> torch.Tensor:
@@ -200,6 +202,7 @@ class Walkers(BaseWalkers):
         dead_ix = torch.arange(self.n)[torch.squeeze(self.end_condition)]
         self.will_clone[dead_ix] = 1
 
+        self.cum_rewards[self.will_clone] = self.cum_rewards[self.compas_ix][self.will_clone]
         self._env_states.clone(will_clone=self.will_clone, compas_ix=self.compas_ix)
         self._model_states.clone(will_clone=self.will_clone, compas_ix=self.compas_ix)
 
