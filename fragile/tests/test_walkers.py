@@ -6,7 +6,7 @@ from fragile.walkers import Walkers
 from fragile.utils import relativize
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def walkers():
     n_walkers = 10
     env_dict = {
@@ -20,6 +20,24 @@ def walkers():
         n_walkers=n_walkers, env_state_params=env_dict, model_state_params=model_dict
     )
     return walkers
+
+@pytest.fixture()
+def walkers_factory():
+    def new_walkers():
+        n_walkers = 10
+        env_dict = {
+            "env_1": {"sizes": (1, 100)},
+            "env_2": {"sizes": (1, 33)},
+            "observs": {"sizes": (1, 100)},
+        }
+        model_dict = {"model_1": {"sizes": (1, 13)}, "model_2": {"sizes": (1, 5)}}
+
+        walkers = Walkers(
+            n_walkers=n_walkers, env_state_params=env_dict, model_state_params=model_dict
+        )
+        return walkers
+    return new_walkers
+
 
 
 class TestWalkers:
@@ -41,7 +59,8 @@ class TestWalkers:
         with pytest.raises(AttributeError):
             assert isinstance(walkers.moco, torch.Tensor)
 
-    def test_obs(self, walkers):
+    def test_obs(self, walkers_factory):
+        walkers = walkers_factory()
         assert isinstance(walkers.obs, torch.Tensor)
         walkers._env_states.observs = 10
         with pytest.raises(TypeError):
@@ -100,10 +119,11 @@ class TestWalkers:
         assert walkers.clone_probs.shape[1] == 1
         assert len(walkers.clone_probs.shape) == 2
 
-    def test_balance(self, walkers):
+    def test_balance(self, walkers_factory):
+        walkers = walkers_factory()
         walkers.reset()
         walkers.balance()
-        assert walkers.will_clone.sum() == 0
+        assert walkers.will_clone.sum().cpu().item() == 0
 
     def test_accumulate_rewards(self, walkers):
         walkers.reset()
