@@ -83,3 +83,10 @@ class TestStates:
     def test_setitem_numpy(self, dummy_states):
         dummy_states["miau"] = np.ones(10)
         assert isinstance(dummy_states.miau, torch.Tensor)
+
+    def test_split_states(self, dummy_states):
+        for i, state in enumerate(dummy_states.split_states()):
+            assert state.n == 1
+            for ks, kd in zip(state.keys(), dummy_states.keys()):
+                assert ks == kd
+                assert torch.all(state[kd] == dummy_states[kd][i])
