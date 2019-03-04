@@ -1,6 +1,7 @@
 import copy
 import torch
 import numpy as np
+from typing import List
 
 device_states = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -33,6 +34,7 @@ class States:
     """
 
     def __init__(self, n_walkers: int, state_dict=None, device=device_states, **kwargs):
+
         self.device = device
         attr_dict = (
             self.params_to_tensors(state_dict, n_walkers) if state_dict is not None else kwargs
@@ -64,12 +66,31 @@ class States:
             )
 
     def __repr__(self):
-        string = "{}\n".format(self.__class__.__name__)
+        string = "{} with {} walkers\n".format(self.__class__.__name__, self.n)
         for k, v in self.items():
             shape = v.shape if hasattr(v, "shape") else None
             new_str = "{}: {} {}\n".format(k, type(v), shape)
             string += new_str
         return string
+
+    @classmethod
+    def concat_states(cls, states: List["States"]) -> "States":
+        n_walkers = sum([s.n for s in states])
+        names = list(states[0].keys())
+        state_dict = {}
+        for name in names:
+            shape = tuple([n_walkers]) + tuple(states[0][name].shape)
+            state_dict[name] = torch.cat(tuple([s[name] for s in states])).view(shape)
+        s = States(n_walkers=n_walkers, **state_dict)
+        return s
+
+    @property
+    def n(self):
+        return self._n_walkers
+
+    @property
+    def state_dict(self):
+        return self._state_dict
 
     def get(self, key):
         return self[key]
@@ -83,6 +104,22 @@ class States:
     def items(self):
         return ((name, self[name]) for name in self._names)
 
+    def itervals(self):
+        if self.n <= 1:
+            return self.vals()
+        for i in range(self.n):
+            yield tuple([v[i] for v in self.vals()])
+
+    def iteritems(self):
+        if self.n < 1:
+            return self.vals()
+        for i in range(self.n):
+            yield tuple(self._names), tuple([v[i] for v in self.vals()])
+
+    def split_states(self) -> "States":
+        for k, v in self.iteritems():
+            yield States(n_walkers=1, **dict(zip(k, v)))
+
     def params_to_tensors(self, param_dict, n_walkers: int):
         tensor_dict = {}
         copy_dict = copy.deepcopy(param_dict)
@@ -93,10 +130,6 @@ class States:
                 val["device"] = self.device
             tensor_dict[key] = torch.zeros(sizes, **val)
         return tensor_dict
-
-    @property
-    def n(self):
-        return self._n_walkers
 
     def clone(self, will_clone, compas_ix):
         will_clone, compas_ix = will_clone.to(self.device), compas_ix.to(self.device)
