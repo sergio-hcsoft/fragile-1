@@ -62,8 +62,10 @@ class TestTree:
 
     def test_path(self, finished_tree):
 
-        t, _ = finished_tree
-        path = t.get_path_ids(t.curr_id)
+        t, swarm = finished_tree
+        max_reward = int(swarm.walkers.cum_rewards.cpu().numpy().argmax())
+        best_id = swarm.walkers.id_walkers[max_reward]
+        path = t.get_path_ids(best_id)
 
         assert len(path) > 1
         assert isinstance(path, list)
