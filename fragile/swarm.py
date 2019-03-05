@@ -2,6 +2,7 @@ import torch
 from typing import Callable
 from fragile.states import States
 from fragile.walkers import Walkers
+from fragile.tree import Tree
 
 # from line_profiler import profile
 
@@ -21,6 +22,7 @@ class Swarm:
         self._walkers = None
         self._model = None
         self._env = None
+        self.tree = None
         self.skipframe = skipframe
 
         self.init_swarm(
@@ -70,6 +72,8 @@ class Swarm:
             **kwargs
         )
 
+        self.tree = Tree()
+
     def init_walkers(self, model_states: "States" = None, env_states: "States" = None):
         env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
 
@@ -81,6 +85,10 @@ class Swarm:
 
         model_states.update(init_actions=actions)
         self.walkers.reset(env_states=env_sates, model_states=model_states)
+        self.tree.reset(
+            env_state=self.walkers.env_states, model_state=self.walkers.model_states,
+            reward=env_sates.rewards[0]
+        )
 
     # @profile
     def run_swarm(self, model_states: "States" = None, env_states: "States" = None):
@@ -94,6 +102,7 @@ class Swarm:
     # @profile
     def step_walkers(self):
         model_states = self.walkers.get_model_states()
+        states_ids = self.walkers.id_walkers.cpu().numpy().copy().astype(int).flatten().tolist()
         env_states = self.walkers.get_env_states()
         act_dt, model_states = self.model.calculate_dt(model_states, env_states)
 
@@ -102,8 +111,16 @@ class Swarm:
         )
         env_states = self.env.step(actions=actions, env_states=env_states, n_repeat_action=act_dt)
         model_states.update(actions=actions)
+
         self.walkers.update_states(env_states=env_states, model_states=model_states)
         self.walkers.update_end_condition(env_states.ends)
+        walker_ids = self.tree.add_states(
+            parent_ids=states_ids,
+            env_states=self.walkers.env_states,
+            model_states=self.walkers.model_states,
+            cum_rewards=self.walkers.cum_rewards.cpu().numpy().copy().flatten(),
+        )
+        self.walkers.update_ids(walker_ids)
 
     def calculate_action(self):
         return

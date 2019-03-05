@@ -21,7 +21,8 @@ def walkers():
     )
     return walkers
 
-@pytest.fixture()
+
+@pytest.fixture(scope="module")
 def walkers_factory():
     def new_walkers():
         n_walkers = 10
@@ -37,7 +38,6 @@ def walkers_factory():
         )
         return walkers
     return new_walkers
-
 
 
 class TestWalkers:

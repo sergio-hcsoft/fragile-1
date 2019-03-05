@@ -51,6 +51,7 @@ class Walkers(BaseWalkers):
 
         self.end_condition = torch.zeros((self.n, 1), device=self.device, dtype=torch.uint8)
         self.alive_mask = torch.squeeze(torch.ones_like(self.will_clone))
+        self.id_walkers = torch.zeros(self.n, dtype=torch.int64, device=self.device)
         self.n_iters = 0
         self.max_iters = max_iters
 
@@ -67,7 +68,7 @@ class Walkers(BaseWalkers):
             import sys
 
             msg = "\nAttribute {} is not in the class nor in its internal states".format(item)
-            raise type(e)(str(e) + " Error at Walkers.__getattr__%s" % msg).with_traceback(
+            raise type(e)(str(e) + " Error at Walkers.__getattr__: %s\n" % msg).with_traceback(
                 sys.exc_info()[2]
             )
 
@@ -203,6 +204,8 @@ class Walkers(BaseWalkers):
         self.will_clone[dead_ix] = 1
 
         self.cum_rewards[self.will_clone] = self.cum_rewards[self.compas_ix][self.will_clone]
+        self.id_walkers[self.will_clone] = self.id_walkers[self.compas_ix][self.will_clone]
+
         self._env_states.clone(will_clone=self.will_clone, compas_ix=self.compas_ix)
         self._model_states.clone(will_clone=self.will_clone, compas_ix=self.compas_ix)
 
@@ -219,6 +222,9 @@ class Walkers(BaseWalkers):
             rewards = torch.from_numpy(rewards)
         self.cum_rewards = self.cum_rewards + rewards.to(self.device).float()
 
+    def update_ids(self, walkers_ids: np.ndarray):
+        self.id_walkers[:] = torch.from_numpy(walkers_ids).to(self.device)
+
     def reset(self, env_states: "States" = None, model_states: "States" = None):
         self.update_states(env_states=env_states, model_states=model_states)
         self.will_clone[:] = torch.zeros(self.n, dtype=torch.uint8)
@@ -230,4 +236,5 @@ class Walkers(BaseWalkers):
         self.clone_probs[:] = torch.zeros((self.n, 1), dtype=float_type, device=self.device)
         self.will_clone[:] = torch.zeros(self.n, dtype=torch.uint8)
         self.alive_mask[:] = torch.squeeze(torch.ones_like(self.will_clone))
+        self.id_walkers[:] = torch.zeros(self.n, dtype=torch.int64, device=self.device)
         self.n_iters = 0
