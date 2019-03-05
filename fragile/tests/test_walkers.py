@@ -37,6 +37,7 @@ def walkers_factory():
             n_walkers=n_walkers, env_state_params=env_dict, model_state_params=model_dict
         )
         return walkers
+
     return new_walkers
 
 

@@ -194,6 +194,7 @@ class Walkers(BaseWalkers):
 
     # @profile
     def balance(self):
+        old_ids = set(self.id_walkers.cpu().numpy().astype(int).tolist())
         self.normalize_rewards()
         self.calc_distances()
         self.calc_virtual_reward()
@@ -208,6 +209,8 @@ class Walkers(BaseWalkers):
 
         self._env_states.clone(will_clone=self.will_clone, compas_ix=self.compas_ix)
         self._model_states.clone(will_clone=self.will_clone, compas_ix=self.compas_ix)
+        new_ids = set(self.id_walkers.cpu().numpy().astype(int).tolist())
+        return old_ids, new_ids
 
     def update_states(self, env_states: States = None, model_states: States = None):
         if isinstance(env_states, States):

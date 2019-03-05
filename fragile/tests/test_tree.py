@@ -21,13 +21,19 @@ def node_id():
 @pytest.fixture()
 def node(states, node_id):
     env_state, model_state = states
-    return Node(node_id=node_id, parent_id=node_id - 1, env_state=env_state,
-                model_state=model_state, reward=node_id + 10)
+    return Node(
+        node_id=node_id,
+        parent_id=node_id - 1,
+        env_state=env_state,
+        model_state=model_state,
+        reward=node_id + 10,
+    )
 
 
 @pytest.fixture()
 def tree():
-    return lambda : Tree()
+    return lambda: Tree()
+
 
 @pytest.fixture()
 def finished_tree(swarm):
@@ -36,14 +42,12 @@ def finished_tree(swarm):
 
 
 class TestNode:
-
     def test_init(self, node):
         assert isinstance(node.env_state, States)
         assert isinstance(node.model_state, States)
 
 
 class TestTree:
-
     def test_init(self, tree):
         assert isinstance(tree(), Tree)
 
@@ -73,8 +77,3 @@ class TestTree:
         best_id = swarm.walkers.id_walkers[max_reward]
         t.prune_branch(best_id)
         assert best_id not in t.nodes.keys()
-
-
-
-
-

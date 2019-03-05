@@ -86,8 +86,9 @@ class Swarm:
         model_states.update(init_actions=actions)
         self.walkers.reset(env_states=env_sates, model_states=model_states)
         self.tree.reset(
-            env_state=self.walkers.env_states, model_state=self.walkers.model_states,
-            reward=env_sates.rewards[0]
+            env_state=self.walkers.env_states,
+            model_state=self.walkers.model_states,
+            reward=env_sates.rewards[0],
         )
 
     # @profile
@@ -95,7 +96,8 @@ class Swarm:
         self.init_walkers(model_states=model_states, env_states=env_states)
         while not self.walkers.calculate_end_cond():
             self.step_walkers()
-            self.walkers.balance()
+            old_ids, new_ids = self.walkers.balance()
+            self.prune_tree(old_ids=old_ids, new_ids=new_ids)
 
         return self.calculate_action()
 
@@ -121,6 +123,11 @@ class Swarm:
             cum_rewards=self.walkers.cum_rewards.cpu().numpy().copy().flatten(),
         )
         self.walkers.update_ids(walker_ids)
+
+    def prune_tree(self, old_ids, new_ids):
+        dead_leaves = old_ids - new_ids
+        for leaf_id in dead_leaves:
+            self.tree.prune_branch(leaf_id=leaf_id)
 
     def calculate_action(self):
         return

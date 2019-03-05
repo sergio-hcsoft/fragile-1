@@ -125,7 +125,9 @@ class Tree:
     def prune_branch(self, leaf_id):
         leaf_id = leaf_id.cpu().item() if isinstance(leaf_id, torch.Tensor) else leaf_id
         if self.has_children(leaf_id):
-            raise ValueError("You cannot delete a node that has children. Node id: {}".format(leaf_id))
+            raise ValueError(
+                "You cannot delete a node that has children. Node id: {}".format(leaf_id)
+            )
         while not self.has_children(leaf_id) and self.parents[leaf_id] > 0:
 
             new_id = int(self.parents[leaf_id])
@@ -134,5 +136,3 @@ class Tree:
             del self.children[leaf_id]
 
             leaf_id = new_id.cpu().item() if isinstance(new_id, torch.Tensor) else new_id
-
-
