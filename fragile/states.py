@@ -20,6 +20,7 @@ class States:
 
     state_dict = {name_1: {"sizes": tuple,
                            device=device,
+                           dtype=valid_datatype,
                            },
                   }
 

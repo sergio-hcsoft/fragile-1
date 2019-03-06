@@ -25,6 +25,16 @@ def relativize(x, device=device):
     return standard
 
 
+def relativize_np(x):
+    std = x.std()
+    if float(std) == 0:
+        return torch.ones(len(x), dtype=type(std))
+    standard = (x - x.mean()) / std
+    standard[standard > 0] = np.log(1.0 + standard[standard > 0]) + 1.0
+    standard[standard <= 0] = np.exp(standard[standard <= 0])
+    return standard
+
+
 def to_numpy(x: [np.ndarray, torch.Tensor, list]) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return x

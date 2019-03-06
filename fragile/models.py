@@ -6,7 +6,7 @@ from fragile.base_classes import BaseModel
 
 
 class RandomDiscrete(BaseModel):
-    def __init__(self, n_actions: int, min_dt=1, max_dt=10, mean_dt=4, std_dt=2, *args, **kwargs):
+    def __init__(self, n_actions: int, min_dt=1, max_dt=10, mean_dt=4, std_dt=1, *args, **kwargs):
         super(RandomDiscrete, self).__init__(*args, **kwargs)
         self._n_actions = n_actions
         self.min_dt = min_dt
