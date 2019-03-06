@@ -17,7 +17,7 @@ setup(
         "monte carlo",
         "planning",
     ],
-    install_requires=["gym", "numpy", "Pillow-simd"],
+    install_requires=["gym", "numpy", "Pillow-simd", "plangym"],
     package_data={"": ["LICENSE", "README.md"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
