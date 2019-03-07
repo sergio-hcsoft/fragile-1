@@ -44,16 +44,16 @@ class Memory:
             )
 
         observs = (
-            observs.cpu.numpy().copy()
+            observs.cpu().numpy().copy()
             if isinstance(observs, torch.Tensor)
             else np.array(observs).copy()
         )
-        observs = observs.reshape(-1, 1)
+        observs = observs.reshape(len(observs), -1)
         if self.observs is None:
             self._init_memory(observs=observs)
             return
 
-        valid_observs = self._process_scores(observs)
+        valid_observs, _ = self._process_scores(observs)
         self._add_to_memory(valid_observs)
         self.kmeans.fit(self.observs)
 
@@ -63,8 +63,8 @@ class Memory:
         self.kmeans.fit(self.observs)
 
     def _process_scores(self, observs: np.ndarray) -> np.ndarray:
-        distances, indices = self.kmeans.kneighbors(observs)
-        return observs
+        distances, indices = self.kmeans.kneighbors(observs.reshape(len(observs), -1))
+        return distances
 
     def _add_to_memory(self, observs: np.ndarray):
         scores = np.ones(len(observs), dtype=np.float32)
