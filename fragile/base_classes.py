@@ -15,18 +15,19 @@ class BaseStates:
     In order to define the tensors, a state_dict dictionary needs to be specified
     using the following structure:
 
-    state_dict = {name_1: {"sizes": tuple,
-                           device=device,
-                           dtype=valid_datatype,
-                           },
-                  }
+    >>> import torch
+    >>> state_dict = {"name_1": {"sizes": tuple([1]),
+    >>>                          "device": "cuda",
+    >>>                          "dtype": torch.float32,
+    >>>                        ),
+    >>>               }
 
     Where tuple is a tuple indicating the shape of the desired tensor, that will
     be accessed using the name_1 attribute of the class.
 
 
     Args:
-        n_walkers:
+        n_walkers: The number of items in the first dimension of the tensors.
         state_dict: Dictionary defining the attributes of the tensors.
         **kwargs: The name-tensor pairs can also be specified as kwargs.
     """
@@ -45,6 +46,7 @@ class BaseStates:
     def __getitem__(self, item: [str, List[str]]) -> [np.ndarray, torch.Tensor]:
         """
         Query an attribute of the class as if it was a dictionary.
+
         Args:
             item: Name of the attribute to be selected.
 
@@ -68,6 +70,7 @@ class BaseStates:
     def __setitem__(self, key, value: [torch.Tensor, np.ndarray]):
         """
         Allow the class to set its attributes as if it was a dict.
+
         Args:
             key: Attribute to be set.
             value: Value of the target attribute.
@@ -95,8 +98,8 @@ class BaseStates:
 
     @classmethod
     def concat_states(cls, states: List["BaseStates"]) -> "BaseStates":
-        """Transform a list containing states with only one walker to a single States instance
-        with many walkers.
+        """Transform a list containing states with only one walker to a single
+         States instance with many walkers.
         """
         n_walkers = sum([s.n for s in states])
         names = list(states[0].keys())
@@ -115,6 +118,7 @@ class BaseStates:
     def get(self, key: str, default=None):
         """
         Get an attribute by key and return the default value if it does not exist.
+
         Args:
             key: Attribute to be recovered.
             default: Value returned in case the attribute is not part of state.
@@ -139,6 +143,7 @@ class BaseStates:
     def itervals(self):
         """
         Iterate the states attributes by walker.
+
         Returns:
             Tuple containing all the names of the attributes, and the values that
              correspond to a given walker.
@@ -151,6 +156,7 @@ class BaseStates:
     def iteritems(self):
         """
         Iterate the states attributes by walker.
+
         Returns:
             Tuple containing all the names of the attributes, and the values that
              correspond to a given walker.
@@ -176,6 +182,7 @@ class BaseStates:
     def clone(self, will_clone: [np.ndarray, torch.Tensor], compas_ix: [np.ndarray, torch.Tensor]):
         """
         Perform the clone operation on all the data attributes.
+
         Args:
             will_clone: Array of booleans that will be True when a walker is
              selected to clone. It is a flat array of length equal to n_walkers.
@@ -189,7 +196,8 @@ class BaseStates:
 
     def update(self, other: "BaseStates" = None, **kwargs):
         """
-        Update the data of the internal attributes of the array
+        Update the data of the internal attributes of the array.
+
         Args:
             other: State instance that will be used to update the current values.
             **kwargs: It is also possible to update the attributes passing them as
@@ -206,12 +214,12 @@ class BaseStates:
         In order to define the tensors, a state_dict dictionary needs to be specified
         using the following structure:
 
-        state_dict = {name_1: {"sizes": tuple,
-                               device=device,
-                               dtype=valid_datatype,
-                               },
-                      }
-
+        >>> import torch
+        >>> state_dict = {"name_1": {"sizes": tuple([1]),
+        >>>                          "device": "cuda",
+        >>>                          "dtype": torch.float32,
+        >>>                        ),
+        >>>               }
         Where tuple is a tuple indicating the shape of the desired tensor, that will
         be accessed using the name_1 attribute of the class.
         """
@@ -219,11 +227,18 @@ class BaseStates:
 
 
 class BaseEnvironment:
+    """
+    The Environment is in charge of stepping the walkers, acting as an state
+    transition function.
+
+    """
+
     def step(
         self, actions: [np.ndarray, torch.Tensor], env_states: BaseStates, *args, **kwargs
     ) -> BaseStates:
         """
         Step the environment for a batch of walkers.
+
         Args:
             actions: Batch of actions to be applied to the environment.
             env_states: States representing a batch of states to be set in the
@@ -238,15 +253,17 @@ class BaseEnvironment:
 
     def reset(self, batch_size: int = 1, env_states: BaseStates = None) -> BaseStates:
         """
-        Reset the environment and return an States class with batch_size copies of the initial
-        state
+        Reset the environment and return an States class with batch_size copies
+         of the initial state.
+
         Args:
             batch_size: Number of walkers that the resulting state will have.
-            env_states: States class used to set the environment to an arbitrary state.
+            env_states: States class used to set the environment to an arbitrary
+             state.
 
         Returns:
             States class containing the information of the environment after the
-            reset.
+             reset.
         """
         raise NotImplementedError
 
@@ -256,11 +273,12 @@ class BaseEnvironment:
         In order to define the tensors, a state_dict dictionary needs to be specified
         using the following structure:
 
-        state_dict = {name_1: {"sizes": tuple,
-                               device=device,
-                               dtype=valid_datatype,
-                               },
-                      }
+        >>> import torch
+        >>> state_dict = {"name_1": {"sizes": tuple([1]),
+        >>>                          "device": "cuda",
+        >>>                          "dtype": torch.float32,
+        >>>                        ),
+        >>>               }
 
         Where tuple is a tuple indicating the shape of the desired tensor, that will
         be accessed using the name_1 attribute of the class.
@@ -269,17 +287,22 @@ class BaseEnvironment:
 
 
 class BaseModel:
+
+    """The model is in charge of calculating how the walkers will act with the
+    Environment, effectively working as a policy.
+    """
+
     def get_params_dict(self) -> dict:
         """
         Return an state_dict to be used for instantiating an States class.
         In order to define the tensors, a state_dict dictionary needs to be specified
         using the following structure:
-
-        state_dict = {name_1: {"sizes": tuple,
-                               device=device,
-                               dtype=valid_datatype,
-                               },
-                      }
+        >>> import torch
+        >>> state_dict = {"name_1": {"sizes": tuple([1]),
+        >>>                          "device": "cuda",
+        >>>                          "dtype": torch.float32,
+        >>>                        ),
+        >>>               }
 
         Where tuple is a tuple indicating the shape of the desired tensor, that will
         be accessed using the name_1 attribute of the class.
@@ -289,6 +312,7 @@ class BaseModel:
     def reset(self, batch_size: int = 1) -> BaseStates:
         """
         Restart the model and reset its internal state.
+
         Args:
             batch_size: Number of elements in the first dimension of the model
             States data.
@@ -304,6 +328,7 @@ class BaseModel:
     ) -> Tuple[np.ndarray, torch.Tensor, BaseStates]:
         """
         Calculates the next action that needs to be taken at a given state.
+
         Args:
             model_states: States corresponding to the environment data.
             env_states: States corresponding to the model data.
@@ -318,6 +343,7 @@ class BaseModel:
     ) -> Tuple[torch.Tensor, BaseStates]:
         """
         Calculates the number of times that the next action will be applied.
+
         Args:
            model_states: States corresponding to the environment data.
            env_states: States corresponding to the model data.
@@ -329,6 +355,9 @@ class BaseModel:
 
 
 class BaseWalkers:
+    """The Walkers is a data structure that takes care of all the data involved
+    in making a Swarm evolve.
+    """
     def __init__(
         self, n_walkers: int, env_state_params: dict, model_state_params: dict, *args, **kwargs
     ):
