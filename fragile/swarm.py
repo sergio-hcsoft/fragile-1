@@ -3,38 +3,12 @@ from typing import Callable
 from fragile.states import States
 from fragile.walkers import Walkers
 from fragile.tree import Tree
+from fragile.base_classes import BaseSwarm, BaseStates
 
 # from line_profiler import profile
 
 
-class Swarm:
-    def __init__(
-        self,
-        env: Callable,
-        model: Callable,
-        n_walkers: int,
-        reward_scale: float = 1.0,
-        dist_scale: float = 1.0,
-        skipframe: int = 1,
-        *args,
-        **kwargs
-    ):
-        self._walkers = None
-        self._model = None
-        self._env = None
-        self.tree = None
-        self.skipframe = skipframe
-
-        self.init_swarm(
-            env_callable=env,
-            model_callabe=model,
-            n_walkers=n_walkers,
-            reward_scale=reward_scale,
-            dist_scale=dist_scale,
-            *args,
-            **kwargs
-        )
-
+class Swarm(BaseSwarm):
     @property
     def env(self):
         return self._env
@@ -74,7 +48,7 @@ class Swarm:
 
         self.tree = Tree()
 
-    def init_walkers(self, model_states: "States" = None, env_states: "States" = None):
+    def init_walkers(self, model_states: BaseStates = None, env_states: BaseStates = None):
         env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
 
         actions, model_states = (
@@ -92,7 +66,7 @@ class Swarm:
         )
 
     # @profile
-    def run_swarm(self, model_states: "States" = None, env_states: "States" = None):
+    def run_swarm(self, model_states: BaseStates = None, env_states: BaseStates = None):
         self.init_walkers(model_states=model_states, env_states=env_states)
         while not self.walkers.calculate_end_cond():
             self.step_walkers()

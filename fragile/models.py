@@ -34,16 +34,14 @@ class RandomDiscrete(BaseModel):
         model_states.update(dt=np.ones(batch_size), actions=actions, init_actions=actions)
         return actions, model_states
 
-    def predict(
-        self, env_states=None, batch_size: int = None, model_states=None
-    ) -> Tuple[np.ndarray, States]:
+    def predict(self, env_states=None, batch_size: int = None, model_states=None) -> Tuple:
         if batch_size is None and env_states is None:
             raise ValueError("env_states and batch_size cannot be both None.")
         size = len(env_states.rewards) if env_states is not None else batch_size
         actions = np.random.randint(0, self.n_actions, size=size)
         return actions, model_states
 
-    def calculate_dt(self, model_states, env_states) -> Tuple[np.ndarray, States]:
+    def calculate_dt(self, model_states, env_states) -> Tuple:
         dt = np.random.normal(
             loc=self.mean_dt, scale=self.std_dt, size=tuple(env_states.rewards.shape)
         )
@@ -61,7 +59,4 @@ class RandomDiscrete(BaseModel):
         pass
 
     def simulation_pred(self, *args, **kwargs):
-        pass
-
-    def calculate_skipframe(self):
         pass

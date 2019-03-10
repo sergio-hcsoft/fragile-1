@@ -108,7 +108,7 @@ class Walkers(BaseWalkers):
         return string
 
     @property
-    def obs(self) -> torch.Tensor:
+    def observs(self) -> torch.Tensor:
         try:
             return self._env_states.observs.to(self.device)
         except Exception as e:
@@ -140,7 +140,7 @@ class Walkers(BaseWalkers):
         return self.model_states
 
     def get_obs(self) -> torch.Tensor:
-        return self.obs
+        return self.observs
 
     def update_end_condition(self, ends: [torch.Tensor, np.ndarray]):
         if isinstance(ends, np.ndarray):
@@ -157,8 +157,8 @@ class Walkers(BaseWalkers):
         with torch.no_grad():
             self.compas_ix = torch.randperm(self.n, dtype=torch.int64, device=self.device)
             self.distances = self.pwise_distance(
-                self.obs.view(self.n, -1).float(),
-                self.obs[self.compas_ix].view(self.n, -1).float(),
+                self.observs.view(self.n, -1).float(),
+                self.observs[self.compas_ix].view(self.n, -1).float(),
             ).view(-1, 1)
 
     def normalize_rewards(self):

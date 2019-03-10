@@ -53,7 +53,7 @@ class Memory:
             self._init_memory(observs=observs)
             return
 
-        valid_observs, _ = self._process_scores(observs)
+        valid_observs = self._process_scores(observs)
         self._add_to_memory(valid_observs)
         self.kmeans.fit(self.observs)
 

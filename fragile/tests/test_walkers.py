@@ -56,16 +56,16 @@ class TestWalkers:
         assert isinstance(walkers.env_1, torch.Tensor)
         assert isinstance(walkers.model_1, torch.Tensor)
         assert isinstance(walkers.will_clone, torch.Tensor)
-        assert isinstance(walkers.obs, torch.Tensor)
+        assert isinstance(walkers.observs, torch.Tensor)
         with pytest.raises(AttributeError):
             assert isinstance(walkers.moco, torch.Tensor)
 
     def test_obs(self, walkers_factory):
         walkers = walkers_factory()
-        assert isinstance(walkers.obs, torch.Tensor)
+        assert isinstance(walkers.observs, torch.Tensor)
         walkers._env_states.observs = 10
         with pytest.raises(TypeError):
-            walkers.obs
+            walkers.observs
 
         n_walkers = 10
         env_dict = {"env_1": {"sizes": (1, 100)}, "env_2": {"sizes": (1, 33)}}
@@ -75,7 +75,7 @@ class TestWalkers:
             n_walkers=n_walkers, env_state_params=env_dict, model_state_params=model_dict
         )
         with pytest.raises(AttributeError):
-            walkers.obs
+            walkers.observs
 
     def test_update_end_condition(self, walkers):
         ends = np.zeros(10)
