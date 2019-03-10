@@ -1,7 +1,8 @@
 import pytest
 import numpy as np
 from plangym import AtariEnvironment, ClassicControl
-from fragile import DiscreteEnv, States
+from fragile.env import DiscreteEnv
+from fragile.states import BaseStates
 
 
 @pytest.fixture(scope="module")
@@ -39,11 +40,11 @@ def environment(plangym_env):
 class TestEnvironment:
     def test_reset(self, environment):
         states = environment.reset()
-        assert isinstance(states, States), states
+        assert isinstance(states, BaseStates), states
 
         batch_size = 10
         states = environment.reset(batch_size=batch_size)
-        assert isinstance(states, States), states
+        assert isinstance(states, BaseStates), states
         assert states.observs.shape[0] == batch_size
         assert states.rewards.shape[0] == batch_size
         assert states.ends.shape[1] == 1

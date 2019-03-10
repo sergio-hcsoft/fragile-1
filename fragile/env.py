@@ -2,14 +2,15 @@ import numpy as np
 import torch
 from plangym.env import Environment
 from fragile.base_classes import BaseEnvironment
-from fragile.swarm import States
+from fragile.states import BaseStates, States
 from fragile.utils import to_numpy, device
 
 
 class DiscreteEnv(BaseEnvironment):
-    def __init__(self, env: Environment):
+    def __init__(self, env: Environment, device: str = "cpu"):
         self._env = env
         self._n_actions = self._env.action_space.n
+        self.device = device
 
     @property
     def n_actions(self):
@@ -17,15 +18,23 @@ class DiscreteEnv(BaseEnvironment):
 
     def get_params_dict(self) -> dict:
         params = {
-            "states": {"sizes": self._env.get_state().shape, "dtype": torch.int64},
-            "observs": {"sizes": self._env.observation_space.shape, "dtype": torch.float},
-            "rewards": {"sizes": tuple([1]), "dtype": torch.float},
-            "ends": {"sizes": tuple([1]), "dtype": torch.uint8},
+            "states": {
+                "sizes": self._env.get_state().shape,
+                "dtype": torch.int64,
+                "device": self.device,
+            },
+            "observs": {
+                "sizes": self._env.observation_space.shape,
+                "dtype": torch.float,
+                "device": self.device,
+            },
+            "rewards": {"sizes": tuple([1]), "dtype": torch.float, "device": self.device},
+            "ends": {"sizes": tuple([1]), "dtype": torch.uint8, "device": self.device},
         }
         return params
 
     # @profile
-    def step(self, actions, env_states, n_repeat_action: int = 1, *args, **kwargs) -> States:
+    def step(self, actions, env_states, n_repeat_action: int = 1, *args, **kwargs) -> BaseStates:
         states = to_numpy(env_states.states)
         actions = to_numpy(actions).astype(np.int32)
         new_states, observs, rewards, ends, infos = self._env.step_batch(
@@ -36,7 +45,7 @@ class DiscreteEnv(BaseEnvironment):
         return new_state
 
     # @profile
-    def reset(self, batch_size: int = 1) -> States:
+    def reset(self, batch_size: int = 1) -> BaseStates:
         state, obs = self._env.reset()
         states = np.array([state.copy() for _ in range(batch_size)])
         observs = np.array([obs.copy() for _ in range(batch_size)])
@@ -46,7 +55,7 @@ class DiscreteEnv(BaseEnvironment):
         return new_states
 
     # @profile
-    def _get_new_states(self, states, observs, rewards, ends, batch_size) -> States:
+    def _get_new_states(self, states, observs, rewards, ends, batch_size) -> BaseStates:
         ends = np.array(ends, dtype=np.uint8).reshape(-1, 1)
         rewards = np.array(rewards, dtype=np.float32).reshape(-1, 1)
         observs = np.array(observs)

@@ -1,7 +1,6 @@
 import copy
 import torch
 import numpy as np
-from typing import List
 from fragile.base_classes import BaseStates
 
 device_states = "cuda" if torch.cuda.is_available() else "cpu"
@@ -30,8 +29,8 @@ class States(BaseStates):
 
 
     Args:
+        param_dict: Dictionary defining the attributes of the tensors.
         n_walkers: Number items in the first dimension of the data tensors.
-        state_dict: Dictionary defining the attributes of the tensors.
         **kwargs: The name-tensor pairs can also be specified as kwargs.
     """
 
@@ -46,12 +45,12 @@ class States(BaseStates):
             tensor_dict[key] = torch.zeros(sizes, **val)
         return tensor_dict
 
-    def clone(self, will_clone, compas_ix):
+    def clone(self, will_clone: torch.Tensor, compas_ix: torch.Tensor):
         will_clone, compas_ix = will_clone.to(self.device), compas_ix.to(self.device)
         for name in self.keys():
             self[name][will_clone] = self[name][compas_ix][will_clone]
 
-    def update(self, other: "States" = None, **kwargs):
+    def update(self, other: "BaseStates" = None, **kwargs):
         other = other if other is not None else kwargs
         for name, val in other.items():
             val = torch.from_numpy(val).to(self.device) if isinstance(val, np.ndarray) else val

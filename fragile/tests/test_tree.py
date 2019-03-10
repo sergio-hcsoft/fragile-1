@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from fragile.tests.test_walkers import walkers_factory
 from fragile.tests.test_swarm import swarm, environment_fact, plangym_env, create_env
-from fragile.states import States
+from fragile.states import BaseStates, States
 from fragile.tree import Node, Tree
 
 
@@ -43,8 +43,8 @@ def finished_tree(swarm):
 
 class TestNode:
     def test_init(self, node):
-        assert isinstance(node.env_state, States)
-        assert isinstance(node.model_state, States)
+        assert isinstance(node.env_state, BaseStates)
+        assert isinstance(node.model_state, BaseStates)
 
 
 class TestTree:
@@ -71,7 +71,7 @@ class TestTree:
         assert isinstance(path, list)
         assert t.nodes[path[-1]].reward >= t.nodes[path[0]].reward
         for node_id in path:
-            assert isinstance(t.nodes[node_id].env_state, States)
+            assert isinstance(t.nodes[node_id].env_state, BaseStates)
 
     def test_prune_branch(self, finished_tree):
         t, swarm = finished_tree

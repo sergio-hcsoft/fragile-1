@@ -229,7 +229,8 @@ class BaseStates:
 class BaseEnvironment:
     """
     The Environment is in charge of stepping the walkers, acting as an state
-    transition function.
+    transition function. For every different problem a new Environment need to
+    be implemented following the BaseEnvironment interface
 
     """
 
@@ -357,10 +358,22 @@ class BaseModel:
 class BaseWalkers:
     """The Walkers is a data structure that takes care of all the data involved
     in making a Swarm evolve.
+
+    Args:
+            n_walkers: Number of walkers the Swarm will contain.
+            env_state_params: Contains the structure of the States
+                variable with all the information regarding the Environment.
+            model_state_params: Contains the structure of the States
+                variable with all the information regarding the Model.
+            *args:  Ignored
+            **kwargs: Ignored
+
     """
+
     def __init__(
         self, n_walkers: int, env_state_params: dict, model_state_params: dict, *args, **kwargs
     ):
+
         self.model_state_params = model_state_params
         self.env_state_params = env_state_params
         self.n_walkers = n_walkers
@@ -406,7 +419,9 @@ class BaseWalkers:
 
 class BaseSwarm:
     """
-    The swarm is in charge of performing a fractal evolution process.
+    The Swarm is in charge of performing a fractal evolution process. It contains
+    the necessary logic to use an Environment, a Model, and a Walkers instance
+    to run the Swarm evolution algorithm.
 
     Args:
         env: A function that returns an instance of an Environment.
@@ -445,10 +460,14 @@ class BaseSwarm:
 
     @property
     def env(self) -> BaseEnvironment:
+        """All the simulation code (problem specific) will be handled here."""
         return self._env
 
     @property
     def model(self) -> BaseModel:
+        """All the policy and random perturbation code (problem specific) will
+         be handled here.
+         """
         return self._model
 
     @property
@@ -467,6 +486,9 @@ class BaseSwarm:
     ):
         """
         Initialize and set up all the necessary internal variables to run the swarm.
+        This process involves instantiating the Swarm, the Environment and the
+        model.
+
         Args:
             env_callable: A function that returns an instance of an Environment.
             model_callable: A function that returns an instance of a Model.
@@ -507,5 +529,7 @@ class BaseSwarm:
         raise NotImplementedError
 
     def step_walkers(self):
-        """Make the walkers undergo a random perturbation process."""
+        """Make the walkers undergo a random perturbation process in the swarm
+        Environment.
+        """
         raise NotImplementedError

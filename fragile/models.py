@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from typing import Tuple
-from fragile.swarm import States
+from fragile.states import BaseStates, States
 from fragile.base_classes import BaseModel
 
 
@@ -27,7 +27,7 @@ class RandomDiscrete(BaseModel):
     def n_actions(self):
         return self._n_actions
 
-    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, States]:
+    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, BaseStates]:
 
         model_states = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
         actions = np.random.randint(0, self.n_actions, size=batch_size)
@@ -48,15 +48,3 @@ class RandomDiscrete(BaseModel):
         dt = np.clip(dt, self.min_dt, self.max_dt).astype(int)
         model_states.update(dt=dt)
         return dt, model_states
-
-    def actor_pred(self, *args, **kwargs):
-        pass
-
-    def critic_pred(self, *args, **kwargs):
-        pass
-
-    def world_emb_pred(self, *args, **kwargs):
-        pass
-
-    def simulation_pred(self, *args, **kwargs):
-        pass

@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from fragile.states import States
+from fragile.states import BaseStates
 from sklearn.neighbors import NearestNeighbors
 from fragile.utils import device
 from fragile.utils import relativize_np
@@ -27,7 +27,7 @@ class Memory:
     def observs(self):
         return self._observs
 
-    def update(self, states: States = None, observs: [torch.Tensor, np.ndarray, list] = None):
+    def update(self, states: BaseStates = None, observs: [torch.Tensor, np.ndarray, list] = None):
         if states is None and observs is None:
             raise ValueError("Both states and observs cannot be None.")
 

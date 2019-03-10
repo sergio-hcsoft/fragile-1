@@ -1,6 +1,6 @@
 import torch
 from typing import Callable
-from fragile.states import States
+from fragile.states import BaseStates
 from fragile.walkers import Walkers
 from fragile.tree import Tree
 from fragile.base_classes import BaseSwarm, BaseStates

@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from fragile.memory import Memory
-from fragile.states import States
+from fragile.states import BaseStates
 
 
 @pytest.fixture()
@@ -11,7 +11,7 @@ def memory():
 
 @pytest.fixture()
 def mem_states():
-    return States(n_walkers=50, observs=np.random.random((50, 32, 3)))
+    return BaseStates(n_walkers=50, observs=np.random.random((50, 32, 3)))
 
 
 class TestMemory:

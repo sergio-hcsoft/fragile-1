@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from fragile.states import States
+from fragile.states import BaseStates, States
 from fragile.base_classes import BaseWalkers
 from fragile.utils import relativize, statistics_from_array, to_tensor
 import line_profiler
@@ -126,17 +126,17 @@ class Walkers(BaseWalkers):
             raise e
 
     @property
-    def env_states(self) -> States:
+    def env_states(self) -> BaseStates:
         return self._env_states
 
     @property
-    def model_states(self) -> States:
+    def model_states(self) -> BaseStates:
         return self._model_states
 
-    def get_env_states(self) -> States:
+    def get_env_states(self) -> BaseStates:
         return self.env_states
 
-    def get_model_states(self) -> States:
+    def get_model_states(self) -> BaseStates:
         return self.model_states
 
     def get_obs(self) -> torch.Tensor:
@@ -212,12 +212,12 @@ class Walkers(BaseWalkers):
         new_ids = set(self.id_walkers.cpu().numpy().astype(int).tolist())
         return old_ids, new_ids
 
-    def update_states(self, env_states: States = None, model_states: States = None):
-        if isinstance(env_states, States):
+    def update_states(self, env_states: BaseStates = None, model_states: BaseStates = None):
+        if isinstance(env_states, BaseStates):
             self._env_states.update(env_states)
             if hasattr(env_states, "rewards"):
                 self.accumulate_rewards(env_states.rewards)
-        if isinstance(model_states, States):
+        if isinstance(model_states, BaseStates):
             self._model_states.update(model_states)
 
     def accumulate_rewards(self, rewards: [torch.Tensor, np.ndarray]):
@@ -228,7 +228,7 @@ class Walkers(BaseWalkers):
     def update_ids(self, walkers_ids: np.ndarray):
         self.id_walkers[:] = torch.from_numpy(walkers_ids).to(self.device)
 
-    def reset(self, env_states: "States" = None, model_states: "States" = None):
+    def reset(self, env_states: "BaseStates" = None, model_states: "BaseStates" = None):
         self.update_states(env_states=env_states, model_states=model_states)
         self.will_clone[:] = torch.zeros(self.n, dtype=torch.uint8)
         self.compas_ix[:] = torch.arange(self.n).to(self.device)

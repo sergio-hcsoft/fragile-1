@@ -1,7 +1,7 @@
 import pytest
 import torch
 import numpy as np
-from fragile.states import States
+from fragile.states import BaseStates
 from fragile.walkers import Walkers
 from fragile.utils import relativize
 
@@ -49,8 +49,8 @@ class TestWalkers:
         assert isinstance(walkers.__repr__(), str)
 
     def test_states_attributes(self, walkers):
-        assert isinstance(walkers.env_states, States)
-        assert isinstance(walkers.model_states, States)
+        assert isinstance(walkers.env_states, BaseStates)
+        assert isinstance(walkers.model_states, BaseStates)
 
     def test_getattr(self, walkers):
         assert isinstance(walkers.env_1, torch.Tensor)
