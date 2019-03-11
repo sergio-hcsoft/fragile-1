@@ -14,7 +14,11 @@ def environment_fact(plangym_env):
 def swarm(environment_fact):
     n_walkers = 50
     swarm = Swarm(
-        model=lambda x: RandomDiscrete(x), env=environment_fact, n_walkers=n_walkers, max_iters=10
+        model=lambda x: RandomDiscrete(x),
+        env=environment_fact,
+        walkers=Walkers,
+        n_walkers=n_walkers,
+        max_iters=10,
     )
     return swarm
 
@@ -48,4 +52,4 @@ class TestSwarm:
         swarm.walkers.max_iters = 500
         swarm.run_swarm()
         reward = swarm.walkers.cum_rewards.max().item()
-        assert reward > 100, "ITERS: {}".format(swarm.walkers.n_iters)
+        assert reward > 100, "Iters: {}".format(swarm.walkers.n_iters)

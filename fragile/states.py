@@ -16,22 +16,22 @@ class States(BaseStates):
     to make easier the process of cloning the along the walkers dimension.
 
     In order to define the tensors, a state_dict dictionary needs to be specified
-    using the following structure:
+    using the following structure::
 
-    state_dict = {name_1: {"sizes": tuple,
-                           device=device,
-                           dtype=valid_datatype,
-                           },
-                  }
+        state_dict = {name_1: {"sizes": tuple,
+                               device=device,
+                               dtype=valid_datatype,
+                               },
+                      }
 
     Where tuple is a tuple indicating the shape of the desired tensor, that will
-    be accessed using the name_1 attribute of the class.
-
+     be accessed using the name_1 attribute of the class.
 
     Args:
         param_dict: Dictionary defining the attributes of the tensors.
         n_walkers: Number items in the first dimension of the data tensors.
         **kwargs: The name-tensor pairs can also be specified as kwargs.
+
     """
 
     def params_to_tensors(self, param_dict, n_walkers: int):

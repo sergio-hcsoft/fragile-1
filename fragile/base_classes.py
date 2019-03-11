@@ -13,14 +13,13 @@ class BaseStates:
     to make easier the process of cloning the along the walkers dimension.
 
     In order to define the tensors, a state_dict dictionary needs to be specified
-    using the following structure:
+    using the following structure::
 
-    >>> import torch
-    >>> state_dict = {"name_1": {"sizes": tuple([1]),
-    >>>                          "device": "cuda",
-    >>>                          "dtype": torch.float32,
-    >>>                        ),
-    >>>               }
+        state_dict = {"name_1": {"sizes": tuple([1]),
+                                 "device": "cuda",
+                                 "dtype": torch.float32,
+                                },
+                     }
 
     Where tuple is a tuple indicating the shape of the desired tensor, that will
     be accessed using the name_1 attribute of the class.
@@ -146,7 +145,7 @@ class BaseStates:
 
         Returns:
             Tuple containing all the names of the attributes, and the values that
-             correspond to a given walker.
+            correspond to a given walker.
         """
         if self.n <= 1:
             return self.vals()
@@ -159,7 +158,7 @@ class BaseStates:
 
         Returns:
             Tuple containing all the names of the attributes, and the values that
-             correspond to a given walker.
+            correspond to a given walker.
         """
         if self.n < 1:
             return self.vals()
@@ -212,14 +211,15 @@ class BaseStates:
         """
         Return an state_dict to be used for instantiating an States class.
         In order to define the tensors, a state_dict dictionary needs to be specified
-        using the following structure:
+        using the following structure::
 
-        >>> import torch
-        >>> state_dict = {"name_1": {"sizes": tuple([1]),
-        >>>                          "device": "cuda",
-        >>>                          "dtype": torch.float32,
-        >>>                        ),
-        >>>               }
+            import torch
+            state_dict = {"name_1": {"sizes": tuple([1]),
+                                     "device": "cuda",
+                                     "dtype": torch.float32,
+                                   },
+                          }
+
         Where tuple is a tuple indicating the shape of the desired tensor, that will
         be accessed using the name_1 attribute of the class.
         """
@@ -255,7 +255,7 @@ class BaseEnvironment:
     def reset(self, batch_size: int = 1, env_states: BaseStates = None) -> BaseStates:
         """
         Reset the environment and return an States class with batch_size copies
-         of the initial state.
+        of the initial state.
 
         Args:
             batch_size: Number of walkers that the resulting state will have.
@@ -272,14 +272,14 @@ class BaseEnvironment:
         """
         Return an state_dict to be used for instantiating an States class.
         In order to define the tensors, a state_dict dictionary needs to be specified
-        using the following structure:
+        using the following structure::
 
-        >>> import torch
-        >>> state_dict = {"name_1": {"sizes": tuple([1]),
-        >>>                          "device": "cuda",
-        >>>                          "dtype": torch.float32,
-        >>>                        ),
-        >>>               }
+            import torch
+            state_dict = {"name_1": {"sizes": tuple([1]),
+                                     "device": "cuda",
+                                     "dtype": torch.float32,
+                                   },
+                          }
 
         Where tuple is a tuple indicating the shape of the desired tensor, that will
         be accessed using the name_1 attribute of the class.
@@ -297,13 +297,14 @@ class BaseModel:
         """
         Return an state_dict to be used for instantiating an States class.
         In order to define the tensors, a state_dict dictionary needs to be specified
-        using the following structure:
-        >>> import torch
-        >>> state_dict = {"name_1": {"sizes": tuple([1]),
-        >>>                          "device": "cuda",
-        >>>                          "dtype": torch.float32,
-        >>>                        ),
-        >>>               }
+        using the following structure::
+
+            import torch
+            state_dict = {"name_1": {"sizes": tuple([1]),
+                                     "device": "cuda",
+                                     "dtype": torch.float32,
+                                   },
+                          }
 
         Where tuple is a tuple indicating the shape of the desired tensor, that will
         be accessed using the name_1 attribute of the class.
@@ -437,6 +438,7 @@ class BaseSwarm:
         self,
         env: Callable,
         model: Callable,
+        walkers: Callable,
         n_walkers: int,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
@@ -448,9 +450,10 @@ class BaseSwarm:
         self._env = None
         self.tree = None
 
-        self.init_swarm(
+        self._init_swarm(
             env_callable=env,
             model_callabe=model,
+            walkers_callable=walkers,
             n_walkers=n_walkers,
             reward_scale=reward_scale,
             dist_scale=dist_scale,
@@ -474,38 +477,10 @@ class BaseSwarm:
     def walkers(self) -> BaseWalkers:
         return self._walkers
 
-    def init_swarm(
-        self,
-        env_callable: Callable,
-        model_callable: Callable,
-        n_walkers: int,
-        reward_scale: float = 1.0,
-        dist_scale: float = 1.0,
-        *args,
-        **kwargs
-    ):
-        """
-        Initialize and set up all the necessary internal variables to run the swarm.
-        This process involves instantiating the Swarm, the Environment and the
-        model.
-
-        Args:
-            env_callable: A function that returns an instance of an Environment.
-            model_callable: A function that returns an instance of a Model.
-            n_walkers: Number of walkers of the swarm.
-            reward_scale: Virtual reward exponent for the reward score.
-            dist_scale:Virtual reward exponent for the distance score.
-            *args: Additional args passed to init_swarm.
-            **kwargs: Additional kwargs passed to init_swarm.
-
-        Returns:
-            None
-        """
-        raise NotImplementedError
-
     def init_walkers(self, model_states: "States" = None, env_states: "States" = None):
         """
-        Initialize the walkers adn reset their values to start a new search process.
+        Initialize the :class:`fragile.Walkers` and reset their values to start a new search
+        process.
 
         Args:
             model_states: States that define the initial state of the environment.
@@ -531,5 +506,39 @@ class BaseSwarm:
     def step_walkers(self):
         """Make the walkers undergo a random perturbation process in the swarm
         Environment.
+        """
+        raise NotImplementedError
+
+    def _init_swarm(
+        self,
+        env_callable: Callable,
+        model_callable: Callable,
+        walkers_callable: Callable,
+        n_walkers: int,
+        reward_scale: float = 1.0,
+        dist_scale: float = 1.0,
+        *args,
+        **kwargs
+    ):
+        """
+        Initialize and set up all the necessary internal variables to run the swarm.
+        This process involves instantiating the Swarm, the Environment and the
+        model.
+
+        Args:
+            env_callable: A function that returns an instance of an
+                :class:`fragile.Environment`.
+            model_callable: A function that returns an instance of a
+                :class:`fragile.Model`.
+            walkers_callable: A function that returns an instance of
+                :class:`fragile.Walkers`.
+            n_walkers: Number of walkers of the swarm.
+            reward_scale: Virtual reward exponent for the reward score.
+            dist_scale:Virtual reward exponent for the distance score.
+            *args: Additional args passed to init_swarm.
+            **kwargs: Additional kwargs passed to init_swarm.
+
+        Returns:
+            None
         """
         raise NotImplementedError

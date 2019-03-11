@@ -21,10 +21,11 @@ class Swarm(BaseSwarm):
     def walkers(self):
         return self._walkers
 
-    def init_swarm(
+    def _init_swarm(
         self,
         env_callable: Callable,
         model_callabe: Callable,
+        walkers_callable: Callable,
         n_walkers: int,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
@@ -36,7 +37,7 @@ class Swarm(BaseSwarm):
 
         model_params = self._model.get_params_dict()
         env_params = self._env.get_params_dict()
-        self._walkers = Walkers(
+        self._walkers = walkers_callable(
             env_state_params=env_params,
             model_state_params=model_params,
             n_walkers=n_walkers,

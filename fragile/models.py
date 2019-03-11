@@ -28,20 +28,54 @@ class RandomDiscrete(BaseModel):
         return self._n_actions
 
     def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, BaseStates]:
+        """
+
+        Args:
+            batch_size:
+            *args:
+            **kwargs:
+
+        Returns:
+
+        """
 
         model_states = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
         actions = np.random.randint(0, self.n_actions, size=batch_size)
         model_states.update(dt=np.ones(batch_size), actions=actions, init_actions=actions)
         return actions, model_states
 
-    def predict(self, env_states=None, batch_size: int = None, model_states=None) -> Tuple:
+    def predict(
+        self,
+        env_states: BaseStates = None,
+        batch_size: int = None,
+        model_states: BaseStates = None,
+    ) -> Tuple:
+        """
+
+        Args:
+            env_states:
+            batch_size:
+            model_states:
+
+        Returns:
+
+        """
         if batch_size is None and env_states is None:
             raise ValueError("env_states and batch_size cannot be both None.")
         size = len(env_states.rewards) if env_states is not None else batch_size
         actions = np.random.randint(0, self.n_actions, size=size)
         return actions, model_states
 
-    def calculate_dt(self, model_states, env_states) -> Tuple:
+    def calculate_dt(self, model_states: BaseStates, env_states: BaseStates) -> Tuple:
+        """
+
+        Args:
+            model_states:
+            env_states:
+
+        Returns:
+
+        """
         dt = np.random.normal(
             loc=self.mean_dt, scale=self.std_dt, size=tuple(env_states.rewards.shape)
         )

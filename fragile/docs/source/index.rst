@@ -10,6 +10,7 @@ Welcome to Fragile's documentation!
    :maxdepth: 4
    :caption: Contents:
 
+   classes.rst
 
 
 Indices and tables
@@ -19,7 +20,5 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-Base classes
-============
-.. automodule:: fragile.base_classes
-   :members:
+
+
