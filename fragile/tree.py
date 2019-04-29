@@ -1,7 +1,9 @@
-import torch
-import numpy as np
-from typing import List
 from collections import defaultdict
+from typing import List
+
+import numpy as np
+import torch
+
 from fragile.base_classes import BaseStates
 
 

@@ -1,9 +1,10 @@
 import numpy as np
-import torch
 from plangym.env import Environment
+import torch
+
 from fragile.base_classes import BaseEnvironment
 from fragile.states import BaseStates, States
-from fragile.utils import to_numpy, device
+from fragile.utils import to_numpy
 
 
 class DiscreteEnv(BaseEnvironment):

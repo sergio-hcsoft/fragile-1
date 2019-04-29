@@ -1,7 +1,8 @@
 import pytest
-from fragile.tests.test_env import plangym_env, create_env
-from fragile import DiscreteEnv, Swarm, BaseEnvironment, Walkers
+
+from fragile import BaseEnvironment, DiscreteEnv, Swarm, Walkers
 from fragile.models import RandomDiscrete
+from fragile.tests.test_env import create_env, plangym_env  # noqa: F401
 
 
 @pytest.fixture(scope="module")
@@ -48,8 +49,11 @@ class TestSwarm:
         swarm.run_swarm()
 
     def test_score_gets_higher(self, swarm):
+        swarm.walkers.reset()
         swarm.init_walkers()
         swarm.walkers.max_iters = 500
         swarm.run_swarm()
         reward = swarm.walkers.cum_rewards.max().item()
-        assert reward > 100, "Iters: {}".format(swarm.walkers.n_iters)
+        assert reward > 100, "Iters: {}, rewards: {}".format(
+            swarm.walkers.n_iters, swarm.walkers.cum_rewards
+        )

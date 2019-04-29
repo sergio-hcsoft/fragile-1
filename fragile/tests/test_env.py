@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
 from plangym import AtariEnvironment, ClassicControl
+import pytest
+
 from fragile.env import DiscreteEnv
 from fragile.states import BaseStates
 
@@ -10,12 +11,12 @@ def create_env(name="classic"):
     def atari_env():
         env = AtariEnvironment(name="MsPacman-v0", clone_seeds=True, autoreset=True)
 
-        _ = env.reset()
+        env.reset()
         return env
 
     def classic_control_env():
         env = ClassicControl()
-        _ = env.reset()
+        env.reset()
         return env
 
     if name.lower() == "atari":
@@ -27,7 +28,7 @@ def create_env(name="classic"):
 @pytest.fixture(scope="module")
 def plangym_env(create_env):
     env = create_env()
-    _ = env.reset()
+    env.reset()
     return env
 
 

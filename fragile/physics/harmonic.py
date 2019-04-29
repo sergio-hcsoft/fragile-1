@@ -1,9 +1,10 @@
-import torch
-import numpy as np
 from typing import Tuple
+
+import torch
 import torch.distributions as tdist
-from fragile.base_classes import BaseModel
-from fragile.base_classes import BaseEnvironment, BaseStates
+import numpy as np
+
+from fragile.base_classes import BaseEnvironment, BaseModel, BaseStates
 from fragile.states import States
 from fragile.utils import device
 
@@ -118,9 +119,7 @@ class HarmonicOscillator(BaseEnvironment):
         # .view(-1, self.n_actions)
         delta_pos = new_position - old_pos
 
-        new_pot_e = (
-            0.5 * self.k * (new_position ** 2).sum(dim=1).view(-1, 1)
-        )
+        new_pot_e = 0.5 * self.k * (new_position ** 2).sum(dim=1).view(-1, 1)
         new_kin_e = (new_velocity ** 2).sum(dim=1).view(-1, 1) * self.m
         new_energy = new_kin_e + new_pot_e
 

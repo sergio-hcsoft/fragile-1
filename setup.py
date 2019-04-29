@@ -10,13 +10,8 @@ setup(
     author_email="guillem.db@gmail.com",
     url="https://github.com/Guillemdb/fragile",
     download_url="https://github.com/Guillemdb/fragile",
-    keywords=[
-        "reinforcement learning",
-        "artificial intelligence",
-        "monte carlo",
-        "planning",
-    ],
-    install_requires=["torch", "torchvision", "numpy", "Pillow-simd", "plangym"],
+    keywords=["reinforcement learning", "artificial intelligence", "monte carlo", "planning"],
+    install_requires=["torch", "torchvision", "numpy", "Pillow-simd", "plangym", "hypothesis"],
     package_data={"": ["README.md"]},
     classifiers=[
         "Development Status :: 3 - Alpha",

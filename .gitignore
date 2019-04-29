@@ -114,3 +114,6 @@ ENV/
 
 # CI
 .ci
+
+# Notebooks by default are ignored
+.ipynb

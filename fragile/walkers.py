@@ -1,9 +1,10 @@
-import torch
 import numpy as np
-from fragile.states import BaseStates, States
+import torch
+
 from fragile.base_classes import BaseWalkers
+from fragile.states import BaseStates, States
 from fragile.utils import relativize, statistics_from_array, to_tensor
-import line_profiler
+
 
 # from line_profiler import profile
 
@@ -215,16 +216,15 @@ class Walkers(BaseWalkers):
     def update_states(self, env_states: BaseStates = None, model_states: BaseStates = None):
         if isinstance(env_states, BaseStates):
             self._env_states.update(env_states)
-            if hasattr(env_states, "rewards"):
-                self.accumulate_rewards(env_states.rewards)
+        if hasattr(env_states, "rewards"):
+            self.accumulate_rewards(env_states.rewards)
         if isinstance(model_states, BaseStates):
             self._model_states.update(model_states)
 
     def accumulate_rewards(self, rewards: [torch.Tensor, np.ndarray]):
         if isinstance(rewards, np.ndarray):
             rewards = torch.from_numpy(rewards)
-        self.cum_rewards = rewards.to(self.device).float()
-        # self.cum_rewards = self.cum_rewards + rewards.to(self.device).float()
+        self.cum_rewards = self.cum_rewards + rewards.to(self.device).float()
 
     def update_ids(self, walkers_ids: np.ndarray):
         self.id_walkers[:] = torch.from_numpy(walkers_ids).to(self.device)

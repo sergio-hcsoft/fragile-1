@@ -4,3 +4,5 @@ numpy>=1.16.2
 torch >= 1.0
 pytest >= 4.0.1
 torchvision
+hypothesis
+-e git+https://github.com/Guillemdb/plangym.git#egg=plangym

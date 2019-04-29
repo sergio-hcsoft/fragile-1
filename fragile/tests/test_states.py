@@ -1,7 +1,8 @@
+import numpy as np
 import pytest
 import torch
-import numpy as np
-from fragile.states import States, BaseStates
+
+from fragile.states import States
 
 
 @pytest.fixture()

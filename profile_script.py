@@ -1,8 +1,9 @@
 from plangym import AtariEnvironment, ParallelEnvironment
+
 from fragile.env import DiscreteEnv
 from fragile.models import RandomDiscrete
-from fragile.swarm import States, Swarm
-import numpy as np
+from fragile.states import States
+from fragile.swarm import Swarm
 
 
 if __name__ == "__main__":
@@ -33,7 +34,8 @@ if __name__ == "__main__":
     )
     from IPython.core.display import clear_output
 
-    def run_swarm(self, model_states: "States" = None, env_states: "States" = None):
+    def run_swarm(self, model_states: States = None, env_states: States = None):
+        """Make magic happen."""
         self.init_walkers(model_states=model_states, env_states=env_states)
         i = 0
         while not self.walkers.calculate_end_cond():

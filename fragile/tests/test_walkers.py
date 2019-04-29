@@ -1,9 +1,10 @@
+import numpy as np
 import pytest
 import torch
-import numpy as np
+
 from fragile.states import BaseStates
-from fragile.walkers import Walkers
 from fragile.utils import relativize
+from fragile.walkers import Walkers
 
 
 @pytest.fixture(scope="module")
