@@ -223,7 +223,8 @@ class Walkers(BaseWalkers):
     def accumulate_rewards(self, rewards: [torch.Tensor, np.ndarray]):
         if isinstance(rewards, np.ndarray):
             rewards = torch.from_numpy(rewards)
-        self.cum_rewards = self.cum_rewards + rewards.to(self.device).float()
+        self.cum_rewards = rewards.to(self.device).float()
+        # self.cum_rewards = self.cum_rewards + rewards.to(self.device).float()
 
     def update_ids(self, walkers_ids: np.ndarray):
         self.id_walkers[:] = torch.from_numpy(walkers_ids).to(self.device)

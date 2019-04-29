@@ -58,3 +58,7 @@ class States(BaseStates):
 
     def get_params_dict(self):
         pass
+
+    def copy(self) -> "States":
+        param_dict = {str(name): val.clone() for name, val in self.items()}
+        return States(n_walkers=self.n, **param_dict)

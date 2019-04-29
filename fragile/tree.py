@@ -63,8 +63,8 @@ class Tree:
         node = Node(
             node_id=node_id,
             parent_id=parent_id,
-            env_state=env_state,
-            model_state=model_state,
+            env_state=env_state.copy(),
+            model_state=model_state.copy(),
             reward=reward,
         )
         self.nodes[node_id] = node

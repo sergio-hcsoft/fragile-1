@@ -229,8 +229,8 @@ class BaseStates:
 class BaseEnvironment:
     """
     The Environment is in charge of stepping the walkers, acting as an state
-    transition function. For every different problem a new Environment need to
-    be implemented following the BaseEnvironment interface
+    transition function. For every different problem a new Environment needs to
+    be implemented following the BaseEnvironment interface.
 
     """
 
@@ -248,7 +248,8 @@ class BaseEnvironment:
             **kwargs:
 
         Returns:
-
+            BaseStates representing the next state of the environment and all
+            the needed information.
         """
         raise NotImplementedError
 
