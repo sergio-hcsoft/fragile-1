@@ -1,11 +1,11 @@
-import torch
 from typing import Callable
-from fragile.states import BaseStates
-from fragile.walkers import Walkers
-from fragile.tree import Tree
-from fragile.base_classes import BaseSwarm, BaseStates
+
+import torch
 
 # from line_profiler import profile
+
+from fragile.base_classes import BaseStates, BaseSwarm
+from fragile.tree import Tree
 
 
 class Swarm(BaseSwarm):
@@ -109,7 +109,6 @@ class Swarm(BaseSwarm):
         model_states = self.walkers.get_model_states()
         init_actions = model_states.get("init_actions")
         entropy = self.walkers.get_entropy()
-        sampled_actions = init_actions.unique()
 
         actions_dist = torch.zeros((self.model.n_actions, 1))
         for action in init_actions.unique():

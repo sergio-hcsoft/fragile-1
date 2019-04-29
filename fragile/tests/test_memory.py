@@ -1,11 +1,13 @@
-import pytest
 import numpy as np
-from fragile.memory import Memory
+import pytest
+
 from fragile.states import BaseStates
 
 
 @pytest.fixture()
 def memory():
+    from fragile.memory import Memory
+
     return Memory(10, 100, 1)
 
 

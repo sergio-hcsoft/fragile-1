@@ -1,9 +1,10 @@
-import pytest
-import numpy as np
-from fragile.utils import calculate_clone_np, calculate_virtual_reward_np, fai_iteration_np
 from hypothesis import given
-import hypothesis.strategies as st
 from hypothesis.extra.numpy import arrays
+import hypothesis.strategies as st
+import numpy as np
+
+
+from fragile.utils import calculate_clone_np, calculate_virtual_reward_np, fai_iteration_np
 
 
 @given(st.integers(), st.integers())

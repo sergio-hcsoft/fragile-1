@@ -1,10 +1,10 @@
-import torch
-import sklearn
 import numpy as np
-from fragile.states import BaseStates
+import sklearn
 from sklearn.neighbors import NearestNeighbors
-from fragile.utils import device
-from fragile.utils import relativize_np, fai_iteration_np
+import torch
+
+from fragile.states import BaseStates
+from fragile.utils import fai_iteration_np
 
 
 class Memory:
@@ -40,9 +40,8 @@ class Memory:
         observs = states.observs if states is not None else observs
         if not isinstance(observs, (np.ndarray, list, torch.Tensor)):
             raise ValueError(
-                "observs must be of type torch.Tensor, np.ndarray of list,but got {} instead".format(
-                    type(observs)
-                )
+                "observs must be of type torch.Tensor,"
+                " np.ndarray of list,but got {} instead".format(type(observs))
             )
 
         observs = (

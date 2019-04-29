@@ -1,8 +1,10 @@
-import torch
-import numpy as np
 from typing import Tuple
-from fragile.states import BaseStates, States
+
+import numpy as np
+import torch
+
 from fragile.base_classes import BaseModel
+from fragile.states import BaseStates, States
 
 
 class RandomDiscrete(BaseModel):

@@ -1,6 +1,7 @@
-import torch
+from typing import Callable, Generator, List, Tuple
+
 import numpy as np
-from typing import Callable, List, Generator, Tuple
+import torch
 
 
 class BaseStates:

@@ -1,8 +1,9 @@
-import pytest
 import numpy as np
-from fragile.tests.test_walkers import walkers_factory
-from fragile.tests.test_swarm import swarm, environment_fact, plangym_env, create_env
-from fragile.states import BaseStates, States
+import pytest
+
+from fragile.states import BaseStates
+from fragile.tests.test_swarm import create_env, environment_fact, plangym_env, swarm  # noqa: F401
+from fragile.tests.test_walkers import walkers_factory  # noqa: F401
 from fragile.tree import Node, Tree
 
 

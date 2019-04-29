@@ -1,10 +1,10 @@
 current_dir = $(shell pwd)
 
-PROJECT = plangym
+PROJECT = fragile
 
 .PHONY: check
 check:
-	!(grep -R /tmp plangym/tests)
+	!(grep -R /tmp fragile/tests)
 	flake8 --count
 	pylint plangym
 	black --check .
@@ -17,9 +17,9 @@ test:
 .PHONY: docker-test
 docker-test:
 	find -name "*.pyc" -delete
-	docker run --rm -it --network host -w /plangym --entrypoint python3 plangym -m pytest
+	docker run --rm -it --network host -w /fragile --entrypoint python3 fragile -m pytest
 
 
 .PHONY: docker-build
 docker-build:
-	docker build -t plangym .
+	docker build -t fragile .

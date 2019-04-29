@@ -1,6 +1,8 @@
 import copy
-import torch
+
 import numpy as np
+import torch
+
 from fragile.base_classes import BaseStates
 
 device_states = "cuda" if torch.cuda.is_available() else "cpu"

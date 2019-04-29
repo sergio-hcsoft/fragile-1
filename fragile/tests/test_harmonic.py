@@ -1,8 +1,8 @@
 import pytest
 import torch
 
+from fragile.physics.harmonic import GausianPerturbator, HarmonicOscillator
 from fragile.states import BaseStates
-from fragile.physics.harmonic import HarmonicOscillator, GausianPerturbator
 
 
 @pytest.fixture(scope="module")
