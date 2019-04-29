@@ -2,23 +2,22 @@ from setuptools import setup
 
 
 setup(
-    name="plangym",
-    description="OpenAI gym environments adapted for planning.",
+    name="fragile",
+    description="Fractal AI utilities and algorithms.",
     version="0.0.1a",
-    license="MIT",
+    license="Propietary",
     author="Guillem Duran Ballester",
     author_email="guillem.db@gmail.com",
-    url="https://github.com/Guillemdb/plangym",
-    download_url="https://github.com/Guillemdb/plangym",
+    url="https://github.com/Guillemdb/fragile",
+    download_url="https://github.com/Guillemdb/fragile",
     keywords=[
-        "gym",
         "reinforcement learning",
         "artificial intelligence",
         "monte carlo",
         "planning",
     ],
-    install_requires=["gym", "numpy", "Pillow-simd", "plangym"],
-    package_data={"": ["LICENSE", "README.md"]},
+    install_requires=["torch", "torchvision", "numpy", "Pillow-simd", "plangym"],
+    package_data={"": ["README.md"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
