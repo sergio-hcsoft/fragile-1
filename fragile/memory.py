@@ -1,9 +1,10 @@
 import torch
+import sklearn
 import numpy as np
 from fragile.states import BaseStates
 from sklearn.neighbors import NearestNeighbors
 from fragile.utils import device
-from fragile.utils import relativize_np
+from fragile.utils import relativize_np, fai_iteration_np
 
 
 class Memory:
@@ -11,8 +12,8 @@ class Memory:
         self.min_size = (min_size,)
         self.max_size = max_size
         self.radius = radius
-        self._score = None
-        self._observs = None
+        self._scores = np.empty(0)
+        self._observs = np.empty(0)
         self.kmeans = NearestNeighbors(*args, **kwargs)
 
     def __len__(self):
@@ -20,8 +21,9 @@ class Memory:
             return 0
         return len(self._observs)
 
-    def score(self):
-        return self._score
+    @property
+    def scores(self):
+        return self._scores
 
     @property
     def observs(self):
@@ -59,13 +61,21 @@ class Memory:
 
     def _init_memory(self, observs: np.ndarray):
         self._observs = observs
-        self._score = np.ones(len(observs), dtype=np.float32)
+        self._scores = np.ones(len(observs), dtype=np.float32)
         self.kmeans.fit(self.observs)
 
     def _process_scores(self, observs: np.ndarray) -> np.ndarray:
-        distances, indices = self.kmeans.kneighbors(observs.reshape(len(observs), -1))
+        try:
+            distances, indices = self.kmeans.kneighbors(observs.reshape(len(observs), -1))
+        except sklearn.exceptions.NotFittedError:
+            self.kmeans.fit(observs)
+            distances, indices = self.kmeans.kneighbors(observs.reshape(len(observs), -1))
         return distances
 
     def _add_to_memory(self, observs: np.ndarray):
         scores = np.ones(len(observs), dtype=np.float32)
-        return observs
+        self._observs = np.concatenate([self.observs, observs])
+        self._scores = np.concatenate((self.scores, scores))
+
+    def empty_memory(self):
+        compas_ix, will_clone = fai_iteration_np(self.observs, self.scores)
