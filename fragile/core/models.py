@@ -1,5 +1,6 @@
 from typing import Tuple
 
+from gym.spaces import Box
 import numpy as np
 import torch
 
@@ -66,6 +67,108 @@ class RandomDiscrete(BaseModel):
             raise ValueError("env_states and batch_size cannot be both None.")
         size = len(env_states.rewards) if env_states is not None else batch_size
         actions = np.random.randint(0, self.n_actions, size=size)
+        return actions, model_states
+
+    def calculate_dt(
+        self, model_states: BaseStates, env_states: BaseStates
+    ) -> Tuple[np.ndarray, BaseStates]:
+        """
+
+        Args:
+            model_states:
+            env_states:
+
+        Returns:
+            Tuple containing a tensor with the sampled actions and the new model states variable.
+        """
+        dt = np.random.normal(
+            loc=self.mean_dt, scale=self.std_dt, size=tuple(env_states.rewards.shape)
+        )
+        dt = np.clip(dt, self.min_dt, self.max_dt).astype(int)
+        model_states.update(dt=dt)
+        return dt, model_states
+
+
+class RandomContinous(BaseModel):
+    def __init__(
+        self, low, high, shape=None, min_dt=1, max_dt=10, mean_dt=4, std_dt=1, *args, **kwargs
+    ):
+        super(RandomContinous, self).__init__(*args, **kwargs)
+        shape = shape if not isinstance(shape, list) else tuple(shape)
+        self._n_dims = shape
+        self.min_dt = min_dt
+        self.max_dt = max_dt
+        self.mean_dt = mean_dt
+        self.std_dt = std_dt
+        self.np_random = np.random.RandomState()
+        self.bounds = Box(low=low, high=high, shape=shape)
+
+    @property
+    def shape(self):
+        return self.bounds.shape
+
+    @property
+    def n_dims(self):
+        return self._n_dims[0] if isinstance(self._n_dims, tuple) else self.n_dims
+
+    def seed(self, seed):
+        self.np_random.seed(seed)
+
+    def get_params_dict(self) -> dict:
+        params = {
+            "actions": {"sizes": self.shape, "dtype": torch.int},
+            "init_actions": {"sizes": self.shape, "dtype": torch.int},
+            "dt": {"sizes": tuple([self.n_dims]), "dtype": torch.int},
+        }
+        return params
+
+    def sample(self, batch_size: int = 1):
+        high = (
+            self.bounds.high
+            if self.bounds.dtype.kind == "f"
+            else self.bounds.high.astype("int64") + 1
+        )
+        return self.np_random.uniform(
+            low=self.bounds.low, high=high, size=tuple([batch_size]) + self.shape
+        ).astype(self.bounds.dtype)
+
+    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, BaseStates]:
+        """
+
+        Args:
+            batch_size:
+            *args:
+            **kwargs:
+
+        Returns:
+            Tuple containing a tensor with the sampled actions and the new model states variable.
+        """
+
+        model_states = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
+        actions = self.sample(batch_size=batch_size)
+        model_states.update(dt=np.ones(batch_size), actions=actions, init_actions=actions)
+        return actions, model_states
+
+    def predict(
+        self,
+        env_states: BaseStates = None,
+        batch_size: int = None,
+        model_states: BaseStates = None,
+    ) -> Tuple[np.ndarray, BaseStates]:
+        """
+
+        Args:
+            env_states:
+            batch_size:
+            model_states:
+
+        Returns:
+            Tuple containing a tensor with the sampled actions and the new model states variable.
+        """
+        if batch_size is None and env_states is None:
+            raise ValueError("env_states and batch_size cannot be both None.")
+        size = len(env_states.rewards) if env_states is not None else batch_size
+        actions = self.sample(batch_size=size)
         return actions, model_states
 
     def calculate_dt(
