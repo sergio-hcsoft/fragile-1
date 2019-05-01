@@ -38,7 +38,7 @@ class RandomDiscrete(BaseModel):
             **kwargs:
 
         Returns:
-
+            Tuple containing a tensor with the sampled actions and the new model states variable.
         """
 
         model_states = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
@@ -51,7 +51,7 @@ class RandomDiscrete(BaseModel):
         env_states: BaseStates = None,
         batch_size: int = None,
         model_states: BaseStates = None,
-    ) -> Tuple:
+    ) -> Tuple[np.ndarray, BaseStates]:
         """
 
         Args:
@@ -60,7 +60,7 @@ class RandomDiscrete(BaseModel):
             model_states:
 
         Returns:
-
+            Tuple containing a tensor with the sampled actions and the new model states variable.
         """
         if batch_size is None and env_states is None:
             raise ValueError("env_states and batch_size cannot be both None.")
@@ -68,7 +68,9 @@ class RandomDiscrete(BaseModel):
         actions = np.random.randint(0, self.n_actions, size=size)
         return actions, model_states
 
-    def calculate_dt(self, model_states: BaseStates, env_states: BaseStates) -> Tuple:
+    def calculate_dt(
+        self, model_states: BaseStates, env_states: BaseStates
+    ) -> Tuple[np.ndarray, BaseStates]:
         """
 
         Args:
@@ -76,7 +78,7 @@ class RandomDiscrete(BaseModel):
             env_states:
 
         Returns:
-
+            Tuple containing a tensor with the sampled actions and the new model states variable.
         """
         dt = np.random.normal(
             loc=self.mean_dt, scale=self.std_dt, size=tuple(env_states.rewards.shape)

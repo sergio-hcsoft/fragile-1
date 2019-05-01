@@ -4,21 +4,21 @@ import torch
 
 # from line_profiler import profile
 
-from fragile.base_classes import BaseStates, BaseSwarm
+from fragile.base_classes import BaseEnvironment, BaseModel, BaseStates, BaseSwarm, BaseWalkers
 from fragile.tree import Tree
 
 
 class Swarm(BaseSwarm):
     @property
-    def env(self):
+    def env(self) -> BaseEnvironment:
         return self._env
 
     @property
-    def model(self):
+    def model(self) -> BaseModel:
         return self._model
 
     @property
-    def walkers(self):
+    def walkers(self) -> BaseWalkers:
         return self._walkers
 
     def _init_swarm(
@@ -32,12 +32,12 @@ class Swarm(BaseSwarm):
         *args,
         **kwargs
     ):
-        self._env = env_callable()
-        self._model = model_callabe(self._env.n_actions)
+        self._env: BaseEnvironment = env_callable()
+        self._model: BaseModel = model_callabe(self._env.n_actions)
 
         model_params = self._model.get_params_dict()
         env_params = self._env.get_params_dict()
-        self._walkers = walkers_callable(
+        self._walkers: BaseWalkers = walkers_callable(
             env_state_params=env_params,
             model_state_params=model_params,
             n_walkers=n_walkers,
@@ -69,7 +69,7 @@ class Swarm(BaseSwarm):
     # @profile
     def run_swarm(self, model_states: BaseStates = None, env_states: BaseStates = None):
         self.init_walkers(model_states=model_states, env_states=env_states)
-        while not self.walkers.calculate_end_cond():
+        while not self.walkers.calc_end_condition():
             self.step_walkers()
             old_ids, new_ids = self.walkers.balance()
             self.prune_tree(old_ids=old_ids, new_ids=new_ids)

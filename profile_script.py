@@ -38,7 +38,7 @@ if __name__ == "__main__":
         """Make magic happen."""
         self.init_walkers(model_states=model_states, env_states=env_states)
         i = 0
-        while not self.walkers.calculate_end_cond():
+        while not self.walkers.calc_end_condition():
             self.step_walkers()
             self.walkers.balance()
             if i % 2500000 == 0:

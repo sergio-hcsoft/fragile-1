@@ -88,9 +88,9 @@ class TestWalkers:
 
     def test_calculate_end_condition(self, walkers):
         walkers.update_end_condition(np.ones(10))
-        assert walkers.calculate_end_cond()
+        assert walkers.calc_end_condition()
         walkers.update_end_condition(np.zeros(10))
-        assert not walkers.calculate_end_cond()
+        assert not walkers.calc_end_condition()
 
     def test_calculate_distance(self, walkers):
         # TODO: check properly the calculations

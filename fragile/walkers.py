@@ -148,7 +148,7 @@ class Walkers(BaseWalkers):
             ends = torch.from_numpy(ends.astype(np.uint8)).to(device_walkers)
         self.end_condition = ends
 
-    def calculate_end_cond(self) -> bool:
+    def calc_end_condition(self) -> bool:
         all_dead = np.array(self.end_condition.cpu()).sum() == self.n
         max_iters = self.n_iters > self.max_iters
         self.n_iters += 1

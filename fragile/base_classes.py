@@ -1,4 +1,4 @@
-from typing import Callable, Generator, List, Tuple
+from typing import Callable, Generator, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -29,6 +29,7 @@ class BaseStates:
     Args:
         n_walkers: The number of items in the first dimension of the tensors.
         state_dict: Dictionary defining the attributes of the tensors.
+        device: Target device where the tensors will be placed.
         **kwargs: The name-tensor pairs can also be specified as kwargs.
     """
 
@@ -245,8 +246,8 @@ class BaseEnvironment:
             actions: Batch of actions to be applied to the environment.
             env_states: States representing a batch of states to be set in the
                 environment.
-            *args:
-            **kwargs:
+            *args: Additional arguments.
+            **kwargs: Additional keyword arguments.
 
         Returns:
             BaseStates representing the next state of the environment and all
@@ -329,7 +330,7 @@ class BaseModel:
 
     def predict(
         self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, torch.Tensor, BaseStates]:
+    ) -> Tuple[Union[np.ndarray, torch.Tensor, BaseStates]]:
         """
         Calculates the next action that needs to be taken at a given state.
 
@@ -380,6 +381,7 @@ class BaseWalkers:
         self.model_state_params = model_state_params
         self.env_state_params = env_state_params
         self.n_walkers = n_walkers
+        self.id_walkers = None
         self.death_cond = None
 
     @property
@@ -397,6 +399,18 @@ class BaseWalkers:
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
+    def get_env_states(self) -> BaseStates:
+        return self.env_states
+
+    def get_model_states(self) -> BaseStates:
+        return self.model_states
+
+    def get_observs(self) -> torch.Tensor:
+        raise NotImplementedError
+
+    def update_states(self):
+        raise NotImplementedError
+
     def reset(self, *args, **kwargs):
         """Restart all the variables needed to perform the fractal evolution process."""
         raise NotImplementedError
@@ -409,14 +423,26 @@ class BaseWalkers:
         """Apply the virtual reward formula to account for all the different goal scores."""
         raise NotImplementedError
 
+    def calc_end_condition(self) -> bool:
+        """Return a boolean that controls the stopping of the iteration loop. If True,
+        the iteration process stops."""
+        raise NotImplementedError
+
     def update_clone_probs(self, clone_ix, will_clone):
         """Calculate the clone probability of the walkers."""
+        raise NotImplementedError
+
+    def update_end_condition(self, ends: [torch.Tensor, np.ndarray]):
+        """Update the boundary conditions for the walkers."""
         raise NotImplementedError
 
     def get_alive_compas(self) -> [torch.Tensor, np.ndarray]:
         """Return an array of indexes corresponding to an alive walker chosen
          at random.
         """
+        raise NotImplementedError
+
+    def balance(self):
         raise NotImplementedError
 
 
@@ -429,6 +455,7 @@ class BaseSwarm:
     Args:
         env: A function that returns an instance of an Environment.
         model: A function that returns an instance of a Model.
+        walkers: A callable that returns an instance of BaseWalkers.
         n_walkers: Number of walkers of the swarm.
         reward_scale: Virtual reward exponent for the reward score.
         dist_scale:Virtual reward exponent for the distance score.
