@@ -4,7 +4,13 @@ import torch
 
 # from line_profiler import profile
 
-from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseStates, BaseSwarm, BaseWalkers
+from fragile.core.base_classes import (
+    BaseEnvironment,
+    BaseModel,
+    BaseStates,
+    BaseSwarm,
+    BaseWalkers,
+)
 from fragile.core.tree import Tree
 
 
