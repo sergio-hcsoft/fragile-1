@@ -2,8 +2,8 @@ import numpy as np
 from plangym import AtariEnvironment, ClassicControl
 import pytest
 
-from fragile.env import DiscreteEnv
-from fragile.states import BaseStates
+from fragile.core.base_classes import BaseStates
+from fragile.core.env import DiscreteEnv
 
 
 @pytest.fixture(scope="module")

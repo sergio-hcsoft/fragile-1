@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 import torch
 
-from fragile.base_classes import BaseStates
+from fragile.core.base_classes import BaseStates
 
 
 class Node:

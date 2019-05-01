@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
 
-from fragile.states import BaseStates
+from fragile.core.base_classes import BaseStates
 
 
 @pytest.fixture()
 def memory():
-    from fragile.memory import Memory
+    from fragile.core.memory import Memory
 
     return Memory(10, 100, 1)
 

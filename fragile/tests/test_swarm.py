@@ -1,7 +1,10 @@
 import pytest
 
-from fragile import BaseEnvironment, DiscreteEnv, Swarm, Walkers
-from fragile.models import RandomDiscrete
+from fragile.core.base_classes import BaseEnvironment
+from fragile.core.env import DiscreteEnv
+from fragile.core.models import RandomDiscrete
+from fragile.core.swarm import Swarm
+from fragile.core.walkers import Walkers
 from fragile.tests.test_env import create_env, plangym_env  # noqa: F401
 
 

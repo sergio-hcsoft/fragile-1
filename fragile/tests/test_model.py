@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from fragile.models import RandomDiscrete
-from fragile.states import BaseStates
+from fragile.core.base_classes import BaseStates
+from fragile.core.models import RandomDiscrete
 
 
 @pytest.fixture()

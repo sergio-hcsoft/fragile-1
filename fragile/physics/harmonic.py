@@ -4,9 +4,9 @@ import torch
 import torch.distributions as tdist
 import numpy as np
 
-from fragile.base_classes import BaseEnvironment, BaseModel, BaseStates
-from fragile.states import States
-from fragile.utils import device
+from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseStates
+from fragile.core.states import States
+from fragile.core.utils import device
 
 
 class HarmonicOscillator(BaseEnvironment):

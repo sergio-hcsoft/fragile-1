@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from fragile.states import BaseStates
+from fragile.core.base_classes import BaseStates
+from fragile.core.tree import Node, Tree
 from fragile.tests.test_swarm import create_env, environment_fact, plangym_env, swarm  # noqa: F401
 from fragile.tests.test_walkers import walkers_factory  # noqa: F401
-from fragile.tree import Node, Tree
 
 
 @pytest.fixture(scope="module")

@@ -1,9 +1,9 @@
 import numpy as np
 import torch
 
-from fragile.base_classes import BaseWalkers
-from fragile.states import BaseStates, States
-from fragile.utils import relativize, statistics_from_array, to_tensor
+from fragile.core.base_classes import BaseWalkers
+from fragile.core.states import BaseStates, States
+from fragile.core.utils import relativize, statistics_from_array, to_tensor
 
 
 # from line_profiler import profile

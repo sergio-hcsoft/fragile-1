@@ -3,8 +3,8 @@ import sklearn
 from sklearn.neighbors import NearestNeighbors
 import torch
 
-from fragile.states import BaseStates
-from fragile.utils import fai_iteration_np
+from fragile.core.states import BaseStates
+from fragile.core.utils import fai_iteration_np
 
 
 class Memory:

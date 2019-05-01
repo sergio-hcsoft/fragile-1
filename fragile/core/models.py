@@ -3,8 +3,8 @@ from typing import Tuple
 import numpy as np
 import torch
 
-from fragile.base_classes import BaseModel
-from fragile.states import BaseStates, States
+from fragile.core.base_classes import BaseModel
+from fragile.core.states import BaseStates, States
 
 
 class RandomDiscrete(BaseModel):

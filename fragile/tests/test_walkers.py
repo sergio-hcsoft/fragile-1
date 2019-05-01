@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 import torch
 
-from fragile.states import BaseStates
-from fragile.utils import relativize
-from fragile.walkers import Walkers
+from fragile.core.base_classes import BaseStates
+from fragile.core.utils import relativize
+from fragile.core.walkers import Walkers
 
 
 @pytest.fixture(scope="module")

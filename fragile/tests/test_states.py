@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 
-from fragile.states import States
+from fragile.core.states import States
 
 
 @pytest.fixture()
