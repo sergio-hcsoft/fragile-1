@@ -5,13 +5,26 @@ import numpy as np
 import torch
 
 from fragile.core.base_classes import BaseModel
+from fragile.core.env import DiscreteEnv
 from fragile.core.states import BaseStates, States
 
 
 class RandomDiscrete(BaseModel):
-    def __init__(self, n_actions: int, min_dt=1, max_dt=10, mean_dt=4, std_dt=1, *args, **kwargs):
+    def __init__(
+        self,
+        env: DiscreteEnv = None,
+        n_actions: int = None,
+        min_dt=1,
+        max_dt=10,
+        mean_dt=4,
+        std_dt=1,
+        *args,
+        **kwargs
+    ):
         super(RandomDiscrete, self).__init__(*args, **kwargs)
-        self._n_actions = n_actions
+        if n_actions is None and env is None:
+            raise ValueError("Env and n_actions cannot be both None.")
+        self._n_actions = env.n_actions if n_actions is None else n_actions
         self.min_dt = min_dt
         self.max_dt = max_dt
         self.mean_dt = mean_dt
@@ -91,10 +104,21 @@ class RandomDiscrete(BaseModel):
 
 class RandomContinous(BaseModel):
     def __init__(
-        self, low, high, shape=None, min_dt=1, max_dt=10, mean_dt=4, std_dt=1, *args, **kwargs
+        self,
+        low,
+        high,
+        env=None,
+        shape=None,
+        min_dt=1,
+        max_dt=10,
+        mean_dt=4,
+        std_dt=1,
+        *args,
+        **kwargs
     ):
         super(RandomContinous, self).__init__(*args, **kwargs)
-        shape = shape if not isinstance(shape, list) else tuple(shape)
+        if shape is not None:
+            shape = shape if not isinstance(shape, list) else tuple(shape)
         self._n_dims = shape
         self.min_dt = min_dt
         self.max_dt = max_dt
@@ -109,7 +133,7 @@ class RandomContinous(BaseModel):
 
     @property
     def n_dims(self):
-        return self._n_dims[0] if isinstance(self._n_dims, tuple) else self.n_dims
+        return self._n_dims[0] if isinstance(self._n_dims, tuple) else self._n_dims
 
     def seed(self, seed):
         self.np_random.seed(seed)

@@ -375,7 +375,13 @@ class BaseWalkers:
     """
 
     def __init__(
-        self, n_walkers: int, env_state_params: dict, model_state_params: dict, *args, **kwargs
+        self,
+        n_walkers: int,
+        env_state_params: dict,
+        model_state_params: dict,
+        accumulate_rewards: bool = True,
+        *args,
+        **kwargs
     ):
 
         self.model_state_params = model_state_params
@@ -383,6 +389,7 @@ class BaseWalkers:
         self.n_walkers = n_walkers
         self.id_walkers = None
         self.death_cond = None
+        self._accumulate_rewards = accumulate_rewards
 
     @property
     def n(self) -> int:

@@ -23,6 +23,7 @@ class Walkers(BaseWalkers):
         dist_scale: float = 1.0,
         device=device_walkers,
         max_iters: int = 1000,
+        accumulate_rewards: bool = True,
         *args,
         **kwargs
     ):
@@ -32,6 +33,7 @@ class Walkers(BaseWalkers):
             n_walkers=n_walkers,
             env_state_params=env_state_params,
             model_state_params=model_state_params,
+            accumulate_rewards=accumulate_rewards,
         )
 
         self._model_states = States(state_dict=model_state_params, n_walkers=n_walkers)
@@ -224,7 +226,10 @@ class Walkers(BaseWalkers):
     def accumulate_rewards(self, rewards: [torch.Tensor, np.ndarray]):
         if isinstance(rewards, np.ndarray):
             rewards = torch.from_numpy(rewards)
-        self.cum_rewards = self.cum_rewards + rewards.to(self.device).float()
+        if self._accumulate_rewards:
+            self.cum_rewards = self.cum_rewards + rewards.to(self.device).float()
+        else:
+            self.cum_rewards = rewards.to(self.device).float().reshape(-1, 1)
 
     def update_ids(self, walkers_ids: np.ndarray):
         self.id_walkers[:] = torch.from_numpy(walkers_ids).to(self.device)

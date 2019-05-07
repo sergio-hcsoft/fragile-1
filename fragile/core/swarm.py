@@ -2,6 +2,11 @@ from typing import Callable
 
 import torch
 
+try:
+    from IPython.core.display import clear_output
+except ImportError:
+    clear_output = lambda x: x
+
 # from line_profiler import profile
 
 from fragile.core.base_classes import (
@@ -39,7 +44,7 @@ class Swarm(BaseSwarm):
         **kwargs
     ):
         self._env: BaseEnvironment = env_callable()
-        self._model: BaseModel = model_callabe(self._env.n_actions)
+        self._model: BaseModel = model_callabe(self._env)
 
         model_params = self._model.get_params_dict()
         env_params = self._env.get_params_dict()
@@ -73,12 +78,22 @@ class Swarm(BaseSwarm):
         )
 
     # @profile
-    def run_swarm(self, model_states: BaseStates = None, env_states: BaseStates = None):
+    def run_swarm(
+        self,
+        model_states: BaseStates = None,
+        env_states: BaseStates = None,
+        print_every: int = 1e100,
+    ):
         self.init_walkers(model_states=model_states, env_states=env_states)
+        print_i = 0
         while not self.walkers.calc_end_condition():
             self.step_walkers()
             old_ids, new_ids = self.walkers.balance()
             self.prune_tree(old_ids=old_ids, new_ids=new_ids)
+            if print_i % print_every == 0:
+                print(self.walkers)
+                clear_output(True)
+            print_i += 1
 
         return self.calculate_action()
 

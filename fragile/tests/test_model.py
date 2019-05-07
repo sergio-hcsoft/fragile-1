@@ -7,7 +7,7 @@ from fragile.core.models import RandomContinous, RandomDiscrete
 
 @pytest.fixture()
 def discrete_model() -> RandomDiscrete:
-    return RandomDiscrete(10)
+    return RandomDiscrete(n_actions=10)
 
 
 @pytest.fixture()
