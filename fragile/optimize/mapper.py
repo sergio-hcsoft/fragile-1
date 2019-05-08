@@ -2,12 +2,12 @@ from typing import Callable
 
 import torch
 
-from fragile.core.swarm import Swarm
 from fragile.core.models import RandomContinous
 from fragile.core.states import BaseStates
+from fragile.core.swarm import Swarm
 from fragile.core.walkers import Walkers
+from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
-from fragile.optimize.encoder import Encoder, diversity_score
 
 
 class MapperWalkers(Walkers):
@@ -22,8 +22,14 @@ class MapperWalkers(Walkers):
         self._score_vectors = 0
 
     def __repr__(self):
-        text = "Best reward found: {:.5f} at position: {}, and {} cloned_vectors \n Encoder: \n {}".format(
-            float(self.best_reward_found), self.best_found, self._n_cloned_vectors, self.encoder
+        text = (
+            "Best reward found: {:.5f} at position: {}, and {} "
+            "cloned_vectors \n Encoder: \n {}".format(
+                float(self.best_reward_found),
+                self.best_found,
+                self._n_cloned_vectors,
+                self.encoder,
+            )
         )
         return text + super(MapperWalkers, self).__repr__()
 
@@ -68,7 +74,7 @@ class MapperWalkers(Walkers):
         super(MapperWalkers, self).update_clone_probs()
         self.will_clone[-1] = 0
 
-    def reset(self, env_states: "BaseStates" = None, model_states: "BaseStates" = None):
+    def reset(self, env_states: BaseStates = None, model_states: BaseStates = None):
         super(MapperWalkers, self).reset(env_states=env_states, model_states=model_states)
         ix = self.cum_rewards.argmax()
         self.best_found = self.observs[ix].detach().cpu().clone()

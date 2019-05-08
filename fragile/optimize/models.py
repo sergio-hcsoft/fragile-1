@@ -3,10 +3,10 @@ from typing import Tuple
 import numpy as np
 import torch
 
-from fragile.core.base_classes import BaseStates, BaseEnvironment
+from fragile.core.base_classes import BaseEnvironment, BaseStates
 from fragile.core.models import RandomContinous
 from fragile.core.states import States
-from fragile.core.utils import to_tensor, device
+from fragile.core.utils import device, to_tensor
 from fragile.optimize.env import Function
 
 

@@ -3,7 +3,6 @@ import torch
 
 from fragile.core.states import States
 from fragile.optimize.env import Function
-from fragile.tests.test_env import plangym_env
 
 
 @pytest.fixture()

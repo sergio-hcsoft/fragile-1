@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from fragile.core.utils import device, to_numpy, to_tensor
+from fragile.core.utils import device, to_numpy
 
 
 def unique_columns2(data):

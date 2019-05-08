@@ -369,6 +369,8 @@ class BaseWalkers:
                 variable with all the information regarding the Environment.
             model_state_params: Contains the structure of the States
                 variable with all the information regarding the Model.
+            accumulate_rewards: If true accumulate the rewards after each step
+                of the environment.
             *args:  Ignored
             **kwargs: Ignored
 

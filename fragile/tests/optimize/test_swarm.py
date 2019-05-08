@@ -2,9 +2,8 @@ import numpy as np
 import pytest
 import torch
 
-from fragile.optimize.models import RandomNormal
 from fragile.optimize.mapper import FunctionMapper
-from fragile.optimize.encoder import Vector
+from fragile.optimize.models import RandomNormal
 
 
 @pytest.fixture()
@@ -13,9 +12,12 @@ def swarm():
         return -torch.sum((x - 1) ** 2, 1) - 1
 
     bounds = [(-10, 10), (-5, 5)]
-    model = lambda x: RandomNormal(
-        high=np.array([100, 100]), low=np.array([-100, -100]), env=x, shape=None
-    )
+
+    def model(x):
+        return RandomNormal(
+            high=np.array([100, 100]), low=np.array([-100, -100]), env=x, shape=None
+        )
+
     return FunctionMapper(
         n_vectors=5,
         function=potential_well,  # lambda x: - torch.sum(x ** 2, 1),
