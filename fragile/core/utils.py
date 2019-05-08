@@ -48,6 +48,8 @@ def to_numpy(x: [np.ndarray, torch.Tensor, list]) -> np.ndarray:
 def to_tensor(x: [torch.Tensor, np.ndarray, list], device=device, *args, **kwargs) -> torch.Tensor:
     if isinstance(x, torch.Tensor):
         return x
+    elif isinstance(x, list):
+        return torch.from_numpy(np.array(x)).to(device)
     elif isinstance(x, np.ndarray):
         return torch.from_numpy(x).to(device)
     else:

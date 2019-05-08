@@ -5,8 +5,8 @@ import torch
 try:
     from IPython.core.display import clear_output
 except ImportError:
-    clear_output = lambda x: x
-
+    def clear_output(*args, **kwargs):
+        pass
 # from line_profiler import profile
 
 from fragile.core.base_classes import (
