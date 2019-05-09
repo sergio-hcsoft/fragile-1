@@ -6,7 +6,7 @@ from fragile.core.models import RandomContinous
 from fragile.core.states import BaseStates
 from fragile.core.swarm import Swarm
 from fragile.core.utils import relativize, to_tensor
-from fragile.core.walkers import Walkers, float_type
+from fragile.core.walkers import float_type, Walkers
 from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
 

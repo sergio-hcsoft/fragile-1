@@ -1,5 +1,3 @@
-from typing import Callable
-
 import numpy as np
 import torch
 
@@ -67,7 +65,6 @@ class Vector:
 
 
 class PesteVector(Vector):
-
     def __init__(self, front_data: torch.Tensor = 0, back_data: torch.Tensor = 0, *args, **kwargs):
         super(PesteVector, self).__init__(*args, **kwargs)
         self.front_value = front_data
@@ -85,7 +82,7 @@ class PesteVector(Vector):
             self.back_value = self.back_value + value
             return (self.back_value, region) if return_region else self.back_value
 
-    def assign_region(self, other: torch.Tensor, value: float = 0.) -> int:
+    def assign_region(self, other: torch.Tensor, value: float = 0.0) -> int:
         region = super(PesteVector, self).assign_region(other=other)
         if region == 0:
             self.back_value += value
@@ -160,20 +157,28 @@ class Encoder:
 
     def _apply_vectors_to_point(self, point, func_name: str, *args, **kwargs):
         values = torch.tensor(
-            [getattr(vector, func_name)(point, *args, **kwargs) for vector in self.vectors], device=device
+            [getattr(vector, func_name)(point, *args, **kwargs) for vector in self.vectors],
+            device=device,
         )
         return values
 
     def encode(self, points):
-        values = torch.stack([self._apply_vectors_to_point(point=points[i], func_name="encode") for i in
-                              range(
-            points.shape[0])])
+        values = torch.stack(
+            [
+                self._apply_vectors_to_point(point=points[i], func_name="encode")
+                for i in range(points.shape[0])
+            ]
+        )
         self._last_encoded = values
         return values
 
     def get_peste(self, points) -> torch.Tensor:
-        values = torch.stack([self._apply_vectors_to_point(point=points[i], func_name="get_data")
-                              for i in range(points.shape[0])])
+        values = torch.stack(
+            [
+                self._apply_vectors_to_point(point=points[i], func_name="get_data")
+                for i in range(points.shape[0])
+            ]
+        )
         return values
 
     def remove_duplicates(self):
@@ -197,6 +202,3 @@ class Encoder:
                     origin=origin.detach().clone(), end=end.detach().clone(), timeout=self.timeout
                 )
                 self.append_vector(vec)
-
-
-

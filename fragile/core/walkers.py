@@ -159,10 +159,12 @@ class Walkers(BaseWalkers):
     def calc_distances(self):
         with torch.no_grad():
             self.compas_ix = torch.randperm(self.n, dtype=torch.int64, device=self.device)
-            self.distances = relativize(self.pwise_distance(
-                self.observs.view(self.n, -1).float(),
-                self.observs[self.compas_ix].view(self.n, -1).float(),
-            ).view(-1, 1)).view(-1, 1)
+            self.distances = relativize(
+                self.pwise_distance(
+                    self.observs.view(self.n, -1).float(),
+                    self.observs[self.compas_ix].view(self.n, -1).float(),
+                ).view(-1, 1)
+            ).view(-1, 1)
 
     def normalize_rewards(self):
         with torch.no_grad():
