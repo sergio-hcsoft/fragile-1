@@ -1,3 +1,5 @@
+from typing import Callable
+
 import numpy as np
 import torch
 
@@ -18,16 +20,12 @@ class Vector:
         self,
         origin: torch.Tensor = None,
         end: torch.Tensor = None,
-        front_data: torch.Tensor = 0,
-        back_data: torch.Tensor = 0,
         timeout: int = 1e100,
         timeout_threshold: int = 100000,
     ):
         self.origin = origin
         self.end = end
         self.base = end - origin
-        self.front_data = front_data
-        self.back_data = back_data
         self._age = 0
         self.timeout = timeout
         self.last_regions = []
@@ -50,26 +48,15 @@ class Vector:
     def assign_region(self, other: torch.Tensor) -> int:
 
         region = 1 if self.scalar_product(other=other) > 0 else 0
-        if len(self.last_regions) < self.timeout:
-            self.last_regions.append(region)
-        else:
-            self.last_regions[:-1] = self.last_regions[1:]
-            self.last_regions[-1] = region
         return region
+        # if len(self.last_regions) < self.timeout:
+        #    self.last_regions.append(region)
+        # else:
+        #    self.last_regions[:-1] = self.last_regions[1:]
+        #    self.last_regions[-1] = region
+        # return region
 
-    def get_data(
-        self, other, value: torch.Tensor = 0, return_region: bool = False
-    ) -> torch.Tensor:
-
-        region = self.assign_region(other=other)
-        if region == 1:
-            self.front_data = self.front_data + value
-            return (self.front_data, region) if return_region else self.front_data
-        else:
-            self.back_data = self.back_data + value
-            return (self.back_data, region) if return_region else self.back_data
-
-    def decode_list(self, points: list):
+    def decode_list(self, points) -> list:
         return [self.assign_region(p) for p in points]
 
     def is_outdated(self):
@@ -77,6 +64,34 @@ class Vector:
             return all(self.last_regions) or not any(self.last_regions)
         else:
             return False
+
+
+class PesteVector(Vector):
+
+    def __init__(self, front_data: torch.Tensor = 0, back_data: torch.Tensor = 0, *args, **kwargs):
+        super(PesteVector, self).__init__(*args, **kwargs)
+        self.front_value = front_data
+        self.back_value = back_data
+
+    def get_data(
+        self, other, value: torch.Tensor = 0, return_region: bool = False
+    ) -> torch.Tensor:
+
+        region = super(PesteVector, self).assign_region(other=other)
+        if region == 1:
+            self.front_value = self.front_value + value
+            return (self.front_value, region) if return_region else self.front_value
+        else:
+            self.back_value = self.back_value + value
+            return (self.back_value, region) if return_region else self.back_value
+
+    def assign_region(self, other: torch.Tensor, value: float = 0.) -> int:
+        region = super(PesteVector, self).assign_region(other=other)
+        if region == 0:
+            self.back_value += value
+        else:
+            self.front_value += value
+        return region
 
 
 def diversity_score(x, total=None):
@@ -122,7 +137,7 @@ class Encoder:
     def append(self, *args, **kwargs):
         kwargs["timeout"] = kwargs.get("timeout", self.timeout)
         kwargs["timeout_threshold"] = kwargs.get("timeout_threshold", self.timeout_threshold)
-        vector = Vector(*args, **kwargs)
+        vector = PesteVector(*args, **kwargs)
         self.append_vector(vector=vector)
 
     def append_vector(self, vector: Vector):
@@ -143,15 +158,22 @@ class Encoder:
         binary = vector.decode_list(points)
         return not all(binary) and any(binary)
 
+    def _apply_vectors_to_point(self, point, func_name: str, *args, **kwargs):
+        values = torch.tensor(
+            [getattr(vector, func_name)(point, *args, **kwargs) for vector in self.vectors], device=device
+        )
+        return values
+
     def encode(self, points):
-        values = torch.stack([self._encode_one(point=points[i]) for i in range(points.shape[0])])
+        values = torch.stack([self._apply_vectors_to_point(point=points[i], func_name="encode") for i in
+                              range(
+            points.shape[0])])
         self._last_encoded = values
         return values
 
-    def _encode_one(self, point):
-        values = torch.tensor(
-            [vector.assign_region(point) for vector in self.vectors], device=device
-        )
+    def get_peste(self, points) -> torch.Tensor:
+        values = torch.stack([self._apply_vectors_to_point(point=points[i], func_name="get_data")
+                              for i in range(points.shape[0])])
         return values
 
     def remove_duplicates(self):
@@ -159,7 +181,6 @@ class Encoder:
         self._vectors = [v for _, v in hashdict.items()]
 
     def remove_bases(self, points):
-
         # self._vectors = [v for v in self.vectors if not v.is_outdated()]
         self._vectors = [v for v in self.vectors if self.is_valid_base(vector=v, points=points)]
         self.remove_duplicates()
@@ -172,7 +193,10 @@ class Encoder:
             chosen_vectors = np.random.choice(np.arange(n_vec), available_spaces, replace=False)
             for ix in chosen_vectors:
                 origin, end = vectors[ix]
-                vec = Vector(
+                vec = PesteVector(
                     origin=origin.detach().clone(), end=end.detach().clone(), timeout=self.timeout
                 )
                 self.append_vector(vec)
+
+
+

@@ -5,14 +5,15 @@ import torch
 from fragile.core.models import RandomContinous
 from fragile.core.states import BaseStates
 from fragile.core.swarm import Swarm
-from fragile.core.walkers import Walkers
+from fragile.core.utils import relativize, to_tensor
+from fragile.core.walkers import Walkers, float_type
 from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
 
 
 class MapperWalkers(Walkers):
-    def __init__(self, n_vectors, timout: int = 1000, *args, **kwargs):
-        self.encoder = Encoder(n_vectors=n_vectors, timeout=timout)
+    def __init__(self, n_vectors, timeout: int = 1000, pest_scale: float = 1, *args, **kwargs):
+        self.encoder = Encoder(n_vectors=n_vectors, timeout=timeout)
         super(MapperWalkers, self).__init__(*args, **kwargs)
         self.pwise_distance = self._distances
         self._pwise_dist_module = torch.nn.PairwiseDistance().to(self.device)
@@ -20,6 +21,8 @@ class MapperWalkers(Walkers):
         self.best_reward_found = -1e20
         self._n_cloned_vectors = 0
         self._score_vectors = 0
+        self.pest_scale = torch.tensor([pest_scale], dtype=float_type, device=self.device)
+        self.pests = torch.zeros((self.n, 1), dtype=float_type, device=self.device)
 
     def __repr__(self):
         text = (
@@ -43,6 +46,19 @@ class MapperWalkers(Walkers):
             vectors.append((si, ei))
         self._n_cloned_vectors = len(vectors)
         return vectors
+
+    def _calculate_pests(self):
+        raw_pestes = self.encoder.get_peste(self.observs)
+        self.pests = relativize(raw_pestes.sum(1).reshape(-1, 1)).view(-1, 1)
+
+    def calc_virtual_reward(self):
+        self._calculate_pests()
+        with torch.no_grad():
+            rewards = self.processed_rewards.float() ** self.reward_scale.float()
+            dist = self.distances.float() ** self.dist_scale.float()
+            pest = self.pests.float() ** self.pest_scale.float()
+            virtual_reward = rewards * dist * pest
+            self.virtual_rewards = to_tensor(virtual_reward, dtype=float_type)
 
     def balance(self):
         self.update_best()
@@ -68,7 +84,7 @@ class MapperWalkers(Walkers):
 
             x = self.encoder.encode(state_1)
             y = self.encoder.encode(state_2)
-            return torch.sum((y - x) ** 2, 1).reshape(-1, 1)
+            return torch.sum((y - x) ** 2, 1).view(-1, 1)
 
     def update_clone_probs(self):
         super(MapperWalkers, self).update_clone_probs()
