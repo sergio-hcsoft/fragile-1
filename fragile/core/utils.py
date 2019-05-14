@@ -17,9 +17,10 @@ def params_to_tensors(param_dict, n_walkers: int):
 
 
 def relativize(x, device=device):
+    x = x.float()
     std = x.std()
     if float(std) == 0:
-        return torch.ones(len(x), device=device)
+        return torch.ones(len(x), device=device, dtype=torch.float32)
     standard = (x - x.mean()) / std
     standard[standard > 0] = torch.log(1.0 + standard[standard > 0]) + 1.0
     standard[standard <= 0] = torch.exp(standard[standard <= 0])

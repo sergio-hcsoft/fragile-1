@@ -490,7 +490,7 @@ class BaseSwarm:
 
         self._init_swarm(
             env_callable=env,
-            model_callabe=model,
+            model_callable=model,
             walkers_callable=walkers,
             n_walkers=n_walkers,
             reward_scale=reward_scale,

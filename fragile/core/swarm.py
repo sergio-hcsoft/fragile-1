@@ -38,16 +38,17 @@ class Swarm(BaseSwarm):
     def _init_swarm(
         self,
         env_callable: Callable,
-        model_callabe: Callable,
+        model_callable: Callable,
         walkers_callable: Callable,
         n_walkers: int,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
+        prune_tree: bool = True,
         *args,
         **kwargs
     ):
         self._env: BaseEnvironment = env_callable()
-        self._model: BaseModel = model_callabe(self._env)
+        self._model: BaseModel = model_callable(self._env)
 
         model_params = self._model.get_params_dict()
         env_params = self._env.get_params_dict()
@@ -62,6 +63,8 @@ class Swarm(BaseSwarm):
         )
 
         self.tree = Tree()
+        self._prune_tree = prune_tree
+        self.print_i = 0
 
     def init_walkers(self, model_states: BaseStates = None, env_states: BaseStates = None):
         env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
@@ -88,15 +91,15 @@ class Swarm(BaseSwarm):
         print_every: int = 1e100,
     ):
         self.init_walkers(model_states=model_states, env_states=env_states)
-        print_i = 0
+        self.print_i = 0
         while not self.walkers.calc_end_condition():
             self.step_walkers()
             old_ids, new_ids = self.walkers.balance()
             self.prune_tree(old_ids=old_ids, new_ids=new_ids)
-            if print_i % print_every == 0:
+            if self.print_i % print_every == 0:
                 print(self.walkers)
                 clear_output(True)
-            print_i += 1
+            self.print_i += 1
 
         return self.calculate_action()
 
@@ -124,9 +127,10 @@ class Swarm(BaseSwarm):
         self.walkers.update_ids(walker_ids)
 
     def prune_tree(self, old_ids, new_ids):
-        dead_leaves = old_ids - new_ids
-        for leaf_id in dead_leaves:
-            self.tree.prune_branch(leaf_id=leaf_id)
+        if self._prune_tree:
+            dead_leaves = old_ids - new_ids
+            for leaf_id in dead_leaves:
+                self.tree.prune_branch(leaf_id=leaf_id)
 
     def calculate_action(self):
         return
