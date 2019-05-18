@@ -93,14 +93,16 @@ class Swarm(BaseSwarm):
         self.init_walkers(model_states=model_states, env_states=env_states)
         self.print_i = 0
         while not self.walkers.calc_end_condition():
-            self.step_walkers()
-            old_ids, new_ids = self.walkers.balance()
-            self.prune_tree(old_ids=old_ids, new_ids=new_ids)
-            if self.print_i % print_every == 0:
-                print(self.walkers)
-                clear_output(True)
-            self.print_i += 1
-
+            try:
+                self.step_walkers()
+                old_ids, new_ids = self.walkers.balance()
+                self.prune_tree(old_ids=old_ids, new_ids=new_ids)
+                if self.print_i % print_every == 0:
+                    print(self.walkers)
+                    clear_output(True)
+                self.print_i += 1
+            except KeyboardInterrupt as e:
+                break
         return self.calculate_action()
 
     # @profile

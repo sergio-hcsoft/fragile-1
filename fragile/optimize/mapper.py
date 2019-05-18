@@ -1,5 +1,6 @@
 from typing import Callable
 
+import numpy as np
 import torch
 
 from fragile.core.models import RandomContinous
@@ -9,6 +10,7 @@ from fragile.core.utils import relativize, to_numpy, to_tensor
 from fragile.core.walkers import float_type, Walkers
 from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
+from fragile.optimize.local_optimizer import Minimizer
 from fragile.optimize.models import EncoderSampler
 
 
@@ -167,16 +169,16 @@ class FunctionMapper(Swarm):
     def step_walkers(self):
         super(FunctionMapper, self).step_walkers()
         self.fix_best()
-        self.record_visited()
+        # self.record_visited()
         if self._plot_steps and self.print_i % self.plot_every == 0:
             self.plot_steps()
 
     def fix_best(self):
         if self.walkers.best_found is not None:
-            observs = self.walkers.get_observs()
-            rewards = self.walkers.get_env_states().rewards
-            observs[-1, :] = self.walkers.best_found
-            rewards[-1] = self.walkers.best_reward_found
+            # observs = self.walkers.get_observs()
+            # rewards = self.walkers.get_env_states().rewards
+            self.walkers.observs[-1, :] = self.walkers.best_found.detach().clone()
+            self.walkers.rewards[-1] = torch.tensor(self.walkers.best_reward_found)
 
     def record_visited(self):
         observs = to_numpy(self.walkers.observs)
@@ -227,3 +229,30 @@ class FunctionMapper(Swarm):
         plt.title(title)
         plt.show()
         plt.pause(0.01)
+
+
+class LocalMapper(FunctionMapper):
+    def __init__(self, minimizer: Minimizer = None, *args, **kwargs):
+        super(LocalMapper, self).__init__(*args, **kwargs)
+        minimizer = minimizer if minimizer is not None else Minimizer
+        self.minimizer = minimizer(function=self.env)
+        self.best_reward_found = -1e20
+
+    def minimize_best(self):
+        best = self.walkers.best_found.detach().clone()
+        best_reward = float(self.walkers.best_reward_found)
+        if self.best_reward_found < best_reward:
+            optim_result = self.minimizer.minimize(best)
+            best = to_tensor(optim_result["x"])
+            new_best = -1.0 * float(optim_result["fun"])
+            new_best = (
+                new_best if not np.isinf(new_best) and new_best > best_reward else best_reward
+            )
+            self.best_reward_found = new_best
+            self.walkers.best_reward_found = new_best
+            self.walkers.best_found = best
+
+    def fix_best(self):
+        if self.walkers.best_found is not None:
+            self.minimize_best()
+        super(LocalMapper, self).fix_best()
