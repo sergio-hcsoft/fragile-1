@@ -103,20 +103,8 @@ class RandomDiscrete(BaseModel):
 
 
 class RandomContinous(BaseModel):
-    def __init__(
-        self,
-        low,
-        high,
-        env=None,
-        shape=None,
-        min_dt=1,
-        max_dt=10,
-        mean_dt=4,
-        std_dt=1,
-        *args,
-        **kwargs
-    ):
-        super(RandomContinous, self).__init__(*args, **kwargs)
+    def __init__(self, low, high, env=None, shape=None, min_dt=1, max_dt=10, mean_dt=4, std_dt=1):
+        super(RandomContinous, self).__init__()
         if shape is not None:
             shape = shape if not isinstance(shape, list) else tuple(shape)
         self._n_dims = shape

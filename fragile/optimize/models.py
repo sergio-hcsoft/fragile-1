@@ -6,7 +6,8 @@ import torch
 from fragile.core.base_classes import BaseEnvironment, BaseStates
 from fragile.core.models import RandomContinous
 from fragile.core.states import States
-from fragile.core.utils import device, to_tensor
+from fragile.core.utils import device, relativize_np, to_numpy, to_tensor
+from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
 
 
@@ -20,24 +21,32 @@ class UnitaryContinuous(RandomContinous):
 
 
 class RandomNormal(RandomContinous):
-    def __init__(self, env: Function = None, *args, **kwargs):
+    def __init__(self, env: Function = None, loc: float = 0, scale: float = 1, *args, **kwargs):
         kwargs["shape"] = kwargs.get(
             "shape", env.shape if isinstance(env, BaseEnvironment) else None
         )
-        super(RandomNormal, self).__init__(env=env, *args, **kwargs)
+        try:
+            super(RandomNormal, self).__init__(env=env, *args, **kwargs)
+        except Exception as e:
+            print(args, kwargs)
+            raise e
         self._shape = self.bounds.shape
         self._n_dims = self.bounds.shape
+        self.loc = loc
+        self.scale = scale
 
-    def sample(self, batch_size: int = 1):
+    def sample(self, batch_size: int = 1, loc: float = None, scale: float = None):
+        loc = self.loc if loc is None else loc
+        scale = self.scale if scale is None else scale
         high = (
             self.bounds.high
             if self.bounds.dtype.kind == "f"
             else self.bounds.high.astype("int64") + 1
         )
         data = np.clip(
-            self.np_random.standard_normal(size=tuple([batch_size]) + self.shape).astype(
-                self.bounds.dtype
-            ),
+            self.np_random.normal(
+                size=tuple([batch_size]) + self.shape, loc=loc, scale=scale
+            ).astype(self.bounds.dtype),
             self.bounds.low,
             high,
         )
@@ -77,3 +86,103 @@ class RandomNormal(RandomContinous):
         actions = super(RandomNormal, self).sample(batch_size=batch_size)
         model_states.update(dt=np.ones(batch_size), actions=actions, init_actions=actions)
         return actions, model_states
+
+
+class EncoderSampler(RandomNormal):
+    def __init__(self, env: Function = None, walkers: "MapperWalkers" = None, *args, **kwargs):
+        kwargs["shape"] = kwargs.get(
+            "shape", env.shape if isinstance(env, BaseEnvironment) else None
+        )
+        try:
+            super(EncoderSampler, self).__init__(env=env, *args, **kwargs)
+        except Exception as e:
+            print(args, kwargs)
+            raise e
+        self._shape = self.bounds.shape
+        self._n_dims = self.bounds.shape
+        self._walkers = walkers
+        self.bases = None
+
+    @property
+    def encoder(self):
+        return self._walkers.encoder
+
+    @property
+    def walkers(self):
+        return self._walkers
+
+    def set_walkers(self, encoder: Encoder):
+        self._walkers = encoder
+
+    def sample(self, batch_size: int = 1):
+        if self.encoder is None:
+            raise ValueError("You must first set the encoder before calling sample()")
+        if len(self.encoder) <= 5:
+            return RandomNormal.sample(self, batch_size=batch_size)
+        data = self._sample_encoder(batch_size)
+        return to_tensor(data, device=device, dtype=torch.float32)
+
+    def _sample_encoder(self, batch_size: int = 1):
+        samples = to_tensor(
+            super(EncoderSampler, self).sample(batch_size=batch_size, loc=0.0, scale=1.0),
+            device=device,
+            dtype=torch.float32,
+        )
+        self.bases = self.encoder.get_bases()
+        perturbation = torch.abs(self.bases.mean(0)) * samples  # (samples - self.mean_dt) * 0.01 /
+        # self.std_dt
+        return perturbation / 2
+
+    def calculate_dt(
+        self, model_states: BaseStates, env_states: BaseStates
+    ) -> Tuple[np.ndarray, BaseStates]:
+        """
+
+        Args:
+            model_states:
+            env_states:
+
+        Returns:
+            Tuple containing a tensor with the sampled actions and the new model states variable.
+        """
+        dt = np.ones(shape=tuple(env_states.rewards.shape))
+        # * self.mean_dt
+        model_states.update(dt=dt)
+        return dt, model_states
+
+
+class BestDtEncoderSamper(EncoderSampler):
+    def calculate_dt(
+        self, model_states: BaseStates, env_states: BaseStates
+    ) -> Tuple[np.ndarray, BaseStates]:
+        """
+
+        Args:
+            model_states:
+            env_states:
+
+        Returns:
+            Tuple containing a tensor with the sampled actions and the new model states variable.
+        """
+        if True:  # self.bases is None:
+            return super(BestDtEncoderSamper, self).calculate_dt(
+                model_states=model_states, env_states=env_states
+            )
+        best = self.walkers.best_found
+        dist = to_numpy(torch.sqrt((self.walkers.observs - best) ** 2))
+        max_mod = torch.abs(self.bases.max(0))
+
+        dist = relativize_np(dist)
+        # dist = (dist - dist.mean()) / dist.std()
+        dt = np.ones(shape=tuple(env_states.rewards.shape)) * self.map_range(
+            dist, max_=to_numpy(max_mod)
+        )
+
+        # * self.mean_dt
+        model_states.update(dt=dt)
+        return dt, model_states
+
+    @staticmethod
+    def map_range(x, max_: float = 1, min_: float = 0.0):
+        normed = (x - x.min()) / (x.max() - x.min())
+        return normed * (max_ - min_) + min_

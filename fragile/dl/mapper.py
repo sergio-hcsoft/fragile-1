@@ -69,7 +69,7 @@ class Mapper:
     def calculate_loss(self, output, target):
         l1_weight = 0.01
         distance_weight = 0.1
-        entorpy_weight = 1.0
+        entropy_weight = 1.0
 
         bin_vectors = self.autoencoder.encoder.bin_out
         distance = self.distance(output, target)
@@ -77,7 +77,7 @@ class Mapper:
         entropy = by_columns * torch.log(by_columns)
         entropy = -1 * entropy.mean()
         loss = (
-            distance_weight * distance - entorpy_weight * entropy + l1_weight * bin_vectors.sum(1)
+            distance_weight * distance - entropy_weight * entropy + l1_weight * bin_vectors.sum(1)
         )
         return loss
 

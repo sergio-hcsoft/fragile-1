@@ -24,6 +24,7 @@ class Vector:
         self.origin = origin
         self.end = end
         self.base = end - origin
+        # self.base = self.base / torch.sqrt(torch.sum(self.base ** 2))
         self._age = 0
         self.timeout = timeout
         self.last_regions = []
@@ -73,12 +74,12 @@ class PesteVector(Vector):
     def get_data(
         self, other, value: torch.Tensor = 0, return_region: bool = False
     ) -> torch.Tensor:
-
         region = super(PesteVector, self).assign_region(other=other)
         if region == 1:
             self.front_value = self.front_value + value
             return (self.front_value, region) if return_region else self.front_value
         else:
+
             self.back_value = self.back_value + value
             return (self.back_value, region) if return_region else self.back_value
 
@@ -120,7 +121,7 @@ class Encoder:
                 min(self.n_vectors - len(self), len(self.vectors)),
             )
         )
-        return text + "".join(v.__repr__() for v in self.vectors)
+        return text  # + "".join(v.__repr__() for v in self.vectors)
 
     def __len__(self):
         return len(self._vectors)
@@ -162,28 +163,27 @@ class Encoder:
         )
         return values
 
+    def get_pest(self, points) -> torch.Tensor:
+        values = torch.stack(
+            [
+                self._apply_vectors_to_point(point=points[i], func_name="get_data", value=1)
+                for i in range(points.shape[0])
+            ]
+        )
+        return values
+
     def encode(self, points):
         values = torch.stack(
             [
-                self._apply_vectors_to_point(point=points[i], func_name="encode")
+                self._apply_vectors_to_point(point=points[i], func_name="assign_region")
                 for i in range(points.shape[0])
             ]
         )
         self._last_encoded = values
         return values
 
-    def get_peste(self, points) -> torch.Tensor:
-        values = torch.stack(
-            [
-                self._apply_vectors_to_point(point=points[i], func_name="get_data")
-                for i in range(points.shape[0])
-            ]
-        )
-        return values
-
     def remove_duplicates(self):
-        hashdict = {hash(v): v for v in self.vectors}
-        self._vectors = [v for _, v in hashdict.items()]
+        self._vectors = list(set(self.vectors))
 
     def remove_bases(self, points):
         # self._vectors = [v for v in self.vectors if not v.is_outdated()]
@@ -202,3 +202,6 @@ class Encoder:
                     origin=origin.detach().clone(), end=end.detach().clone(), timeout=self.timeout
                 )
                 self.append_vector(vec)
+
+    def get_bases(self) -> torch.Tensor:
+        return torch.stack([v.base.detach().clone() for v in self.vectors])

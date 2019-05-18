@@ -18,7 +18,7 @@ def swarm():
             high=np.array([100, 100]), low=np.array([-100, -100]), env=x, shape=None
         )
 
-    return FunctionMapper(
+    return FunctionMapper.from_function(
         n_vectors=5,
         function=potential_well,  # lambda x: - torch.sum(x ** 2, 1),
         bounds=bounds,

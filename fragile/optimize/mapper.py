@@ -5,10 +5,11 @@ import torch
 from fragile.core.models import RandomContinous
 from fragile.core.states import BaseStates
 from fragile.core.swarm import Swarm
-from fragile.core.utils import relativize, to_tensor
+from fragile.core.utils import relativize, to_numpy, to_tensor
 from fragile.core.walkers import float_type, Walkers
 from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
+from fragile.optimize.models import EncoderSampler
 
 
 class MapperWalkers(Walkers):
@@ -23,6 +24,7 @@ class MapperWalkers(Walkers):
         self._score_vectors = 0
         self.pest_scale = torch.tensor([pest_scale], dtype=float_type, device=self.device)
         self.pests = torch.zeros((self.n, 1), dtype=float_type, device=self.device)
+        self.raw_pest = torch.ones((self.n, 1), dtype=float_type, device=self.device)
 
     def __repr__(self):
         text = (
@@ -36,6 +38,9 @@ class MapperWalkers(Walkers):
         )
         return text + super(MapperWalkers, self).__repr__()
 
+    def get_observs(self) -> torch.Tensor:
+        return self.observs
+
     def get_clone_vectors(self):
         vectors = []
         starts = self.observs[self.will_clone]
@@ -48,15 +53,16 @@ class MapperWalkers(Walkers):
         return vectors
 
     def _calculate_pests(self):
-        raw_pestes = self.encoder.get_peste(self.observs)
-        self.pests = relativize(raw_pestes.sum(1).reshape(-1, 1)).view(-1, 1)
+        if len(self.encoder) > 0:
+            self.raw_pest = self.encoder.get_pest(self.observs).mean(1).reshape(-1, 1).float()
+        self.pests = relativize(self.raw_pest).view(-1, 1)
 
     def calc_virtual_reward(self):
-        self._calculate_pests()
         with torch.no_grad():
+            self._calculate_pests()
             rewards = self.processed_rewards.float() ** self.reward_scale.float()
             dist = self.distances.float() ** self.dist_scale.float()
-            pest = self.pests.float() ** self.pest_scale.float()
+            pest = self.pests.float() ** -self.pest_scale.float()
             virtual_reward = rewards * dist * pest
             self.virtual_rewards = to_tensor(virtual_reward, dtype=float_type)
 
@@ -73,13 +79,13 @@ class MapperWalkers(Walkers):
         ix = self.cum_rewards.argmax()
         best = self.observs[ix].detach().cpu().clone()
         best_reward = self.cum_rewards[ix]
-        if self.best_reward_found < best_reward:
+        if self.best_reward_found < best_reward and not bool(self.ends[ix]):
             self.best_reward_found = float(best_reward.cpu())
             self.best_found = best
 
     def _distances(self, state_1, state_2):
         with torch.no_grad():
-            if len(self.encoder) < self.encoder.n_vectors:
+            if True:  # len(self.encoder) < 5:#self.encoder.n_vectors:
                 return self._pwise_dist_module(state_1, state_2)
 
             x = self.encoder.encode(state_1)
@@ -98,20 +104,126 @@ class MapperWalkers(Walkers):
 
 
 class FunctionMapper(Swarm):
-    def __init__(
+    def __init__(self, plot_steps: bool = False, plot_every: int = 1e20, *args, **kwargs):
+        kwargs = self.add_default_kwargs(kwargs)
+
+        super(FunctionMapper, self).__init__(*args, **kwargs)
+        self.visited_x = []
+        self.visited_y = []
+        self.visited_rewards = []
+        self._plot_steps = plot_steps
+        self.plot_every = plot_every
+        if hasattr(self.model, "set_walkers") and isinstance(self.model, EncoderSampler):
+            self.model.set_walkers(self.walkers)
+
+    @staticmethod
+    def add_default_kwargs(kwargs):
+        kwargs["accumulate_rewards"] = kwargs.get("accumulate_rewards", False)
+        kwargs["walkers"] = kwargs.get("walkers", MapperWalkers)
+        kwargs["model"] = kwargs.get("model", RandomContinous)
+        return kwargs
+
+    @classmethod
+    def from_function(cls, function: Callable, shape: tuple, bounds: list = None, *args, **kwargs):
+        env = Function(function=function, bounds=bounds, shape=shape)
+        kwargs = cls.add_default_kwargs(kwargs)
+        return FunctionMapper(env=lambda: env, *args, **kwargs)
+
+    def _init_swarm(
         self,
-        function: Callable,
-        shape: tuple,
-        model: Callable = RandomContinous,
-        bounds: list = None,
+        env_callable: Callable,
+        model_callable: Callable,
+        walkers_callable: Callable,
+        n_walkers: int,
+        reward_scale: float = 1.0,
+        dist_scale: float = 1.0,
+        prune_tree: bool = True,
         *args,
         **kwargs
     ):
-        env = Function(function=function, bounds=bounds, shape=shape)
-        super(FunctionMapper, self).__init__(
-            env=lambda: env, model=model, walkers=MapperWalkers, *args, **kwargs
+        super(FunctionMapper, self)._init_swarm(
+            env_callable=env_callable,
+            model_callable=model_callable,
+            walkers_callable=walkers_callable,
+            n_walkers=n_walkers,
+            reward_scale=reward_scale,
+            dist_scale=dist_scale,
+            prune_tree=prune_tree,
+            *args,
+            **kwargs
         )
+        self.visited_x = []
+        self.visited_y = []
+        self.visited_rewards = []
 
     def __repr__(self):
 
         return super(Swarm, self).__repr__()
+
+    @property
+    def encoder(self):
+        return self._walkers.encoder
+
+    def step_walkers(self):
+        super(FunctionMapper, self).step_walkers()
+        self.fix_best()
+        self.record_visited()
+        if self._plot_steps and self.print_i % self.plot_every == 0:
+            self.plot_steps()
+
+    def fix_best(self):
+        if self.walkers.best_found is not None:
+            observs = self.walkers.get_observs()
+            rewards = self.walkers.get_env_states().rewards
+            observs[-1, :] = self.walkers.best_found
+            rewards[-1] = self.walkers.best_reward_found
+
+    def record_visited(self):
+        observs = to_numpy(self.walkers.observs)
+        x, y = observs[:, 0].tolist(), observs[:, 1].tolist()
+        rewards = to_numpy(self.walkers.rewards).flatten().tolist()
+        self.visited_x.extend(x[:-1])
+        self.visited_y.extend(y[:-1])
+        self.visited_rewards.extend(rewards[:-1])
+
+    def plot_steps(self):
+        import matplotlib.pyplot as plt
+
+        # x_vis, y_vis, rewards_vis = self.visited_x, self.visited_y, self.visited_rewards
+        vals = to_numpy(self.walkers.observs)
+
+        x_walkers, y_walkers = vals[:, 0], vals[:, 1]
+        pest = to_numpy(self.walkers.raw_pest).flatten().tolist()
+
+        plt.figure(figsize=(10, 10))
+        # plt.scatter(x_vis, y_vis, c=rewards_vis, cmap=plt.cm.viridis, alpha=0.1)
+        plt.scatter(x_walkers, y_walkers, c=pest, cmap=plt.cm.tab20, s=30)
+        # print("VALS", x_walkers, y_walkers)
+        plt.colorbar()
+        if self.walkers.best_found is not None:
+            x_best, y_best = self.walkers.best_found[0], self.walkers.best_found[1]
+            plt.scatter(x_best, y_best, color="red", marker="*", s=90)
+        title = "Iteration {} {} best found {:.3f} at pos {}. N vectors: {}".format(
+            self.print_i,
+            self.env.function.__name__,
+            float(self.walkers.best_reward_found),
+            self.walkers.best_found,
+            len(self.encoder),
+        )
+
+        def vector_to_arrow(v):
+            x, y = v.origin[0], v.origin[1]
+            dx, dy = v.end[0] - x, v.end[1] - y
+            return plt.arrow(float(x), float(y), float(dx), float(dy), width=0.03, color="blue")
+
+        for v in self.encoder.vectors:
+            vector_to_arrow(v)
+        min_x, max_x = self.env.bounds[0]
+        min_y, max_y = self.env.bounds[1]
+        plt.xlim(min_x, max_x)
+        plt.ylim(min_y, max_y)
+
+        plt.grid()
+        plt.title(title)
+        plt.show()
+        plt.pause(0.01)
