@@ -66,12 +66,16 @@ class Function(BaseEnvironment):
 
         rewards = self.function(new_points)
         # rewards[-1] = env_states.rewards[-1]
+        ends = self.boundary_condition(new_points, rewards)
 
-        ends = torch.ones(rewards.shape, dtype=torch.uint8, device=self.device)
-        ends[self.are_in_bounds(new_points)] = 0
         # ends[-1] = 0
         self._last_states = self._get_new_states(new_points, rewards, ends, len(actions))
         return self._last_states
+
+    def boundary_condition(self, points, rewards):
+        ends = torch.ones(rewards.shape, dtype=torch.uint8, device=self.device)
+        ends[self.are_in_bounds(points)] = 0
+        return ends
 
     def _sample_init_points(self, batch_size: int):
         new_points = torch.zeros(

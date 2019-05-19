@@ -91,6 +91,13 @@ class PesteVector(Vector):
             self.front_value += value
         return region
 
+    def is_outdated(self):
+        min_age = (self.front_value + self.back_value) > 2000
+        proportion = min(self.front_value, self.back_value) / (1e-7 + max(self.front_value,
+                                                                   self.back_value))
+        too_skewed = proportion < 0.1
+        return min_age and too_skewed
+
 
 def diversity_score(x, total=None):
     n_different_rows = np.unique(to_numpy(x), axis=0).shape[0]
@@ -186,7 +193,7 @@ class Encoder:
         self._vectors = list(set(self.vectors))
 
     def remove_bases(self, points):
-        # self._vectors = [v for v in self.vectors if not v.is_outdated()]
+        self._vectors = [v for v in self.vectors if not v.is_outdated()]
         self._vectors = [v for v in self.vectors if self.is_valid_base(vector=v, points=points)]
         self.remove_duplicates()
 

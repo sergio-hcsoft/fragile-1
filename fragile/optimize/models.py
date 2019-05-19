@@ -131,7 +131,7 @@ class EncoderSampler(RandomNormal):
         self.bases = self.encoder.get_bases()
         perturbation = torch.abs(self.bases.mean(0)) * samples  # (samples - self.mean_dt) * 0.01 /
         # self.std_dt
-        return perturbation / 2
+        return perturbation
 
     def calculate_dt(
         self, model_states: BaseStates, env_states: BaseStates

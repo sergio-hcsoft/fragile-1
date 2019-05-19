@@ -5,7 +5,7 @@ import torch
 
 from fragile.core.models import RandomContinous
 from fragile.core.states import BaseStates
-from fragile.core.swarm import Swarm
+from fragile.core.swarm import clear_output, Swarm
 from fragile.core.utils import relativize, to_numpy, to_tensor
 from fragile.core.walkers import float_type, Walkers
 from fragile.optimize.encoder import Encoder
@@ -166,6 +166,21 @@ class FunctionMapper(Swarm):
     def encoder(self):
         return self._walkers.encoder
 
+    def continue_optimizarion(self):
+        self.print_i = 0
+        while not self.walkers.calc_end_condition():
+            try:
+                self.step_walkers()
+                old_ids, new_ids = self.walkers.balance()
+                self.prune_tree(old_ids=old_ids, new_ids=new_ids)
+                if self.print_i % print_every == 0:
+                    print(self.walkers)
+                    clear_output(True)
+                self.print_i += 1
+            except KeyboardInterrupt as e:
+                break
+
+
     def step_walkers(self):
         super(FunctionMapper, self).step_walkers()
         self.fix_best()
@@ -216,7 +231,8 @@ class FunctionMapper(Swarm):
         def vector_to_arrow(v):
             x, y = v.origin[0], v.origin[1]
             dx, dy = v.end[0] - x, v.end[1] - y
-            return plt.arrow(float(x), float(y), float(dx), float(dy), width=0.03, color="blue")
+            return plt.arrow(float(x), float(y), float(dx), float(dy), width=0.03, color="blue",
+                             alpha=0.2)
 
         for v in self.encoder.vectors:
             vector_to_arrow(v)
@@ -227,6 +243,12 @@ class FunctionMapper(Swarm):
 
         plt.grid()
         plt.title(title)
+        from mpl_toolkits.mplot3d import Axes3D
+        fig = plt.figure()
+        x = self.walkers.best_found.view(-1, 3)
+        ax = Axes3D(fig)
+        ax.scatter(x[:, 0], x[:, 1], x[:, 2], c=x[:, 1], cmap=plt.cm.viridis, s=150)
+        plt.grid()
         plt.show()
         plt.pause(0.01)
 

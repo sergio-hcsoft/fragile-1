@@ -158,3 +158,10 @@ class LennardJones(OptimBenchmark):
     def get_bounds(shape):
         bounds = [(-1.1, 1.1) for _ in range(shape[0])]
         return bounds
+
+    def boundary_condition(self, points, rewards):
+        ends = super(LennardJones, self).boundary_condition(points, rewards)
+        mean = rewards.mean()
+        too_bad = rewards < mean # -200000
+        ends[too_bad] = 1
+        return ends
