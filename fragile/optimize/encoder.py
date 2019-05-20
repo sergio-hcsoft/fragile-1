@@ -93,8 +93,9 @@ class PesteVector(Vector):
 
     def is_outdated(self):
         min_age = (self.front_value + self.back_value) > 2000
-        proportion = min(self.front_value, self.back_value) / (1e-7 + max(self.front_value,
-                                                                   self.back_value))
+        proportion = min(self.front_value, self.back_value) / (
+            1e-7 + max(self.front_value, self.back_value)
+        )
         too_skewed = proportion < 0.1
         return min_age and too_skewed
 

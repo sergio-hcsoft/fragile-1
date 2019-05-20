@@ -1,5 +1,6 @@
 import math
 
+from numba import jit
 import numpy as np
 import torch
 
@@ -101,28 +102,38 @@ class StyblinskiTang(OptimBenchmark):
         return bounds
 
 
-def lj_func(x, n_atoms):
+@jit(nopython=True)
+def lennard_fast(U):
+    U = U.reshape(-1, 3)
+    npart = len(U)
+    Epot = 0.0
+    for i in range(npart):
+        for j in range(npart):
+            if i > j:
+                r2 = np.sum((U[j, :] - U[i, :]) ** 2)
+                r2i = 1.0 / r2
+                r6i = r2i * r2i * r2i
+                Epot = Epot + r6i * (r6i - 1.0)
+    Epot = Epot * 4
+    return Epot
+
+
+@jit(nopython=True)
+def numba_lennard(x):
+    result = np.zeros((x.shape[0], 1))
+    for i in range(x.shape[0]):
+        result[i, 0] = lennard_fast(x[i])
+    return result
+
+
+def lj_func(x):
     x = to_numpy(x)
-
-    def lennard_jones(U):
-        U = U.reshape(n_atoms, 3)
-        npart = len(U)
-        Epot = 0.0
-        for i in range(npart):
-            for j in range(npart):
-                if i > j:
-                    r2 = np.linalg.norm(U[j, :] - U[i, :]) ** 2
-                    r2i = 1.0 / r2
-                    r6i = r2i * r2i * r2i
-                    Epot = Epot + r6i * (r6i - 1.0)
-        Epot = Epot * 4
-        return Epot
-
-    result = np.array([lennard_jones(x[i, :]) for i in range(x.shape[0])]).reshape(x.shape[0], 1)
-    return -1.0 * to_tensor(result)
+    result = -1 * numba_lennard(x)
+    return to_tensor(result)
 
 
 class LennardJones(OptimBenchmark):
+    # http://doye.chem.ox.ac.uk/jon/structures/LJ/tables.150.html
     minima = {
         "2": -1,
         "3": -3,
@@ -138,6 +149,13 @@ class LennardJones(OptimBenchmark):
         "13": -44.326801,
         "14": -47.845157,
         "15": -52.322627,
+        "20": -77.177043,
+        "25": -102.372663,
+        "30": -128.286571,
+        "38": -173.928427,
+        "50": -244.549926,
+        "100": -557.039820,
+        "104": -582.038429,
     }
 
     benchmark = None
@@ -146,22 +164,25 @@ class LennardJones(OptimBenchmark):
         self.n_atoms = n_atoms
         shape = (3 * n_atoms,)
         print(shape)
-        self.benchmark = [np.zeros(self.n_atoms * 3), self.minima[str(n_atoms)]]
+        self.benchmark = [np.zeros(self.n_atoms * 3), self.minima.get(str(int(n_atoms)), 0)]
         super(LennardJones, self).__init__(shape=shape, *args, **kwargs)
 
         def lennard_jones(x):
-            return lj_func(x, self.n_atoms)
+            return lj_func(x)
 
         self.function = lennard_jones
 
     @staticmethod
     def get_bounds(shape):
-        bounds = [(-1.1, 1.1) for _ in range(shape[0])]
+        bounds = [(-1.5, 1.5) for _ in range(shape[0])]
         return bounds
 
     def boundary_condition(self, points, rewards):
         ends = super(LennardJones, self).boundary_condition(points, rewards)
-        mean = rewards.mean()
-        too_bad = rewards < mean # -200000
-        ends[too_bad] = 1
+        # mean = rewards.mean()
+        too_bad = rewards < -200000
+        if int(too_bad.sum()) < len(too_bad):
+            ends[too_bad] = 1
+        else:
+            print(too_bad, rewards)
         return ends

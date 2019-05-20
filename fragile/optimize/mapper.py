@@ -173,13 +173,12 @@ class FunctionMapper(Swarm):
                 self.step_walkers()
                 old_ids, new_ids = self.walkers.balance()
                 self.prune_tree(old_ids=old_ids, new_ids=new_ids)
-                if self.print_i % print_every == 0:
+                if self.print_i % self.print_every == 0:
                     print(self.walkers)
                     clear_output(True)
                 self.print_i += 1
             except KeyboardInterrupt as e:
                 break
-
 
     def step_walkers(self):
         super(FunctionMapper, self).step_walkers()
@@ -231,8 +230,9 @@ class FunctionMapper(Swarm):
         def vector_to_arrow(v):
             x, y = v.origin[0], v.origin[1]
             dx, dy = v.end[0] - x, v.end[1] - y
-            return plt.arrow(float(x), float(y), float(dx), float(dy), width=0.03, color="blue",
-                             alpha=0.2)
+            return plt.arrow(
+                float(x), float(y), float(dx), float(dy), width=0.03, color="blue", alpha=0.2
+            )
 
         for v in self.encoder.vectors:
             vector_to_arrow(v)
@@ -244,6 +244,7 @@ class FunctionMapper(Swarm):
         plt.grid()
         plt.title(title)
         from mpl_toolkits.mplot3d import Axes3D
+
         fig = plt.figure()
         x = self.walkers.best_found.view(-1, 3)
         ax = Axes3D(fig)
@@ -264,15 +265,15 @@ class LocalMapper(FunctionMapper):
         best = self.walkers.best_found.detach().clone()
         best_reward = float(self.walkers.best_reward_found)
         if self.best_reward_found < best_reward:
-            optim_result = self.minimizer.minimize(best)
-            best = to_tensor(optim_result["x"])
-            new_best = -1.0 * float(optim_result["fun"])
+            new_best, new_best_reward = self.minimizer.minimize_point(best)
             new_best = (
-                new_best if not np.isinf(new_best) and new_best > best_reward else best_reward
+                new_best
+                if not np.isinf(new_best_reward) and new_best_reward > best_reward
+                else best
             )
-            self.best_reward_found = new_best
-            self.walkers.best_reward_found = new_best
-            self.walkers.best_found = best
+            self.best_reward_found = new_best_reward
+            self.walkers.best_reward_found = new_best_reward
+            self.walkers.best_found = new_best
 
     def fix_best(self):
         if self.walkers.best_found is not None:
