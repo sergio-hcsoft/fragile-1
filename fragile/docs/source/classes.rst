@@ -1,45 +1,45 @@
 Swarm
 =======
-.. autoclass:: fragile.base_classes.BaseSwarm
+.. autoclass:: fragile.core.base_classes.BaseSwarm
    :members:
 
-.. autoclass:: fragile.swarm.Swarm
+.. autoclass:: fragile.core.swarm.Swarm
    :members:
 
 Walkers
 =======
-.. autoclass:: fragile.base_classes.BaseWalkers
+.. autoclass:: fragile.core.base_classes.BaseWalkers
    :members:
 
-.. autoclass:: fragile.walkers.Walkers
+.. autoclass:: fragile.core.walkers.Walkers
    :members:
 
 Environment
 ===========
-.. autoclass:: fragile.base_classes.BaseEnvironment
+.. autoclass:: fragile.core.base_classes.BaseEnvironment
    :members:
 
-.. autoclass:: fragile.env.Environment
+.. autoclass:: fragile.core.env.Environment
    :members:
 
 Model
 =====
-.. autoclass:: fragile.base_classes.BaseModel
+.. autoclass:: fragile.core.base_classes.BaseModel
    :members:
 
-.. autoclass:: fragile.models.RandomDiscrete
+.. autoclass:: fragile.core.models.RandomDiscrete
    :members:
 
 States
 ============
-.. autoclass:: fragile.base_classes.BaseStates
+.. autoclass:: fragile.core.base_classes.BaseStates
    :members:
 
-.. autoclass:: fragile.states.States
+.. autoclass:: fragile.core.states.States
    :members:
 
 Tree
 ============
 
-.. autoclass:: fragile.tree.Tree
+.. autoclass:: fragile.core.tree.Tree
    :members:

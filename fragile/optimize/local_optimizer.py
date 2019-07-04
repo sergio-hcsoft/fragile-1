@@ -1,6 +1,5 @@
-from scipy.optimize import minimize
-
 import numpy as np
+from scipy.optimize import minimize
 import torch
 
 from fragile.core.base_classes import BaseStates
@@ -20,10 +19,10 @@ class Minimizer:
         def _optimize(x):
             x = to_tensor(x).view(1, -1)
             try:
-                y = self.function(x)
-            except ZeroDivisionError as e:
-                y = -1e7
-            return -float(y)
+                y = -float(self.function(x))
+            except (ZeroDivisionError, RuntimeError) as e:
+                y = np.inf
+            return y
 
         num_x = to_numpy(x)
         return minimize(_optimize, num_x, bounds=self.bounds, *self.args, **self.kwargs)
@@ -85,6 +84,7 @@ class MinimizerWrapper(Function):
         new_points = actions.float() * n_repeat_action.float() + states.float()
 
         new_points, rewards = self.minimizer.minimize_batch(new_points)
+
         ends = self.boundary_condition(new_points, rewards)
 
         self._last_states = self._get_new_states(new_points, rewards, ends, len(actions))

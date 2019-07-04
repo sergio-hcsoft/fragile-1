@@ -6,7 +6,7 @@ try:
     from IPython.core.display import clear_output
 except ImportError:
 
-    def clear_output(*args, **kwargs):
+    def clear_output(**kwargs):
         pass
 
 
@@ -44,6 +44,7 @@ class Swarm(BaseSwarm):
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
         prune_tree: bool = True,
+        use_tree: bool = False,
         *args,
         **kwargs
     ):
@@ -62,8 +63,9 @@ class Swarm(BaseSwarm):
             **kwargs
         )
 
-        self.tree = Tree()
+        self.tree = Tree() if use_tree else None
         self._prune_tree = prune_tree
+        self._use_tree = use_tree
         self.print_i = 0
 
     def init_walkers(self, model_states: BaseStates = None, env_states: BaseStates = None):
@@ -120,13 +122,14 @@ class Swarm(BaseSwarm):
 
         self.walkers.update_states(env_states=env_states, model_states=model_states)
         self.walkers.update_end_condition(env_states.ends)
-        walker_ids = self.tree.add_states(
-            parent_ids=states_ids,
-            env_states=self.walkers.env_states,
-            model_states=self.walkers.model_states,
-            cum_rewards=self.walkers.cum_rewards.cpu().numpy().copy().flatten(),
-        )
-        self.walkers.update_ids(walker_ids)
+        if self._use_tree:
+            walker_ids = self.tree.add_states(
+                parent_ids=states_ids,
+                env_states=self.walkers.env_states,
+                model_states=self.walkers.model_states,
+                cum_rewards=self.walkers.cum_rewards.cpu().numpy().copy().flatten(),
+            )
+            self.walkers.update_ids(walker_ids)
 
     def prune_tree(self, old_ids, new_ids):
         if self._prune_tree:

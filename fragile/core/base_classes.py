@@ -6,9 +6,9 @@ import torch
 
 class BaseStates:
     """
-    This class is meant to handle several tensors that will contain the data
-    associated with the walkers of a Swarm. This means that each tensor will
-    have an extra dimension equal to the number of walkers.
+    Handle several tensors that will contain the data associated with the walkers
+    of a Swarm. This means that each tensor will have an extra dimension equal to
+    the number of walkers.
 
     This class behaves as a dictionary of tensors with some extra functionality
     to make easier the process of cloning the along the walkers dimension.
@@ -44,7 +44,9 @@ class BaseStates:
             setattr(self, key, val)
         self._n_walkers = n_walkers
 
-    def __getitem__(self, item: [str, List[str]]) -> [np.ndarray, torch.Tensor]:
+    def __getitem__(
+        self, item: Union[str, List[str]]
+    ) -> Union[np.ndarray, torch.Tensor, List[Union[np.ndarray, torch.Tensor]]]:
         """
         Query an attribute of the class as if it was a dictionary.
 
@@ -58,14 +60,12 @@ class BaseStates:
             try:
                 return getattr(self, item)
             except TypeError as e:
-                raise TypeError(
-                    "Tried to get an attribute with key {} of type {}".format(item, type(item))
-                )
+                raise TypeError("Tried to get an attribute with key {}".format(item))
         elif isinstance(item, list):
             return [getattr(self, it) for it in item]
         else:
             raise TypeError(
-                "item must be an instance of str or list, got {} instead".format(item, type(item))
+                "item must be an instance of str or list, got {} instead".format(item)
             )
 
     def __setitem__(self, key, value: [torch.Tensor, np.ndarray]):

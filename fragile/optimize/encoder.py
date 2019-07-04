@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import torch
 
@@ -56,7 +58,7 @@ class Vector:
         # return region
 
     def decode_list(self, points) -> list:
-        return [self.assign_region(p) for p in points]
+        return copy.deepcopy([self.assign_region(p) for p in points])
 
     def is_outdated(self):
         if len(self.last_regions) > self.timeout_threshold:
@@ -123,7 +125,7 @@ class Encoder:
         text = (
             "Encoder with {} vectors, score {:.3f}, {} different hashes and {} "
             "available spaces\n".format(
-                self.n_vectors,
+                len(self),
                 div_score / den,
                 div_score,
                 min(self.n_vectors - len(self), len(self.vectors)),
@@ -150,7 +152,7 @@ class Encoder:
         if len(self) < self.n_vectors:
             self.vectors.append(vector)
         else:
-            self.vectors[:-1] = self.vectors[1:]
+            self.vectors[:-1] = copy.deepcopy(self.vectors[1:])
             self.vectors[-1] = vector
 
     def pct_different_hashes(self, points: torch.Tensor) -> float:
@@ -194,8 +196,12 @@ class Encoder:
         self._vectors = list(set(self.vectors))
 
     def remove_bases(self, points):
-        self._vectors = [v for v in self.vectors if not v.is_outdated()]
-        self._vectors = [v for v in self.vectors if self.is_valid_base(vector=v, points=points)]
+        self._vectors = [
+            v
+            for v in self.vectors
+            if not v.is_outdated() and self.is_valid_base(vector=v, points=points)
+        ]
+        # self._vectors = [v for v in self.vectors if self.is_valid_base(vector=v, points=points)]
         self.remove_duplicates()
 
     def update_bases(self, vectors):
@@ -212,4 +218,4 @@ class Encoder:
                 self.append_vector(vec)
 
     def get_bases(self) -> torch.Tensor:
-        return torch.stack([v.base.detach().clone() for v in self.vectors])
+        return torch.stack([v.base.detach() for v in self.vectors]).clone()

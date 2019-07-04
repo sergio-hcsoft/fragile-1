@@ -126,7 +126,7 @@ def numba_lennard(x):
     return result
 
 
-def lj_func(x):
+def lennard_jones(x):
     x = to_numpy(x)
     result = -1 * numba_lennard(x)
     return to_tensor(result)
@@ -167,9 +167,6 @@ class LennardJones(OptimBenchmark):
         self.benchmark = [np.zeros(self.n_atoms * 3), self.minima.get(str(int(n_atoms)), 0)]
         super(LennardJones, self).__init__(shape=shape, *args, **kwargs)
 
-        def lennard_jones(x):
-            return lj_func(x)
-
         self.function = lennard_jones
 
     @staticmethod
@@ -179,8 +176,8 @@ class LennardJones(OptimBenchmark):
 
     def boundary_condition(self, points, rewards):
         ends = super(LennardJones, self).boundary_condition(points, rewards)
-        # mean = rewards.mean()
-        too_bad = rewards < -200000
+        mean = rewards.mean()
+        too_bad = rewards < mean  # -2_000_000  #
         if int(too_bad.sum()) < len(too_bad):
             ends[too_bad] = 1
         else:

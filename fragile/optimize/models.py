@@ -186,3 +186,74 @@ class BestDtEncoderSamper(EncoderSampler):
     def map_range(x, max_: float = 1, min_: float = 0.0):
         normed = (x - x.min()) / (x.max() - x.min())
         return normed * (max_ - min_) + min_
+
+
+class ESSampler(EncoderSampler):
+    def __init__(
+        self,
+        mutation: float = 0.5,
+        recombination: float = 0.7,
+        random_step_prob: float = 0.1,
+        *args,
+        **kwargs
+    ):
+        super(ESSampler, self).__init__(*args, **kwargs)
+        self.mutation = mutation
+        self.recombination = recombination
+        self.random_step_prob = random_step_prob
+
+    @property
+    def walkers(self):
+        return self._walkers
+
+    def set_walkers(self, encoder: Encoder):
+        self._walkers = encoder
+
+    def calculate_dt(
+        self, model_states: BaseStates, env_states: BaseStates
+    ) -> Tuple[np.ndarray, BaseStates]:
+        """
+
+        Args:
+            model_states:
+            env_states:
+
+        Returns:
+            Tuple containing a tensor with the sampled actions and the new model states variable.
+        """
+        dt = np.ones(shape=tuple(env_states.rewards.shape))
+        # * self.mean_dt
+        model_states.update(dt=dt)
+        return dt, model_states
+
+    def sample(self, batch_size: int = 1, *args, **kwargs):
+        if np.random.random() < self.random_step_prob:
+            return super(ESSampler, self).sample(batch_size=batch_size, *args, **kwargs)
+        states = self._walkers.observs.detach().clone().float()
+        best = (
+            self._walkers.best_found.detach().clone().float()
+            if self._walkers.best_found is not None
+            else torch.zeros_like(states[0])
+        )
+        # Choose 2 random indices
+        a_rand = torch.randperm(states.shape[0])
+        b_rand = torch.randperm(states.shape[0])
+        # Calculate proposal using best and difference of two random choices
+        if np.random.random() > 0.5:
+            base_pert = super(ESSampler, self).sample(batch_size=batch_size, *args, **kwargs)
+            proposal = best + self.recombination * base_pert  # (states[a_rand] - states[b_rand])
+        else:
+            proposal = best + self.recombination * (states[a_rand] - states[b_rand])
+        # Randomly mutate the each coordinate of the original vector
+        assert states.shape == proposal.shape
+        rands = torch.rand(self._walkers.observs.shape)
+        perturbations = torch.where(rands < self.mutation, states, proposal).detach().clone()
+        new_states = to_numpy(perturbations - states)
+
+        high = (
+            self.bounds.high
+            if self.bounds.dtype.kind == "f"
+            else self.bounds.high.astype("int64") + 1
+        )
+        data = np.clip(new_states, self.bounds.low, high)
+        return to_tensor(data, device=device, dtype=torch.float32)

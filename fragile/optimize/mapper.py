@@ -21,7 +21,7 @@ class MapperWalkers(Walkers):
         self.pwise_distance = self._distances
         self._pwise_dist_module = torch.nn.PairwiseDistance().to(self.device)
         self.best_found = None
-        self.best_reward_found = -1e20
+        self.best_reward_found = -1e10
         self._n_cloned_vectors = 0
         self._score_vectors = 0
         self.pest_scale = torch.tensor([pest_scale], dtype=float_type, device=self.device)
@@ -80,9 +80,9 @@ class MapperWalkers(Walkers):
     def update_best(self):
         ix = self.cum_rewards.argmax()
         best = self.observs[ix].detach().cpu().clone()
-        best_reward = self.cum_rewards[ix]
+        best_reward = float(self.cum_rewards[ix].cpu())
         if self.best_reward_found < best_reward and not bool(self.ends[ix]):
-            self.best_reward_found = float(best_reward.cpu())
+            self.best_reward_found = best_reward
             self.best_found = best
 
     def _distances(self, state_1, state_2):
@@ -115,7 +115,8 @@ class FunctionMapper(Swarm):
         self.visited_rewards = []
         self._plot_steps = plot_steps
         self.plot_every = plot_every
-        if hasattr(self.model, "set_walkers") and isinstance(self.model, EncoderSampler):
+        self.print_i = 0
+        if hasattr(self.model, "set_walkers"):
             self.model.set_walkers(self.walkers)
 
     @staticmethod
@@ -193,6 +194,7 @@ class FunctionMapper(Swarm):
             # rewards = self.walkers.get_env_states().rewards
             self.walkers.observs[-1, :] = self.walkers.best_found.detach().clone()
             self.walkers.rewards[-1] = torch.tensor(self.walkers.best_reward_found)
+            self.walkers.ends[-1] = 0
 
     def record_visited(self):
         observs = to_numpy(self.walkers.observs)
@@ -259,7 +261,7 @@ class LocalMapper(FunctionMapper):
         super(LocalMapper, self).__init__(*args, **kwargs)
         minimizer = minimizer if minimizer is not None else Minimizer
         self.minimizer = minimizer(function=self.env)
-        self.best_reward_found = -1e20
+        self.best_reward_found = -np.inf
 
     def minimize_best(self):
         best = self.walkers.best_found.detach().clone()
@@ -271,6 +273,7 @@ class LocalMapper(FunctionMapper):
                 if not np.isinf(new_best_reward) and new_best_reward > best_reward
                 else best
             )
+            new_best_reward = new_best_reward if not np.isinf(new_best_reward) else best_reward
             self.best_reward_found = new_best_reward
             self.walkers.best_reward_found = new_best_reward
             self.walkers.best_found = new_best

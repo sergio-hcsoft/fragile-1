@@ -62,15 +62,12 @@ class Function(BaseEnvironment):
         actions = to_tensor(actions, device=self.device)
         n_repeat_action = to_tensor(n_repeat_action, device=self.device)
         new_points = actions.float() * n_repeat_action.float() + states.float()
-        # new_points[-1] = states[-1].detach().clone()
 
-        rewards = self.function(new_points)
-        # rewards[-1] = env_states.rewards[-1]
+        rewards = self.function(new_points).float()
         ends = self.boundary_condition(new_points, rewards)
 
-        # ends[-1] = 0
-        self._last_states = self._get_new_states(new_points, rewards, ends, len(actions))
-        return self._last_states
+        last_states = self._get_new_states(new_points, rewards, ends, len(actions))
+        return last_states
 
     def boundary_condition(self, points, rewards):
         ends = torch.ones(rewards.shape, dtype=torch.uint8, device=self.device)
