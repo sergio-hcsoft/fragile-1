@@ -1,7 +1,8 @@
+from typing import Union
+
 import numpy as np
 import sklearn
 from sklearn.neighbors import NearestNeighbors
-import torch
 
 from fragile.core.states import BaseStates
 from fragile.core.utils import fai_iteration_np
@@ -29,7 +30,7 @@ class Memory:
     def observs(self):
         return self._observs
 
-    def update(self, states: BaseStates = None, observs: [torch.Tensor, np.ndarray, list] = None):
+    def update(self, states: BaseStates = None, observs: Union[np.ndarray, list] = None):
         if states is None and observs is None:
             raise ValueError("Both states and observs cannot be None.")
 
@@ -38,17 +39,14 @@ class Memory:
                 "States does not have attribute observs: {} {}".format(states, type(states))
             )
         observs = states.observs if states is not None else observs
-        if not isinstance(observs, (np.ndarray, list, torch.Tensor)):
+        if not isinstance(observs, (np.ndarray, list)):
             raise ValueError(
                 "observs must be of type torch.Tensor,"
                 " np.ndarray of list,but got {} instead".format(type(observs))
             )
 
-        observs = (
-            observs.cpu().numpy().copy()
-            if isinstance(observs, torch.Tensor)
-            else np.array(observs).copy()
-        )
+        observs = np.array(observs).copy()
+
         observs = observs.reshape(len(observs), -1)
         if self.observs is None:
             self._init_memory(observs=observs)

@@ -1,22 +1,24 @@
 import copy
 
 import numpy as np
-import torch
 
-device = "cpu" if not torch.cuda.is_available() else "cuda"
+# import torch
+
+# device = "cpu" if not torch.cuda.is_available() else "cuda"
 
 
 def params_to_tensors(param_dict, n_walkers: int):
     tensor_dict = {}
     copy_dict = copy.deepcopy(param_dict)
     for key, val in copy_dict.items():
-        sizes = tuple([n_walkers]) + val["sizes"]
-        del val["sizes"]
-        tensor_dict[key] = torch.empty(sizes, **val)
+        sizes = tuple([n_walkers]) + val["size"]
+        del val["size"]
+        tensor_dict[key] = np.empty(sizes, **val)
     return tensor_dict
 
 
-def relativize(x, device=device):
+"""
+def relativize_torch(x, device=device):
     x = x.float()
     std = x.std()
     if float(std) == 0:
@@ -25,9 +27,11 @@ def relativize(x, device=device):
     standard[standard > 0] = torch.log(1.0 + standard[standard > 0]) + 1.0
     standard[standard <= 0] = torch.exp(standard[standard <= 0])
     return standard
+"""
 
 
-def relativize_np(x):
+def relativize(x: np.ndarray) -> np.ndarray:
+
     std = x.std()
     if float(std) == 0:
         return np.ones(len(x), dtype=type(std))
@@ -37,6 +41,7 @@ def relativize_np(x):
     return standard
 
 
+"""
 def to_numpy(x: [np.ndarray, torch.Tensor, list]) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return x
@@ -55,6 +60,7 @@ def to_tensor(x: [torch.Tensor, np.ndarray, list], device=device, *args, **kwarg
         return torch.from_numpy(x).to(device)
     else:
         return torch.Tensor(x, device=device, *args, **kwargs)
+"""
 
 
 def statistics_from_array(x: np.ndarray):
@@ -82,8 +88,8 @@ def calculate_virtual_reward_np(
     other_reward = other_reward.flatten() if isinstance(other_reward, np.ndarray) else other_reward
 
     distance = np.linalg.norm(flattened_observs - flattened_observs[compas], axis=1)
-    distance_norm = relativize_np(distance)
-    rewards_norm = relativize_np(rewards)
+    distance_norm = relativize(distance)
+    rewards_norm = relativize(rewards)
 
     virtual_reward = (
         distance_norm.flatten() ** dist_coef * rewards_norm.flatten() ** reward_coef * other_reward

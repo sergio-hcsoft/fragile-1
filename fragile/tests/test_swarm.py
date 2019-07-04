@@ -23,6 +23,7 @@ def swarm(environment_fact):
         walkers=Walkers,
         n_walkers=n_walkers,
         max_iters=10,
+        use_tree=True,
     )
     return swarm
 
@@ -56,7 +57,7 @@ class TestSwarm:
         swarm.init_walkers()
         swarm.walkers.max_iters = 500
         swarm.run_swarm()
-        reward = swarm.walkers.cum_rewards.max().item()
+        reward = swarm.walkers.cum_rewards.max()
         assert reward > 100, "Iters: {}, rewards: {}".format(
             swarm.walkers.n_iters, swarm.walkers.cum_rewards
         )

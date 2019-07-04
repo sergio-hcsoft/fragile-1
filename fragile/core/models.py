@@ -2,7 +2,6 @@ from typing import Tuple
 
 from gym.spaces import Box
 import numpy as np
-import torch
 
 from fragile.core.base_classes import BaseModel
 from fragile.core.env import DiscreteEnv
@@ -14,10 +13,10 @@ class RandomDiscrete(BaseModel):
         self,
         env: DiscreteEnv = None,
         n_actions: int = None,
-        min_dt=1,
+        min_dt=3,
         max_dt=10,
         mean_dt=4,
-        std_dt=1,
+        std_dt=2,
         *args,
         **kwargs
     ):
@@ -33,9 +32,9 @@ class RandomDiscrete(BaseModel):
     @classmethod
     def get_params_dict(cls) -> dict:
         params = {
-            "actions": {"sizes": tuple([1]), "dtype": torch.int},
-            "init_actions": {"sizes": tuple([1]), "dtype": torch.int},
-            "dt": {"sizes": tuple([1]), "dtype": torch.int},
+            "actions": {"dtype": np.int_},
+            "init_actions": {"dtype": np.int_},
+            "dt": {"dtype": np.int_},
         }
         return params
 
@@ -128,9 +127,9 @@ class RandomContinous(BaseModel):
 
     def get_params_dict(self) -> dict:
         params = {
-            "actions": {"sizes": self.shape, "dtype": torch.int},
-            "init_actions": {"sizes": self.shape, "dtype": torch.int},
-            "dt": {"sizes": tuple([self.n_dims]), "dtype": torch.int},
+            "actions": {"size": self.shape, "dtype": np.int_},
+            "init_actions": {"size": self.shape, "dtype": np.int_},
+            "dt": {"size": tuple([self.n_dims]), "dtype": np.int_},
         }
         return params
 

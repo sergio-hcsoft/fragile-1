@@ -2,9 +2,7 @@ import math
 
 from numba import jit
 import numpy as np
-import torch
 
-from fragile.core.utils import to_numpy, to_tensor
 from fragile.optimize.env import Function
 
 
@@ -31,9 +29,9 @@ class OptimBenchmark(Function):
         return kwargs
 
 
-def sphere(x: torch.Tensor):
-    with torch.no_grad():
-        return -torch.sum(x ** 2, 1)
+def sphere(x: np.ndarray):
+
+    return -np.sum(x ** 2, 1).flatten()
 
 
 class Sphere(OptimBenchmark):
@@ -45,12 +43,11 @@ class Sphere(OptimBenchmark):
         return bounds
 
 
-def rastrigin(x: torch.Tensor):
-    with torch.no_grad():
-        dims = x.shape[1]
-        A = 10
-        result = A * dims + torch.sum(x ** 2 - A * torch.cos(2 * math.pi * x), 1)
-        return -1 * result
+def rastrigin(x: np.ndarray):
+    dims = x.shape[1]
+    A = 10
+    result = A * dims + np.sum(x ** 2 - A * np.cos(2 * math.pi * x), 1)
+    return -1 * result
 
 
 class Rastrigin(OptimBenchmark):
@@ -62,13 +59,13 @@ class Rastrigin(OptimBenchmark):
         return bounds
 
 
-def eggholder(tensor: torch.Tensor):
-    with torch.no_grad():
-        x, y = tensor[:, 0], tensor[:, 1]
-        first_root = torch.sqrt(torch.abs(x / 2.0 + (y + 47)))
-        second_root = torch.sqrt(torch.abs(x - (y + 47)))
-        result = -1 * (y + 47) * torch.sin(first_root) - x * torch.sin(second_root)
-        return -1 * result
+def eggholder(tensor: np.ndarray):
+
+    x, y = tensor[:, 0], tensor[:, 1]
+    first_root = np.sqrt(np.abs(x / 2.0 + (y + 47)))
+    second_root = np.sqrt(np.abs(x - (y + 47)))
+    result = -1 * (y + 47) * np.sin(first_root) - x * np.sin(second_root)
+    return -1 * result
 
 
 class EggHolder(OptimBenchmark):
@@ -89,8 +86,7 @@ class EggHolder(OptimBenchmark):
 
 
 def styblinski_tang(x):
-    with torch.no_grad():
-        return -1 * torch.sum(x ** 4 - 16 * x ** 2 + 5 * x, 1) / 2.0
+    return -1 * np.sum(x ** 4 - 16 * x ** 2 + 5 * x, 1) / 2.0
 
 
 class StyblinskiTang(OptimBenchmark):
@@ -120,16 +116,15 @@ def lennard_fast(U):
 
 @jit(nopython=True)
 def numba_lennard(x):
-    result = np.zeros((x.shape[0], 1))
+    result = np.zeros(x.shape[0])
     for i in range(x.shape[0]):
-        result[i, 0] = lennard_fast(x[i])
+        result[i] = lennard_fast(x[i])
     return result
 
 
-def lennard_jones(x):
-    x = to_numpy(x)
+def lennard_jones(x: np.ndarray):
     result = -1 * numba_lennard(x)
-    return to_tensor(result)
+    return result
 
 
 class LennardJones(OptimBenchmark):

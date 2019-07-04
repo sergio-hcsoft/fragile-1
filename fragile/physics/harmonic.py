@@ -1,29 +1,19 @@
 from typing import Tuple
 
-import torch
-import torch.distributions as tdist
 import numpy as np
 
 from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseStates
 from fragile.core.states import States
-from fragile.core.utils import device
 
 
 class HarmonicOscillator(BaseEnvironment):
     def __init__(
-        self,
-        n_dims: int = 1,
-        k: float = 1.0,
-        m: float = 1.0,
-        length: float = 1.0,
-        device=device,
-        init_state=None,
+        self, n_dims: int = 1, k: float = 1.0, m: float = 1.0, length: float = 1.0, init_state=None
     ):
         self._n_dims = n_dims
         self.k = k
         self.m = m
         self.length = length
-        self.device = device
         self.init_state = init_state
 
     @property
@@ -38,24 +28,16 @@ class HarmonicOscillator(BaseEnvironment):
         the particle in each dimension.
         """
         params = {
-            "states": {
-                "sizes": tuple([self.n_actions * 2 + 4]),
-                "dtype": torch.int64,
-                "device": self.device,
-            },
-            "observs": {
-                "sizes": tuple([self.n_actions * 2 + 4]),
-                "dtype": torch.float,
-                "device": self.device,
-            },
-            "rewards": {"sizes": tuple([1]), "dtype": torch.float, "device": self.device},
-            "ends": {"sizes": tuple([1]), "dtype": torch.uint8, "device": self.device},
+            "states": {"size": tuple([self.n_actions * 2 + 4]), "dtype": np.int64},
+            "observs": {"size": tuple([self.n_actions * 2 + 4]), "dtype": np.float32},
+            "rewards": {"dtype": np.float32},
+            "ends": {"dtype": np.bool_},
         }
         return params
 
     def step(
         self,
-        actions: torch.Tensor,
+        actions: np.ndarray,
         env_states: BaseStates,
         n_repeat_action: [int, np.ndarray] = 1,
         *args,
@@ -85,58 +67,52 @@ class HarmonicOscillator(BaseEnvironment):
         return new_state
 
     def _step_harmonic_oscillator(self, actions, states, n_repeat_action: float = 0.1) -> tuple:
-        old_pos = states[:, : self.n_actions].view(-1, self.n_actions)
-        old_velocity = states[:, self.n_actions : self.n_actions * 2].view(-1, self.n_actions)
-        old_delta_energy = states[:, -4].view(-1, 1)
-        old_action = states[:, -3].view(-1, 1)
+        old_pos = states[:, : self.n_actions].reshape(-1, self.n_actions)
+        old_velocity = states[:, self.n_actions : self.n_actions * 2].reshape(-1, self.n_actions)
+        old_delta_energy = states[:, -4]
+        old_action = states[:, -3]
 
         assert old_pos.shape == old_velocity.shape, (old_pos.shape, old_velocity.shape)
         assert old_pos.shape[1] == self.n_actions
         assert old_pos.shape == actions.shape
 
-        old_pot_e = 0.5 * self.k * (old_pos ** 2).sum(dim=1).view(-1, 1)
-        old_kin_e = (old_velocity ** 2).sum(dim=1).view(-1, 1) * self.m
+        old_pot_e = 0.5 * self.k * (old_pos ** 2).sum(axis=1)
+        old_kin_e = (old_velocity ** 2).sum(axis=1) * self.m
 
         assert old_pot_e.shape == old_kin_e.shape, (old_pot_e.shape, old_kin_e.shape)
 
         old_energy = old_pot_e + old_kin_e
 
         assert old_pot_e.shape[0] == actions.shape[0]
-        assert old_pot_e.shape[1] == 1
         assert old_kin_e.shape[0] == actions.shape[0]
-        assert old_kin_e.shape[1] == 1
         assert old_energy.shape[0] == actions.shape[0]
-        assert old_energy.shape[1] == 1
 
         actions = -self.k * old_pos + actions
         new_velocity = old_velocity + actions * n_repeat_action
         new_position = (
-            old_pos.view(-1, self.n_actions)
-            + old_velocity.view(-1, self.n_actions) * n_repeat_action
-            + 0.5 * actions.view(-1, self.n_actions) * (n_repeat_action ** 2)
+            old_pos.reshape(-1, self.n_actions)
+            + old_velocity.reshape(-1, self.n_actions) * n_repeat_action
+            + 0.5 * actions.reshape(-1, self.n_actions) * (n_repeat_action ** 2)
         )
         new_position = new_position
         # .view(-1, self.n_actions)
         delta_pos = new_position - old_pos
 
-        new_pot_e = 0.5 * self.k * (new_position ** 2).sum(dim=1).view(-1, 1)
-        new_kin_e = (new_velocity ** 2).sum(dim=1).view(-1, 1) * self.m
+        new_pot_e = 0.5 * self.k * (new_position ** 2).sum(axis=1)
+        new_kin_e = (new_velocity ** 2).sum(axis=1) * self.m
         new_energy = new_kin_e + new_pot_e
 
         delta_potential_e = new_pot_e - old_pot_e
         delta_kinetic_e = new_kin_e - old_kin_e
-        delta_energy = new_energy.view(-1, 1) - old_energy.view(-1, 1)
+        delta_energy = new_energy - old_energy
 
         assert delta_energy.shape[0] == actions.shape[0]
-        assert delta_energy.shape[1] == 1
 
         assert new_position.shape[0] == actions.shape[0], new_position.shape
-        assert new_position.shape[1] == self.n_actions, new_position.shape
 
         assert new_position.shape == old_pos.shape
         assert new_velocity.shape == old_velocity.shape
 
-        ends = torch.zeros((int(new_position.shape[0]), 1), dtype=torch.uint8)
         ends = delta_energy > 3
         action = new_kin_e - old_kin_e
 
@@ -152,7 +128,7 @@ class HarmonicOscillator(BaseEnvironment):
             delta_energy.flatten() + old_delta_energy.flatten()
         )
 
-        return states, states.clone(), rewards.reshape(-1, 1), ends.reshape(-1, 1)
+        return states, states.copy(), rewards, ends
 
     # @profile
     def reset(self, batch_size: int = 1, states=None) -> BaseStates:
@@ -169,13 +145,13 @@ class HarmonicOscillator(BaseEnvironment):
             batch_size.
         """
         init_val = (
-            self.init_state if self.init_state is not None else torch.zeros(self.n_actions * 2 + 4)
+            self.init_state if self.init_state is not None else np.zeros(self.n_actions * 2 + 4)
         )
 
-        states = torch.stack([init_val.clone() for _ in range(batch_size)], dim=0)
-        observs = states.clone()
-        rewards = torch.zeros((batch_size, 1), dtype=torch.float32)
-        ends = torch.zeros((batch_size, 1), dtype=torch.uint8)
+        states = np.vstack([init_val.copy() for _ in range(batch_size)])
+        observs = states.copy()
+        rewards = np.zeros(batch_size, dtype=np.float32)
+        ends = np.zeros(batch_size, dtype=np.uint8)
         new_states = self._get_new_states(states, observs, rewards, ends, batch_size)
         return new_states
 
@@ -199,15 +175,15 @@ class GausianPerturbator(BaseModel):
     ):
         super(GausianPerturbator, self).__init__(*args, **kwargs)
         self._n_actions = n_actions
-        self.dist = tdist.Normal(scale=scale, loc=loc)
         self.dt = dt
         self.max_jump = max_jump
+        self.dist = lambda x: np.random.normal(size=x, loc=loc, scale=scale)
 
     def get_params_dict(self) -> dict:
         params = {
-            "actions": {"sizes": tuple([self._n_actions]), "dtype": torch.float32},
-            "init_actions": {"sizes": tuple([self._n_actions]), "dtype": torch.float32},
-            "dt": {"sizes": tuple([self._n_actions]), "dtype": torch.float32},
+            "actions": {"size": tuple([self._n_actions]), "dtype": np.float32},
+            "init_actions": {"size": tuple([self._n_actions]), "dtype": np.float32},
+            "dt": {"size": tuple([self._n_actions]), "dtype": np.float32},
         }
         return params
 
@@ -228,10 +204,10 @@ class GausianPerturbator(BaseModel):
         """
 
         model_states = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
-        actions = self.dist.sample((batch_size, self.n_actions))
-        actions = torch.clamp(actions, -self.max_jump, self.max_jump)
+        actions = self.dist((batch_size, self.n_actions))
+        actions = np.clip(actions, -self.max_jump, self.max_jump)
         model_states.update(
-            dt=torch.ones(batch_size) * self.dt, actions=actions, init_actions=actions
+            dt=np.ones(batch_size) * self.dt, actions=actions, init_actions=actions
         )
         return actions, model_states
 
@@ -254,8 +230,8 @@ class GausianPerturbator(BaseModel):
         if batch_size is None and env_states is None:
             raise ValueError("env_states and batch_size cannot be both None.")
         size = len(env_states.rewards) if env_states is not None else batch_size
-        actions = self.dist.sample((size, self.n_actions))
-        actions = torch.clamp(actions, -self.max_jump, self.max_jump)
+        actions = self.dist((size, self.n_actions))
+        actions = np.clip(actions, -self.max_jump, self.max_jump)
         return actions.reshape((size, self.n_actions)), model_states
 
     def calculate_dt(self, model_states: BaseStates, env_states: BaseStates) -> Tuple:
@@ -268,8 +244,7 @@ class GausianPerturbator(BaseModel):
         Returns:
 
         """
-        n_walekrs = len(env_states.rewards)
-        dt = torch.ones((n_walekrs, 1)) * self.dt
-
+        n_walkers = len(env_states.rewards)
+        dt = np.ones(n_walkers) * self.dt
         model_states.update(dt=dt)
         return dt, model_states

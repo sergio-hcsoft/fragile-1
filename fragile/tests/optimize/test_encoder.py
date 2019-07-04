@@ -1,5 +1,5 @@
+import numpy as np
 import pytest
-import torch
 
 from fragile.optimize.encoder import Encoder, Vector
 
@@ -11,7 +11,7 @@ def encoder():
 
 @pytest.fixture()
 def vector():
-    return Vector(origin=torch.tensor([0, 0]), end=torch.tensor([1, 0]), timeout=5)
+    return Vector(origin=np.array([0, 0]), end=np.array([1, 0]), timeout=5)
 
 
 class TestVector:
@@ -19,18 +19,18 @@ class TestVector:
         pass
 
     def test_scalar_product(self, vector):
-        other = torch.tensor([1, 0])
+        other = np.array([1, 0])
         res = vector.scalar_product(other)
         assert res == 0
-        other = torch.tensor([0, 1])
+        other = np.array([0, 1])
         res = vector.scalar_product(other)
         assert res == 1
 
     def test_assign_region(self, vector):
-        other = torch.tensor([1, 0])
+        other = np.array([1, 0])
         res = vector.assign_region(other)
         assert res == 0
-        other = torch.tensor([0, 1])
+        other = np.array([0, 1])
         res = vector.assign_region(other)
         assert res == 1
 
@@ -41,7 +41,7 @@ class TestEncoder:
 
     def test_append(self, encoder):
         init_len = len(encoder)
-        start, end = torch.tensor([0, 3]), torch.tensor([3, 3])
+        start, end = np.array([0, 3]), np.array([3, 3])
         encoder.append(origin=start, end=end, timeout=3)
         assert len(encoder) > 0
         assert len(encoder) == init_len + 1
@@ -50,7 +50,7 @@ class TestEncoder:
     def test_len(self, encoder):
         encoder.reset()
         assert len(encoder) == 0
-        start, end = torch.tensor([0, 3]), torch.tensor([3, 3])
+        start, end = np.array([0, 3]), np.array([3, 3])
         for _ in range(15):
             encoder.append(origin=start, end=end, timeout=3)
 

@@ -1,11 +1,8 @@
 import copy
 
 import numpy as np
-import torch
 
 from fragile.core.base_classes import BaseStates
-
-device_states = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 class States(BaseStates):
@@ -20,7 +17,7 @@ class States(BaseStates):
     In order to define the tensors, a state_dict dictionary needs to be specified
     using the following structure::
 
-        state_dict = {name_1: {"sizes": tuple,
+        state_dict = {name_1: {"size": tuple,
                                device=device,
                                dtype=valid_datatype,
                                },
@@ -40,27 +37,26 @@ class States(BaseStates):
         tensor_dict = {}
         copy_dict = copy.deepcopy(param_dict)
         for key, val in copy_dict.items():
-            sizes = tuple([n_walkers]) + val["sizes"]
-            del val["sizes"]
-            if "device" not in val.keys():
-                val["device"] = self.device
-            tensor_dict[key] = torch.zeros(sizes, **val)
+            val_size = val.get("size")
+            sizes = n_walkers if val_size is None else tuple([n_walkers]) + val_size
+            if "size" in val:
+                del val["size"]
+            tensor_dict[key] = np.zeros(sizes, **val)
         return tensor_dict
 
-    def clone(self, will_clone: torch.Tensor, compas_ix: torch.Tensor):
-        will_clone, compas_ix = will_clone.to(self.device), compas_ix.to(self.device)
+    def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray):
         for name in self.keys():
             self[name][will_clone] = self[name][compas_ix][will_clone]
 
     def update(self, other: "BaseStates" = None, **kwargs):
         other = other if other is not None else kwargs
         for name, val in other.items():
-            val = torch.from_numpy(val).to(self.device) if isinstance(val, np.ndarray) else val
+            val = val if isinstance(val, np.ndarray) else np.array(val)
             self[name] = val
 
     def get_params_dict(self):
         pass
 
     def copy(self) -> "States":
-        param_dict = {str(name): val.clone() for name, val in self.items()}
+        param_dict = {str(name): val.copy() for name, val in self.items()}
         return States(n_walkers=self.n, **param_dict)

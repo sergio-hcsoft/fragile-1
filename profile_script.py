@@ -1,16 +1,26 @@
 from plangym import AtariEnvironment, ParallelEnvironment
 
-from fragile.env import DiscreteEnv
-from fragile.models import RandomDiscrete
-from fragile.states import States
-from fragile.swarm import Swarm
+from fragile.core.env import DiscreteEnv
+from fragile.core.models import RandomDiscrete
+from fragile.core.states import States
+from fragile.core.swarm import Swarm
 
 
 if __name__ == "__main__":
+    import numpy as np
+    import pytest
+    import torch
+    from plangym import AtariEnvironment, ParallelEnvironment
+
+    from fragile.core.env import DiscreteEnv
+    from fragile.core.models import RandomDiscrete
+    from fragile.core.states import States
+    from fragile.core.swarm import Swarm
+    from fragile.core.walkers import Walkers
 
     env = ParallelEnvironment(
         env_class=AtariEnvironment,
-        name="MsPacman-v0",
+        name="MsPacman-ram-v0",
         clone_seeds=True,
         autoreset=True,
         blocking=False,
@@ -23,29 +33,17 @@ if __name__ == "__main__":
 
     data = env.step_batch(states=states, actions=actions)
     new_states, observs, rewards, ends, infos = data
-    fe = DiscreteEnv(env)
-    states = fe.reset(batch_size=10)
+
     swarm = Swarm(
         model=lambda x: RandomDiscrete(x),
-        env=lambda: fe,
-        n_walkers=100,
-        skipframe=4,
-        max_iters=300,
+        walkers=Walkers,
+        env=lambda: DiscreteEnv(env),
+        n_walkers=150,
+        skipframe=1,
+        max_iters=300000000,
+        prune_tree=True,
+        reward_scale=2,
     )
     from IPython.core.display import clear_output
 
-    def run_swarm(self, model_states: States = None, env_states: States = None):
-        """Make magic happen."""
-        self.init_walkers(model_states=model_states, env_states=env_states)
-        i = 0
-        while not self.walkers.calc_end_condition():
-            self.step_walkers()
-            self.walkers.balance()
-            if i % 2500000 == 0:
-                print(self.walkers)
-                clear_output(True)
-            i += 1
-
-        return self.calculate_action()
-
-    swarm.run_swarm()
+    _ = swarm.run_swarm(print_every=100)

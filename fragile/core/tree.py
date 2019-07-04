@@ -2,7 +2,6 @@ from collections import defaultdict
 from typing import List
 
 import numpy as np
-import torch
 
 from fragile.core.base_classes import BaseStates
 
@@ -32,7 +31,7 @@ class Node:
 
     @property
     def end(self) -> bool:
-        return bool(self.env_state.ends.cpu().item())
+        return bool(self.env_state.ends)
 
 
 class Tree:
@@ -79,7 +78,7 @@ class Tree:
         parent_ids: List[int],
         env_states: BaseStates = None,
         model_states: BaseStates = None,
-        cum_rewards: [torch.Tensor, np.ndarray] = None,
+        cum_rewards: np.ndarray = None,
     ) -> np.ndarray:
         env_sts = env_states.split_states() if env_states is not None else [None] * len(parent_ids)
         mode_sts = (
@@ -125,16 +124,13 @@ class Tree:
         return nodes[::-1]
 
     def prune_branch(self, leaf_id):
-        leaf_id = leaf_id.cpu().item() if isinstance(leaf_id, torch.Tensor) else leaf_id
         if self.has_children(leaf_id):
             raise ValueError(
                 "You cannot delete a node that has children. Node id: {}".format(leaf_id)
             )
         while not self.has_children(leaf_id) and self.parents[leaf_id] > 0:
-
             new_id = int(self.parents[leaf_id])
             del self.nodes[leaf_id]
             del self.parents[leaf_id]
             del self.children[leaf_id]
-
-            leaf_id = new_id.cpu().item() if isinstance(new_id, torch.Tensor) else new_id
+            leaf_id = new_id

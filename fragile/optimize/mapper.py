@@ -1,12 +1,11 @@
 from typing import Callable
 
 import numpy as np
-import torch
 
 from fragile.core.models import RandomContinous
 from fragile.core.states import BaseStates
 from fragile.core.swarm import clear_output, Swarm
-from fragile.core.utils import relativize, to_numpy, to_tensor
+from fragile.core.utils import relativize
 from fragile.core.walkers import float_type, Walkers
 from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
@@ -19,14 +18,14 @@ class MapperWalkers(Walkers):
         self.encoder = Encoder(n_vectors=n_vectors, timeout=timeout)
         super(MapperWalkers, self).__init__(*args, **kwargs)
         self.pwise_distance = self._distances
-        self._pwise_dist_module = torch.nn.PairwiseDistance().to(self.device)
+        self._pwise_dist_module = lambda x: np.linalg.norm(x, axis=1)
         self.best_found = None
         self.best_reward_found = -1e10
         self._n_cloned_vectors = 0
         self._score_vectors = 0
-        self.pest_scale = torch.tensor([pest_scale], dtype=float_type, device=self.device)
-        self.pests = torch.zeros((self.n, 1), dtype=float_type, device=self.device)
-        self.raw_pest = torch.ones((self.n, 1), dtype=float_type, device=self.device)
+        self.pest_scale = np.array([pest_scale], dtype=float_type)
+        self.pests = np.zeros((self.n, 1), dtype=float_type)
+        self.raw_pest = np.ones((self.n, 1), dtype=float_type)
 
     def __repr__(self):
         text = (
@@ -40,7 +39,7 @@ class MapperWalkers(Walkers):
         )
         return text + super(MapperWalkers, self).__repr__()
 
-    def get_observs(self) -> torch.Tensor:
+    def get_observs(self) -> np.ndarray:
         return self.observs
 
     def get_clone_vectors(self):
@@ -49,24 +48,22 @@ class MapperWalkers(Walkers):
         ends = self.observs[self.compas_ix][self.will_clone]
         clones = int(self.will_clone.sum())
         for i in range(clones):
-            si, ei = starts[i].detach().clone(), ends[i].detach().clone()
+            si, ei = starts[i].copy(), ends[i].copy()
             vectors.append((si, ei))
         self._n_cloned_vectors = len(vectors)
         return vectors
 
     def _calculate_pests(self):
         if len(self.encoder) > 0:
-            self.raw_pest = self.encoder.get_pest(self.observs).mean(1).reshape(-1, 1).float()
-        self.pests = relativize(self.raw_pest).view(-1, 1)
+            self.raw_pest = self.encoder.get_pest(self.observs).mean(1)
+        self.pests = relativize(self.raw_pest)
 
     def calc_virtual_reward(self):
-        with torch.no_grad():
-            self._calculate_pests()
-            rewards = self.processed_rewards.float() ** self.reward_scale.float()
-            dist = self.distances.float() ** self.dist_scale.float()
-            pest = self.pests.float() ** -self.pest_scale.float()
-            virtual_reward = rewards * dist * pest
-            self.virtual_rewards = to_tensor(virtual_reward, dtype=float_type)
+        self._calculate_pests()
+        rewards = self.processed_rewards ** self.reward_scale
+        dist = self.distances ** self.dist_scale
+        pest = self.pests ** -self.pest_scale
+        self.virtual_rewards = rewards * dist * pest
 
     def balance(self):
         self.update_best()
@@ -79,20 +76,19 @@ class MapperWalkers(Walkers):
 
     def update_best(self):
         ix = self.cum_rewards.argmax()
-        best = self.observs[ix].detach().cpu().clone()
-        best_reward = float(self.cum_rewards[ix].cpu())
+        best = self.observs[ix].copy()
+        best_reward = float(self.cum_rewards[ix])
         if self.best_reward_found < best_reward and not bool(self.ends[ix]):
             self.best_reward_found = best_reward
             self.best_found = best
 
     def _distances(self, state_1, state_2):
-        with torch.no_grad():
-            if True:  # len(self.encoder) < 5:#self.encoder.n_vectors:
-                return self._pwise_dist_module(state_1, state_2)
+        if True:  # len(self.encoder) < 5:#self.encoder.n_vectors:
+            return self._pwise_dist_module(state_1, state_2)
 
-            x = self.encoder.encode(state_1)
-            y = self.encoder.encode(state_2)
-            return torch.sum((y - x) ** 2, 1).view(-1, 1)
+        x = self.encoder.encode(state_1)
+        y = self.encoder.encode(state_2)
+        return torch.sum((y - x) ** 2, 1).flatten()
 
     def update_clone_probs(self):
         super(MapperWalkers, self).update_clone_probs()
@@ -101,7 +97,7 @@ class MapperWalkers(Walkers):
     def reset(self, env_states: BaseStates = None, model_states: BaseStates = None):
         super(MapperWalkers, self).reset(env_states=env_states, model_states=model_states)
         ix = self.cum_rewards.argmax()
-        self.best_found = self.observs[ix].detach().cpu().clone()
+        self.best_found = self.observs[ix].copy()
         self.best_reward_found = float(-1e20)
 
 
@@ -192,14 +188,14 @@ class FunctionMapper(Swarm):
         if self.walkers.best_found is not None:
             # observs = self.walkers.get_observs()
             # rewards = self.walkers.get_env_states().rewards
-            self.walkers.observs[-1, :] = self.walkers.best_found.detach().clone()
-            self.walkers.rewards[-1] = torch.tensor(self.walkers.best_reward_found)
+            self.walkers.observs[-1, :] = self.walkers.best_found.copy()
+            self.walkers.rewards[-1] = float(self.walkers.best_reward_found)
             self.walkers.ends[-1] = 0
 
     def record_visited(self):
-        observs = to_numpy(self.walkers.observs)
+        observs = self.walkers.observs
         x, y = observs[:, 0].tolist(), observs[:, 1].tolist()
-        rewards = to_numpy(self.walkers.rewards).flatten().tolist()
+        rewards = self.walkers.rewards.flatten().tolist()
         self.visited_x.extend(x[:-1])
         self.visited_y.extend(y[:-1])
         self.visited_rewards.extend(rewards[:-1])
@@ -208,10 +204,10 @@ class FunctionMapper(Swarm):
         import matplotlib.pyplot as plt
 
         # x_vis, y_vis, rewards_vis = self.visited_x, self.visited_y, self.visited_rewards
-        vals = to_numpy(self.walkers.observs)
+        vals = self.walkers.observs
 
         x_walkers, y_walkers = vals[:, 0], vals[:, 1]
-        pest = to_numpy(self.walkers.raw_pest).flatten().tolist()
+        pest = self.walkers.raw_pest.flatten().tolist()
 
         plt.figure(figsize=(10, 10))
         # plt.scatter(x_vis, y_vis, c=rewards_vis, cmap=plt.cm.viridis, alpha=0.1)
@@ -264,7 +260,7 @@ class LocalMapper(FunctionMapper):
         self.best_reward_found = -np.inf
 
     def minimize_best(self):
-        best = self.walkers.best_found.detach().clone()
+        best = self.walkers.best_found.copy()
         best_reward = float(self.walkers.best_reward_found)
         if self.best_reward_found < best_reward:
             new_best, new_best_reward = self.minimizer.minimize_point(best)

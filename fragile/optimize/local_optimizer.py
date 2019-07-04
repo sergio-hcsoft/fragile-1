@@ -1,9 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
-import torch
 
 from fragile.core.base_classes import BaseStates
-from fragile.core.utils import to_numpy, to_tensor
 from fragile.optimize.env import Function
 
 
@@ -17,25 +15,23 @@ class Minimizer:
 
     def minimize(self, x):
         def _optimize(x):
-            x = to_tensor(x).view(1, -1)
             try:
                 y = -float(self.function(x))
             except (ZeroDivisionError, RuntimeError) as e:
                 y = np.inf
             return y
 
-        num_x = to_numpy(x)
-        return minimize(_optimize, num_x, bounds=self.bounds, *self.args, **self.kwargs)
+        return minimize(_optimize, x, bounds=self.bounds, *self.args, **self.kwargs)
 
     def minimize_point(self, x):
         optim_result = self.minimize(x)
-        point = to_tensor(optim_result["x"])
+        point = optim_result["x"]
         reward = -1.0 * float(optim_result["fun"])
         return point, reward
 
-    def minimize_batch(self, x: torch.Tensor):
-        result = torch.zeros_like(x)
-        rewards = torch.zeros((x.shape[0], 1))
+    def minimize_batch(self, x: np.ndarray):
+        result = np.zeros_like(x)
+        rewards = np.zeros((x.shape[0], 1))
         for i in range(x.shape[0]):
             new_x, reward = self.minimize_point(x[i, :])
             result[i, :] = new_x
@@ -57,7 +53,7 @@ class MinimizerWrapper(Function):
 
     def step(
         self,
-        actions: [torch.Tensor, np.ndarray],
+        actions: np.ndarray,
         env_states: BaseStates,
         n_repeat_action: [int, np.ndarray] = 1,
         *args,
@@ -78,10 +74,8 @@ class MinimizerWrapper(Function):
         Returns:
             States containing the information that describes the new state of the Environment.
         """
-        states = to_tensor(env_states.states, device=self.device)
-        actions = to_tensor(actions, device=self.device)
-        n_repeat_action = to_tensor(n_repeat_action, device=self.device)
-        new_points = actions.float() * n_repeat_action.float() + states.float()
+        states = env_states.states
+        new_points = actions * n_repeat_action + states
 
         new_points, rewards = self.minimizer.minimize_batch(new_points)
 

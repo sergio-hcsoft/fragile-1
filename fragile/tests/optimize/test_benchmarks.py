@@ -1,5 +1,5 @@
+import numpy as np
 import pytest
-import torch
 
 from fragile.optimize.benchmarks import EggHolder, Rastrigin, Sphere
 
@@ -7,15 +7,11 @@ from fragile.optimize.benchmarks import EggHolder, Rastrigin, Sphere
 @pytest.fixture()
 def benchmarks():
     data = {
-        "sphere": {"env": Sphere, "point": torch.tensor([0.0, 0.0]).view(1, -1), "max_val": 0.0},
-        "rastrigin": {
-            "env": Rastrigin,
-            "point": torch.tensor([0.0, 0.0]).view(1, -1),
-            "max_val": 0.0,
-        },
+        "sphere": {"env": Sphere, "point": np.zeros((1, 2)), "max_val": 0.0},
+        "rastrigin": {"env": Rastrigin, "point": np.zeros((1, 2)), "max_val": 0.0},
         "eggholder": {
             "env": EggHolder,
-            "point": torch.tensor([512.0, 404.2319]).view(1, -1),
+            "point": np.array([512.0, 404.2319]).reshape(1, -1),
             "max_val": 959.6406860351562,
         },
     }
@@ -28,5 +24,6 @@ class TestBenchmarks:
         for bench in benchmarks.values():
             env_cls, point, max_val = list(bench.values())
             env = env_cls(shape=shape)
-            result = env.function(point)
-            assert result.item() == max_val
+            result = env.function(point)[0]
+            print(result, env_cls.__name__)
+            assert np.allclose(result, max_val)

@@ -1,9 +1,6 @@
 import copy
 
 import numpy as np
-import torch
-
-from fragile.core.utils import device, to_numpy
 
 
 def unique_columns2(data):
@@ -18,8 +15,8 @@ def unique_columns2(data):
 class Vector:
     def __init__(
         self,
-        origin: torch.Tensor = None,
-        end: torch.Tensor = None,
+        origin: np.ndarray = None,
+        end: np.ndarray = None,
         timeout: int = 1e100,
         timeout_threshold: int = 100000,
     ):
@@ -41,12 +38,12 @@ class Vector:
         return text
 
     def __hash__(self):
-        return hash(str(to_numpy(torch.cat([self.origin, self.end]))))
+        return hash(str(np.concatenate([self.origin, self.end])))
 
-    def scalar_product(self, other: torch.Tensor):
-        return torch.dot(self.base, self.end - other)
+    def scalar_product(self, other: np.ndarray):
+        return np.dot(self.base, self.end - other)
 
-    def assign_region(self, other: torch.Tensor) -> int:
+    def assign_region(self, other: np.ndarray) -> int:
 
         region = 1 if self.scalar_product(other=other) > 0 else 0
         return region
@@ -68,14 +65,12 @@ class Vector:
 
 
 class PesteVector(Vector):
-    def __init__(self, front_data: torch.Tensor = 0, back_data: torch.Tensor = 0, *args, **kwargs):
+    def __init__(self, front_data: np.ndarray = 0, back_data: np.ndarray = 0, *args, **kwargs):
         super(PesteVector, self).__init__(*args, **kwargs)
         self.front_value = front_data
         self.back_value = back_data
 
-    def get_data(
-        self, other, value: torch.Tensor = 0, return_region: bool = False
-    ) -> torch.Tensor:
+    def get_data(self, other, value: np.ndarray = 0, return_region: bool = False) -> np.ndarray:
         region = super(PesteVector, self).assign_region(other=other)
         if region == 1:
             self.front_value = self.front_value + value
@@ -85,7 +80,7 @@ class PesteVector(Vector):
             self.back_value = self.back_value + value
             return (self.back_value, region) if return_region else self.back_value
 
-    def assign_region(self, other: torch.Tensor, value: float = 0.0) -> int:
+    def assign_region(self, other: np.ndarray, value: float = 0.0) -> int:
         region = super(PesteVector, self).assign_region(other=other)
         if region == 0:
             self.back_value += value
@@ -103,7 +98,7 @@ class PesteVector(Vector):
 
 
 def diversity_score(x, total=None):
-    n_different_rows = np.unique(to_numpy(x), axis=0).shape[0]
+    n_different_rows = np.unique(x, axis=0).shape[0]
     return n_different_rows if total is None else float(n_different_rows / total)
 
 
@@ -155,9 +150,8 @@ class Encoder:
             self.vectors[:-1] = copy.deepcopy(self.vectors[1:])
             self.vectors[-1] = vector
 
-    def pct_different_hashes(self, points: torch.Tensor) -> float:
-        x = self.encode(points)
-        array = x.detach().cpu().numpy()
+    def pct_different_hashes(self, points: np.ndarray) -> float:
+        array = self.encode(points)
         return float(np.unique(array, axis=0).shape[0] / int(points.shape[0]))
 
     def is_valid_base(self, vector: [Vector, int], points: list):
@@ -167,14 +161,13 @@ class Encoder:
         return not all(binary) and any(binary)
 
     def _apply_vectors_to_point(self, point, func_name: str, *args, **kwargs):
-        values = torch.tensor(
-            [getattr(vector, func_name)(point, *args, **kwargs) for vector in self.vectors],
-            device=device,
+        values = np.array(
+            [getattr(vector, func_name)(point, *args, **kwargs) for vector in self.vectors]
         )
         return values
 
-    def get_pest(self, points) -> torch.Tensor:
-        values = torch.stack(
+    def get_pest(self, points) -> np.ndarray:
+        values = np.vstack(
             [
                 self._apply_vectors_to_point(point=points[i], func_name="get_data", value=1)
                 for i in range(points.shape[0])
@@ -183,7 +176,7 @@ class Encoder:
         return values
 
     def encode(self, points):
-        values = torch.stack(
+        values = np.vstack(
             [
                 self._apply_vectors_to_point(point=points[i], func_name="assign_region")
                 for i in range(points.shape[0])
@@ -212,10 +205,8 @@ class Encoder:
             chosen_vectors = np.random.choice(np.arange(n_vec), available_spaces, replace=False)
             for ix in chosen_vectors:
                 origin, end = vectors[ix]
-                vec = PesteVector(
-                    origin=origin.detach().clone(), end=end.detach().clone(), timeout=self.timeout
-                )
+                vec = PesteVector(origin=origin.copy(), end=end.copy(), timeout=self.timeout)
                 self.append_vector(vec)
 
-    def get_bases(self) -> torch.Tensor:
-        return torch.stack([v.base.detach() for v in self.vectors]).clone()
+    def get_bases(self) -> np.ndarray:
+        return np.vstack([v.base.copy() for v in self.vectors]).copy()

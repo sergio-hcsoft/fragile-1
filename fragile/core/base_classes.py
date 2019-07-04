@@ -1,7 +1,6 @@
 from typing import Callable, Generator, List, Tuple, Union
 
 import numpy as np
-import torch
 
 
 class BaseStates:
@@ -16,9 +15,8 @@ class BaseStates:
     In order to define the tensors, a state_dict dictionary needs to be specified
     using the following structure::
 
-        state_dict = {"name_1": {"sizes": tuple([1]),
-                                 "device": "cuda",
-                                 "dtype": torch.float32,
+        state_dict = {"name_1": {"size": tuple([1]),
+                                 "dtype": np.float32,
                                 },
                      }
 
@@ -44,9 +42,7 @@ class BaseStates:
             setattr(self, key, val)
         self._n_walkers = n_walkers
 
-    def __getitem__(
-        self, item: Union[str, List[str]]
-    ) -> Union[np.ndarray, torch.Tensor, List[Union[np.ndarray, torch.Tensor]]]:
+    def __getitem__(self, item: Union[str, List[str]]) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Query an attribute of the class as if it was a dictionary.
 
@@ -64,11 +60,9 @@ class BaseStates:
         elif isinstance(item, list):
             return [getattr(self, it) for it in item]
         else:
-            raise TypeError(
-                "item must be an instance of str or list, got {} instead".format(item)
-            )
+            raise TypeError("item must be an instance of str or list, got {} instead".format(item))
 
-    def __setitem__(self, key, value: [torch.Tensor, np.ndarray]):
+    def __setitem__(self, key, value: Union[Tuple, List, np.ndarray]):
         """
         Allow the class to set its attributes as if it was a dict.
 
@@ -79,15 +73,10 @@ class BaseStates:
         Returns:
             None
         """
-        if isinstance(value, torch.Tensor):
+        if isinstance(value, np.ndarray):
             setattr(self, key, value)
-        elif isinstance(value, np.ndarray):
-            setattr(self, key, torch.from_numpy(value).to(self.device))
         else:
-            raise NotImplementedError(
-                "You can only set attributes using torch.Tensors and np.ndarrays"
-                "got item value of type {} for key {}".format(type(value), key)
-            )
+            setattr(self, key, np.array(value))
 
     def __repr__(self):
         string = "{} with {} walkers\n".format(self.__class__.__name__, self.n)
@@ -107,7 +96,7 @@ class BaseStates:
         state_dict = {}
         for name in names:
             shape = tuple([n_walkers]) + tuple(states[0][name].shape)
-            state_dict[name] = torch.cat(tuple([s[name] for s in states])).view(shape)
+            state_dict[name] = np.concatenate(tuple([s[name] for s in states])).reshape(shape)
         s = cls(n_walkers=n_walkers, **state_dict)
         return s
 
@@ -180,7 +169,7 @@ class BaseStates:
         """
         raise NotImplementedError
 
-    def clone(self, will_clone: [np.ndarray, torch.Tensor], compas_ix: [np.ndarray, torch.Tensor]):
+    def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray):
         """
         Perform the clone operation on all the data attributes.
 
@@ -215,10 +204,9 @@ class BaseStates:
         In order to define the tensors, a state_dict dictionary needs to be specified
         using the following structure::
 
-            import torch
-            state_dict = {"name_1": {"sizes": tuple([1]),
-                                     "device": "cuda",
-                                     "dtype": torch.float32,
+            import numpy as np
+            state_dict = {"name_1": {"size": tuple([1]),
+                                     "dtype": np.float32,
                                    },
                           }
 
@@ -236,9 +224,7 @@ class BaseEnvironment:
 
     """
 
-    def step(
-        self, actions: [np.ndarray, torch.Tensor], env_states: BaseStates, *args, **kwargs
-    ) -> BaseStates:
+    def step(self, actions: np.ndarray, env_states: BaseStates, *args, **kwargs) -> BaseStates:
         """
         Step the environment for a batch of walkers.
 
@@ -277,10 +263,9 @@ class BaseEnvironment:
         In order to define the tensors, a state_dict dictionary needs to be specified
         using the following structure::
 
-            import torch
-            state_dict = {"name_1": {"sizes": tuple([1]),
-                                     "device": "cuda",
-                                     "dtype": torch.float32,
+            import numpy as np
+            state_dict = {"name_1": {"size": tuple([1]),
+                                     "dtype": np.float32,
                                    },
                           }
 
@@ -302,10 +287,9 @@ class BaseModel:
         In order to define the tensors, a state_dict dictionary needs to be specified
         using the following structure::
 
-            import torch
-            state_dict = {"name_1": {"sizes": tuple([1]),
-                                     "device": "cuda",
-                                     "dtype": torch.float32,
+            import numpy as np
+            state_dict = {"name_1": {"size": tuple([1]),
+                                     "dtype": np.float32,
                                    },
                           }
 
@@ -330,7 +314,7 @@ class BaseModel:
 
     def predict(
         self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[Union[np.ndarray, torch.Tensor, BaseStates]]:
+    ) -> Tuple[Union[np.ndarray, BaseStates]]:
         """
         Calculates the next action that needs to be taken at a given state.
 
@@ -345,7 +329,7 @@ class BaseModel:
 
     def calculate_dt(
         self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[torch.Tensor, BaseStates]:
+    ) -> Tuple[np.ndarray, BaseStates]:
         """
         Calculates the number of times that the next action will be applied.
 
@@ -414,7 +398,7 @@ class BaseWalkers:
     def get_model_states(self) -> BaseStates:
         return self.model_states
 
-    def get_observs(self) -> torch.Tensor:
+    def get_observs(self) -> np.ndarray:
         raise NotImplementedError
 
     def update_states(self):
@@ -441,11 +425,11 @@ class BaseWalkers:
         """Calculate the clone probability of the walkers."""
         raise NotImplementedError
 
-    def update_end_condition(self, ends: [torch.Tensor, np.ndarray]):
+    def update_end_condition(self, ends: np.ndarray):
         """Update the boundary conditions for the walkers."""
         raise NotImplementedError
 
-    def get_alive_compas(self) -> [torch.Tensor, np.ndarray]:
+    def get_alive_compas(self) -> np.ndarray:
         """Return an array of indexes corresponding to an alive walker chosen
          at random.
         """

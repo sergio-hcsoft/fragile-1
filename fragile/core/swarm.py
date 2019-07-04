@@ -1,6 +1,5 @@
 from typing import Callable
 
-import torch
 
 try:
     from IPython.core.display import clear_output
@@ -79,13 +78,14 @@ class Swarm(BaseSwarm):
 
         model_states.update(init_actions=actions)
         self.walkers.reset(env_states=env_sates, model_states=model_states)
-        self.tree.reset(
-            env_state=self.walkers.env_states,
-            model_state=self.walkers.model_states,
-            reward=env_sates.rewards[0],
-        )
+        if self._use_tree:
+            self.tree.reset(
+                env_state=self.walkers.env_states,
+                model_state=self.walkers.model_states,
+                reward=env_sates.rewards[0],
+            )
 
-    # @profile
+    #@profile
     def run_swarm(
         self,
         model_states: BaseStates = None,
@@ -107,10 +107,10 @@ class Swarm(BaseSwarm):
                 break
         return self.calculate_action()
 
-    # @profile
+    #@profile
     def step_walkers(self):
         model_states = self.walkers.get_model_states()
-        states_ids = self.walkers.id_walkers.cpu().numpy().copy().astype(int).flatten().tolist()
+        states_ids = self.walkers.id_walkers.copy().astype(int).flatten().tolist()
         env_states = self.walkers.get_env_states()
         act_dt, model_states = self.model.calculate_dt(model_states, env_states)
 
@@ -127,7 +127,7 @@ class Swarm(BaseSwarm):
                 parent_ids=states_ids,
                 env_states=self.walkers.env_states,
                 model_states=self.walkers.model_states,
-                cum_rewards=self.walkers.cum_rewards.cpu().numpy().copy().flatten(),
+                cum_rewards=self.walkers.cum_rewards.copy().flatten(),
             )
             self.walkers.update_ids(walker_ids)
 
@@ -143,7 +143,7 @@ class Swarm(BaseSwarm):
         init_actions = model_states.get("init_actions")
         entropy = self.walkers.get_entropy()
 
-        actions_dist = torch.zeros((self.model.n_actions, 1))
+        actions_dist = np.zeros((self.model.n_actions, 1))
         for action in init_actions.unique():
             actions_dist[action] = entropy[init_actions == action].sum()
         return actions_dist

@@ -1,12 +1,11 @@
 from typing import Tuple
 
 import numpy as np
-import torch
 
 from fragile.core.base_classes import BaseEnvironment, BaseStates
 from fragile.core.models import RandomContinous
 from fragile.core.states import States
-from fragile.core.utils import device, relativize_np, to_numpy, to_tensor
+from fragile.core.utils import relativize
 from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
 
@@ -50,7 +49,7 @@ class RandomNormal(RandomContinous):
             self.bounds.low,
             high,
         )
-        return to_tensor(data, device=device, dtype=torch.float32)
+        return data
 
     def calculate_dt(
         self, model_states: BaseStates, env_states: BaseStates
@@ -65,8 +64,7 @@ class RandomNormal(RandomContinous):
             Tuple containing a tensor with the sampled actions and the new model states variable.
         """
         dt = np.ones(shape=tuple(env_states.rewards.shape)) * self.mean_dt
-        dt = np.clip(dt, self.min_dt, self.max_dt)
-        dt = to_tensor(dt, device=device, dtype=torch.float32).reshape(-1, 1)
+        dt = np.clip(dt, self.min_dt, self.max_dt).reshape(-1, 1)
         model_states.update(dt=dt)
         return dt, model_states
 
@@ -120,16 +118,12 @@ class EncoderSampler(RandomNormal):
         if len(self.encoder) <= 5:
             return RandomNormal.sample(self, batch_size=batch_size)
         data = self._sample_encoder(batch_size)
-        return to_tensor(data, device=device, dtype=torch.float32)
+        return data
 
     def _sample_encoder(self, batch_size: int = 1):
-        samples = to_tensor(
-            super(EncoderSampler, self).sample(batch_size=batch_size, loc=0.0, scale=1.0),
-            device=device,
-            dtype=torch.float32,
-        )
+        samples = super(EncoderSampler, self).sample(batch_size=batch_size, loc=0.0, scale=1.0)
         self.bases = self.encoder.get_bases()
-        perturbation = torch.abs(self.bases.mean(0)) * samples  # (samples - self.mean_dt) * 0.01 /
+        perturbation = np.abs(self.bases.mean(0)) * samples  # (samples - self.mean_dt) * 0.01 /
         # self.std_dt
         return perturbation / 2
 
@@ -169,14 +163,12 @@ class BestDtEncoderSamper(EncoderSampler):
                 model_states=model_states, env_states=env_states
             )
         best = self.walkers.best_found
-        dist = to_numpy(torch.sqrt((self.walkers.observs - best) ** 2))
-        max_mod = torch.abs(self.bases.max(0))
+        dist = np.sqrt((self.walkers.observs - best) ** 2)
+        max_mod = np.abs(self.bases.max(0))
 
-        dist = relativize_np(dist)
+        dist = relativize(dist)
         # dist = (dist - dist.mean()) / dist.std()
-        dt = np.ones(shape=tuple(env_states.rewards.shape)) * self.map_range(
-            dist, max_=to_numpy(max_mod)
-        )
+        dt = np.ones(shape=tuple(env_states.rewards.shape)) * self.map_range(dist, max_=max_mod)
 
         # * self.mean_dt
         model_states.update(dt=dt)
@@ -229,15 +221,15 @@ class ESSampler(EncoderSampler):
     def sample(self, batch_size: int = 1, *args, **kwargs):
         if np.random.random() < self.random_step_prob:
             return super(ESSampler, self).sample(batch_size=batch_size, *args, **kwargs)
-        states = self._walkers.observs.detach().clone().float()
+        states = self._walkers.observs.copy()
         best = (
-            self._walkers.best_found.detach().clone().float()
+            self._walkers.best_found.copy()
             if self._walkers.best_found is not None
-            else torch.zeros_like(states[0])
+            else np.zeros_like(states[0])
         )
         # Choose 2 random indices
-        a_rand = torch.randperm(states.shape[0])
-        b_rand = torch.randperm(states.shape[0])
+        a_rand = np.random.permutation(np.arange(states.shape[0]))
+        b_rand = np.random.permutation(np.arange(states.shape[0]))
         # Calculate proposal using best and difference of two random choices
         if np.random.random() > 0.5:
             base_pert = super(ESSampler, self).sample(batch_size=batch_size, *args, **kwargs)
@@ -246,9 +238,9 @@ class ESSampler(EncoderSampler):
             proposal = best + self.recombination * (states[a_rand] - states[b_rand])
         # Randomly mutate the each coordinate of the original vector
         assert states.shape == proposal.shape
-        rands = torch.rand(self._walkers.observs.shape)
-        perturbations = torch.where(rands < self.mutation, states, proposal).detach().clone()
-        new_states = to_numpy(perturbations - states)
+        rands = np.random.random(self._walkers.observs.shape)
+        perturbations = np.where(rands < self.mutation, states, proposal).copy()
+        new_states = perturbations - states
 
         high = (
             self.bounds.high
@@ -256,4 +248,4 @@ class ESSampler(EncoderSampler):
             else self.bounds.high.astype("int64") + 1
         )
         data = np.clip(new_states, self.bounds.low, high)
-        return to_tensor(data, device=device, dtype=torch.float32)
+        return data
