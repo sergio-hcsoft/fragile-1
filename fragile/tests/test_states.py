@@ -8,7 +8,7 @@ from fragile.core.states import States
 def dummy_states():
     n_walkers = 10
     state_dict = {"miau": {"size": (1, 100)}, "miau_2": {"size": (1, 33)}}
-    return States(state_dict=state_dict, n_walkers=n_walkers)
+    return States(state_dict=state_dict, batch_size=n_walkers)
 
 
 @pytest.fixture()
@@ -16,7 +16,7 @@ def states_from_tensor():
     n_walkers = 10
     miau = np.ones((10, 1, 100))
     miau_2 = np.zeros((10, 33, 1))
-    return States(n_walkers=n_walkers, miau=miau, miau_2=miau_2)
+    return States(batch_size=n_walkers, miau=miau, miau_2=miau_2)
 
 
 class TestStates:

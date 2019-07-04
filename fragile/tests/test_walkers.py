@@ -75,31 +75,23 @@ class TestWalkers:
         with pytest.raises(AttributeError):
             walkers.observs
 
-    def test_update_end_condition(self, walkers):
-        ends = np.zeros(10)
-        walkers.update_end_condition(ends)
-        assert np.all(walkers.end_condition == np.zeros(10, dtype=np.bool_))
-        ends = np.ones(10, dtype=np.bool_)
-        walkers.update_end_condition(ends)
-        assert np.all(walkers.end_condition == ends)
-
     def test_calculate_end_condition(self, walkers):
-        walkers.update_end_condition(np.ones(10))
-        assert walkers.calc_end_condition()
-        walkers.update_end_condition(np.zeros(10))
-        assert not walkers.calc_end_condition()
+        walkers.states.update(end_condition=np.ones(10))
+        assert walkers.calculate_end_condition()
+        walkers.states.update(end_condition=np.zeros(10))
+        assert not walkers.calculate_end_condition()
 
     def test_calculate_distance(self, walkers):
         # TODO: check properly the calculations
-        walkers.calc_distances()
+        walkers.calculate_distances()
 
     def test_alive_compas(self, walkers):
-        end_cond = np.ones_like(walkers.end_condition).astype(bool).copy()
+        end_cond = np.ones_like(walkers.states.end_condition).astype(bool).copy()
         end_cond[3] = 0
-        walkers.end_condition = end_cond
+        walkers.states.end_condition = end_cond
         compas = walkers.get_alive_compas()
         assert np.all(compas == 3), "Type of end_cond: {} end_cond: {}: alive ix: {}".format(
-            type(end_cond), end_cond, walkers.alive_mask
+            type(end_cond), end_cond, walkers.states.alive_mask
         )
         assert len(compas.shape) == 1
 
@@ -127,6 +119,6 @@ class TestWalkers:
         walkers.reset()
 
     def test_distances(self, walkers):
-        walkers.calc_distances()
+        walkers.calculate_distances()
         assert len(walkers.distances.shape) == 1
         assert walkers.distances.shape[0] == walkers.n

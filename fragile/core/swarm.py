@@ -65,7 +65,7 @@ class Swarm(BaseSwarm):
         self.tree = Tree() if use_tree else None
         self._prune_tree = prune_tree
         self._use_tree = use_tree
-        self.print_i = 0
+        self.epoch = 0
 
     def init_walkers(self, model_states: BaseStates = None, env_states: BaseStates = None):
         env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
@@ -85,7 +85,7 @@ class Swarm(BaseSwarm):
                 reward=env_sates.rewards[0],
             )
 
-    #@profile
+    # @profile
     def run_swarm(
         self,
         model_states: BaseStates = None,
@@ -93,25 +93,25 @@ class Swarm(BaseSwarm):
         print_every: int = 1e100,
     ):
         self.init_walkers(model_states=model_states, env_states=env_states)
-        self.print_i = 0
-        while not self.walkers.calc_end_condition():
+        self.epoch = 0
+        while not self.walkers.calculate_end_condition():
             try:
                 self.step_walkers()
                 old_ids, new_ids = self.walkers.balance()
                 self.prune_tree(old_ids=old_ids, new_ids=new_ids)
-                if self.print_i % print_every == 0:
+                if self.epoch % print_every == 0:
                     print(self.walkers)
                     clear_output(True)
-                self.print_i += 1
+                self.epoch += 1
             except KeyboardInterrupt as e:
                 break
-        return self.calculate_action()
 
-    #@profile
+    # @profile
     def step_walkers(self):
-        model_states = self.walkers.get_model_states()
-        states_ids = self.walkers.id_walkers.copy().astype(int).flatten().tolist()
-        env_states = self.walkers.get_env_states()
+        model_states = self.walkers.model_states
+        if self._use_tree:
+            states_ids = self.walkers.states.id_walkers.copy().astype(int).flatten().tolist()
+        env_states = self.walkers.env_states
         act_dt, model_states = self.model.calculate_dt(model_states, env_states)
 
         actions, model_states = self.model.predict(
@@ -120,16 +120,17 @@ class Swarm(BaseSwarm):
         env_states = self.env.step(actions=actions, env_states=env_states, n_repeat_action=act_dt)
         model_states.update(actions=actions)
 
-        self.walkers.update_states(env_states=env_states, model_states=model_states)
-        self.walkers.update_end_condition(env_states.ends)
+        self.walkers.update_states(env_states=env_states, model_states=model_states, end_condition=env_states.ends)
         if self._use_tree:
             walker_ids = self.tree.add_states(
                 parent_ids=states_ids,
                 env_states=self.walkers.env_states,
                 model_states=self.walkers.model_states,
-                cum_rewards=self.walkers.cum_rewards.copy().flatten(),
+                cum_rewards=self.walkers.states.cum_rewards.copy().flatten(),
             )
-            self.walkers.update_ids(walker_ids)
+            self.walkers.states.update(id_walkers=walker_ids)
+
+
 
     def prune_tree(self, old_ids, new_ids):
         if self._prune_tree:
@@ -137,7 +138,7 @@ class Swarm(BaseSwarm):
             for leaf_id in dead_leaves:
                 self.tree.prune_branch(leaf_id=leaf_id)
 
-    def calculate_action(self):
+    """def calculate_action(self):
         return
         model_states = self.walkers.get_model_states()
         init_actions = model_states.get("init_actions")
@@ -146,4 +147,4 @@ class Swarm(BaseSwarm):
         actions_dist = np.zeros((self.model.n_actions, 1))
         for action in init_actions.unique():
             actions_dist[action] = entropy[init_actions == action].sum()
-        return actions_dist
+        return actions_dist"""

@@ -106,6 +106,6 @@ class Function(BaseEnvironment):
         return in_bounds
 
     def _get_new_states(self, states, rewards, ends, batch_size) -> BaseStates:
-        state = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
+        state = States(state_dict=self.get_params_dict(), batch_size=batch_size)
         state.update(states=states, observs=states, rewards=rewards, ends=ends)
         return state

@@ -57,7 +57,7 @@ class TestSwarm:
         swarm.init_walkers()
         swarm.walkers.max_iters = 500
         swarm.run_swarm()
-        reward = swarm.walkers.cum_rewards.max()
+        reward = swarm.walkers.states.cum_rewards.max()
         assert reward > 100, "Iters: {}, rewards: {}".format(
-            swarm.walkers.n_iters, swarm.walkers.cum_rewards
+            swarm.walkers.n_iters, swarm.walkers.states.cum_rewards
         )

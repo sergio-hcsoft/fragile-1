@@ -91,9 +91,7 @@ def calculate_virtual_reward_np(
     distance_norm = relativize(distance)
     rewards_norm = relativize(rewards)
 
-    virtual_reward = (
-        distance_norm.flatten() ** dist_coef * rewards_norm.flatten() ** reward_coef * other_reward
-    )
+    virtual_reward = distance_norm ** dist_coef * rewards_norm ** reward_coef * other_reward
     return virtual_reward.flatten()
 
 

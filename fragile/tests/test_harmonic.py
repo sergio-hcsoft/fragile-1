@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 from fragile.core.base_classes import BaseStates
-from fragile.physics.harmonic import GausianPerturbator, HarmonicOscillator
+from fragile.experimental.harmonic import GausianPerturbator, HarmonicOscillator
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +46,7 @@ class TestHarmonicOscillator:
 class TestGausianPerturbator:
     def test_calculate_dt(self, model: GausianPerturbator):
         n_walkers = 7
-        env_states = BaseStates(rewards=np.zeros((n_walkers, 1)), n_walkers=n_walkers)
+        env_states = BaseStates(rewards=np.zeros((n_walkers, 1)), batch_size=n_walkers)
         actions, states = model.reset()
         act_dt, model_states = model.calculate_dt(states, env_states)
         assert isinstance(model_states, BaseStates)
@@ -54,7 +54,7 @@ class TestGausianPerturbator:
 
     def test_predict(self, model):
         n_walkers = 7
-        env_states = BaseStates(rewards=np.zeros((n_walkers, 1)), n_walkers=n_walkers)
+        env_states = BaseStates(rewards=np.zeros((n_walkers, 1)), batch_size=n_walkers)
         actions, states = model.reset()
         actions, model_states = model.predict(env_states=env_states, model_states=states)
         assert isinstance(model_states, BaseStates)

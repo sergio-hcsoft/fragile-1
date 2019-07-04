@@ -64,8 +64,8 @@ class TestTree:
     def test_path(self, finished_tree):
 
         t, swarm = finished_tree
-        max_reward = int(swarm.walkers.cum_rewards.argmax())
-        best_id = swarm.walkers.id_walkers[max_reward]
+        max_reward = int(swarm.walkers.states.cum_rewards.argmax())
+        best_id = swarm.walkers.states.id_walkers[max_reward]
         path = t.get_path_ids(best_id)
 
         assert len(path) > 1
@@ -76,7 +76,7 @@ class TestTree:
 
     def test_prune_branch(self, finished_tree):
         t, swarm = finished_tree
-        max_reward = int(swarm.walkers.cum_rewards.argmax())
-        best_id = swarm.walkers.id_walkers[max_reward]
+        max_reward = int(swarm.walkers.states.cum_rewards.argmax())
+        best_id = swarm.walkers.states.id_walkers[max_reward]
         t.prune_branch(best_id)
         assert best_id not in t.nodes.keys()

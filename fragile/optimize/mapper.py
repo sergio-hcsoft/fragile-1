@@ -58,7 +58,7 @@ class MapperWalkers(Walkers):
             self.raw_pest = self.encoder.get_pest(self.observs).mean(1)
         self.pests = relativize(self.raw_pest)
 
-    def calc_virtual_reward(self):
+    def calculate_virtual_reward(self):
         self._calculate_pests()
         rewards = self.processed_rewards ** self.reward_scale
         dist = self.distances ** self.dist_scale
@@ -165,7 +165,7 @@ class FunctionMapper(Swarm):
 
     def continue_optimizarion(self):
         self.print_i = 0
-        while not self.walkers.calc_end_condition():
+        while not self.walkers.calculate_end_condition():
             try:
                 self.step_walkers()
                 old_ids, new_ids = self.walkers.balance()

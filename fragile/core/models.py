@@ -31,6 +31,7 @@ class RandomDiscrete(BaseModel):
 
     @classmethod
     def get_params_dict(cls) -> dict:
+        """Return the dictionary with the parameters to create a new `RandomDiscrete` model."""
         params = {
             "actions": {"dtype": np.int_},
             "init_actions": {"dtype": np.int_},
@@ -40,13 +41,17 @@ class RandomDiscrete(BaseModel):
 
     @property
     def n_actions(self):
+        """Number of different possible discrete actions that the model can output."""
         return self._n_actions
 
     def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, BaseStates]:
         """
 
+        Return a new blank State for a `RandomDiscrete` instance, and a valid \
+        prediction based on that new state.
+
         Args:
-            batch_size:
+            batch_size: Number of walkers that the new model `State`.
             *args:
             **kwargs:
 
@@ -54,7 +59,7 @@ class RandomDiscrete(BaseModel):
             Tuple containing a tensor with the sampled actions and the new model states variable.
         """
 
-        model_states = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
+        model_states = States(state_dict=self.get_params_dict(), batch_size=batch_size)
         actions = np.random.randint(0, self.n_actions, size=batch_size)
         model_states.update(dt=np.ones(batch_size), actions=actions, init_actions=actions)
         return actions, model_states
@@ -155,7 +160,7 @@ class RandomContinous(BaseModel):
             Tuple containing a tensor with the sampled actions and the new model states variable.
         """
 
-        model_states = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
+        model_states = States(state_dict=self.get_params_dict(), batch_size=batch_size)
         actions = self.sample(batch_size=batch_size)
         model_states.update(dt=np.ones(batch_size), actions=actions, init_actions=actions)
         return actions, model_states

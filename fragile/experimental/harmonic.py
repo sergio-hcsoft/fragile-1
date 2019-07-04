@@ -157,7 +157,7 @@ class HarmonicOscillator(BaseEnvironment):
 
     # @profile
     def _get_new_states(self, states, observs, rewards, ends, batch_size) -> BaseStates:
-        state = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
+        state = States(state_dict=self.get_params_dict(), batch_size=batch_size)
         state.update(states=states, observs=observs, rewards=rewards, ends=ends)
         return state
 
@@ -203,7 +203,7 @@ class GausianPerturbator(BaseModel):
 
         """
 
-        model_states = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
+        model_states = States(state_dict=self.get_params_dict(), batch_size=batch_size)
         actions = self.dist((batch_size, self.n_actions))
         actions = np.clip(actions, -self.max_jump, self.max_jump)
         model_states.update(

@@ -2,7 +2,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 
-from fragile.dl.datasets import ImageDataset
+from fragile.experimental.dl import ImageDataset
 
 
 class Binarize(nn.Module):

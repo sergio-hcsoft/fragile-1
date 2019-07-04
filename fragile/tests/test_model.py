@@ -18,7 +18,7 @@ def continous_model() -> RandomContinous:
 class TestModel:
     def test_calculate_dt(self, discrete_model: RandomDiscrete):
         n_walkers = 7
-        env_states = BaseStates(rewards=np.zeros(n_walkers), n_walkers=n_walkers)
+        env_states = BaseStates(rewards=np.zeros(n_walkers), batch_size=n_walkers)
         actions, states = discrete_model.reset()
         act_dt, model_states = discrete_model.calculate_dt(states, env_states)
         assert isinstance(model_states, BaseStates)
@@ -26,7 +26,7 @@ class TestModel:
 
     def test_predict(self, discrete_model):
         n_walkers = 7
-        env_states = BaseStates(rewards=np.zeros(n_walkers), n_walkers=n_walkers)
+        env_states = BaseStates(rewards=np.zeros(n_walkers), batch_size=n_walkers)
         actions, states = discrete_model.reset()
         actions, model_states = discrete_model.predict(env_states=env_states, model_states=states)
         assert isinstance(model_states, BaseStates)
@@ -36,7 +36,7 @@ class TestModel:
 class TestContinousModel:
     def test_calculate_dt(self, continous_model: RandomContinous):
         n_walkers = 7
-        env_states = BaseStates(rewards=np.zeros(n_walkers), n_walkers=n_walkers)
+        env_states = BaseStates(rewards=np.zeros(n_walkers), batch_size=n_walkers)
         actions, states = continous_model.reset()
         act_dt, model_states = continous_model.calculate_dt(states, env_states)
         assert isinstance(model_states, BaseStates)
@@ -44,7 +44,7 @@ class TestContinousModel:
 
     def test_predict(self, continous_model: RandomContinous):
         n_walkers = 7
-        env_states = BaseStates(rewards=np.zeros(n_walkers), n_walkers=n_walkers)
+        env_states = BaseStates(rewards=np.zeros(n_walkers), batch_size=n_walkers)
         actions, states = continous_model.reset()
         actions, model_states = continous_model.predict(env_states=env_states, model_states=states)
         assert isinstance(model_states, BaseStates)

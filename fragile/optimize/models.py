@@ -80,7 +80,7 @@ class RandomNormal(RandomContinous):
             Tuple containing a tensor with the sampled actions and the new model states variable.
         """
 
-        model_states = States(state_dict=self.get_params_dict(), n_walkers=batch_size)
+        model_states = States(state_dict=self.get_params_dict(), batch_size=batch_size)
         actions = super(RandomNormal, self).sample(batch_size=batch_size)
         model_states.update(dt=np.ones(batch_size), actions=actions, init_actions=actions)
         return actions, model_states

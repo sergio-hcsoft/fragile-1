@@ -44,8 +44,8 @@ class TestFaiNumpy:
 
     @given(
         arrays(np.float32, shape=(10, 3, 10)),
-        arrays(np.float32, shape=(10, 1)),
-        arrays(np.bool, shape=(10, 1)),
+        arrays(np.float32, shape=10),
+        arrays(np.bool, shape=10),
     )
     def test_fai_iteration_np(self, observs, rewards, ends):
         compas_ix, will_clone = fai_iteration_np(observs=observs, rewards=rewards, ends=ends)
