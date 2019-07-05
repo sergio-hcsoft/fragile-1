@@ -1,4 +1,3 @@
-"""Extend the BaseStates to perform clone operations."""
 import numpy as np
 
 from fragile.core.base_classes import BaseStates
@@ -37,11 +36,12 @@ class States(BaseStates):
     """
 
     def __init__(self, *args, **kwargs):
+        """Initialise a :class:`States`."""
         super(States, self).__init__(*args, **kwargs)
 
     def params_to_arrays(self, param_dict: dict, n_walkers: int) -> dict:
         """
-        Creates a dictionary containing the arrays specified by param_dict.
+        Create a dictionary containing the arrays specified by param_dict.
 
         Args:
             param_dict: Dictionary defining the attributes of the tensors.
@@ -50,6 +50,7 @@ class States(BaseStates):
         Returns:
               Dictionary with the same keys as param_dict, containing arrays specified \
               by `param_dict` values.
+
         """
         tensor_dict = {}
         for key, val in param_dict.items():
@@ -69,6 +70,7 @@ class States(BaseStates):
                         index of the walkers that will clone to a random companion.
             compas_ix: Array of integers of shape (n_walkers,). Contains the \
                        indexes of the walkers that will be copied.
+
         """
         for name in self.keys():
             self[name][will_clone] = self[name][compas_ix][will_clone]
@@ -91,7 +93,8 @@ class States(BaseStates):
             self[name] = val
 
     def get_params_dict(self) -> dict:
-        pass
+        """Return a dictionary containing the data stored in the :class:`States`."""
+        return {k: v for k, v in self.__dict__ if isinstance(v, np.ndarray)}
 
     def copy(self) -> "States":
         """Crete a copy of the current instance."""

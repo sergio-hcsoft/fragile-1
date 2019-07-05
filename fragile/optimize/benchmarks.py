@@ -47,7 +47,7 @@ def rastrigin(x: np.ndarray):
     dims = x.shape[1]
     A = 10
     result = A * dims + np.sum(x ** 2 - A * np.cos(2 * math.pi * x), 1)
-    return -1 * result
+    return -1 * result.flatten()
 
 
 class Rastrigin(OptimBenchmark):

@@ -326,7 +326,7 @@ class BaseModel:
 
     def predict(
         self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[Union[np.ndarray, BaseStates]]:
+    ) -> Tuple[np.ndarray, BaseStates]:
         """
         Calculates the next action that needs to be taken at a given state.
 

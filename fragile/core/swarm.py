@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, List
 
 
 try:
@@ -16,9 +16,9 @@ from fragile.core.base_classes import (
     BaseModel,
     BaseStates,
     BaseSwarm,
-    BaseWalkers,
 )
 from fragile.core.tree import Tree
+from fragile.core.walkers import Walkers
 
 
 class Swarm(BaseSwarm):
@@ -31,7 +31,7 @@ class Swarm(BaseSwarm):
         return self._model
 
     @property
-    def walkers(self) -> BaseWalkers:
+    def walkers(self) -> Walkers:
         return self._walkers
 
     def _init_swarm(
@@ -52,7 +52,7 @@ class Swarm(BaseSwarm):
 
         model_params = self._model.get_params_dict()
         env_params = self._env.get_params_dict()
-        self._walkers: BaseWalkers = walkers_callable(
+        self._walkers: Walkers = walkers_callable(
             env_state_params=env_params,
             model_state_params=model_params,
             n_walkers=n_walkers,
@@ -109,18 +109,22 @@ class Swarm(BaseSwarm):
     # @profile
     def step_walkers(self):
         model_states = self.walkers.model_states
-        if self._use_tree:
-            states_ids = self.walkers.states.id_walkers.copy().astype(int).flatten().tolist()
+
+        states_ids = self.walkers.states.id_walkers.copy().astype(int).flatten().tolist() if \
+            self._use_tree else None
         env_states = self.walkers.env_states
         act_dt, model_states = self.model.calculate_dt(model_states, env_states)
 
         actions, model_states = self.model.predict(
-            env_states=env_states, model_states=model_states, batch_size=self.walkers.n
+            env_states=env_states, model_states=model_states,#  batch_size=self.walkers.n
         )
         env_states = self.env.step(actions=actions, env_states=env_states, n_repeat_action=act_dt)
         model_states.update(actions=actions)
 
         self.walkers.update_states(env_states=env_states, model_states=model_states, end_condition=env_states.ends)
+        self.update_tree(states_ids)
+
+    def update_tree(self, states_ids: List[int]):
         if self._use_tree:
             walker_ids = self.tree.add_states(
                 parent_ids=states_ids,
@@ -129,8 +133,6 @@ class Swarm(BaseSwarm):
                 cum_rewards=self.walkers.states.cum_rewards.copy().flatten(),
             )
             self.walkers.states.update(id_walkers=walker_ids)
-
-
 
     def prune_tree(self, old_ids, new_ids):
         if self._prune_tree:
