@@ -2,8 +2,8 @@ import numpy as np
 from plangym import AtariEnvironment, ClassicControl
 import pytest
 
-from fragile.env import DiscreteEnv
-from fragile.states import BaseStates
+from fragile.core.base_classes import BaseStates
+from fragile.core.env import DiscreteEnv
 
 
 @pytest.fixture(scope="module")
@@ -48,11 +48,10 @@ class TestEnvironment:
         assert isinstance(states, BaseStates), states
         assert states.observs.shape[0] == batch_size
         assert states.rewards.shape[0] == batch_size
-        assert states.ends.shape[1] == 1
 
     def test_step(self, environment):
         batch_size = 17
         actions = np.zeros(batch_size, dtype=int)
         states = environment.reset(batch_size=batch_size)
         new_states = environment.step(actions=actions, env_states=states)
-        assert new_states.ends.sum().cpu().item() == 0
+        assert new_states.ends.sum() == 0

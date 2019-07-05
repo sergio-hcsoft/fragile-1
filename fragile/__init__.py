@@ -1,4 +1,3 @@
-from fragile.env import BaseEnvironment, DiscreteEnv
-from fragile.states import States
-from fragile.swarm import Swarm
-from fragile.walkers import Walkers
+"""Framework for FAI algorithms development."""
+from fragile.core.states import States
+from fragile.core.walkers import Walkers

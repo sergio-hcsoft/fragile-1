@@ -1,7 +1,10 @@
 import pytest
 
-from fragile import BaseEnvironment, DiscreteEnv, Swarm, Walkers
-from fragile.models import RandomDiscrete
+from fragile.core.base_classes import BaseEnvironment
+from fragile.core.env import DiscreteEnv
+from fragile.core.models import RandomDiscrete
+from fragile.core.swarm import Swarm
+from fragile.core.walkers import Walkers
 from fragile.tests.test_env import create_env, plangym_env  # noqa: F401
 
 
@@ -20,6 +23,7 @@ def swarm(environment_fact):
         walkers=Walkers,
         n_walkers=n_walkers,
         max_iters=10,
+        use_tree=True,
     )
     return swarm
 
@@ -53,7 +57,7 @@ class TestSwarm:
         swarm.init_walkers()
         swarm.walkers.max_iters = 500
         swarm.run_swarm()
-        reward = swarm.walkers.cum_rewards.max().item()
+        reward = swarm.walkers.states.cum_rewards.max()
         assert reward > 100, "Iters: {}, rewards: {}".format(
-            swarm.walkers.n_iters, swarm.walkers.cum_rewards
+            swarm.walkers.n_iters, swarm.walkers.states.cum_rewards
         )

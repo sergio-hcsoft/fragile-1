@@ -1,19 +1,19 @@
 import numpy as np
 import pytest
 
-from fragile.states import BaseStates
+from fragile.core.base_classes import BaseStates
 
 
 @pytest.fixture()
 def memory():
-    from fragile.memory import Memory
+    from fragile.experimental.memory import Memory
 
     return Memory(10, 100, 1)
 
 
 @pytest.fixture()
 def mem_states():
-    return BaseStates(n_walkers=50, observs=np.random.random((50, 32, 3)))
+    return BaseStates(batch_size=50, observs=np.random.random((50, 32, 3)))
 
 
 """

@@ -1,14 +1,13 @@
-from typing import Callable, Generator, List, Tuple
+from typing import Callable, Generator, List, Tuple, Union
 
 import numpy as np
-import torch
 
 
 class BaseStates:
     """
-    This class is meant to handle several tensors that will contain the data
-    associated with the walkers of a Swarm. This means that each tensor will
-    have an extra dimension equal to the number of walkers.
+    Handle several tensors that will contain the data associated with the walkers
+    of a Swarm. This means that each tensor will have an extra dimension equal to
+    the number of walkers.
 
     This class behaves as a dictionary of tensors with some extra functionality
     to make easier the process of cloning the along the walkers dimension.
@@ -16,9 +15,8 @@ class BaseStates:
     In order to define the tensors, a state_dict dictionary needs to be specified
     using the following structure::
 
-        state_dict = {"name_1": {"sizes": tuple([1]),
-                                 "device": "cuda",
-                                 "dtype": torch.float32,
+        state_dict = {"name_1": {"size": tuple([1]),
+                                 "dtype": np.float32,
                                 },
                      }
 
@@ -27,23 +25,36 @@ class BaseStates:
 
 
     Args:
-        n_walkers: The number of items in the first dimension of the tensors.
+        batch_size: The number of items in the first dimension of the tensors.
         state_dict: Dictionary defining the attributes of the tensors.
         **kwargs: The name-tensor pairs can also be specified as kwargs.
     """
 
-    def __init__(self, n_walkers: int, state_dict=None, device=None, **kwargs):
+    def __init__(self, batch_size: int, state_dict=None, **kwargs):
+        """
+        Initialize a `BaseStates`.
 
-        self.device = device
+        Args:
+             batch_size: The number of items in the first dimension of the tensors.
+             state_dict: Dictionary defining the attributes of the tensors.
+             **kwargs: The name-tensor pairs can also be specified as kwargs.
+        """
+
         attr_dict = (
-            self.params_to_tensors(state_dict, n_walkers) if state_dict is not None else kwargs
+            self.params_to_arrays(state_dict, batch_size) if state_dict is not None else kwargs
         )
         self._names = list(attr_dict.keys())
+        self._attr_dict = attr_dict
         for key, val in attr_dict.items():
             setattr(self, key, val)
-        self._n_walkers = n_walkers
+        self._n_walkers = batch_size
 
-    def __getitem__(self, item: [str, List[str]]) -> [np.ndarray, torch.Tensor]:
+    def ___getattr__(self, item):
+        if item in self._attr_dict:
+            return self[item]
+        return self.__getattribute__(item)
+
+    def __getitem__(self, item: Union[str, List[str]]) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Query an attribute of the class as if it was a dictionary.
 
@@ -57,17 +68,13 @@ class BaseStates:
             try:
                 return getattr(self, item)
             except TypeError as e:
-                raise TypeError(
-                    "Tried to get an attribute with key {} of type {}".format(item, type(item))
-                )
+                raise TypeError("Tried to get an attribute with key {}".format(item))
         elif isinstance(item, list):
             return [getattr(self, it) for it in item]
         else:
-            raise TypeError(
-                "item must be an instance of str or list, got {} instead".format(item, type(item))
-            )
+            raise TypeError("item must be an instance of str or list, got {} instead".format(item))
 
-    def __setitem__(self, key, value: [torch.Tensor, np.ndarray]):
+    def __setitem__(self, key, value: Union[Tuple, List, np.ndarray]):
         """
         Allow the class to set its attributes as if it was a dict.
 
@@ -78,15 +85,10 @@ class BaseStates:
         Returns:
             None
         """
-        if isinstance(value, torch.Tensor):
+        if isinstance(value, np.ndarray):
             setattr(self, key, value)
-        elif isinstance(value, np.ndarray):
-            setattr(self, key, torch.from_numpy(value).to(self.device))
         else:
-            raise NotImplementedError(
-                "You can only set attributes using torch.Tensors and np.ndarrays"
-                "got item value of type {} for key {}".format(type(value), key)
-            )
+            setattr(self, key, np.array(value))
 
     def __repr__(self):
         string = "{} with {} walkers\n".format(self.__class__.__name__, self.n)
@@ -106,8 +108,8 @@ class BaseStates:
         state_dict = {}
         for name in names:
             shape = tuple([n_walkers]) + tuple(states[0][name].shape)
-            state_dict[name] = torch.cat(tuple([s[name] for s in states])).view(shape)
-        s = cls(n_walkers=n_walkers, **state_dict)
+            state_dict[name] = np.concatenate(tuple([s[name] for s in states])).reshape(shape)
+        s = cls(batch_size=n_walkers, **state_dict)
         return s
 
     @property
@@ -171,15 +173,15 @@ class BaseStates:
         contain only the  data corresponding to one walker.
         """
         for k, v in self.iteritems():
-            yield self.__class__(n_walkers=1, **dict(zip(k, v)))
+            yield self.__class__(batch_size=1, **dict(zip(k, v)))
 
-    def params_to_tensors(self, param_dict, n_walkers: int):
+    def params_to_arrays(self, param_dict, n_walkers: int):
         """Transforms the param dict into a dict containing the name of the
          attributes as keys, and initialized data structures as values.
         """
         raise NotImplementedError
 
-    def clone(self, will_clone: [np.ndarray, torch.Tensor], compas_ix: [np.ndarray, torch.Tensor]):
+    def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray):
         """
         Perform the clone operation on all the data attributes.
 
@@ -214,10 +216,9 @@ class BaseStates:
         In order to define the tensors, a state_dict dictionary needs to be specified
         using the following structure::
 
-            import torch
-            state_dict = {"name_1": {"sizes": tuple([1]),
-                                     "device": "cuda",
-                                     "dtype": torch.float32,
+            import numpy as np
+            state_dict = {"name_1": {"size": tuple([1]),
+                                     "dtype": np.float32,
                                    },
                           }
 
@@ -235,9 +236,7 @@ class BaseEnvironment:
 
     """
 
-    def step(
-        self, actions: [np.ndarray, torch.Tensor], env_states: BaseStates, *args, **kwargs
-    ) -> BaseStates:
+    def step(self, actions: np.ndarray, env_states: BaseStates, *args, **kwargs) -> BaseStates:
         """
         Step the environment for a batch of walkers.
 
@@ -245,8 +244,8 @@ class BaseEnvironment:
             actions: Batch of actions to be applied to the environment.
             env_states: States representing a batch of states to be set in the
                 environment.
-            *args:
-            **kwargs:
+            *args: Additional arguments.
+            **kwargs: Additional keyword arguments.
 
         Returns:
             BaseStates representing the next state of the environment and all
@@ -276,10 +275,9 @@ class BaseEnvironment:
         In order to define the tensors, a state_dict dictionary needs to be specified
         using the following structure::
 
-            import torch
-            state_dict = {"name_1": {"sizes": tuple([1]),
-                                     "device": "cuda",
-                                     "dtype": torch.float32,
+            import numpy as np
+            state_dict = {"name_1": {"size": tuple([1]),
+                                     "dtype": np.float32,
                                    },
                           }
 
@@ -301,10 +299,9 @@ class BaseModel:
         In order to define the tensors, a state_dict dictionary needs to be specified
         using the following structure::
 
-            import torch
-            state_dict = {"name_1": {"sizes": tuple([1]),
-                                     "device": "cuda",
-                                     "dtype": torch.float32,
+            import numpy as np
+            state_dict = {"name_1": {"size": tuple([1]),
+                                     "dtype": np.float32,
                                    },
                           }
 
@@ -329,7 +326,7 @@ class BaseModel:
 
     def predict(
         self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, torch.Tensor, BaseStates]:
+    ) -> Tuple[np.ndarray, BaseStates]:
         """
         Calculates the next action that needs to be taken at a given state.
 
@@ -344,7 +341,7 @@ class BaseModel:
 
     def calculate_dt(
         self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[torch.Tensor, BaseStates]:
+    ) -> Tuple[np.ndarray, BaseStates]:
         """
         Calculates the number of times that the next action will be applied.
 
@@ -359,7 +356,8 @@ class BaseModel:
 
 
 class BaseWalkers:
-    """The Walkers is a data structure that takes care of all the data involved
+    """
+    The Walkers is a data structure that takes care of all the data involved
     in making a Swarm evolve.
 
     Args:
@@ -368,19 +366,36 @@ class BaseWalkers:
                 variable with all the information regarding the Environment.
             model_state_params: Contains the structure of the States
                 variable with all the information regarding the Model.
-            *args:  Ignored
-            **kwargs: Ignored
-
+            accumulate_rewards: If true accumulate the rewards after each step
+                of the environment.
     """
 
     def __init__(
-        self, n_walkers: int, env_state_params: dict, model_state_params: dict, *args, **kwargs
+        self,
+        n_walkers: int,
+        env_state_params: dict,
+        model_state_params: dict,
+        accumulate_rewards: bool = True,
     ):
+        """
+        Initialize a `BaseWalkers`.
+
+        Args:
+            n_walkers: Number of walkers the Swarm will contain.
+            env_state_params: Contains the structure of the States
+                variable with all the information regarding the Environment.
+            model_state_params: Contains the structure of the States
+                variable with all the information regarding the Model.
+            accumulate_rewards: If true accumulate the rewards after each step
+                of the environment.
+        """
 
         self.model_state_params = model_state_params
         self.env_state_params = env_state_params
         self.n_walkers = n_walkers
+        self.id_walkers = None
         self.death_cond = None
+        self._accumulate_rewards = accumulate_rewards
 
     @property
     def n(self) -> int:
@@ -397,38 +412,66 @@ class BaseWalkers:
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
+    @property
+    def states(self) -> BaseStates:
+        """Return the States class where all the model information is stored."""
+        raise NotImplementedError
+
+    def get_env_states(self) -> BaseStates:
+        return self.env_states
+
+    def get_model_states(self) -> BaseStates:
+        return self.model_states
+
+    def update_states(self):
+        raise NotImplementedError
+
     def reset(self, *args, **kwargs):
         """Restart all the variables needed to perform the fractal evolution process."""
         raise NotImplementedError
 
-    def calc_distances(self):
+    def calculate_distances(self):
         """Calculate the distances between the different observations of the walkers."""
         raise NotImplementedError
 
-    def calc_virtual_reward(self):
+    def calculate_virtual_reward(self):
         """Apply the virtual reward formula to account for all the different goal scores."""
+        raise NotImplementedError
+
+    def calculate_end_condition(self) -> bool:
+        """Return a boolean that controls the stopping of the iteration loop. If True,
+        the iteration process stops."""
         raise NotImplementedError
 
     def update_clone_probs(self, clone_ix, will_clone):
         """Calculate the clone probability of the walkers."""
         raise NotImplementedError
 
-    def get_alive_compas(self) -> [torch.Tensor, np.ndarray]:
+    def clone_walkers(self):
+        """Sample the clone probability distribution and clone the walkers accordingly."""
+        raise NotImplementedError
+
+    def get_alive_compas(self) -> np.ndarray:
         """Return an array of indexes corresponding to an alive walker chosen
          at random.
         """
         raise NotImplementedError
 
+    def balance(self):
+        """Perform FAI iteration to clone the states."""
+        raise NotImplementedError
+
 
 class BaseSwarm:
     """
-    The Swarm is in charge of performing a fractal evolution process. It contains
-    the necessary logic to use an Environment, a Model, and a Walkers instance
+    The Swarm is in charge of performing a fractal evolution process. It contains \
+    the necessary logic to use an Environment, a Model, and a Walkers instance \
     to run the Swarm evolution algorithm.
 
     Args:
         env: A function that returns an instance of an Environment.
         model: A function that returns an instance of a Model.
+        walkers: A callable that returns an instance of BaseWalkers.
         n_walkers: Number of walkers of the swarm.
         reward_scale: Virtual reward exponent for the reward score.
         dist_scale:Virtual reward exponent for the distance score.
@@ -451,10 +494,11 @@ class BaseSwarm:
         self._model = None
         self._env = None
         self.tree = None
+        self.epoch = 0
 
         self._init_swarm(
             env_callable=env,
-            model_callabe=model,
+            model_callable=model,
             walkers_callable=walkers,
             n_walkers=n_walkers,
             reward_scale=reward_scale,

@@ -6,7 +6,7 @@ PROJECT = fragile
 check:
 	!(grep -R /tmp fragile/tests)
 	flake8 --count
-	pylint plangym
+	pylint fragile
 	black --check .
 
 .PHONY: test

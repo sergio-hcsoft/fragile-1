@@ -24,27 +24,26 @@ matrix:
   fast_finish: true
   include:
     - stage: style
+      name: "Check code style"
       python: 3.7
       script:
         - make check
       install:
         - pip install -r requirements-lint.txt
     - stage: test
-      python: 3.5
-      script: *_coverage
-      install: *_install
-    - stage: test
+      name: "Test python 3.6"
       python: 3.6
       script: *_coverage
       install: *_install
     - stage: test
+      name: "Test python 3.7"
       python: 3.7
       script: *_coverage
       install: *_install
       after_success:
         - codecov
     - stage: test
-      name: Tests inside docker
+      name: "Tests inside docker"
       script:
         - make docker-build VERSION=test
         - make docker-test VERSION=test
