@@ -2,23 +2,11 @@ from plangym import AtariEnvironment, ParallelEnvironment
 
 from fragile.core.env import DiscreteEnv
 from fragile.core.models import RandomDiscrete
-from fragile.core.states import States
 from fragile.core.swarm import Swarm
+from fragile.core.walkers import Walkers
 
 
-if __name__ == "__main__":
-    import copy
-    import numpy as np
-    import pytest
-    import torch
-    from plangym import AtariEnvironment, ParallelEnvironment
-
-    from fragile.core.env import DiscreteEnv
-    from fragile.core.models import RandomDiscrete
-    from fragile.core.states import States
-    from fragile.core.swarm import Swarm
-    from fragile.core.walkers import Walkers
-
+def main():
     env = ParallelEnvironment(
         env_class=AtariEnvironment,
         name="MsPacman-ram-v0",
@@ -26,14 +14,6 @@ if __name__ == "__main__":
         autoreset=True,
         blocking=False,
     )
-
-    state, obs = env.reset()
-
-    states = [copy.deepcopy(state) for _ in range(10)]
-    actions = [env.action_space.sample() for _ in range(10)]
-
-    data = env.step_batch(states=states, actions=actions)
-    new_states, observs, rewards, ends, infos = data
 
     swarm = Swarm(
         model=lambda x: RandomDiscrete(x),
@@ -45,6 +25,9 @@ if __name__ == "__main__":
         prune_tree=True,
         reward_scale=2,
     )
-    from IPython.core.display import clear_output
 
-    _ = swarm.run_swarm(print_every=100)
+    swarm.run_swarm(print_every=100)
+
+
+if __name__ == "__main__":
+    main()

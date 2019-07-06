@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 
 from fragile.core.base_classes import BaseStates
 from fragile.experimental.harmonic import GausianPerturbator, HarmonicOscillator

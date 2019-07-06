@@ -14,6 +14,12 @@ class StatesWalkers(States):
     """Keeps track of the data structures used by the `Walkers` class."""
 
     def __init__(self, batch_size: int):
+        """
+        Initialize a :class:`StatesWalkers`.
+
+        Args:
+            batch_size: Number of walkers that the class will be tracking.
+        """
         self.will_clone = None
         self.compas_ix = None
         self.processed_rewards = None
@@ -125,8 +131,8 @@ class Walkers(BaseWalkers):
             accumulate_rewards: If True the rewards obtained after transitioning \
                                 to a new state will accumulate. If False only the last \
                                 reward will be taken into account.
-        """
 
+        """
         super(Walkers, self).__init__(
             n_walkers=n_walkers,
             env_state_params=env_state_params,
@@ -143,7 +149,7 @@ class Walkers(BaseWalkers):
         self.max_iters = max_iters
 
     def __getattr__(self, item):
-        """The Walker can directly access all the data involved in the algorithm as attributes."""
+        """Access all the data involved in the algorithm as attributes."""
         if hasattr(super(Walkers, self), item):
             return super(Walkers, self).__getattribute__(item)
         elif item in self.states.keys():
@@ -165,16 +171,16 @@ class Walkers(BaseWalkers):
     def __repr__(self) -> str:
         """Print all the data involved in the current run of the algorithm."""
         text = self._print_stats()
-        text += "Walkers States: {}\n".format(self.__repr_state(self._states))
-        text += "Env States: {}\n".format(self.__repr_state(self._env_states))
-        text += "Model States: {}\n".format(self.__repr_state(self._model_states))
+        text += "Walkers States: {}\n".format(self._repr_state(self._states))
+        text += "Env States: {}\n".format(self._repr_state(self._env_states))
+        text += "Model States: {}\n".format(self._repr_state(self._model_states))
         return text
 
     def _print_stats(self) -> str:
         """Print several statistics of the current state of the swarm."""
-
-        text = ("{} iteration {} Best reward: {:.2f}"
-                " Dead walkers: {:.2f}% Cloned: {:.2f}%\n").format(
+        text = (
+            "{} iteration {} Best reward: {:.2f} Dead walkers: {:.2f}% Cloned: {:.2f}%\n\n"
+        ).format(
             self.__class__.__name__,
             self.n_iters,
             self.states.cum_rewards.max(),
@@ -182,19 +188,6 @@ class Walkers(BaseWalkers):
             100 * self.states.will_clone.sum() / self.n,
         )
         return text
-
-    @staticmethod
-    def __repr_state(state):
-        string = "\n"
-        for k, v in state.items():
-            if k in ["observs", "states"]:
-                continue
-            shape = v.shape if hasattr(v, "shape") else None
-            new_str = "{} shape {} Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(
-                k, shape, *statistics_from_array(v)
-            )
-            string += new_str
-        return string
 
     @property
     def observs(self) -> np.ndarray:
@@ -212,17 +205,17 @@ class Walkers(BaseWalkers):
 
     @property
     def states(self) -> StatesWalkers:
-        """The `StatesWalkers` class that contains the data used by the instance."""
+        """Return the `StatesWalkers` class that contains the data used by the instance."""
         return self._states
 
     @property
     def env_states(self) -> States:
-        """The `States` class that contains the data used by an environment."""
+        """Return the `States` class that contains the data used by an environment."""
         return self._env_states
 
     @property
     def model_states(self) -> States:
-        """The `States` class that contains the data used by a Model."""
+        """Return the `States` class that contains the data used by a Model."""
         return self._model_states
 
     def calculate_end_condition(self) -> bool:
@@ -232,6 +225,7 @@ class Walkers(BaseWalkers):
         Returns:
             Boolean indicating if the iteration process should be finished. True means \
             it should be stopped, and False means it should continue.
+
         """
         all_dead = self.states.end_condition.sum() == self.n
         max_iters = self.n_iters > self.max_iters
@@ -257,8 +251,8 @@ class Walkers(BaseWalkers):
         """
         Calculate the virtual reward and update the internal state.
 
-        The cumulative_reward is transformed with the relativize function. The distances stored
-        in the internal state are already assumed to be transformed.
+        The cumulative_reward is transformed with the relativize function. \
+        The distances stored in the internal state are already assumed to be transformed.
         """
         processed_rewards = relativize(self.states.cum_rewards)
         virt_rw = processed_rewards ** self.reward_scale * self.states.distances ** self.dist_scale
@@ -267,9 +261,11 @@ class Walkers(BaseWalkers):
     def get_alive_compas(self) -> np.ndarray:
         """
         Return the indexes of alive companions chosen at random.
+
         Returns:
             Numpy array containing the int indexes of alive walkers chosen at random with
             repetition.
+
         """
         self.states.alive_mask = np.logical_not(self.states.end_condition)
         if not self.states.alive_mask.any():  # No need to sample if all walkers are dead.
@@ -311,6 +307,7 @@ class Walkers(BaseWalkers):
             A tuple containing two sets: The first one represent the unique ids \
             of the states for each walker at the start of the iteration. The second \
             one contains the ids of the states after the cloning process.
+
         """
         old_ids = self.states.id_walkers.astype(int)
         self.calculate_distances()
@@ -334,7 +331,8 @@ class Walkers(BaseWalkers):
         self._model_states.clone(will_clone=clone, compas_ix=compas)
 
     def reset(self, env_states: States = None, model_states: States = None):
-        """Restart all the internal states involved in the algorithm iteration.
+        """
+        Restart all the internal states involved in the algorithm iteration.
 
         After reset a new run of the algorithm will be ready to be launched.
         """
@@ -351,6 +349,7 @@ class Walkers(BaseWalkers):
             env_states: States containing the data associated with the Environment.
             model_states: States containing data associated with the Environment.
             **kwargs: Internal states will be updated via keyword arguments.
+
         """
         if kwargs:
             if "rewards" in kwargs:
@@ -377,3 +376,16 @@ class Walkers(BaseWalkers):
         else:
             cum_rewards = rewards
         self.update_states(cum_rewards=cum_rewards)
+
+    @staticmethod
+    def _repr_state(state):
+        string = "\n"
+        for k, v in state.items():
+            if k in ["observs", "states"]:
+                continue
+            shape = v.shape if hasattr(v, "shape") else None
+            new_str = "{} shape {} Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(
+                k, shape, *statistics_from_array(v)
+            )
+            string += new_str
+        return string

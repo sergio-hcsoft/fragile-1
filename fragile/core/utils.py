@@ -19,6 +19,7 @@ def relativize(x: np.ndarray) -> np.ndarray:
 
 
 def update_defaults(target: dict, **kwargs) -> dict:
+    """Set the provided data in the target dictionary in case it didn't exist previously."""
     for k, v in kwargs.items():
         target[k] = target.get(k, v)
     return target

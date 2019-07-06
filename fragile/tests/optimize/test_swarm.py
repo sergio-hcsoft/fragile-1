@@ -1,10 +1,10 @@
+"""
 import numpy as np
 import pytest
 
 from fragile.optimize.mapper import FunctionMapper
 from fragile.optimize.models import RandomNormal
 
-"""
 
 @pytest.fixture()
 def mapper():

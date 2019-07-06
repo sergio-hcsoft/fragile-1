@@ -9,23 +9,25 @@ from fragile.core.states import States
 
 
 class DiscreteEnv(BaseEnvironment):
-    """The DiscreteEnv acts as an interface with `plangym`. It can interact with
-     any environment that accepts discrete actions and follows the interface of
-    `plangym`.
+    """The DiscreteEnv acts as an interface with `plangym`.
 
-    Args:
-            env: Instance of plangym.Environment
-            device: Device where the state tensors will be placed.
+    It can interact with any environment that accepts discrete actions and \
+    follows the interface of `plangym`.
     """
 
-    def __init__(self, env: Environment, device: str = "cpu"):
+    def __init__(self, env: Environment):
+        """
+        Initialize a :class:`DiscreteEnv`.
+
+        Args:
+           env: Instance of :class:`plangym.Environment`.
+        """
         self._env = env
         self._n_actions = self._env.action_space.n
-        self.device = device
 
     @property
     def n_actions(self) -> int:
-        """Number of discrete actions that can be taken in the environment."""
+        """Return the number of discrete actions that can be taken in the environment."""
         return self._n_actions
 
     def get_params_dict(self) -> dict:
@@ -42,27 +44,22 @@ class DiscreteEnv(BaseEnvironment):
 
     # @profile
     def step(
-        self,
-        actions: np.ndarray,
-        env_states: States,
-        n_repeat_action: Union[int, np.ndarray] = 1,
-        *args,
-        **kwargs
+        self, actions: np.ndarray, env_states: States, n_repeat_action: Union[int, np.ndarray] = 1
     ) -> States:
         """
-        Sets the environment to the target states by applying the specified actions an arbitrary
-        number of time steps.
+        Set the environment to the target states by applying the specified \
+        actions an arbitrary number of time steps.
 
         Args:
             actions: Vector containing the actions that will be applied to the target states.
             env_states: States class containing the state data to be set on the Environment.
-            n_repeat_action: Number of times that an action will be applied. If it is an array
-                it corresponds to the different dts of each walker.
-            *args: Ignored.
-            **kwargs: Ignored.
+            n_repeat_action: Number of times that an action will be applied. If \
+                             it is an array it corresponds to the different dts \
+                             of each walker.
 
         Returns:
             States containing the information that describes the new state of the Environment.
+
         """
         states = env_states.states
         actions = actions.astype(np.int32)
@@ -76,7 +73,7 @@ class DiscreteEnv(BaseEnvironment):
     # @profile
     def reset(self, batch_size: int = 1, states=None) -> States:
         """
-        Resets the environment to the start of a new episode and returns a new \
+        Reset the environment to the start of a new episode and returns a new \
         States instance describing the state of the Environment.
 
         Args:
@@ -87,6 +84,7 @@ class DiscreteEnv(BaseEnvironment):
             States instance describing the state of the Environment. The first
             dimension of the data tensors (number of walkers) will be equal to
             batch_size.
+
         """
         state, obs = self._env.reset()
         states = np.array([copy.deepcopy(state) for _ in range(batch_size)])

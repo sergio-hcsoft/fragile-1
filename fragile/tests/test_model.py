@@ -20,7 +20,9 @@ class TestModel:
         n_walkers = 7
         env_states = BaseStates(rewards=np.zeros(n_walkers), batch_size=n_walkers)
         actions, states = discrete_model.reset()
-        act_dt, model_states = discrete_model.calculate_dt(states, env_states)
+        act_dt, model_states = discrete_model.calculate_dt(
+            model_states=states, env_states=env_states
+        )
         assert isinstance(model_states, BaseStates)
         assert len(act_dt) == n_walkers
 
@@ -38,7 +40,9 @@ class TestContinousModel:
         n_walkers = 7
         env_states = BaseStates(rewards=np.zeros(n_walkers), batch_size=n_walkers)
         actions, states = continous_model.reset()
-        act_dt, model_states = continous_model.calculate_dt(states, env_states)
+        act_dt, model_states = continous_model.calculate_dt(
+            model_states=states, env_states=env_states
+        )
         assert isinstance(model_states, BaseStates)
         assert len(act_dt) == n_walkers
 
