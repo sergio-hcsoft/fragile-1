@@ -44,7 +44,7 @@ class TestSwarm:
         assert isinstance(swarm.walkers, Walkers)
 
     def test_init_walkers_no_params(self, swarm):
-        swarm.init_walkers()
+        swarm.reset()
 
     def test_step(self, swarm):
         swarm.step_walkers()
@@ -54,7 +54,7 @@ class TestSwarm:
 
     def test_score_gets_higher(self, swarm):
         swarm.walkers.reset()
-        swarm.init_walkers()
+        swarm.reset()
         swarm.walkers.max_iters = 500
         swarm.run_swarm()
         reward = swarm.walkers.states.cum_rewards.max()

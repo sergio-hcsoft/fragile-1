@@ -3,7 +3,7 @@ import pytest
 
 from fragile.core.base_classes import BaseStates
 from fragile.core.utils import relativize
-from fragile.core.walkers import Walkers
+from fragile.core.walkers import StatesWalkers, Walkers
 
 
 @pytest.fixture(scope="module")
@@ -39,6 +39,25 @@ def walkers_factory():
         return walkers
 
     return new_walkers
+
+
+@pytest.fixture(scope="module")
+def states_walkers():
+    return StatesWalkers(10)
+
+
+class TestStatesWalkers:
+    def test_reset(self, states_walkers):
+        states_walkers.reset()
+        for name in states_walkers.keys():
+            assert len(states_walkers[name]) == states_walkers.n
+
+    def test_update(self, states_walkers):
+        states_walkers.reset()
+        test_vals = np.arange(states_walkers.n)
+        states_walkers.update(virtual_rewards=test_vals, distances=test_vals)
+        assert (states_walkers.virtual_rewards == test_vals).all()
+        assert (states_walkers.distances == test_vals).all()
 
 
 class TestWalkers:

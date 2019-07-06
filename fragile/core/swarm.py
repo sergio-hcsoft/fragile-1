@@ -1,3 +1,4 @@
+import copy
 from typing import Callable, List
 
 
@@ -11,17 +12,20 @@ except ImportError:
 
 # from line_profiler import profile
 
-from fragile.core.base_classes import (
-    BaseEnvironment,
-    BaseModel,
-    BaseStates,
-    BaseSwarm,
-)
+from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseSwarm
+from fragile.core.states import States
 from fragile.core.tree import Tree
 from fragile.core.walkers import Walkers
 
 
 class Swarm(BaseSwarm):
+    """
+        The Swarm is in charge of performing a fractal evolution process.
+
+        It contains the necessary logic to use an Environment, a Model, and a \
+        Walkers instance to run the Swarm evolution algorithm.
+    """
+
     @property
     def env(self) -> BaseEnvironment:
         return self._env
@@ -47,6 +51,25 @@ class Swarm(BaseSwarm):
         *args,
         **kwargs
     ):
+        """
+        Initialize and set up all the necessary internal variables to run the swarm.
+        This process involves instantiating the Swarm, the Environment and the
+        model.
+
+        Args:
+            env_callable: A function that returns an instance of an
+                :class:`fragile.Environment`.
+            model_callable: A function that returns an instance of a
+                :class:`fragile.Model`.
+            walkers_callable: A function that returns an instance of
+                :class:`fragile.Walkers`.
+            n_walkers: Number of walkers of the swarm.
+            reward_scale: Virtual reward exponent for the reward score.
+            dist_scale:Virtual reward exponent for the distance score.
+
+        Returns:
+            None
+        """
         self._env: BaseEnvironment = env_callable()
         self._model: BaseModel = model_callable(self._env)
 
@@ -67,7 +90,9 @@ class Swarm(BaseSwarm):
         self._use_tree = use_tree
         self.epoch = 0
 
-    def init_walkers(self, model_states: BaseStates = None, env_states: BaseStates = None):
+    def reset(
+        self, walkers_states: States = None, model_states: States = None, env_states: States = None
+    ):
         env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
 
         actions, model_states = (
@@ -87,18 +112,15 @@ class Swarm(BaseSwarm):
 
     # @profile
     def run_swarm(
-        self,
-        model_states: BaseStates = None,
-        env_states: BaseStates = None,
-        print_every: int = 1e100,
+        self, model_states: States = None, env_states: States = None, print_every: int = 1e100
     ):
-        self.init_walkers(model_states=model_states, env_states=env_states)
+        self.reset(model_states=model_states, env_states=env_states)
         self.epoch = 0
         while not self.walkers.calculate_end_condition():
             try:
                 self.step_walkers()
                 old_ids, new_ids = self.walkers.balance()
-                self.prune_tree(old_ids=old_ids, new_ids=new_ids)
+                self.prune_tree(old_ids=set(old_ids.tolist()), new_ids=set(new_ids.tolist()))
                 if self.epoch % print_every == 0:
                     print(self.walkers)
                     clear_output(True)
@@ -108,20 +130,28 @@ class Swarm(BaseSwarm):
 
     # @profile
     def step_walkers(self):
+        """Make the walkers undergo a random perturbation process in the swarm \
+        Environment.
+        """
         model_states = self.walkers.model_states
-
-        states_ids = self.walkers.states.id_walkers.copy().astype(int).flatten().tolist() if \
-            self._use_tree else None
         env_states = self.walkers.env_states
+
+        states_ids = (
+            copy.deepcopy(self.walkers.states.id_walkers).astype(int).flatten().tolist()
+            if self._use_tree
+            else None
+        )
         act_dt, model_states = self.model.calculate_dt(model_states, env_states)
 
         actions, model_states = self.model.predict(
-            env_states=env_states, model_states=model_states,#  batch_size=self.walkers.n
+            env_states=env_states, model_states=model_states
         )
         env_states = self.env.step(actions=actions, env_states=env_states, n_repeat_action=act_dt)
         model_states.update(actions=actions)
 
-        self.walkers.update_states(env_states=env_states, model_states=model_states, end_condition=env_states.ends)
+        self.walkers.update_states(
+            env_states=env_states, model_states=model_states, end_condition=env_states.ends
+        )
         self.update_tree(states_ids)
 
     def update_tree(self, states_ids: List[int]):
@@ -130,9 +160,9 @@ class Swarm(BaseSwarm):
                 parent_ids=states_ids,
                 env_states=self.walkers.env_states,
                 model_states=self.walkers.model_states,
-                cum_rewards=self.walkers.states.cum_rewards.copy().flatten(),
+                cum_rewards=copy.deepcopy(self.walkers.states.cum_rewards).flatten(),
             )
-            self.walkers.states.update(id_walkers=walker_ids)
+            self.walkers.update_states(id_walkers=walker_ids)
 
     def prune_tree(self, old_ids, new_ids):
         if self._prune_tree:

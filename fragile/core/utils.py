@@ -18,6 +18,12 @@ def relativize(x: np.ndarray) -> np.ndarray:
     return standard
 
 
+def update_defaults(target: dict, **kwargs) -> dict:
+    for k, v in kwargs.items():
+        target[k] = target.get(k, v)
+    return target
+
+
 def params_to_tensors(param_dict, n_walkers: int):
     """Transform a parameter dictionary into an array dictionary."""
     tensor_dict = {}

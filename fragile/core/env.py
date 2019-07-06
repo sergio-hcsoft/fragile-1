@@ -1,3 +1,4 @@
+import copy
 from typing import Union
 
 import numpy as np
@@ -88,8 +89,8 @@ class DiscreteEnv(BaseEnvironment):
             batch_size.
         """
         state, obs = self._env.reset()
-        states = np.array([state.copy() for _ in range(batch_size)])
-        observs = np.array([obs.copy() for _ in range(batch_size)])
+        states = np.array([copy.deepcopy(state) for _ in range(batch_size)])
+        observs = np.array([copy.deepcopy(obs) for _ in range(batch_size)])
         rewards = np.zeros(batch_size, dtype=np.float32)
         ends = np.zeros(batch_size, dtype=np.uint8)
         new_states = self._get_new_states(states, observs, rewards, ends, batch_size)

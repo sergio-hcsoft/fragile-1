@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 from fragile.core.base_classes import BaseStates
@@ -87,10 +89,12 @@ class States(BaseStates):
                      where key is the name of the attribute to be updated, and value \
                       is the new value for the attribute.
         """
-        other = other if other is not None else kwargs
-        for name, val in other.items():
-            val = val if isinstance(val, np.ndarray) else np.array(val)
-            self[name] = val
+        if other is not None:
+            for name, val in other.items():
+                self[name] = copy.deepcopy(val)
+        if kwargs:
+            for name, val in kwargs.items():
+                self[name] = copy.deepcopy(val)
 
     def get_params_dict(self) -> dict:
         """Return a dictionary containing the data stored in the :class:`States`."""

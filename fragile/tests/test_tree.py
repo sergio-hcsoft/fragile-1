@@ -10,7 +10,7 @@ from fragile.tests.test_walkers import walkers_factory  # noqa: F401
 @pytest.fixture(scope="module")
 def states(walkers_factory):
     env_state = list(walkers_factory().env_states.split_states())[0]
-    model_state = list(walkers_factory().model_states.split_states())[0]
+    model_state = list(walkers_factory().get_model_states().split_states())[0]
     return env_state, model_state
 
 

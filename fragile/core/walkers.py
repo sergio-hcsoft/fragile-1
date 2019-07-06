@@ -1,4 +1,5 @@
-from typing import Tuple, Set
+import copy
+from typing import Tuple
 
 import numpy as np
 
@@ -49,13 +50,31 @@ class StatesWalkers(States):
     def clone(self) -> Tuple[np.ndarray, np.ndarray]:
         """Perform the clone only on cum_rewards and id_walkers and reset the other arrays."""
         clone, compas = self.will_clone, self.compas_ix
-        cum_rewards, id_walkers = self.cum_rewards.copy(), self.id_walkers.copy()
-        self.reset()
+        cum_rewards, id_walkers = copy.deepcopy(self.cum_rewards), copy.deepcopy(self.id_walkers)
         self.cum_rewards = cum_rewards
         self.id_walkers = id_walkers
-        self.cum_rewards[clone] = cum_rewards[compas][clone]
-        self.id_walkers[clone] = id_walkers[compas][clone]
+        self.cum_rewards[clone] = copy.deepcopy(cum_rewards[compas][clone])
+        self.id_walkers[clone] = copy.deepcopy(id_walkers[compas][clone])
         return clone, compas
+
+    def update(self, other: "StatesWalkers" = None, **kwargs):
+        """
+        Modify the data stored in the States instance.
+
+        Existing attributes will be updated, and new attributes will be created if needed.
+
+        Args:
+            other: State class that will be copied upon update.
+            **kwargs: It is possible to specify the update as key value attributes, \
+                     where key is the name of the attribute to be updated, and value \
+                      is the new value for the attribute.
+        """
+        if other is not None:
+            for name, val in other.items():
+                getattr(self, name)[:] = copy.deepcopy(val)
+        if kwargs:
+            for name, val in kwargs.items():
+                getattr(self, name)[:] = copy.deepcopy(val)
 
     def reset(self):
         """Clear the internal data of the class."""
@@ -115,8 +134,8 @@ class Walkers(BaseWalkers):
             accumulate_rewards=accumulate_rewards,
         )
 
-        self._model_states = States(state_dict=model_state_params, batch_size=n_walkers)
-        self._env_states = States(state_dict=env_state_params, batch_size=n_walkers)
+        self._model_states: States = States(state_dict=model_state_params, batch_size=n_walkers)
+        self._env_states: States = States(state_dict=env_state_params, batch_size=n_walkers)
         self._states = StatesWalkers(batch_size=n_walkers)
         self.reward_scale = reward_scale
         self.dist_scale = dist_scale
@@ -145,24 +164,20 @@ class Walkers(BaseWalkers):
 
     def __repr__(self) -> str:
         """Print all the data involved in the current run of the algorithm."""
-        text = self.print_stats()
-        text += "Env: {}\n".format(self.__repr_state(self._env_states))
-        text += "Model {}\n".format(self.__repr_state(self._model_states))
+        text = self._print_stats()
+        text += "Walkers States: {}\n".format(self.__repr_state(self._states))
+        text += "Env States: {}\n".format(self.__repr_state(self._env_states))
+        text += "Model States: {}\n".format(self.__repr_state(self._model_states))
         return text
 
-    def print_stats(self) -> str:
+    def _print_stats(self) -> str:
         """Print several statistics of the current state of the swarm."""
-        text = "{} iteration {}\n".format(self.__class__.__name__, self.n_iters)
-        stats = statistics_from_array(self.states.cum_rewards)
-        text += "Total Reward: Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(*stats)
-        stats = statistics_from_array(self.states.virtual_rewards)
-        text += "Virtual Rewards: Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(
-            *stats
-        )
-        stats = statistics_from_array(self.states.distances)
-        text += "Distances: Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(*stats)
 
-        text += "Dead walkers: {:.2f}% Cloned: {:.2f}%\n".format(
+        text = ("{} iteration {} Best reward: {:.2f}"
+                " Dead walkers: {:.2f}% Cloned: {:.2f}%\n").format(
+            self.__class__.__name__,
+            self.n_iters,
+            self.states.cum_rewards.max(),
             100 * self.states.end_condition.sum() / self.n,
             100 * self.states.will_clone.sum() / self.n,
         )
@@ -235,7 +250,8 @@ class Walkers(BaseWalkers):
             - self.observs[self.states.compas_ix].reshape(self.n, -1),
             axis=1,
         ).flatten()
-        self.states.update(distances=relativize(distances))
+        distances = relativize(distances)
+        self.update_states(distances=distances)
 
     def calculate_virtual_reward(self):
         """
@@ -246,8 +262,7 @@ class Walkers(BaseWalkers):
         """
         processed_rewards = relativize(self.states.cum_rewards)
         virt_rw = processed_rewards ** self.reward_scale * self.states.distances ** self.dist_scale
-        self.states.update(virtual_rewards=virt_rw)
-        self.states.update(processed_rewards=processed_rewards)
+        self.update_states(virtual_rewards=virt_rw, processed_rewards=processed_rewards)
 
     def get_alive_compas(self) -> np.ndarray:
         """
@@ -271,7 +286,10 @@ class Walkers(BaseWalkers):
         Updates the internal state with both the probability of cloning and the index of the
         randomly chosen companions that were selected to compare the virtual rewards.
         """
-        if (self.states.virtual_rewards.flatten() == self.states.virtual_rewards[0]).all():
+        all_virtual_rewards_are_equal = (
+            self.states.virtual_rewards == self.states.virtual_rewards[0]
+        ).all()
+        if all_virtual_rewards_are_equal:
             clone_probs = np.zeros(self.n, dtype=float_type) / float(self.n)
             compas_ix = np.arange(self.n)
         else:
@@ -279,11 +297,10 @@ class Walkers(BaseWalkers):
             # This value can be negative!!
             companions = self.virtual_rewards[compas_ix]
             clone_probs = (companions - self.states.virtual_rewards) / self.states.virtual_rewards
-        self.states.update(clone_probs=clone_probs)
-        self.states.update(compas_ix=compas_ix)
+        self.update_states(clone_probs=clone_probs, compas_ix=compas_ix)
 
     # @profile
-    def balance(self) -> Tuple[Set[int], Set[int]]:
+    def balance(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Perform an iteration of the FractalAI algorithm for balancing distributions.
 
@@ -295,12 +312,12 @@ class Walkers(BaseWalkers):
             of the states for each walker at the start of the iteration. The second \
             one contains the ids of the states after the cloning process.
         """
-        old_ids = set(self.states.id_walkers.astype(int).tolist())
+        old_ids = self.states.id_walkers.astype(int)
         self.calculate_distances()
         self.calculate_virtual_reward()
         self.update_clone_probs()
         self.clone_walkers()
-        new_ids = set(self.states.id_walkers.astype(int).tolist())
+        new_ids = self.states.id_walkers.astype(int)
         return old_ids, new_ids
 
     def clone_walkers(self):
@@ -310,7 +327,7 @@ class Walkers(BaseWalkers):
         # Dead walkers always clone
         dead_ix = np.arange(self.n)[self.states.end_condition]
         will_clone[dead_ix] = 1
-        self.states.update(will_clone=will_clone)
+        self.update_states(will_clone=will_clone)
 
         clone, compas = self.states.clone()
         self._env_states.clone(will_clone=clone, compas_ix=compas)
@@ -335,14 +352,17 @@ class Walkers(BaseWalkers):
             model_states: States containing data associated with the Environment.
             **kwargs: Internal states will be updated via keyword arguments.
         """
+        if kwargs:
+            if "rewards" in kwargs:
+                self._accumulate_and_update_rewards(kwargs["rewards"])
+                del kwargs["rewards"]
+            self.states.update(**kwargs)
         if isinstance(env_states, States):
             self._env_states.update(env_states)
-        if hasattr(env_states, "rewards"):
-            self._accumulate_and_update_rewards(env_states.rewards)
+            if hasattr(env_states, "rewards"):
+                self._accumulate_and_update_rewards(env_states.rewards)
         if isinstance(model_states, States):
             self._model_states.update(model_states)
-        if kwargs:
-            self.states.update(**kwargs)
 
     def _accumulate_and_update_rewards(self, rewards: np.ndarray):
         """
@@ -356,4 +376,4 @@ class Walkers(BaseWalkers):
             cum_rewards = self.states.cum_rewards + rewards
         else:
             cum_rewards = rewards
-        self.states.update(cum_rewards=cum_rewards)
+        self.update_states(cum_rewards=cum_rewards)

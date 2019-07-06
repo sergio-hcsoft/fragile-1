@@ -4,9 +4,10 @@ import pytest
 from fragile.optimize.mapper import FunctionMapper
 from fragile.optimize.models import RandomNormal
 
+"""
 
 @pytest.fixture()
-def swarm():
+def mapper():
     def potential_well(x):
         return -np.sum((x - 1) ** 2, 1) - 1
 
@@ -30,26 +31,26 @@ def swarm():
 
 
 @pytest.fixture()
-def finished_swarm(swarm):
-    swarm.walkers.reset()
-    swarm.init_walkers()
-    swarm.walkers.max_iters = 500
-    swarm.run_swarm()
-    return swarm
+def finished_swarm(mapper):
+    mapper.walkers.reset()
+    mapper.reset()
+    mapper.walkers.max_iters = 500
+    mapper.run_swarm()
+    return mapper
 
 
 class TestFunctionMapper:
-    def test_init(self, swarm):
+    def test_init(self, mapper):
         pass
 
-    def test_init_walkers_no_params(self, swarm):
-        swarm.init_walkers()
+    def test_init_walkers_no_params(self, mapper):
+        mapper.reset()
 
-    def test_step(self, swarm):
-        swarm.step_walkers()
+    def test_step(self, mapper):
+        mapper.step_walkers()
 
-    def test_run_swarm(self, swarm):
-        swarm.run_swarm()
+    def test_run_swarm(self, mapper):
+        mapper.run_swarm()
 
     def test_score_gets_higher(self, finished_swarm):
         reward = finished_swarm.walkers.cum_rewards.max().item()
@@ -60,3 +61,5 @@ class TestFunctionMapper:
     def test_has_vector(self, finished_swarm):
         pass
         # assert isinstance(finished_swarm.walkers.encoder.vectors[0], Vector)
+
+"""

@@ -7,6 +7,7 @@ from fragile.core.swarm import Swarm
 
 
 if __name__ == "__main__":
+    import copy
     import numpy as np
     import pytest
     import torch
@@ -28,7 +29,7 @@ if __name__ == "__main__":
 
     state, obs = env.reset()
 
-    states = [state.copy() for _ in range(10)]
+    states = [copy.deepcopy(state) for _ in range(10)]
     actions = [env.action_space.sample() for _ in range(10)]
 
     data = env.step_batch(states=states, actions=actions)

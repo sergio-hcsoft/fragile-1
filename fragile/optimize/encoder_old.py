@@ -12,23 +12,6 @@ def unique_columns2(data):
     return (u, uind)
 
 
-class Encoder:
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def __len__(self):
-        return 0
-
-    def calculate_pest(self, mapper: "FunctionMapper"):
-        pass
-
-    def update(self, walkers_states=None, env_states=None, model_states=None):
-        pass
-
-    def reset(self, *args, **kwargs):
-        pass
-
-
 class Vector:
     def __init__(
         self,
@@ -40,6 +23,7 @@ class Vector:
         self.origin = origin
         self.end = end
         self.base = end - origin
+        # self.base = self.base / torch.sqrt(torch.sum(self.base ** 2))
         self._age = 0
         self.timeout = timeout
         self.last_regions = []
@@ -118,7 +102,7 @@ def diversity_score(x, total=None):
     return n_different_rows if total is None else float(n_different_rows / total)
 
 
-class __Encoder:
+class Encoder:
     def __init__(self, n_vectors: int, timeout: int = 1e100, timeout_threshold: int = 100):
         self.n_vectors = n_vectors
         self.timeout = timeout

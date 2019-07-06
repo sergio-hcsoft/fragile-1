@@ -49,11 +49,6 @@ class BaseStates:
             setattr(self, key, val)
         self._n_walkers = batch_size
 
-    def ___getattr__(self, item):
-        if item in self._attr_dict:
-            return self[item]
-        return self.__getattribute__(item)
-
     def __getitem__(self, item: Union[str, List[str]]) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Query an attribute of the class as if it was a dictionary.
@@ -403,12 +398,12 @@ class BaseWalkers:
         return self.n_walkers
 
     @property
-    def env_states(self) -> BaseStates:
+    def env_states(self) -> "States":
         """Return the States class where all the environment information is stored."""
         raise NotImplementedError
 
     @property
-    def model_states(self) -> BaseStates:
+    def model_states(self) -> "States":
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
@@ -417,10 +412,10 @@ class BaseWalkers:
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
-    def get_env_states(self) -> BaseStates:
+    def get_env_states(self) -> "States":
         return self.env_states
 
-    def get_model_states(self) -> BaseStates:
+    def get_model_states(self) -> "States":
         return self.model_states
 
     def update_states(self):
@@ -439,8 +434,8 @@ class BaseWalkers:
         raise NotImplementedError
 
     def calculate_end_condition(self) -> bool:
-        """Return a boolean that controls the stopping of the iteration loop. If True,
-        the iteration process stops."""
+        """Return a boolean that controls the stopping of the iteration loop. \
+        If True, the iteration process stops."""
         raise NotImplementedError
 
     def update_clone_probs(self, clone_ix, will_clone):
@@ -452,7 +447,7 @@ class BaseWalkers:
         raise NotImplementedError
 
     def get_alive_compas(self) -> np.ndarray:
-        """Return an array of indexes corresponding to an alive walker chosen
+        """Return an array of indexes corresponding to an alive walker chosen \
          at random.
         """
         raise NotImplementedError
@@ -520,10 +515,10 @@ class BaseSwarm:
         return self._model
 
     @property
-    def walkers(self) -> BaseWalkers:
+    def walkers(self) -> "Walkers":
         return self._walkers
 
-    def init_walkers(self, model_states: "States" = None, env_states: "States" = None):
+    def reset(self, model_states: "States" = None, env_states: "States" = None):
         """
         Initialize the :class:`fragile.Walkers` and reset their values to start a new search
         process.
@@ -531,8 +526,6 @@ class BaseSwarm:
         Args:
             model_states: States that define the initial state of the environment.
             env_states: States that define the initial state of the model.
-
-        Returns:
 
         """
         raise NotImplementedError
@@ -550,7 +543,7 @@ class BaseSwarm:
         raise NotImplementedError
 
     def step_walkers(self):
-        """Make the walkers undergo a random perturbation process in the swarm
+        """Make the walkers undergo a random perturbation process in the swarm \
         Environment.
         """
         raise NotImplementedError
@@ -581,8 +574,6 @@ class BaseSwarm:
             n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.
             dist_scale:Virtual reward exponent for the distance score.
-            *args: Additional args passed to init_swarm.
-            **kwargs: Additional kwargs passed to init_swarm.
 
         Returns:
             None

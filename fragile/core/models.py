@@ -5,7 +5,7 @@ import numpy as np
 
 from fragile.core.base_classes import BaseModel
 from fragile.core.env import DiscreteEnv
-from fragile.core.states import BaseStates, States
+from fragile.core.states import States
 
 
 class RandomDiscrete(BaseModel):
@@ -44,7 +44,7 @@ class RandomDiscrete(BaseModel):
         """Number of different possible discrete actions that the model can output."""
         return self._n_actions
 
-    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, BaseStates]:
+    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, States]:
         """
 
         Return a new blank State for a `RandomDiscrete` instance, and a valid \
@@ -65,11 +65,8 @@ class RandomDiscrete(BaseModel):
         return actions, model_states
 
     def predict(
-        self,
-        env_states: BaseStates = None,
-        batch_size: int = None,
-        model_states: BaseStates = None,
-    ) -> Tuple[np.ndarray, BaseStates]:
+        self, env_states: States = None, batch_size: int = None, model_states: States = None
+    ) -> Tuple[np.ndarray, States]:
         """
 
         Args:
@@ -86,9 +83,7 @@ class RandomDiscrete(BaseModel):
         actions = np.random.randint(0, self.n_actions, size=size)
         return actions, model_states
 
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
+    def calculate_dt(self, model_states: States, env_states: States) -> Tuple[np.ndarray, States]:
         """
 
         Args:
@@ -148,7 +143,7 @@ class RandomContinous(BaseModel):
             low=self.bounds.low, high=high, size=tuple([batch_size]) + self.shape
         ).astype(self.bounds.dtype)
 
-    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, BaseStates]:
+    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, States]:
         """
 
         Args:
@@ -166,11 +161,8 @@ class RandomContinous(BaseModel):
         return actions, model_states
 
     def predict(
-        self,
-        env_states: BaseStates = None,
-        batch_size: int = None,
-        model_states: BaseStates = None,
-    ) -> Tuple[np.ndarray, BaseStates]:
+        self, env_states: States = None, batch_size: int = None, model_states: States = None
+    ) -> Tuple[np.ndarray, States]:
         """
 
         Args:
@@ -187,9 +179,7 @@ class RandomContinous(BaseModel):
         actions = self.sample(batch_size=size)
         return actions, model_states
 
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
+    def calculate_dt(self, model_states: States, env_states: States) -> Tuple[np.ndarray, States]:
         """
 
         Args:
