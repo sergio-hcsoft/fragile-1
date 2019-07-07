@@ -32,7 +32,7 @@ Model
 
 States
 ============
-.. autoclass:: fragile.core.base_classes.BaseStates
+.. autoclass:: fragile.core.base_classes.States
    :members:
 
 .. autoclass:: fragile.core.states.States

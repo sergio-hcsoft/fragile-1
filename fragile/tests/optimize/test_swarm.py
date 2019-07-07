@@ -60,6 +60,6 @@ class TestFunctionMapper:
 
     def test_has_vector(self, finished_swarm):
         pass
-        # assert isinstance(finished_swarm.walkers.encoder.vectors[0], Vector)
+        # assert isinstance(finished_swarm.walkers.critic.vectors[0], Vector)
 
 """

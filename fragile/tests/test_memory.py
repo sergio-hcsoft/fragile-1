@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from fragile.core.base_classes import BaseStates
+from fragile.core.base_classes import States
 
 
 @pytest.fixture()
@@ -13,7 +13,7 @@ def memory():
 
 @pytest.fixture()
 def mem_states():
-    return BaseStates(batch_size=50, observs=np.random.random((50, 32, 3)))
+    return States(batch_size=50, observs=np.random.random((50, 32, 3)))
 
 
 """

@@ -1,31 +1,12 @@
-import pytest
-
 from fragile.core.base_classes import BaseEnvironment
-from fragile.core.env import DiscreteEnv
 from fragile.core.models import RandomDiscrete
-from fragile.core.swarm import Swarm
 from fragile.core.walkers import Walkers
-from fragile.tests.test_env import create_env, plangym_env  # noqa: F401
-
-
-@pytest.fixture(scope="module")
-def environment_fact(plangym_env):
-    env = DiscreteEnv(plangym_env)
-    return lambda: env
-
-
-@pytest.fixture(scope="module")
-def swarm(environment_fact):
-    n_walkers = 50
-    swarm = Swarm(
-        model=lambda x: RandomDiscrete(x),
-        env=environment_fact,
-        walkers=Walkers,
-        n_walkers=n_walkers,
-        max_iters=10,
-        use_tree=True,
-    )
-    return swarm
+from fragile.tests.core.fixtures import (
+    create_env,
+    environment_fact,  # noqa: F401
+    plangym_env,
+    swarm,
+)  # noqa: F401
 
 
 class TestSwarm:

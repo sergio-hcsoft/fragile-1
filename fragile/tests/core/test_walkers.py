@@ -1,49 +1,10 @@
 import numpy as np
 import pytest
 
-from fragile.core.base_classes import BaseStates
+from fragile.core.base_classes import States
 from fragile.core.utils import relativize
-from fragile.core.walkers import StatesWalkers, Walkers
-
-
-@pytest.fixture(scope="module")
-def walkers():
-    n_walkers = 10
-    env_dict = {
-        "env_1": {"size": (1, 100)},
-        "env_2": {"size": (1, 33)},
-        "observs": {"size": (1, 100)},
-    }
-    model_dict = {"model_1": {"size": (1, 13)}, "model_2": {"size": (1, 5)}}
-
-    walkers = Walkers(
-        n_walkers=n_walkers, env_state_params=env_dict, model_state_params=model_dict
-    )
-    return walkers
-
-
-@pytest.fixture(scope="module")
-def walkers_factory():
-    def new_walkers():
-        n_walkers = 10
-        env_dict = {
-            "env_1": {"size": (1, 100)},
-            "env_2": {"size": (1, 33)},
-            "observs": {"size": (1, 100)},
-        }
-        model_dict = {"model_1": {"size": (1, 13)}, "model_2": {"size": (1, 5)}}
-
-        walkers = Walkers(
-            n_walkers=n_walkers, env_state_params=env_dict, model_state_params=model_dict
-        )
-        return walkers
-
-    return new_walkers
-
-
-@pytest.fixture(scope="module")
-def states_walkers():
-    return StatesWalkers(10)
+from fragile.core.walkers import Walkers
+from fragile.tests.core.fixtures import states_walkers, walkers, walkers_factory  # noqa: F401
 
 
 class TestStatesWalkers:
@@ -68,20 +29,18 @@ class TestWalkers:
         assert isinstance(walkers.__repr__(), str)
 
     def test_states_attributes(self, walkers):
-        assert isinstance(walkers.env_states, BaseStates)
-        assert isinstance(walkers.model_states, BaseStates)
+        assert isinstance(walkers.env_states, States)
+        assert isinstance(walkers.model_states, States)
 
     def test_getattr(self, walkers):
-        assert isinstance(walkers.env_1, np.ndarray)
-        assert isinstance(walkers.model_1, np.ndarray)
-        assert isinstance(walkers.will_clone, np.ndarray)
-        assert isinstance(walkers.observs, np.ndarray)
+        assert isinstance(walkers.states.will_clone, np.ndarray)
+        assert isinstance(walkers.states.observs, np.ndarray)
         with pytest.raises(AttributeError):
             assert isinstance(walkers.moco, np.ndarray)
 
     def test_obs(self, walkers_factory):
         walkers = walkers_factory()
-        assert isinstance(walkers.observs, np.ndarray)
+        assert isinstance(walkers.env_states.observs, np.ndarray)
         walkers._env_states.observs = 10
 
         n_walkers = 10
@@ -116,28 +75,28 @@ class TestWalkers:
 
     def test_update_clone_probs(self, walkers):
         walkers.reset()
-        walkers.virtual_rewards[:] = relativize(np.arange(walkers.n))
+        walkers.states.update(virtual_rewards=relativize(np.arange(walkers.n)))
         walkers.update_clone_probs()
-        assert 0 < np.sum(walkers.clone_probs == walkers.clone_probs[0]), (
-            walkers.virtual_rewards,
-            walkers.clone_probs,
+        assert 0 < np.sum(walkers.states.clone_probs == walkers.states.clone_probs[0]), (
+            walkers.states.virtual_rewards,
+            walkers.states.clone_probs,
         )
         walkers.reset()
         walkers.update_clone_probs()
-        assert np.sum(walkers.clone_probs == walkers.clone_probs[0]) == walkers.n
-        assert walkers.clone_probs.shape[0] == walkers.n
-        assert len(walkers.clone_probs.shape) == 1
+        assert np.sum(walkers.states.clone_probs == walkers.states.clone_probs[0]) == walkers.n
+        assert walkers.states.clone_probs.shape[0] == walkers.n
+        assert len(walkers.states.clone_probs.shape) == 1
 
     def test_balance(self, walkers_factory):
         walkers = walkers_factory()
         walkers.reset()
         walkers.balance()
-        assert walkers.will_clone.sum() == 0
+        assert walkers.states.will_clone.sum() == 0
 
     def test_accumulate_rewards(self, walkers):
         walkers.reset()
 
     def test_distances(self, walkers):
         walkers.calculate_distances()
-        assert len(walkers.distances.shape) == 1
-        assert walkers.distances.shape[0] == walkers.n
+        assert len(walkers.states.distances.shape) == 1
+        assert walkers.states.distances.shape[0] == walkers.n

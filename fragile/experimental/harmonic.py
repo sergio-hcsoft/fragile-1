@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 
-from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseStates
+from fragile.core.base_classes import BaseEnvironment, BaseModel, States
 from fragile.core.states import States
 
 
@@ -38,18 +38,18 @@ class HarmonicOscillator(BaseEnvironment):
     def step(
         self,
         actions: np.ndarray,
-        env_states: BaseStates,
+        env_states: States,
         n_repeat_action: [int, np.ndarray] = 1,
         *args,
         **kwargs
-    ) -> BaseStates:
+    ) -> States:
         """
         Sets the environment to the target states by applying the specified actions an arbitrary
         number of time steps.
 
         Args:
             actions: Vector containing the actions that will be applied to the target states.
-            env_states: BaseStates class containing the state data to be set on the Environment.
+            env_states: States class containing the state data to be set on the Environment.
             n_repeat_action: Number of times that an action will be applied. If it is an array
                 it corresponds to the different dts of each walker.
             *args: Ignored.
@@ -131,7 +131,7 @@ class HarmonicOscillator(BaseEnvironment):
         return states, states.copy(), rewards, ends
 
     # @profile
-    def reset(self, batch_size: int = 1, states=None) -> BaseStates:
+    def reset(self, batch_size: int = 1, states=None) -> States:
         """
         Resets the environment to the start of a new episode and returns an
         States instance describing the state of the Environment.
@@ -156,7 +156,7 @@ class HarmonicOscillator(BaseEnvironment):
         return new_states
 
     # @profile
-    def _get_new_states(self, states, observs, rewards, ends, batch_size) -> BaseStates:
+    def _get_new_states(self, states, observs, rewards, ends, batch_size) -> States:
         state = States(state_dict=self.get_params_dict(), batch_size=batch_size)
         state.update(states=states, observs=observs, rewards=rewards, ends=ends)
         return state
@@ -191,7 +191,7 @@ class GausianPerturbator(BaseModel):
     def n_actions(self):
         return self._n_actions
 
-    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, BaseStates]:
+    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, States]:
         """
 
         Args:
@@ -212,10 +212,7 @@ class GausianPerturbator(BaseModel):
         return actions, model_states
 
     def predict(
-        self,
-        env_states: BaseStates = None,
-        batch_size: int = None,
-        model_states: BaseStates = None,
+        self, env_states: States = None, batch_size: int = None, model_states: States = None
     ) -> Tuple:
         """
 
@@ -234,7 +231,7 @@ class GausianPerturbator(BaseModel):
         actions = np.clip(actions, -self.max_jump, self.max_jump)
         return actions.reshape((size, self.n_actions)), model_states
 
-    def calculate_dt(self, model_states: BaseStates, env_states: BaseStates) -> Tuple:
+    def calculate_dt(self, model_states: States, env_states: States) -> Tuple:
         """
 
         Args:

@@ -124,13 +124,13 @@ class Swarm(BaseSwarm):
         """
         env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
 
-        actions, model_states = (
+        model_states = (
             self.model.reset(batch_size=self.walkers.n, env_states=env_states)
             if model_states is None
             else model_states
         )
 
-        model_states.update(init_actions=actions)
+        model_states.update(init_actions=model_states.actions)
         self.walkers.reset(env_states=env_sates, model_states=model_states)
         if self._use_tree:
             self.tree.reset(
@@ -187,14 +187,9 @@ class Swarm(BaseSwarm):
             if self._use_tree
             else None
         )
-        act_dt, model_states = self.model.calculate_dt(model_states, env_states)
 
-        actions, model_states = self.model.predict(
-            env_states=env_states, model_states=model_states
-        )
-        env_states = self.env.step(actions=actions, env_states=env_states, n_repeat_action=act_dt)
-        model_states.update(actions=actions)
-
+        model_states = self.model.predict(env_states=env_states, model_states=model_states)
+        env_states = self.env.step(model_states=model_states, env_states=env_states)
         self.walkers.update_states(
             env_states=env_states, model_states=model_states, end_condition=env_states.ends
         )

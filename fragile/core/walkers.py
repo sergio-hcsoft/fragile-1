@@ -13,12 +13,13 @@ float_type = np.float32
 class StatesWalkers(States):
     """Keeps track of the data structures used by the `Walkers` class."""
 
-    def __init__(self, batch_size: int):
+    def __init__(self, batch_size: int, **kwargs):
         """
         Initialize a :class:`StatesWalkers`.
 
         Args:
             batch_size: Number of walkers that the class will be tracking.
+            kwargs: attributes that will not be set as numpy.ndarrays
         """
         self.will_clone = None
         self.compas_ix = None
@@ -30,10 +31,11 @@ class StatesWalkers(States):
         self.alive_mask = None
         self.id_walkers = None
         self.end_condition = None
+        if "state_dict" in kwargs:
+            del kwargs["state_dict"]
         super(StatesWalkers, self).__init__(
-            state_dict=self.get_params_dict(), batch_size=batch_size
+            state_dict=self.get_params_dict(), batch_size=batch_size, **kwargs
         )
-        self.reset()
 
     def get_params_dict(self) -> dict:
         """Return a dictionary containing the param_dict to build an instance \
@@ -53,7 +55,7 @@ class StatesWalkers(States):
         }
         return params
 
-    def clone(self) -> Tuple[np.ndarray, np.ndarray]:
+    def clone(self, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         """Perform the clone only on cum_rewards and id_walkers and reset the other arrays."""
         clone, compas = self.will_clone, self.compas_ix
         cum_rewards, id_walkers = copy.deepcopy(self.cum_rewards), copy.deepcopy(self.id_walkers)
@@ -62,25 +64,6 @@ class StatesWalkers(States):
         self.cum_rewards[clone] = copy.deepcopy(cum_rewards[compas][clone])
         self.id_walkers[clone] = copy.deepcopy(id_walkers[compas][clone])
         return clone, compas
-
-    def update(self, other: "StatesWalkers" = None, **kwargs):
-        """
-        Modify the data stored in the States instance.
-
-        Existing attributes will be updated, and new attributes will be created if needed.
-
-        Args:
-            other: State class that will be copied upon update.
-            **kwargs: It is possible to specify the update as key value attributes, \
-                     where key is the name of the attribute to be updated, and value \
-                      is the new value for the attribute.
-        """
-        if other is not None:
-            for name, val in other.items():
-                getattr(self, name)[:] = copy.deepcopy(val)
-        if kwargs:
-            for name, val in kwargs.items():
-                getattr(self, name)[:] = copy.deepcopy(val)
 
     def reset(self):
         """Clear the internal data of the class."""
@@ -94,6 +77,10 @@ class StatesWalkers(States):
         self.will_clone[:] = np.zeros(self.n, dtype=np.bool_)
         self.alive_mask[:] = np.ones(self.n, dtype=np.bool_)
         self.end_condition[:] = np.zeros(self.n, dtype=np.bool_)
+        original_params = self.get_params_dict()
+        other_attrs = [name for name in self.keys() if name not in original_params]
+        for attr in other_attrs:
+            setattr(self, attr, None)
 
 
 class Walkers(BaseWalkers):
@@ -112,6 +99,7 @@ class Walkers(BaseWalkers):
         dist_scale: float = 1.0,
         max_iters: int = 1000,
         accumulate_rewards: bool = True,
+        **kwargs
     ):
         """
         Initialize a new `Walkers` instance.
@@ -142,31 +130,11 @@ class Walkers(BaseWalkers):
 
         self._model_states: States = States(state_dict=model_state_params, batch_size=n_walkers)
         self._env_states: States = States(state_dict=env_state_params, batch_size=n_walkers)
-        self._states = StatesWalkers(batch_size=n_walkers)
+        self._states = StatesWalkers(batch_size=n_walkers, **kwargs)
         self.reward_scale = reward_scale
         self.dist_scale = dist_scale
         self.n_iters = 0
         self.max_iters = max_iters
-
-    def __getattr__(self, item):
-        """Access all the data involved in the algorithm as attributes."""
-        if hasattr(super(Walkers, self), item):
-            return super(Walkers, self).__getattribute__(item)
-        elif item in self.states.keys():
-            return self._states.__getattribute__(item)
-        elif item in self._env_states.keys():
-            return self._env_states.__getattribute__(item)
-        elif item in self._model_states.keys():
-            return self._model_states.__getattribute__(item)
-        try:
-            return super(Walkers, self).__getattribute__(item)
-        except Exception as e:
-            import sys
-
-            msg = "\nAttribute {} is not in the class nor in its internal states".format(item)
-            raise type(e)(str(e) + " Error at Walkers.__getattr__: %s\n" % msg).with_traceback(
-                sys.exc_info()[2]
-            )
 
     def __repr__(self) -> str:
         """Print all the data involved in the current run of the algorithm."""
@@ -188,20 +156,6 @@ class Walkers(BaseWalkers):
             100 * self.states.will_clone.sum() / self.n,
         )
         return text
-
-    @property
-    def observs(self) -> np.ndarray:
-        """Alias for the current observation of the environment."""
-        try:
-            return self._env_states.observs
-        except Exception as e:
-            if not hasattr(self._env_states, "observs"):
-                raise AttributeError(
-                    "observs is not a valid attribute of env_states, please make "
-                    "sure it exists before calling self.obs and make sure it is "
-                    "an instance of np.ndarray"
-                )
-            raise e
 
     @property
     def states(self) -> StatesWalkers:
@@ -239,12 +193,9 @@ class Walkers(BaseWalkers):
         The internal state is update with the relativized distance values.
         """
         self.states.compas_ix = self.get_alive_compas()
-        distances = np.linalg.norm(
-            self.observs.reshape(self.n, -1)
-            - self.observs[self.states.compas_ix].reshape(self.n, -1),
-            axis=1,
-        ).flatten()
-        distances = relativize(distances)
+        obs = self.env_states.observs.reshape(self.n, -1)
+        distances = np.linalg.norm(obs - obs[self.states.compas_ix], axis=1)
+        distances = relativize(distances.flatten())
         self.update_states(distances=distances)
 
     def calculate_virtual_reward(self):
@@ -291,7 +242,7 @@ class Walkers(BaseWalkers):
         else:
             compas_ix = self.get_alive_compas()
             # This value can be negative!!
-            companions = self.virtual_rewards[compas_ix]
+            companions = self.states.virtual_rewards[compas_ix]
             clone_probs = (companions - self.states.virtual_rewards) / self.states.virtual_rewards
         self.update_states(clone_probs=clone_probs, compas_ix=compas_ix)
 

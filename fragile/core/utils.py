@@ -8,7 +8,7 @@ import numpy as np
 
 
 def relativize(x: np.ndarray) -> np.ndarray:
-    """Normalize the data using a custom smoothing techinique."""
+    """Normalize the data using a custom smoothing technique."""
     std = x.std()
     if float(std) == 0:
         return np.ones(len(x), dtype=type(std))
@@ -38,7 +38,10 @@ def params_to_tensors(param_dict, n_walkers: int):
 
 def statistics_from_array(x: np.ndarray):
     """Return the (mean, std, max, min) of an array."""
-    return x.mean(), x.std(), x.max(), x.min()
+    try:
+        return x.mean(), x.std(), x.max(), x.min()
+    except AttributeError:
+        return np.nan, np.nan, np.nan, np.nan
 
 
 def get_alives_indexes_np(ends: np.ndarray):

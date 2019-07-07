@@ -2,21 +2,11 @@ from typing import Tuple
 
 import numpy as np
 
-from fragile.core.base_classes import BaseEnvironment, BaseStates
+from fragile.core.base_classes import BaseEnvironment, States
 from fragile.core.models import RandomContinous
-from fragile.core.states import States
 from fragile.core.utils import relativize
-from fragile.optimize.encoder import Encoder
-from fragile.optimize.env import Function
-
-
-class UnitaryContinuous(RandomContinous):
-    def sample(self, batch_size: int = 1):
-        val = super(UnitaryContinuous, self).sample(batch_size=batch_size)
-        axis = 1 if len(val.shape) <= 2 else tuple(range(1, len(val.shape)))
-        norm = np.linalg.norm(val, axis=axis)
-        div = norm.reshape(-1, 1) if axis == 1 else np.expand_dims(np.expand_dims(norm, 1), 1)
-        return val / div
+from fragile.optimize.env import Function, States
+from fragile.optimize.encoder import Critic
 
 
 class RandomNormal(RandomContinous):
@@ -25,7 +15,7 @@ class RandomNormal(RandomContinous):
             "shape", env.shape if isinstance(env, BaseEnvironment) else None
         )
         try:
-            super(RandomNormal, self).__init__(env=env, *args, **kwargs)
+            super(RandomNormal, self).__init__(*args, **kwargs)
         except Exception as e:
             print(args, kwargs)
             raise e
@@ -34,7 +24,14 @@ class RandomNormal(RandomContinous):
         self.loc = loc
         self.scale = scale
 
-    def sample(self, batch_size: int = 1, loc: float = None, scale: float = None):
+    def sample(
+        self,
+        batch_size: int = 1,
+        loc: float = None,
+        scale: float = None,
+        model_states: States = None,
+        **kwargs
+    ) -> np.ndarray:
         loc = self.loc if loc is None else loc
         scale = self.scale if scale is None else scale
         high = (
@@ -43,47 +40,14 @@ class RandomNormal(RandomContinous):
             else self.bounds.high.astype("int64") + 1
         )
         data = np.clip(
-            self.np_random.normal(
+            self.random_state.normal(
                 size=tuple([batch_size]) + self.shape, loc=loc, scale=scale
             ).astype(self.bounds.dtype),
             self.bounds.low,
             high,
         )
-        return data
-
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
-        """
-
-        Args:
-            model_states:
-            env_states:
-
-        Returns:
-            Tuple containing a tensor with the sampled actions and the new model states variable.
-        """
-        dt = np.ones(shape=tuple(env_states.rewards.shape)) * self.mean_dt
-        dt = np.clip(dt, self.min_dt, self.max_dt).reshape(-1, 1)
-        model_states.update(dt=dt)
-        return dt, model_states
-
-    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, BaseStates]:
-        """
-
-        Args:
-            batch_size:
-            *args:
-            **kwargs:
-
-        Returns:
-            Tuple containing a tensor with the sampled actions and the new model states variable.
-        """
-
-        model_states = States(state_dict=self.get_params_dict(), batch_size=batch_size)
-        actions = super(RandomNormal, self).sample(batch_size=batch_size)
-        model_states.update(dt=np.ones(batch_size), actions=actions, init_actions=actions)
-        return actions, model_states
+        model_states.update(actions=data)
+        return model_states
 
 
 class EncoderSampler(RandomNormal):
@@ -109,12 +73,12 @@ class EncoderSampler(RandomNormal):
     def walkers(self):
         return self._walkers
 
-    def set_walkers(self, encoder: Encoder):
+    def set_walkers(self, critic: Critic):
         self._walkers = encoder
 
     def sample(self, batch_size: int = 1):
         if self.encoder is None:
-            raise ValueError("You must first set the encoder before calling sample()")
+            raise ValueError("You must first set the critic before calling sample()")
         if len(self.encoder) <= 5:
             return RandomNormal.sample(self, batch_size=batch_size)
         data = self._sample_encoder(batch_size)
@@ -127,9 +91,7 @@ class EncoderSampler(RandomNormal):
         # self.std_dt
         return perturbation / 2
 
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
+    def calculate_dt(self, model_states: States, env_states: States) -> Tuple[np.ndarray, States]:
         """
 
         Args:
@@ -146,9 +108,7 @@ class EncoderSampler(RandomNormal):
 
 
 class BestDtEncoderSamper(EncoderSampler):
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
+    def calculate_dt(self, model_states: States, env_states: States) -> Tuple[np.ndarray, States]:
         """
 
         Args:
@@ -198,12 +158,10 @@ class ESSampler(EncoderSampler):
     def walkers(self):
         return self._walkers
 
-    def set_walkers(self, encoder: Encoder):
-        self._walkers = encoder
+    def set_walkers(self, critic: Critic):
+        self._walkers = critic
 
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
+    def calculate_dt(self, model_states: States, env_states: States) -> Tuple[np.ndarray, States]:
         """
 
         Args:
@@ -228,7 +186,7 @@ class ESSampler(EncoderSampler):
             else np.zeros_like(states[0])
         )
         # Choose 2 random indices
-        a_rand = np.random.permutation(np.arange(states.shape[0]))
+        a_rand = self.random_state.permutation(np.arange(states.shape[0]))
         b_rand = np.random.permutation(np.arange(states.shape[0]))
         # Calculate proposal using best and difference of two random choices
         if np.random.random() > 0.5:

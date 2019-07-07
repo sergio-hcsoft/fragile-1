@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from fragile.core.base_classes import BaseStates
+from fragile.core.base_classes import States
 from fragile.experimental.harmonic import GausianPerturbator, HarmonicOscillator
 
 
@@ -19,11 +19,11 @@ def model() -> GausianPerturbator:
 class TestHarmonicOscillator:
     def test_reset(self, oscillator):
         states = oscillator.reset()
-        assert isinstance(states, BaseStates), states
+        assert isinstance(states, States), states
 
         batch_size = 10
         states = oscillator.reset(batch_size=batch_size)
-        assert isinstance(states, BaseStates), states
+        assert isinstance(states, States), states
         assert states.observs.shape[0] == batch_size, states.observs.shape
         assert states.rewards.shape[0] == batch_size
 
@@ -46,16 +46,16 @@ class TestHarmonicOscillator:
 class TestGausianPerturbator:
     def test_calculate_dt(self, model: GausianPerturbator):
         n_walkers = 7
-        env_states = BaseStates(rewards=np.zeros((n_walkers, 1)), batch_size=n_walkers)
+        env_states = States(rewards=np.zeros((n_walkers, 1)), batch_size=n_walkers)
         actions, states = model.reset()
         act_dt, model_states = model.calculate_dt(states, env_states)
-        assert isinstance(model_states, BaseStates)
+        assert isinstance(model_states, States)
         assert len(act_dt) == n_walkers
 
     def test_predict(self, model):
         n_walkers = 7
-        env_states = BaseStates(rewards=np.zeros((n_walkers, 1)), batch_size=n_walkers)
+        env_states = States(rewards=np.zeros((n_walkers, 1)), batch_size=n_walkers)
         actions, states = model.reset()
         actions, model_states = model.predict(env_states=env_states, model_states=states)
-        assert isinstance(model_states, BaseStates)
+        assert isinstance(model_states, States)
         assert len(actions) == n_walkers

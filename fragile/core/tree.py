@@ -3,7 +3,7 @@ from typing import List
 
 import numpy as np
 
-from fragile.core.base_classes import BaseStates
+from fragile.core.base_classes import States
 
 
 class Node:
@@ -11,8 +11,8 @@ class Node:
         self,
         node_id: int,
         parent_id: int,
-        env_state: BaseStates,
-        model_state: BaseStates,
+        env_state: States,
+        model_state: States,
         reward: float = None,
     ):
         self._node_id = node_id
@@ -76,8 +76,8 @@ class Tree:
     def add_states(
         self,
         parent_ids: List[int],
-        env_states: BaseStates = None,
-        model_states: BaseStates = None,
+        env_states: States = None,
+        model_states: States = None,
         cum_rewards: np.ndarray = None,
     ) -> np.ndarray:
         env_sts = env_states.split_states() if env_states is not None else [None] * len(parent_ids)
@@ -98,12 +98,12 @@ class Tree:
             node_ids.append(node_id)
         return np.array(node_ids, dtype=int)
 
-    def reset(self, env_state: BaseStates, model_state: BaseStates, reward=None):
-        if isinstance(env_state, BaseStates):
+    def reset(self, env_state: States, model_state: States, reward=None):
+        if isinstance(env_state, States):
             if env_state.n > 1:
                 env_state = list(env_state.split_states())[0]
 
-        if isinstance(model_state, BaseStates):
+        if isinstance(model_state, States):
             if model_state.n > 1:
                 model_state = list(model_state.split_states())[0]
 

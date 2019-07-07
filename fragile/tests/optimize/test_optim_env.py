@@ -34,11 +34,11 @@ class TestFunction:
         states = env.reset()
         actions = np.ones((10, 2)) * 2
         dt = np.ones((10, 2))
-        new_states = env.step(actions, states, dt)
+        new_states = env.step(actions, states)
         assert isinstance(new_states, States)
         assert new_states.rewards[0].item() == 1
 
-    def test_are_in_bounds(self, env):
+    def _test_are_in_bounds(self, env):
         example_1 = np.array([[10, 10], [6, 5], [6, 4], [-11, -6]])
         res_1 = env.are_in_bounds(example_1)
         assert not res_1[0].item()
