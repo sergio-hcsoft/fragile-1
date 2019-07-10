@@ -49,8 +49,7 @@ class States:
         attr_dict.update(kwargs)
         self._names = list(attr_dict.keys())
         self._attr_dict = attr_dict
-        for key, val in attr_dict.items():
-            self[key] = val
+        self.update(**self._attr_dict)
         self._n_walkers = batch_size
 
     def __len__(self):
@@ -90,10 +89,7 @@ class States:
         """
         if key not in self._names:
             self._names.append(key)
-        try:
-            getattr(self, key)[:] = copy.deepcopy(value)
-        except (AttributeError, TypeError, KeyError) as e:
-            setattr(self, key, copy.deepcopy(value))
+        self.update(**{key: value})
 
     def __repr__(self):
         string = "{} with {} walkers\n".format(self.__class__.__name__, self.n)
@@ -201,18 +197,17 @@ class States:
                      where key is the name of the attribute to be updated, and value \
                       is the new value for the attribute.
         """
+        def update_or_set_attributes(attrs: Union[dict, States]):
+            for name, val in attrs.items():
+                try:
+                    getattr(self, name)[:] = copy.deepcopy(val)
+                except (AttributeError, TypeError, KeyError, ValueError) as e:
+                    setattr(self, name, copy.deepcopy(val))
+
         if other is not None:
-            for name, val in other.items():
-                try:
-                    getattr(self, name)[:] = copy.deepcopy(val)
-                except (AttributeError, TypeError, KeyError) as e:
-                    setattr(self, name, copy.deepcopy(val))
+            update_or_set_attributes(other)
         if kwargs:
-            for name, val in kwargs.items():
-                try:
-                    getattr(self, name)[:] = copy.deepcopy(val)
-                except (AttributeError, TypeError, KeyError) as e:
-                    setattr(self, name, copy.deepcopy(val))
+            update_or_set_attributes(kwargs)
 
     def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray):
         """

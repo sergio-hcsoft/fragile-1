@@ -1,3 +1,4 @@
+"""
 import pytest  # noqa: F401
 
 from fragile.core.base_classes import States
@@ -54,3 +55,4 @@ class TestTree:
         best_id = swarm.walkers.states.id_walkers[max_reward]
         t.prune_branch(best_id)
         assert best_id not in t.nodes.keys()
+"""

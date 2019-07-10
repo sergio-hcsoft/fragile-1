@@ -1,19 +1,56 @@
+from hypothesis import given
+from hypothesis.extra.numpy import arrays
 import numpy as np
 import pytest
 
-from fragile.core.base_classes import States
 from fragile.core.utils import relativize
-from fragile.core.walkers import Walkers
-from fragile.tests.core.fixtures import states_walkers, walkers, walkers_factory  # noqa: F401
+from fragile.core.walkers import States, StatesWalkers, Walkers
+
+
+@pytest.fixture()
+def states_walkers():
+    return StatesWalkers(10)
+
+
+N_WALKERS = 13
+
+
+def get_walkers_discrete_gym():
+    env_params = {
+            "states": {"size": (128, ), "dtype": np.int64},
+            "observs": {"size": (64, 64, 3), "dtype": np.float32},
+            "rewards": {"dtype": np.float32},
+            "ends": {"dtype": np.bool_},
+        }
+    model_params = {
+        "actions": {"size": (10,), "dtype": np.int64},
+        "dt": {"size": None, "dtype": np.float32},
+    }
+    return Walkers(n_walkers=N_WALKERS, env_state_params=env_params,
+                   model_state_params=model_params)
+
+
+walkers_config = {"discrete-gym": get_walkers_discrete_gym}
+
+
+@pytest.fixture()
+def walkers(request):
+    return walkers_config.get(request.param, get_walkers_discrete_gym)()
 
 
 class TestStatesWalkers:
     def test_reset(self, states_walkers):
+        for name in states_walkers.keys():
+            assert states_walkers[name] is not None, name
+            assert len(states_walkers[name]) == states_walkers.n, name
+
         states_walkers.reset()
         for name in states_walkers.keys():
-            assert len(states_walkers[name]) == states_walkers.n
+            assert states_walkers[name] is not None, name
+            assert len(states_walkers[name]) == states_walkers.n, name
 
     def test_update(self, states_walkers):
+        states_walkers = StatesWalkers(10)
         states_walkers.reset()
         test_vals = np.arange(states_walkers.n)
         states_walkers.update(virtual_rewards=test_vals, distances=test_vals)
@@ -22,47 +59,39 @@ class TestStatesWalkers:
 
 
 class TestWalkers:
+    walkers_fixture_params = ["discrete-gym"]
+
+    @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
     def test_init(self, walkers):
         pass
 
+    @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
     def test_repr_not_crashes(self, walkers):
         assert isinstance(walkers.__repr__(), str)
 
-    def test_states_attributes(self, walkers):
-        assert isinstance(walkers.env_states, States)
-        assert isinstance(walkers.model_states, States)
-
+    @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
     def test_getattr(self, walkers):
         assert isinstance(walkers.states.will_clone, np.ndarray)
-        assert isinstance(walkers.states.observs, np.ndarray)
+        assert isinstance(walkers.env_states.observs, np.ndarray)
+        assert isinstance(walkers.env_states, States)
+        assert isinstance(walkers.model_states, States)
         with pytest.raises(AttributeError):
             assert isinstance(walkers.moco, np.ndarray)
 
-    def test_obs(self, walkers_factory):
-        walkers = walkers_factory()
-        assert isinstance(walkers.env_states.observs, np.ndarray)
-        walkers._env_states.observs = 10
-
-        n_walkers = 10
-        env_dict = {"env_1": {"size": (1, 100)}, "env_2": {"size": (1, 33)}}
-        model_dict = {"model_1": {"size": (1, 13)}, "model_2": {"size": (1, 5)}}
-
-        walkers = Walkers(
-            n_walkers=n_walkers, env_state_params=env_dict, model_state_params=model_dict
-        )
-        with pytest.raises(AttributeError):
-            walkers.observs
-
+    @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
     def test_calculate_end_condition(self, walkers):
-        walkers.states.update(end_condition=np.ones(10))
+        walkers.reset()
+        walkers.states.update(end_condition=np.ones(walkers.n))
         assert walkers.calculate_end_condition()
-        walkers.states.update(end_condition=np.zeros(10))
+        walkers.states.update(end_condition=np.zeros(walkers.n))
         assert not walkers.calculate_end_condition()
+        walkers.max_iters = 10
+        walkers.n_iters = 8
+        assert not walkers.calculate_end_condition()
+        walkers.n_iters = 11
+        assert walkers.calculate_end_condition()
 
-    def test_calculate_distance(self, walkers):
-        # TODO: check properly the calculations
-        walkers.calculate_distances()
-
+    @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
     def test_alive_compas(self, walkers):
         end_cond = np.ones_like(walkers.states.end_condition).astype(bool).copy()
         end_cond[3] = 0
@@ -73,6 +102,7 @@ class TestWalkers:
         )
         assert len(compas.shape) == 1
 
+    @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
     def test_update_clone_probs(self, walkers):
         walkers.reset()
         walkers.states.update(virtual_rewards=relativize(np.arange(walkers.n)))
@@ -87,16 +117,39 @@ class TestWalkers:
         assert walkers.states.clone_probs.shape[0] == walkers.n
         assert len(walkers.states.clone_probs.shape) == 1
 
-    def test_balance(self, walkers_factory):
-        walkers = walkers_factory()
+    @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
+    def test_balance_not_crashes(self, walkers):
         walkers.reset()
         walkers.balance()
         assert walkers.states.will_clone.sum() == 0
 
+    @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
     def test_accumulate_rewards(self, walkers):
         walkers.reset()
+        walkers._accumulate_rewards = True
+        walkers.states.update(cum_rewards={None, 3})  # Override array of Floats and set to None
+        walkers.states.update(cum_rewards=None)
+        rewards = np.arange(len(walkers))
+        walkers._accumulate_and_update_rewards(rewards)
+        assert (walkers.states.cum_rewards == rewards).all()
+        walkers._accumulate_rewards = False
+        walkers.states.update(cum_rewards=np.zeros(len(walkers)))
+        rewards = np.arange(len(walkers))
+        walkers._accumulate_and_update_rewards(rewards)
+        assert (walkers.states.cum_rewards == rewards).all()
+        walkers._accumulate_rewards = True
+        walkers.states.update(cum_rewards=np.ones(len(walkers)))
+        rewards = np.arange(len(walkers))
+        walkers._accumulate_and_update_rewards(rewards)
+        assert (walkers.states.cum_rewards == rewards + 1).all()
 
-    def test_distances(self, walkers):
+    @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
+    @given(
+            observs=arrays(np.float32, shape=(N_WALKERS, 64, 64, 3)))
+    def test_distances_not_crashes(self, walkers, observs):
+        walkers.env_states.update(observs=observs)
         walkers.calculate_distances()
+        assert isinstance(walkers.states.distances[0], np.float32)
         assert len(walkers.states.distances.shape) == 1
         assert walkers.states.distances.shape[0] == walkers.n
+

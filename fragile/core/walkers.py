@@ -58,29 +58,27 @@ class StatesWalkers(States):
     def clone(self, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         """Perform the clone only on cum_rewards and id_walkers and reset the other arrays."""
         clone, compas = self.will_clone, self.compas_ix
-        cum_rewards, id_walkers = copy.deepcopy(self.cum_rewards), copy.deepcopy(self.id_walkers)
-        self.cum_rewards = cum_rewards
-        self.id_walkers = id_walkers
-        self.cum_rewards[clone] = copy.deepcopy(cum_rewards[compas][clone])
-        self.id_walkers[clone] = copy.deepcopy(id_walkers[compas][clone])
+        self.cum_rewards[clone] = copy.deepcopy(self.cum_rewards[compas][clone])
+        self.id_walkers[clone] = copy.deepcopy(self.id_walkers[compas][clone])
         return clone, compas
 
     def reset(self):
         """Clear the internal data of the class."""
-        self.id_walkers[:] = np.zeros(self.n, dtype=np.int64)
-        self.compas_ix[:] = np.arange(self.n)
-        self.processed_rewards[:] = np.zeros(self.n, dtype=float_type)
-        self.cum_rewards[:] = np.zeros(self.n, dtype=float_type)
-        self.virtual_rewards[:] = np.ones(self.n, dtype=float_type)
-        self.distances[:] = np.zeros(self.n, dtype=float_type)
-        self.clone_probs[:] = np.zeros(self.n, dtype=float_type)
-        self.will_clone[:] = np.zeros(self.n, dtype=np.bool_)
-        self.alive_mask[:] = np.ones(self.n, dtype=np.bool_)
-        self.end_condition[:] = np.zeros(self.n, dtype=np.bool_)
-        original_params = self.get_params_dict()
-        other_attrs = [name for name in self.keys() if name not in original_params]
+        other_attrs = [name for name in self.keys() if name not in self.get_params_dict()]
         for attr in other_attrs:
             setattr(self, attr, None)
+        self.update(
+            id_walkers=np.zeros(self.n, dtype=np.int64),
+            compas_ix=np.arange(self.n),
+            processed_rewards=np.zeros(self.n, dtype=float_type),
+            cum_rewards=np.zeros(self.n, dtype=float_type),
+            virtual_rewards=np.ones(self.n, dtype=float_type),
+            distances=np.zeros(self.n, dtype=float_type),
+            clone_probs=np.zeros(self.n, dtype=float_type),
+            will_clone=np.zeros(self.n, dtype=np.bool_),
+            alive_mask=np.ones(self.n, dtype=np.bool_),
+            end_condition=np.zeros(self.n, dtype=np.bool_),
+        )
 
 
 class Walkers(BaseWalkers):
@@ -89,6 +87,8 @@ class Walkers(BaseWalkers):
     cloud of walkers.
 
     """
+
+    STATE_CLASS = StatesWalkers
 
     def __init__(
         self,
@@ -136,13 +136,19 @@ class Walkers(BaseWalkers):
         self.n_iters = 0
         self.max_iters = max_iters
 
+    def __len__(self) -> int:
+        return self.n
+
     def __repr__(self) -> str:
         """Print all the data involved in the current run of the algorithm."""
-        text = self._print_stats()
-        text += "Walkers States: {}\n".format(self._repr_state(self._states))
-        text += "Env States: {}\n".format(self._repr_state(self._env_states))
-        text += "Model States: {}\n".format(self._repr_state(self._model_states))
-        return text
+        try:
+            text = self._print_stats()
+            text += "Walkers States: {}\n".format(self._repr_state(self._states))
+            text += "Env States: {}\n".format(self._repr_state(self._env_states))
+            text += "Model States: {}\n".format(self._repr_state(self._model_states))
+            return text
+        except Exception as e:
+            return super(Walkers, self).__repr__()
 
     def _print_stats(self) -> str:
         """Print several statistics of the current state of the swarm."""
@@ -222,7 +228,7 @@ class Walkers(BaseWalkers):
         if not self.states.alive_mask.any():  # No need to sample if all walkers are dead.
             return np.arange(self.n)
         compas_ix = np.arange(self.n)[self.states.alive_mask]
-        compas = np.random.choice(compas_ix, self.n, replace=True)
+        compas = self.random_state.choice(compas_ix, self.n, replace=True)
         compas[: len(compas_ix)] = compas_ix
         return compas
 
@@ -270,8 +276,7 @@ class Walkers(BaseWalkers):
 
     def clone_walkers(self):
         """Sample the clone probability distribution and clone the walkers accordingly."""
-        rands = np.random.random(self.n)
-        will_clone = self.states.clone_probs > rands
+        will_clone = self.states.clone_probs > self.random_state.random_sample(self.n)
         # Dead walkers always clone
         dead_ix = np.arange(self.n)[self.states.end_condition]
         will_clone[dead_ix] = 1
@@ -287,8 +292,8 @@ class Walkers(BaseWalkers):
 
         After reset a new run of the algorithm will be ready to be launched.
         """
-        self.update_states(env_states=env_states, model_states=model_states)
         self.states.reset()
+        self.update_states(env_states=env_states, model_states=model_states)
         self.n_iters = 0
 
     def update_states(self, env_states: States = None, model_states: States = None, **kwargs):
@@ -303,7 +308,7 @@ class Walkers(BaseWalkers):
 
         """
         if kwargs:
-            if "rewards" in kwargs:
+            if kwargs.get("rewards") is not None:
                 self._accumulate_and_update_rewards(kwargs["rewards"])
                 del kwargs["rewards"]
             self.states.update(**kwargs)
@@ -323,7 +328,11 @@ class Walkers(BaseWalkers):
             rewards: Array containing the last rewards received by every walker.
         """
         if self._accumulate_rewards:
-            cum_rewards = self.states.cum_rewards + rewards
+            if not isinstance(self.states.get("cum_rewards"), np.ndarray):
+                cum_rewards = np.zeros(self.n)
+            else:
+                cum_rewards = self.states.cum_rewards
+            cum_rewards = cum_rewards + rewards
         else:
             cum_rewards = rewards
         self.update_states(cum_rewards=cum_rewards)

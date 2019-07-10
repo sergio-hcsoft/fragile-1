@@ -111,8 +111,8 @@ class DtSampler(BaseModel):
             model_states: States corresponding to the environment data.
 
         Returns:
-            Updated model_states containing an attribute name `dt` with samples
-            from a clipped normal distribution..
+            Updated model_states containing an attribute name `dt` with samples \
+            from a clipped normal distribution.
 
         """
         dt = self.random_state.normal(loc=self.mean_dt, scale=self.std_dt, size=batch_size)

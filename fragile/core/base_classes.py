@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict
 
 import numpy as np
 
-from fragile.core import random_state, RANDOM_SEED
+from fragile.core import RANDOM_SEED, random_state
 from fragile.core.states import States
 
 
@@ -37,6 +37,7 @@ class StatesOwner:
         raise NotImplementedError
 
     def create_new_states(self, batch_size: int) -> STATE_CLASS:
+        """Create new states of given batch_size to store the data of the class."""
         return self.STATE_CLASS(state_dict=self.get_params_dict(), batch_size=batch_size)
 
 
@@ -156,6 +157,7 @@ class BaseModel(StatesOwner):
 
     def predict(
         self,
+        batch_size: int = None,
         model_states: States = None,
         env_states: States = None,
         walkers_states: "StatesWalkers" = None,
@@ -164,6 +166,7 @@ class BaseModel(StatesOwner):
         Calculate States containing the data needed to interact with the environment.
 
         Args:
+            batch_size: Number of new points to the sampled.
             model_states: States corresponding to the model data.
             env_states: States corresponding to the environment data.
             walkers_states: States corresponding to the walkers data.

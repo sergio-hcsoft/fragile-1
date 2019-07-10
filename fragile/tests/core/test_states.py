@@ -74,7 +74,7 @@ class TestStates:
         for k, v in params_dict.items():
             assert isinstance(k, str)
             assert isinstance(v, dict)
-            for ki, vi in v.items():
+            for ki, _ in v.items():
                 assert isinstance(ki, str)
 
     @pytest.mark.parametrize("states_class", state_classes)
@@ -90,6 +90,6 @@ class TestStates:
 
         states.clone(will_clone=will_clone, compas_ix=compas_ix)
 
-        target_1 = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        target_1 = np.arange(10)
 
         assert np.all(target_1 == states.miau), (target_1 - states.miau, states_class)

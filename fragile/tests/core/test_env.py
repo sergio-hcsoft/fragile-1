@@ -1,24 +1,29 @@
-from typing import Callable
+from typing import Callable, Tuple
 
 import numpy as np
+from plangym import AtariEnvironment, ClassicControl
 import pytest
 
-from plangym import AtariEnvironment, ClassicControl
-
-from fragile.core.env import Environment, DiscreteEnv
+from fragile.core.env import DiscreteEnv, Environment
 from fragile.core.states import States
 
 
-def create_env(name="classic") -> Callable:
+def create_env_and_model_states(name="classic") -> Callable:
     def atari_env():
         env = AtariEnvironment(name="MsPacman-v0", clone_seeds=True, autoreset=True)
         env.reset()
-        return env
+        params = {"actions": {"dtype": np.int64}, "dt": {"dtype": np.float32}}
+        states = States(state_dict=params, batch_size=10)
+        states.update(actions=np.ones(10), dt=np.ones(10))
+        return env, states
 
     def classic_control_env():
         env = ClassicControl()
         env.reset()
-        return env
+        params = {"actions": {"dtype": np.int64}, "dt": {"dtype": np.float32}}
+        states = States(state_dict=params, batch_size=10)
+        states.update(actions=np.ones(10), dt=np.ones(10))
+        return env, states
 
     if name.lower() == "pacman":
         return atari_env
@@ -27,20 +32,23 @@ def create_env(name="classic") -> Callable:
 
 
 @pytest.fixture(scope="module")
-def env(request) -> Environment:
+def env_data(request) -> Tuple[Environment, States]:
     if request.param in ["classic", "pacman"]:
-        env = DiscreteEnv(create_env(request.param)())
-    return env
-
-
-env_fixtures_params = ["classic", "pacman"]
+        env, model_states = create_env_and_model_states(request.param)()
+        env = DiscreteEnv(env)
+    else:
+        raise ValueError("Environment not well defined")
+    return env, model_states
 
 
 class TestBaseEnvironment:
-    @pytest.mark.parametrize("env", ["classic", "pacman"], indirect=True)
-    def test_reset(self, env):
+    env_fixtures_params = ["classic", "pacman"]
+
+    @pytest.mark.parametrize("env_data", env_fixtures_params, indirect=True)
+    def test_reset(self, env_data):
+        env, model_states = env_data
         states = env.reset()
-        assert isinstance(states, States), states
+        assert isinstance(states, env.STATE_CLASS), states
 
         batch_size = 10
         states = env.reset(batch_size=batch_size)
@@ -48,23 +56,21 @@ class TestBaseEnvironment:
         for name in states.keys():
             assert states[name].shape[0] == batch_size
 
-    @pytest.mark.parametrize("env", ["classic", "pacman"], indirect=True)
-    def test_get_params_dir(self, env):
+    @pytest.mark.parametrize("env_data", env_fixtures_params, indirect=True)
+    def test_get_params_dir(self, env_data):
+        env, model_states = env_data
         params_dict = env.get_params_dict()
         assert isinstance(params_dict, dict)
         for k, v in params_dict.items():
             assert isinstance(k, str)
             assert isinstance(v, dict)
-            for ki, vi in v.items():
+            for ki in v.keys():
                 assert isinstance(ki, str)
 
-    """
-    def test_step(self, environment):
-        batch_size = 17
-        model_state = States(
-            17, actions=np.zeros(batch_size, dtype=int), dt=np.ones(batch_size)
-        )
-        states = environment.reset(batch_size=batch_size)
-        new_states = environment.step(model_states=model_state, env_states=states)
+    @pytest.mark.parametrize("env_data", env_fixtures_params, indirect=True)
+    def test_step(self, env_data):
+        batch_size = 10
+        env, model_states = env_data
+        states = env.reset(batch_size=batch_size)
+        new_states = env.step(model_states=model_states, env_states=states)
         assert new_states.ends.sum() == 0
-    """
