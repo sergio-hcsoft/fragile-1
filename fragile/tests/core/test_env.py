@@ -6,43 +6,57 @@ import pytest
 
 from fragile.core.env import DiscreteEnv, Environment
 from fragile.core.states import States
+from fragile.optimize.env import Function
+
+N_WALKERS = 10
 
 
 def create_env_and_model_states(name="classic") -> Callable:
     def atari_env():
         env = AtariEnvironment(name="MsPacman-v0", clone_seeds=True, autoreset=True)
         env.reset()
+        env = DiscreteEnv(env)
         params = {"actions": {"dtype": np.int64}, "dt": {"dtype": np.float32}}
-        states = States(state_dict=params, batch_size=10)
-        states.update(actions=np.ones(10), dt=np.ones(10))
+        states = States(state_dict=params, batch_size=N_WALKERS)
+        states.update(actions=np.ones(N_WALKERS), dt=np.ones(N_WALKERS))
         return env, states
 
     def classic_control_env():
         env = ClassicControl()
         env.reset()
+        env = DiscreteEnv(env)
         params = {"actions": {"dtype": np.int64}, "dt": {"dtype": np.float32}}
-        states = States(state_dict=params, batch_size=10)
-        states.update(actions=np.ones(10), dt=np.ones(10))
+        states = States(state_dict=params, batch_size=N_WALKERS)
+        states.update(actions=np.ones(N_WALKERS), dt=np.ones(N_WALKERS))
+        return env, states
+
+    def function_env():
+        env = Function(function=lambda x: np.ones(N_WALKERS),
+                       shape=(2,), high=1, low=1)
+        params = {"actions": {"dtype": np.int64, "size": (2,)}, "dt": {"dtype": np.float32}}
+        states = States(state_dict=params, batch_size=N_WALKERS)
         return env, states
 
     if name.lower() == "pacman":
         return atari_env
+    elif name.lower() == "function":
+        return function_env
     else:
         return classic_control_env
 
 
 @pytest.fixture(scope="module")
 def env_data(request) -> Tuple[Environment, States]:
-    if request.param in ["classic", "pacman"]:
+    if request.param in TestBaseEnvironment.env_fixtures_params:
         env, model_states = create_env_and_model_states(request.param)()
-        env = DiscreteEnv(env)
+
     else:
         raise ValueError("Environment not well defined")
     return env, model_states
 
 
 class TestBaseEnvironment:
-    env_fixtures_params = ["classic", "pacman"]
+    env_fixtures_params = ["classic", "pacman", "function"]
 
     @pytest.mark.parametrize("env_data", env_fixtures_params, indirect=True)
     def test_reset(self, env_data):

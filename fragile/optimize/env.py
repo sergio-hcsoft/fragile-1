@@ -29,10 +29,12 @@ class Function(BaseEnvironment):
 
     STATE_CLASS = States
 
-    def __init__(self, function: Callable, shape, bounds: Bounds = None, *args, **kwargs):
-        super(Function, self).__init__(*args, **kwargs)
+    def __init__(self, function: Callable, shape, high: Union[int, float, np.ndarray],
+                 low: Union[int, float, np.ndarray],
+                 *args, **kwargs):
+        super(Function, self).__init__()
         self.function = function
-        self.bounds = Bounds()
+        self.bounds = Bounds(high=high, low=low)
         self.shape = shape
 
     def __repr__(self):
@@ -69,7 +71,7 @@ class Function(BaseEnvironment):
         )
 
         rewards = self.function(new_points).flatten()
-        ends = np.zeros(env_states.n, dtype=np.bool_)
+        ends = self.out_of_domain(env_states)
 
         last_states = self._get_new_states(new_points, rewards, ends, model_states.n)
         return last_states
@@ -92,6 +94,21 @@ class Function(BaseEnvironment):
         rewards = self.function(new_points).flatten()
         new_states = self._get_new_states(new_points, rewards, ends, batch_size=batch_size)
         return new_states
+
+    def out_of_domain(self, states: States) -> np.ndarray:
+        """
+        Return a boolean array indicating if the states are in the function domain.
+
+        Args:
+            states: States containing all the information about the current state \
+                    of the simulation.
+
+        Returns:
+            np.ndarray of booleans. The returned array will contain False on the \
+            indexes of the walkers that are inside the domain function, and True \
+            if a walkers is out of domain.
+        """
+        return np.zeros(states.n, dtype=np.bool_)
 
     def _sample_init_points(self, batch_size: int):
         new_points = np.zeros(tuple([batch_size]) + self.shape, dtype=np.float32)

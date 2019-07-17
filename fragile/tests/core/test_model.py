@@ -2,6 +2,7 @@ import pytest  # noqa: F401
 
 from fragile.core.models import RandomContinous, RandomDiscrete
 from fragile.core.states import States
+from fragile.optimize.models import RandomNormal
 
 
 def create_model(name="discrete"):
@@ -9,6 +10,8 @@ def create_model(name="discrete"):
         return lambda: RandomDiscrete(n_actions=10)
     elif name == "continuous":
         return lambda: RandomContinous(low=-1, high=1, shape=(3,))
+    elif name == "random_normal":
+        return lambda: RandomNormal(low=-1, high=1, shape=(3,))
     raise ValueError("Invalid param `name`.")
 
 
@@ -21,10 +24,9 @@ def create_model_states(model, batch_size: int = 10):
     return States(batch_size=batch_size, state_dict=model.get_params_dict())
 
 
-model_fixture_params = ["discrete", "continuous"]
-
-
 class TestModel:
+    model_fixture_params = ["discrete", "continuous", "random_normal"]
+
     @pytest.mark.parametrize("model_fixture", model_fixture_params, indirect=True)
     def test_get_params_dir(self, model_fixture):
         params_dict = model_fixture.get_params_dict()

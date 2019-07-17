@@ -33,7 +33,6 @@ class TestFunction:
     def test_step(self, env):
         states = env.reset()
         actions = np.ones((10, 2)) * 2
-        dt = np.ones((10, 2))
         new_states = env.step(actions, states)
         assert isinstance(new_states, States)
         assert new_states.rewards[0].item() == 1

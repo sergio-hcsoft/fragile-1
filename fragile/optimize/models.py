@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 
-from fragile.core.base_classes import BaseEnvironment, States
+from fragile.core.base_classes import BaseEnvironment
 from fragile.core.models import RandomContinous
 from fragile.core.utils import relativize
 from fragile.optimize.env import Function, States
@@ -31,7 +31,7 @@ class RandomNormal(RandomContinous):
         scale: float = None,
         model_states: States = None,
         **kwargs
-    ) -> np.ndarray:
+    ) -> States:
         loc = self.loc if loc is None else loc
         scale = self.scale if scale is None else scale
         high = (

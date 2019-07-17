@@ -13,7 +13,7 @@ from fragile.optimize.env import Function
 
 
 class MapperWalkers(Walkers):
-    def __init__(self, encoder: Critic = None, *args, **kwargs):
+    def __init__(self, encoder: Critic = None, minimize:bool=True,  *args, **kwargs):
         """
         Initialize a :class:`MapperWalkers`.
 
@@ -28,6 +28,7 @@ class MapperWalkers(Walkers):
             pests=pests, best_reward_found=-1e10, best_found=None, *args, **kwargs
         )
         self.critic = encoder
+        self.minimize = minimize
 
     def __repr__(self):
         text = "Best reward found: {:.5f} at position: {}," "Encoder: \n {}".format(
@@ -73,6 +74,18 @@ class MapperWalkers(Walkers):
         ix = self.states.cum_rewards.argmax()
         self.states.update(best_found=copy.deepcopy(self.env_states.observs[ix]))
         self.states.update(best_reward_found=copy.deepcopy(self.states.cum_rewards[ix]))
+
+    def _accumulate_and_update_rewards(self, rewards: np.ndarray):
+        """
+        Use as reward either the sum of all the rewards received during the \
+        current run, or use the last reward value received as reward.
+
+        Args:
+            rewards: Array containing the last rewards received by every walker.
+        """
+        minim_coef = -1 if self.minimize else 1.
+        rewards = minim_coef * rewards
+        super(MapperWalkers, self)._accumulate_and_update_rewards(rewards=rewards)
 
 
 class FunctionMapper(Swarm):

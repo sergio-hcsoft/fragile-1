@@ -30,7 +30,6 @@ class OptimBenchmark(Function):
 
 
 def sphere(x: np.ndarray):
-
     return -np.sum(x ** 2, 1).flatten()
 
 
@@ -47,7 +46,7 @@ def rastrigin(x: np.ndarray):
     dims = x.shape[1]
     A = 10
     result = A * dims + np.sum(x ** 2 - A * np.cos(2 * math.pi * x), 1)
-    return -1 * result.flatten()
+    return 1 * result.flatten()
 
 
 class Rastrigin(OptimBenchmark):
@@ -60,12 +59,11 @@ class Rastrigin(OptimBenchmark):
 
 
 def eggholder(tensor: np.ndarray):
-
     x, y = tensor[:, 0], tensor[:, 1]
     first_root = np.sqrt(np.abs(x / 2.0 + (y + 47)))
     second_root = np.sqrt(np.abs(x - (y + 47)))
     result = -1 * (y + 47) * np.sin(first_root) - x * np.sin(second_root)
-    return -1 * result
+    return result
 
 
 class EggHolder(OptimBenchmark):
@@ -86,7 +84,7 @@ class EggHolder(OptimBenchmark):
 
 
 def styblinski_tang(x):
-    return -1 * np.sum(x ** 4 - 16 * x ** 2 + 5 * x, 1) / 2.0
+    return np.sum(x ** 4 - 16 * x ** 2 + 5 * x, 1) / 2.0
 
 
 class StyblinskiTang(OptimBenchmark):
@@ -99,19 +97,19 @@ class StyblinskiTang(OptimBenchmark):
 
 
 @jit(nopython=True)
-def lennard_fast(U):
-    U = U.reshape(-1, 3)
-    npart = len(U)
-    Epot = 0.0
+def lennard_fast(state):
+    state = state.reshape(-1, 3)
+    npart = len(state)
+    epot = 0.0
     for i in range(npart):
         for j in range(npart):
             if i > j:
-                r2 = np.sum((U[j, :] - U[i, :]) ** 2)
+                r2 = np.sum((state[j, :] - state[i, :]) ** 2)
                 r2i = 1.0 / r2
                 r6i = r2i * r2i * r2i
-                Epot = Epot + r6i * (r6i - 1.0)
-    Epot = Epot * 4
-    return Epot
+                epot = epot + r6i * (r6i - 1.0)
+    epot = epot * 4
+    return epot
 
 
 @jit(nopython=True)
