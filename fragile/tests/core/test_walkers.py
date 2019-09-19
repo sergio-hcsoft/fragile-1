@@ -18,17 +18,18 @@ N_WALKERS = 13
 
 def get_walkers_discrete_gym():
     env_params = {
-            "states": {"size": (128, ), "dtype": np.int64},
-            "observs": {"size": (64, 64, 3), "dtype": np.float32},
-            "rewards": {"dtype": np.float32},
-            "ends": {"dtype": np.bool_},
-        }
+        "states": {"size": (128,), "dtype": np.int64},
+        "observs": {"size": (64, 64, 3), "dtype": np.float32},
+        "rewards": {"dtype": np.float32},
+        "ends": {"dtype": np.bool_},
+    }
     model_params = {
         "actions": {"size": (10,), "dtype": np.int64},
         "dt": {"size": None, "dtype": np.float32},
     }
-    return Walkers(n_walkers=N_WALKERS, env_state_params=env_params,
-                   model_state_params=model_params)
+    return Walkers(
+        n_walkers=N_WALKERS, env_state_params=env_params, model_state_params=model_params
+    )
 
 
 def get_function_walkers():
@@ -42,12 +43,15 @@ def get_function_walkers():
         "actions": {"size": (3,), "dtype": np.int64},
         "dt": {"size": None, "dtype": np.float32},
     }
-    return MapperWalkers(n_walkers=N_WALKERS, env_state_params=env_params,
-                         model_state_params=model_params, minimize=True)
+    return MapperWalkers(
+        n_walkers=N_WALKERS,
+        env_state_params=env_params,
+        model_state_params=model_params,
+        minimize=True,
+    )
 
 
-walkers_config = {"discrete-gym": get_walkers_discrete_gym,
-                  "function": get_function_walkers}
+walkers_config = {"discrete-gym": get_walkers_discrete_gym, "function": get_function_walkers}
 
 
 @pytest.fixture()
@@ -161,12 +165,10 @@ class TestWalkers:
         assert (walkers.states.cum_rewards == rewards + 1).all()
 
     @pytest.mark.parametrize("walkers", walkers_fixture_params, indirect=True)
-    @given(
-            observs=arrays(np.float32, shape=(N_WALKERS, 64, 64, 3)))
+    @given(observs=arrays(np.float32, shape=(N_WALKERS, 64, 64, 3)))
     def test_distances_not_crashes(self, walkers, observs):
         walkers.env_states.update(observs=observs)
         walkers.calculate_distances()
         assert isinstance(walkers.states.distances[0], np.float32)
         assert len(walkers.states.distances.shape) == 1
         assert walkers.states.distances.shape[0] == walkers.n
-

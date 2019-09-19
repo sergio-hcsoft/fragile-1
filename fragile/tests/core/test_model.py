@@ -1,6 +1,8 @@
 import pytest  # noqa: F401
 
-from fragile.core.models import RandomContinous, RandomDiscrete
+import numpy as np
+
+from fragile.core.models import Bounds, RandomContinous, RandomDiscrete
 from fragile.core.states import States
 from fragile.optimize.models import RandomNormal
 
@@ -18,6 +20,10 @@ def create_model(name="discrete"):
 @pytest.fixture(scope="module")
 def model_fixture(request):
     return create_model(request.param)()
+
+@pytest.fixture(scope="module")
+def bounds() -> Bounds:
+    return Bounds(low=np.array([-5, -10]), high=5)
 
 
 def create_model_states(model, batch_size: int = 10):
@@ -60,3 +66,12 @@ class TestModel:
         )
         assert isinstance(updated_states, model_fixture.STATE_CLASS)
         assert len(updated_states) == n_walkers
+
+
+class TestBounds:
+
+    def test_points_in_bounds(self, bounds):
+        points = np.array([[0, 0], [11, 0], [0, 11]])
+        res = bounds.points_in_bounds(points)
+        for a, b in zip(res.tolist(), [True, False, False]):
+            assert a == b

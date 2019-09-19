@@ -197,6 +197,7 @@ class States:
                      where key is the name of the attribute to be updated, and value \
                       is the new value for the attribute.
         """
+
         def update_or_set_attributes(attrs: Union[dict, States]):
             for name, val in attrs.items():
                 try:

@@ -31,8 +31,8 @@ def create_env_and_model_states(name="classic") -> Callable:
         return env, states
 
     def function_env():
-        env = Function(function=lambda x: np.ones(N_WALKERS),
-                       shape=(2,), high=1, low=1)
+        env = Function(function=lambda x: np.ones(N_WALKERS), shape=(2,),
+                       high=1, low=1, dtype=int)
         params = {"actions": {"dtype": np.int64, "size": (2,)}, "dt": {"dtype": np.float32}}
         states = States(state_dict=params, batch_size=N_WALKERS)
         return env, states

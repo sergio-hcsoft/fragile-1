@@ -58,8 +58,11 @@ def create_function_swarm():
     return swarm
 
 
-swarm_dict = {"cartpole": create_cartpole_swarm, "atari": create_atari_swarm,
-              "function": create_function_swarm}
+swarm_dict = {
+    "cartpole": create_cartpole_swarm,
+    "atari": create_atari_swarm,
+    "function": create_function_swarm,
+}
 
 
 @pytest.fixture()
@@ -68,8 +71,11 @@ def swarm(request):
 
 
 class TestSwarm:
-    swarm_dict = {"cartpole": create_cartpole_swarm, "atari": create_atari_swarm,
-                  "function": create_function_swarm}
+    swarm_dict = {
+        "cartpole": create_cartpole_swarm,
+        "atari": create_atari_swarm,
+        "function": create_function_swarm,
+    }
     swarm_names = list(swarm_dict.keys())
     test_scores = list(zip(swarm_names, [149, 750, 10]))
 

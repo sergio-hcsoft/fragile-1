@@ -3,7 +3,54 @@ import math
 from numba import jit
 import numpy as np
 
-from fragile.optimize.env import Function
+from fragile.optimize.env import Function, Bounds
+
+
+def sphere(x: np.ndarray):
+    return np.sum(x ** 2, 1).flatten()
+
+
+def rastrigin(x: np.ndarray):
+    dims = x.shape[1]
+    A = 10
+    result = A * dims + np.sum(x ** 2 - A * np.cos(2 * math.pi * x), 1)
+    return result.flatten()
+
+
+def eggholder(tensor: np.ndarray):
+    x, y = tensor[:, 0], tensor[:, 1]
+    first_root = np.sqrt(np.abs(x / 2.0 + (y + 47)))
+    second_root = np.sqrt(np.abs(x - (y + 47)))
+    result = (y + 47) * np.sin(first_root) - x * np.sin(second_root)
+    return result
+
+
+def styblinski_tang(x):
+    return np.sum(x ** 4 - 16 * x ** 2 + 5 * x, 1) / 2.0
+
+
+@jit(nopython=True)
+def _lennard_fast(state):
+    state = state.reshape(-1, 3)
+    npart = len(state)
+    epot = 0.0
+    for i in range(npart):
+        for j in range(npart):
+            if i > j:
+                r2 = np.sum((state[j, :] - state[i, :]) ** 2)
+                r2i = 1.0 / r2
+                r6i = r2i * r2i * r2i
+                epot = epot + r6i * (r6i - 1.0)
+    epot = epot * 4
+    return epot
+
+
+@jit(nopython=True)
+def lennard_jones(x: np.ndarray):
+    result = np.zeros(x.shape[0])
+    for i in range(x.shape[0]):
+        result[i] = _lennard_fast(x[i])
+    return result
 
 
 class OptimBenchmark(Function):
@@ -29,45 +76,37 @@ class OptimBenchmark(Function):
         return kwargs
 
 
-def sphere(x: np.ndarray):
-    return -np.sum(x ** 2, 1).flatten()
-
-
 class Sphere(OptimBenchmark):
     function = sphere
+    benchmark = 0.0
 
     @staticmethod
     def get_bounds(shape):
         bounds = [(-1000, 1000) for _ in range(shape[0])]
-        return bounds
+        return Bounds.from_tuples(bounds)
 
-
-def rastrigin(x: np.ndarray):
-    dims = x.shape[1]
-    A = 10
-    result = A * dims + np.sum(x ** 2 - A * np.cos(2 * math.pi * x), 1)
-    return 1 * result.flatten()
+    @property
+    def best_state(self):
+        return np.zeros(self.shape)
 
 
 class Rastrigin(OptimBenchmark):
     function = rastrigin
+    benchmark = 0
 
     @staticmethod
     def get_bounds(shape):
         bounds = [(-5.12, 5.12) for _ in range(shape[0])]
-        return bounds
+        return Bounds.from_tuples(bounds)
 
-
-def eggholder(tensor: np.ndarray):
-    x, y = tensor[:, 0], tensor[:, 1]
-    first_root = np.sqrt(np.abs(x / 2.0 + (y + 47)))
-    second_root = np.sqrt(np.abs(x - (y + 47)))
-    result = -1 * (y + 47) * np.sin(first_root) - x * np.sin(second_root)
-    return result
+    @property
+    def best_state(self):
+        return np.zeros(self.shape)
 
 
 class EggHolder(OptimBenchmark):
     function = eggholder
+    benchmark = -959.64066271
 
     def __init__(self, shape=(2,), **kwargs):
         kwargs = self.process_default_kwargs(shape, kwargs)
@@ -76,15 +115,15 @@ class EggHolder(OptimBenchmark):
     @staticmethod
     def get_bounds(shape):
         bounds = [(-512, 512), (-512, 512)]
-        return bounds
+        return Bounds.from_tuples(bounds)
 
     @classmethod
     def process_default_kwargs(cls, shape, kwargs):
         return super(EggHolder, cls).process_default_kwargs(shape=tuple([2]), kwargs=kwargs)
 
-
-def styblinski_tang(x):
-    return np.sum(x ** 4 - 16 * x ** 2 + 5 * x, 1) / 2.0
+    @property
+    def best_state(self):
+        return np.array([512., 404.2319])
 
 
 class StyblinskiTang(OptimBenchmark):
@@ -93,36 +132,15 @@ class StyblinskiTang(OptimBenchmark):
     @staticmethod
     def get_bounds(shape):
         bounds = [(-5.0, 5.0) for _ in range(shape[0])]
-        return bounds
+        return Bounds.from_tuples(bounds)
 
+    @property
+    def best_state(self):
+        return np.ones(self.shape) * -2.903534
 
-@jit(nopython=True)
-def lennard_fast(state):
-    state = state.reshape(-1, 3)
-    npart = len(state)
-    epot = 0.0
-    for i in range(npart):
-        for j in range(npart):
-            if i > j:
-                r2 = np.sum((state[j, :] - state[i, :]) ** 2)
-                r2i = 1.0 / r2
-                r6i = r2i * r2i * r2i
-                epot = epot + r6i * (r6i - 1.0)
-    epot = epot * 4
-    return epot
-
-
-@jit(nopython=True)
-def numba_lennard(x):
-    result = np.zeros(x.shape[0])
-    for i in range(x.shape[0]):
-        result[i] = lennard_fast(x[i])
-    return result
-
-
-def lennard_jones(x: np.ndarray):
-    result = -1 * numba_lennard(x)
-    return result
+    @property
+    def benchmark(self):
+        return -39.16617 * self.shape[0]
 
 
 class LennardJones(OptimBenchmark):
@@ -165,7 +183,7 @@ class LennardJones(OptimBenchmark):
     @staticmethod
     def get_bounds(shape):
         bounds = [(-1.5, 1.5) for _ in range(shape[0])]
-        return bounds
+        return Bounds.from_tuples(bounds)
 
     def boundary_condition(self, points, rewards):
         ends = super(LennardJones, self).boundary_condition(points, rewards)

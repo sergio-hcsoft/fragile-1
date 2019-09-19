@@ -1,6 +1,5 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Union
 
-from gym.spaces import Box
 import numpy as np
 
 from fragile.core.base_classes import BaseModel
@@ -9,6 +8,53 @@ from fragile.core.states import States
 
 
 float_type = np.float32
+
+
+class Bounds:
+    def __init__(
+        self,
+        high: Union[np.ndarray, float, int] = np.inf,
+        low: Union[np.ndarray, float, int] = -np.inf,
+        shape: Optional[tuple] = None,
+        dtype: type = None,
+    ):
+
+        if shape is None and hasattr(high, "shape"):
+            shape = high.shape
+        elif shape is None and hasattr(low, "shape"):
+            shape = low.shape
+        self.shape = shape
+        if self.shape is None:
+            raise TypeError("If shape is None high or low need to have .shape attribute.")
+        self.high = high
+        self.low = low
+        if dtype is not None:
+            self.dtype = dtype
+        elif hasattr(high, "dtype"):
+            self.dtype = high.dtype
+        elif hasattr(low, "dtype"):
+            self.dtype = low.dtype
+        else:
+            self.dtype = type(low)
+
+    def __repr__(self):
+        return "{} shape {} dtype {}low {} high {}".format(self.__class__.__name__, self.dtype,
+                                                           self.shape, self.low, self.high)
+
+    @classmethod
+    def from_tuples(cls, bounds) -> "Bounds":
+        low, high = [], []
+        for l, h in bounds:
+            low.append(l)
+            high.append(h)
+        low, high = np.array(low), np.array(high)
+        return Bounds(low=low, high=high)
+
+    def clip(self, points):
+        return np.clip(points, self.low, self.high)
+
+    def points_in_bounds(self, points: np.ndarray) -> np.ndarray:
+        return (self.clip(points) == points).all(axis=1).flatten()
 
 
 class DtSampler(BaseModel):
@@ -20,7 +66,7 @@ class DtSampler(BaseModel):
     STATE_CLASS = States
 
     def __init__(
-        self, min_dt: float = 3, max_dt: float = 10, loc_dt: float = 4, scale_dt: float = 2
+        self, min_dt: float = 1, max_dt: float = 1, loc_dt: float = 0.0000001, scale_dt: float = 0,
     ):
         """
         Initialize a :class:`DtSampler`.
@@ -227,7 +273,7 @@ class RandomContinous(DtSampler):
         if shape is not None:
             shape = shape if not isinstance(shape, list) else tuple(shape)
         self._n_dims = shape
-        self.bounds = Box(low=low, high=high, shape=shape)
+        self.bounds = Bounds(low=low, high=high, shape=shape)
 
     @property
     def shape(self):
@@ -259,13 +305,8 @@ class RandomContinous(DtSampler):
             States containing the new sampled discrete random values.
 
         """
-        high = (
-            self.bounds.high
-            if self.bounds.dtype.kind == "f"
-            else self.bounds.high.astype("int64") + 1
-        )
         actions = self.random_state.uniform(
-            low=self.bounds.low, high=high, size=tuple([batch_size]) + self.shape
+            low=self.bounds.low, high=self.bounds.high, size=tuple([batch_size]) + self.shape
         ).astype(self.bounds.dtype)
         model_states.update(actions=actions)
         return model_states

@@ -4,22 +4,7 @@ import numpy as np
 
 from fragile.core.base_classes import BaseEnvironment
 from fragile.core.states import States
-
-
-class Bounds:
-    def __init__(
-        self,
-        high: Union[np.ndarray, float, int] = np.inf,
-        low: Union[np.ndarray, float, int] = -np.inf,
-    ):
-        self.high = high
-        self.low = low
-
-    def clip(self, points):
-        np.clip(points, self.low, self.high)
-
-    def points_in_bounds(self, points: np.ndarray) -> np.ndarray:
-        return (self.clip(points) == points).all(axis=1).flatten()
+from fragile.core.models import Bounds
 
 
 class Function(BaseEnvironment):
@@ -29,12 +14,23 @@ class Function(BaseEnvironment):
 
     STATE_CLASS = States
 
-    def __init__(self, function: Callable, shape, high: Union[int, float, np.ndarray],
-                 low: Union[int, float, np.ndarray],
-                 *args, **kwargs):
+    def __init__(
+        self,
+        function: Callable,
+        shape,
+        high: Union[int, float, np.ndarray] = None,
+        low: Union[int, float, np.ndarray] = None,
+        bounds: Bounds = None,
+        *args,
+        **kwargs
+    ):
+        if bounds is not None and not isinstance(bounds, Bounds):
+            raise TypeError("Bounds needs to be an instance of Bounds, found {}".format(bounds))
+        elif high is None and low is None and bounds is None:
+            raise TypeError("Need to specify either bounds or high and low. All three were None")
         super(Function, self).__init__()
         self.function = function
-        self.bounds = Bounds(high=high, low=low)
+        self.bounds = bounds if bounds is not None else Bounds(high=high, low=low, shape=shape)
         self.shape = shape
 
     def __repr__(self):
@@ -67,11 +63,12 @@ class Function(BaseEnvironment):
             States containing the information that describes the new state of the Environment.
         """
         new_points = (
-            model_states.actions * model_states.dt.reshape(env_states.n, -1) + env_states.observs
+            # model_states.actions * model_states.dt.reshape(env_states.n, -1) + env_states.observs
+            model_states.actions + env_states.observs
         )
 
         rewards = self.function(new_points).flatten()
-        ends = self.out_of_domain(env_states)
+        ends = np.logical_not(self.bounds.points_in_bounds(new_points)).flatten()
 
         last_states = self._get_new_states(new_points, rewards, ends, model_states.n)
         return last_states
@@ -95,25 +92,12 @@ class Function(BaseEnvironment):
         new_states = self._get_new_states(new_points, rewards, ends, batch_size=batch_size)
         return new_states
 
-    def out_of_domain(self, states: States) -> np.ndarray:
-        """
-        Return a boolean array indicating if the states are in the function domain.
-
-        Args:
-            states: States containing all the information about the current state \
-                    of the simulation.
-
-        Returns:
-            np.ndarray of booleans. The returned array will contain False on the \
-            indexes of the walkers that are inside the domain function, and True \
-            if a walkers is out of domain.
-        """
-        return np.zeros(states.n, dtype=np.bool_)
-
     def _sample_init_points(self, batch_size: int):
         new_points = np.zeros(tuple([batch_size]) + self.shape, dtype=np.float32)
         for i in range(batch_size):
-            new_points[i, :] = self.random_state.uniform(0, 1, self.shape)
+            new_points[i, :] = self.random_state.uniform(low=self.bounds.low,
+                                                         high=self.bounds.high,
+                                                         size=self.shape)
         return new_points
 
     def _get_new_states(self, states, rewards, ends, batch_size) -> States:

@@ -1,7 +1,15 @@
+import itertools
+
 import numpy as np
 import pytest
 
-from fragile.optimize.benchmarks import EggHolder, Rastrigin, Sphere
+from fragile.optimize.benchmarks import (
+    EggHolder,
+    OptimBenchmark,
+    Rastrigin,
+    Sphere,
+    StyblinskiTang,
+)
 
 
 @pytest.fixture()
@@ -18,12 +26,23 @@ def benchmarks():
     return data
 
 
+@pytest.fixture()
+def wiki_benchmark(request) -> OptimBenchmark:
+    print(request.param)
+    cls, shape = request.param
+    return cls(shape=shape)
+
+
 class TestBenchmarks:
-    def test_2_dim_optimum(self, benchmarks):
-        shape = tuple([2])
-        for bench in benchmarks.values():
-            env_cls, point, max_val = list(bench.values())
-            env = env_cls(shape=shape)
-            result = env.function(point)[0]
-            print(result, env_cls.__name__)
-            assert np.allclose(result, max_val)
+    wiki_bench_classes = [EggHolder, Rastrigin, Sphere, StyblinskiTang]
+
+    @pytest.mark.parametrize(
+        "wiki_benchmark", list(itertools.product(wiki_bench_classes, [(2,)])), indirect=True
+    )
+    def test_optimim(self, wiki_benchmark):
+        best = wiki_benchmark.best_state
+        new_shape = (1,) + tuple(best.shape)
+        print("best shape", best.shape, new_shape)
+        val = wiki_benchmark.function(best.reshape(new_shape))
+        bench = wiki_benchmark.benchmark
+        assert np.allclose(val[0], bench), wiki_benchmark.__class__.__name__

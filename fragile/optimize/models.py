@@ -34,17 +34,12 @@ class RandomNormal(RandomContinous):
     ) -> States:
         loc = self.loc if loc is None else loc
         scale = self.scale if scale is None else scale
-        high = (
-            self.bounds.high
-            if self.bounds.dtype.kind == "f"
-            else self.bounds.high.astype("int64") + 1
-        )
         data = np.clip(
             self.random_state.normal(
                 size=tuple([batch_size]) + self.shape, loc=loc, scale=scale
             ).astype(self.bounds.dtype),
             self.bounds.low,
-            high,
+            self.bounds.high,
         )
         model_states.update(actions=data)
         return model_states
@@ -74,7 +69,7 @@ class EncoderSampler(RandomNormal):
         return self._walkers
 
     def set_walkers(self, critic: Critic):
-        self._walkers = encoder
+        self._walkers = critic
 
     def sample(self, batch_size: int = 1):
         if self.encoder is None:
