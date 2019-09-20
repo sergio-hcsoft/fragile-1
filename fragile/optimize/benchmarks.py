@@ -21,7 +21,7 @@ def eggholder(tensor: np.ndarray):
     x, y = tensor[:, 0], tensor[:, 1]
     first_root = np.sqrt(np.abs(x / 2.0 + (y + 47)))
     second_root = np.sqrt(np.abs(x - (y + 47)))
-    result = (y + 47) * np.sin(first_root) - x * np.sin(second_root)
+    result = -1 * (y + 47) * np.sin(first_root) - x * np.sin(second_root)
     return result
 
 

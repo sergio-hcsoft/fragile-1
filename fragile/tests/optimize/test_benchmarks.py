@@ -42,7 +42,6 @@ class TestBenchmarks:
     def test_optimim(self, wiki_benchmark):
         best = wiki_benchmark.best_state
         new_shape = (1,) + tuple(best.shape)
-        print("best shape", best.shape, new_shape)
         val = wiki_benchmark.function(best.reshape(new_shape))
         bench = wiki_benchmark.benchmark
         assert np.allclose(val[0], bench), wiki_benchmark.__class__.__name__

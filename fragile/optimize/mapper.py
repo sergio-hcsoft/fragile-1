@@ -13,7 +13,7 @@ from fragile.optimize.env import Function
 
 
 class MapperWalkers(Walkers):
-    def __init__(self, encoder: Critic = None, minimize: bool = True, *args, **kwargs):
+    def __init__(self, critic: Critic = None, minimize: bool = True, *args, **kwargs):
         """
         Initialize a :class:`MapperWalkers`.
 
@@ -27,11 +27,11 @@ class MapperWalkers(Walkers):
         super(MapperWalkers, self).__init__(
             pests=pests, best_reward_found=-1e10, best_found=None, *args, **kwargs
         )
-        self.critic = encoder
+        self.critic = critic
         self.minimize = minimize
 
     def __repr__(self):
-        text = "Best reward found: {:.5f} at position: {}," "Encoder: \n {}".format(
+        text = "\nBest reward found: {:.5f} at position: {}, Critic: {}\n".format(
             float(self.states.best_reward_found), self.states.best_found, self.critic
         )
         return text + super(MapperWalkers, self).__repr__()

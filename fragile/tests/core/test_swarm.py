@@ -2,6 +2,7 @@ from plangym import AtariEnvironment, ParallelEnvironment
 from plangym.minimal import ClassicControl
 import pytest
 
+from fragile.core.dt_sampler import GaussianDt
 from fragile.core.env import BaseEnvironment, DiscreteEnv
 from fragile.core.models import BaseModel, RandomDiscrete
 from fragile.core.swarm import Swarm
@@ -32,8 +33,9 @@ def create_atari_swarm():
         autoreset=True,
         blocking=False,
     )
+    dt = GaussianDt(min_dt=3, max_dt=10, loc_dt=5, scale_dt=2)
     swarm = Swarm(
-        model=lambda x: RandomDiscrete(x),
+        model=lambda x: RandomDiscrete(x, dt_sampler=dt),
         walkers=Walkers,
         env=lambda: DiscreteEnv(env),
         n_walkers=67,

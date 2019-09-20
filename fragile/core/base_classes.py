@@ -1,9 +1,55 @@
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 import numpy as np
 
 from fragile.core import RANDOM_SEED, random_state
 from fragile.core.states import States
+
+
+class BaseDtSampler:
+
+    random_state = random_state
+
+    def calculate_dt(
+        self,
+        batch_size: int = None,
+        model_states: States = None,
+        env_states: States = None,
+        walkers_states: "StatesWalkers" = None,
+    ) -> np.ndarray:
+        """
+        Calculate the target time step values.
+
+        Args:
+            batch_size: Number of new points to the sampled.
+            model_states: States corresponding to the model data.
+            env_states: States corresponding to the environment data.
+            walkers_states: States corresponding to the walkers data.
+
+        Returns:
+            Array containing the target time step.
+
+        """
+        raise NotImplementedError
+
+    def reset(self, batch_size: int = 1, model_states: States = None, *args, **kwargs) -> States:
+        """
+        Restart the DtSampler and reset its internal state.
+
+        Args:
+            batch_size: Number of elements in the first dimension of the model \
+                        States data.
+            model_states: States corresponding to model data. If provided the \
+                          model will be reset to this state.
+            args: Additional arguments not related to model data.
+            kwargs: Additional keyword arguments not related to model data.
+
+        Returns:
+            States containing the information of the current state of the \
+            model (after the reset).
+
+        """
+        pass
 
 
 class StatesOwner:
@@ -111,6 +157,17 @@ class BaseModel(StatesOwner):
     The model is in charge of calculating how the walkers will act with the \
     Environment, effectively working as a policy.
     """
+
+    def __init__(self, dt_sampler: Optional[BaseDtSampler] = None):
+        """
+        Initialize a BaseModel.
+
+        Args:
+            dt_sampler: dt_sampler used to calculate an additional time step strategy. \
+                        the vector output by this class will multiply the actions of the model.
+
+        """
+        self.dt_sampler = dt_sampler
 
     def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
         """

@@ -2,9 +2,7 @@ import copy
 
 import numpy as np
 
-# import torch
-
-# device = "cpu" if not torch.cuda.is_available() else "cuda"
+float_type = np.float32
 
 
 def relativize(x: np.ndarray) -> np.ndarray:

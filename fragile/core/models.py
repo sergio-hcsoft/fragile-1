@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Union
 
 import numpy as np
 
-from fragile.core.base_classes import BaseModel
+from fragile.core.base_classes import BaseDtSampler, BaseModel
 from fragile.core.env import DiscreteEnv
 from fragile.core.states import States
 
@@ -57,37 +57,7 @@ class Bounds:
         return (self.clip(points) == points).all(axis=1).flatten()
 
 
-class DtSampler(BaseModel):
-    """
-    Sample an additional vector of clipped gaussian random variables, and \
-    stores it in an attribute called `dt`.
-    """
-
-    STATE_CLASS = States
-
-    def __init__(
-        self, min_dt: float = 1, max_dt: float = 1, loc_dt: float = 0.0000001, scale_dt: float = 0,
-    ):
-        """
-        Initialize a :class:`DtSampler`.
-
-        Args:
-            min_dt: Minimum dt that will be predicted by the model.
-            max_dt: Maximum dt that will be predicted by the model.
-            loc_dt: Mean of the gaussian random variable that will model dt.
-            scale_dt: Standard deviation of the gaussian random variable that will model dt.
-
-        """
-        self.min_dt = min_dt
-        self.max_dt = max_dt
-        self.mean_dt = loc_dt
-        self.std_dt = scale_dt
-
-    @classmethod
-    def get_params_dict(cls) -> Dict[str, Dict[str, Any]]:
-        """Return the dictionary with the parameters to create a new `RandomDiscrete` model."""
-        params = {"dt": {"dtype": float_type}}
-        return params
+class Model(BaseModel):
 
     def sample(
         self,
@@ -145,25 +115,6 @@ class DtSampler(BaseModel):
             env_states=env_states,
             walkers_states=walkers_states,
         )
-        model_states = self.calculate_dt(batch_size=batch_size, model_states=model_states)
-        return model_states
-
-    def calculate_dt(self, batch_size: int, model_states: States) -> States:
-        """
-        Sample the integration step from a clipped gaussian random variable.
-
-        Args:
-            batch_size: Number of new points to the sampled.
-            model_states: States corresponding to the environment data.
-
-        Returns:
-            Updated model_states containing an attribute name `dt` with samples \
-            from a clipped normal distribution.
-
-        """
-        dt = self.random_state.normal(loc=self.mean_dt, scale=self.std_dt, size=batch_size)
-        dt = np.clip(dt, self.min_dt, self.max_dt).astype(int)
-        model_states.update(dt=dt)
         return model_states
 
     def reset(self, batch_size: int = 1, model_states: States = None, *args, **kwargs) -> States:
@@ -186,7 +137,7 @@ class DtSampler(BaseModel):
         return model_states
 
 
-class RandomDiscrete(DtSampler):
+class RandomDiscrete(Model):
     """
     Model that samples actions in a discrete state space using a uniform prior.
 
@@ -197,10 +148,7 @@ class RandomDiscrete(DtSampler):
         self,
         env: DiscreteEnv = None,
         n_actions: int = None,
-        min_dt=3,
-        max_dt=10,
-        loc_dt=4,
-        scale_dt=2,
+        dt_sampler: BaseDtSampler = None,
     ):
         """
         Initialize a :class:`RandomDiscrete`.
@@ -208,15 +156,10 @@ class RandomDiscrete(DtSampler):
         Args:
             env: The number of possible discrete output can be extracted from an Environment.
             n_actions: Number of different discrete. outcomes that the model can provide.
-            min_dt: Minimum dt that will be predicted by the model.
-            max_dt: Maximum dt that will be predicted by the model.
-            loc_dt: Mean of the gaussian random variable that will model dt.
-            scale_dt: Standard deviation of the gaussian random variable that will model dt.
-
+            dt_sampler: dt_sampler used to calculate an additional time step strategy. \
+                        the vector output by this class will multiply the actions of the model.
         """
-        super(RandomDiscrete, self).__init__(
-            min_dt=min_dt, max_dt=max_dt, loc_dt=loc_dt, scale_dt=scale_dt
-        )
+        super(RandomDiscrete, self).__init__(dt_sampler=dt_sampler)
         if n_actions is None and env is None:
             raise ValueError("Env and n_actions cannot be both None.")
         self._n_actions = env.n_actions if n_actions is None else n_actions
@@ -226,12 +169,14 @@ class RandomDiscrete(DtSampler):
         """Return the number of different possible discrete actions that the model can output."""
         return self._n_actions
 
-    @classmethod
-    def get_params_dict(cls) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
         """Return the dictionary with the parameters to create a new `RandomDiscrete` model."""
         actions = {"actions": {"dtype": np.int_}}
-        params = super(RandomDiscrete, cls).get_params_dict()
-        params.update(actions)
+        if self.dt_sampler is not None:
+            params = self.dt_sampler.get_params_dict()
+            params.update(actions)
+        else:
+            params = actions
         return params
 
     def sample(self, batch_size: int, model_states: States = None, **kwargs) -> States:
@@ -247,14 +192,21 @@ class RandomDiscrete(DtSampler):
 
         """
         actions = self.random_state.randint(0, self.n_actions, size=batch_size)
-        model_states.update(actions=actions)
+        dt = (1 if self.dt_sampler is None else
+              self.dt_sampler.calculate_dt(batch_size=batch_size, model_states=model_states,
+                                           **kwargs).astype(int))
+        model_states.update(actions=actions, dt=dt)
         return model_states
 
 
-class RandomContinous(DtSampler):
+class RandomContinous(Model):
     """Model that samples actions in a continuous random using a uniform prior."""
 
-    def __init__(self, low, high, shape=None, min_dt=1, max_dt=10, loc_dt=4, scale_dt=1):
+    def __init__(self, bounds: Optional[Bounds] = None,
+                 low: Optional[Union[int, float, np.ndarray]] = None,
+                 high: Optional[Union[int, float, np.ndarray]] = None,
+                 shape: Optional[tuple] = None,
+                 dt_sampler: Optional[BaseDtSampler] = None, ):
         """
         Initialize a :class:`RandomContinuous`.
 
@@ -262,18 +214,13 @@ class RandomContinous(DtSampler):
             low: Minimum value that the random variable can take.
             high: Maximum value that the random variable can take.
             shape: Shape of the sampled random variable.
-            min_dt: Minimum dt that will be predicted by the model.
-            max_dt: Maximum dt that will be predicted by the model.
-            loc_dt: Mean of the gaussian random variable that will model dt.
-            scale_dt: Standard deviation of the gaussian random variable that will model dt.
+            bounds: Bounds class defining the range of allowed values for the model.
         """
-        super(RandomContinous, self).__init__(
-            min_dt=min_dt, max_dt=max_dt, loc_dt=loc_dt, scale_dt=scale_dt
-        )
+        super(RandomContinous, self).__init__(dt_sampler=dt_sampler)
         if shape is not None:
             shape = shape if not isinstance(shape, list) else tuple(shape)
-        self._n_dims = shape
-        self.bounds = Bounds(low=low, high=high, shape=shape)
+
+        self.bounds = bounds if bounds is not None else Bounds(low=low, high=high, shape=shape)
 
     @property
     def shape(self):
@@ -283,14 +230,16 @@ class RandomContinous(DtSampler):
     @property
     def n_dims(self):
         """Return the number of dimensions of the sampled random variable."""
-        return self._n_dims[0] if isinstance(self._n_dims, tuple) else self._n_dims
+        return self.bounds.shape[0] if isinstance(self.bounds.shape, tuple) else self.bounds.shape
 
     def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
         """Return the dictionary with the parameters to create a new `RandomDiscrete` model."""
-        params = {
-            "actions": {"size": self.shape, "dtype": float_type},
-            "dt": {"size": tuple([self.n_dims]), "dtype": float_type},
-        }
+        actions = {"actions": {"size": self.shape, "dtype": float_type}}
+        if self.dt_sampler is not None:
+            params = self.dt_sampler.get_params_dict()
+            params.update(actions)
+        else:
+            params = actions
         return params
 
     def sample(self, batch_size: int, model_states: States = None, **kwargs) -> States:
@@ -308,5 +257,8 @@ class RandomContinous(DtSampler):
         actions = self.random_state.uniform(
             low=self.bounds.low, high=self.bounds.high, size=tuple([batch_size]) + self.shape
         ).astype(self.bounds.dtype)
-        model_states.update(actions=actions)
+        dt = (1.0 if self.dt_sampler is None else
+              self.dt_sampler.calculate_dt(batch_size=batch_size, model_states=model_states,
+                                           **kwargs))
+        model_states.update(actions=actions, dt=dt)
         return model_states
