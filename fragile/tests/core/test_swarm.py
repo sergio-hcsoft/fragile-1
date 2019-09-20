@@ -8,7 +8,7 @@ from fragile.core.models import BaseModel, RandomDiscrete
 from fragile.core.swarm import Swarm
 from fragile.core.walkers import BaseWalkers, Walkers
 from fragile.optimize.benchmarks import Rastrigin
-from fragile.optimize.mapper import FunctionMapper
+from fragile.optimize.swarm import FunctionMapper
 from fragile.optimize.models import RandomNormal
 
 
@@ -33,7 +33,7 @@ def create_atari_swarm():
         autoreset=True,
         blocking=False,
     )
-    dt = GaussianDt(min_dt=3, max_dt=10, loc_dt=5, scale_dt=2)
+    dt = GaussianDt(min_dt=3, max_dt=100, loc_dt=5, scale_dt=2)
     swarm = Swarm(
         model=lambda x: RandomDiscrete(x, dt_sampler=dt),
         walkers=Walkers,

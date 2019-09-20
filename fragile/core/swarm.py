@@ -48,6 +48,18 @@ class Swarm(BaseSwarm):
         """
         return self._walkers
 
+    @property
+    def best_found(self):
+        return self.walkers.states.best_found
+
+    @property
+    def best_reward_found(self):
+        return self.walkers.states.best_reward_found
+
+    @property
+    def critic(self):
+        return self._walkers.critic
+
     def _init_swarm(
         self,
         env_callable: Callable,
@@ -163,6 +175,7 @@ class Swarm(BaseSwarm):
         self.epoch = 0
         while not self.walkers.calculate_end_condition():
             try:
+                self.walkers.fix_best()
                 self.step_walkers()
                 old_ids, new_ids = self.walkers.balance()
                 self.prune_tree(old_ids=set(old_ids.tolist()), new_ids=set(new_ids.tolist()))
@@ -231,14 +244,3 @@ class Swarm(BaseSwarm):
             dead_leaves = old_ids - new_ids
             for leaf_id in dead_leaves:
                 self.tree.prune_branch(leaf_id=leaf_id)
-
-    """def calculate_action(self):
-        return
-        model_states = self.walkers.get_model_states()
-        init_actions = model_states.get("init_actions")
-        entropy = self.walkers.get_entropy()
-
-        actions_dist = np.zeros((self.model.n_actions, 1))
-        for action in init_actions.unique():
-            actions_dist[action] = entropy[init_actions == action].sum()
-        return actions_dist"""

@@ -5,7 +5,6 @@ import pytest
 
 from fragile.core.utils import relativize
 from fragile.core.walkers import States, StatesWalkers, Walkers
-from fragile.optimize.mapper import MapperWalkers
 
 
 @pytest.fixture()
@@ -43,7 +42,7 @@ def get_function_walkers():
         "actions": {"size": (3,), "dtype": np.int64},
         "dt": {"size": None, "dtype": np.float32},
     }
-    return MapperWalkers(
+    return Walkers(
         n_walkers=N_WALKERS,
         env_state_params=env_params,
         model_state_params=model_params,

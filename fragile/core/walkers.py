@@ -1,13 +1,11 @@
 import copy
-from typing import Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 
-from fragile.core.base_classes import BaseWalkers
+from fragile.core.base_classes import BaseCritic, BaseWalkers
 from fragile.core.states import States
-from fragile.core.utils import relativize, statistics_from_array
-
-float_type = np.float32
+from fragile.core.utils import float_type, relativize, statistics_from_array
 
 
 class StatesWalkers(States):
@@ -81,7 +79,7 @@ class StatesWalkers(States):
         )
 
 
-class Walkers(BaseWalkers):
+class SimpleWalkers(BaseWalkers):
     """
     This class is in charge of performing all the mathematical operations involved in evolving a \
     cloud of walkers.
@@ -121,7 +119,7 @@ class Walkers(BaseWalkers):
                                 reward will be taken into account.
 
         """
-        super(Walkers, self).__init__(
+        super(SimpleWalkers, self).__init__(
             n_walkers=n_walkers,
             env_state_params=env_state_params,
             model_state_params=model_state_params,
@@ -130,7 +128,7 @@ class Walkers(BaseWalkers):
 
         self._model_states: States = States(state_dict=model_state_params, batch_size=n_walkers)
         self._env_states: States = States(state_dict=env_state_params, batch_size=n_walkers)
-        self._states = StatesWalkers(batch_size=n_walkers, **kwargs)
+        self._states = self.STATE_CLASS(batch_size=n_walkers, **kwargs)
         self.reward_scale = reward_scale
         self.dist_scale = dist_scale
         self.n_iters = 0
@@ -148,7 +146,7 @@ class Walkers(BaseWalkers):
             text += "Model States: {}\n".format(self._repr_state(self._model_states))
             return text
         except Exception as e:
-            return super(Walkers, self).__repr__()
+            return super(SimpleWalkers, self).__repr__()
 
     def _print_stats(self) -> str:
         """Print several statistics of the current state of the swarm."""
@@ -198,7 +196,7 @@ class Walkers(BaseWalkers):
 
         The internal state is update with the relativized distance values.
         """
-        self.states.compas_ix = self.get_alive_compas()
+        self.states.compas_ix = np.random.permutation(np.arange(self.n))  # self.get_alive_compas()
         obs = self.env_states.observs.reshape(self.n, -1)
         distances = np.linalg.norm(obs - obs[self.states.compas_ix], axis=1)
         distances = relativize(distances.flatten())
@@ -349,3 +347,84 @@ class Walkers(BaseWalkers):
             )
             string += new_str
         return string
+
+    def fix_best(self):
+        pass
+
+
+class Walkers(SimpleWalkers):
+    def __init__(self, critic: BaseCritic = None, minimize: bool = False,
+                 best_reward_found: float = -1e10, best_found: Optional[np.ndarray] = None,
+                 *args, **kwargs):
+        """
+        Initialize a :class:`MapperWalkers`.
+
+        Args:
+            encoder: Encoder that will be used to calculate the pests.
+            *args:
+            **kwargs:
+        """
+        # Add data specific to the child class in the StatesWalkers class as new attributes.
+        kwargs["critic_score"] = kwargs.get("critic_score", np.zeros(kwargs["n_walkers"]))
+        self.dtype = float_type
+        super(Walkers, self).__init__(
+            best_reward_found=best_reward_found, best_found=best_found, *args, **kwargs
+        )
+        self.critic = critic
+        self.minimize = minimize
+
+    def __repr__(self):
+        text = "\nBest reward found: {:.4f} , Critic: {}\n".format(
+            float(self.states.best_reward_found), self.critic
+        )
+        return text + super(Walkers, self).__repr__()
+
+    def calculate_virtual_reward(self):
+        rewards = -1 * self.states.cum_rewards if self.minimize else self.states.cum_rewards
+        processed_rewards = relativize(rewards)
+        virt_rw = processed_rewards ** self.reward_scale * self.states.distances ** self.dist_scale
+        self.update_states(virtual_rewards=virt_rw, processed_rewards=processed_rewards)
+        if self.critic is not None:
+            self.critic.calculate_pest(
+                walkers_states=self.states,
+                model_states=self.model_states,
+                env_states=self.env_states,
+            )
+            virt_rew = self.states.virtual_rewards * self.states.critic_score
+        else:
+            virt_rew = self.states.virtual_rewards
+        self.states.update(virtual_rewards=virt_rew)
+
+    def balance(self):
+        self.update_best()
+        returned = super(Walkers, self).balance()
+        if self.critic is not None:
+            self.critic.update(
+                walkers_states=self.states,
+                model_states=self.model_states,
+                env_states=self.env_states,
+            )
+        return returned
+
+    def update_best(self):
+        rewards = self.states.cum_rewards
+        ix = rewards.argmin() if self.minimize else rewards.argmax()
+        best = self.env_states.observs[ix].copy()
+        best_reward = float(self.states.cum_rewards[ix])
+        best_is_alive = not bool(self.env_states.ends[ix])
+        has_improved = (self.states.best_reward_found > best_reward if self.minimize else
+                        self.states.best_reward_found < best_reward)
+        if has_improved and best_is_alive:
+            self.states.update(best_reward_found=best_reward)
+            self.states.update(best_found=best)
+
+    def fix_best(self):
+        self.env_states.observs[-1] = self.states.best_found
+        self.env_states.rewards[-1] = self.states.best_reward_found
+
+    def reset(self, env_states: States = None, model_states: States = None):
+        super(Walkers, self).reset(env_states=env_states, model_states=model_states)
+        rewards = self.env_states.rewards
+        ix = rewards.argmin() if self.minimize else rewards.argmax()
+        self.states.update(best_found=copy.deepcopy(self.env_states.observs[ix]))
+        self.states.update(best_reward_found=np.inf if self.minimize else -np.inf)

@@ -2,12 +2,12 @@ from typing import Any, Dict, Optional, Union
 
 import numpy as np
 
-from fragile.core.base_classes import BaseDtSampler
+from fragile.core.base_classes import BaseCritic
 from fragile.core.states import States
 from fragile.core.utils import float_type
 
 
-class GaussianDt(BaseDtSampler):
+class GaussianDt(BaseCritic):
     """
     Sample an additional vector of clipped gaussian random variables, and \
     stores it in an attribute called `dt`.
@@ -37,7 +37,7 @@ class GaussianDt(BaseDtSampler):
         self.mean_dt = loc_dt
         self.std_dt = scale_dt
 
-    def calculate_dt(
+    def calculate(
         self,
         batch_size: int = None,
         model_states: States = None,

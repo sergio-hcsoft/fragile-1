@@ -6,11 +6,11 @@ from fragile.core import RANDOM_SEED, random_state
 from fragile.core.states import States
 
 
-class BaseDtSampler:
+class BaseCritic:
 
     random_state = random_state
 
-    def calculate_dt(
+    def calculate(
         self,
         batch_size: int = None,
         model_states: States = None,
@@ -158,7 +158,7 @@ class BaseModel(StatesOwner):
     Environment, effectively working as a policy.
     """
 
-    def __init__(self, dt_sampler: Optional[BaseDtSampler] = None):
+    def __init__(self, dt_sampler: Optional[BaseCritic] = None):
         """
         Initialize a BaseModel.
 

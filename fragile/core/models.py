@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Union
 
 import numpy as np
 
-from fragile.core.base_classes import BaseDtSampler, BaseModel
+from fragile.core.base_classes import BaseCritic, BaseModel
 from fragile.core.env import DiscreteEnv
 from fragile.core.states import States
 
@@ -148,7 +148,7 @@ class RandomDiscrete(Model):
         self,
         env: DiscreteEnv = None,
         n_actions: int = None,
-        dt_sampler: BaseDtSampler = None,
+        dt_sampler: BaseCritic = None,
     ):
         """
         Initialize a :class:`RandomDiscrete`.
@@ -193,8 +193,8 @@ class RandomDiscrete(Model):
         """
         actions = self.random_state.randint(0, self.n_actions, size=batch_size)
         dt = (1 if self.dt_sampler is None else
-              self.dt_sampler.calculate_dt(batch_size=batch_size, model_states=model_states,
-                                           **kwargs).astype(int))
+              self.dt_sampler.calculate(batch_size=batch_size, model_states=model_states,
+                                        **kwargs).astype(int))
         model_states.update(actions=actions, dt=dt)
         return model_states
 
@@ -206,7 +206,7 @@ class RandomContinous(Model):
                  low: Optional[Union[int, float, np.ndarray]] = None,
                  high: Optional[Union[int, float, np.ndarray]] = None,
                  shape: Optional[tuple] = None,
-                 dt_sampler: Optional[BaseDtSampler] = None, ):
+                 dt_sampler: Optional[BaseCritic] = None, ):
         """
         Initialize a :class:`RandomContinuous`.
 
@@ -258,7 +258,7 @@ class RandomContinous(Model):
             low=self.bounds.low, high=self.bounds.high, size=tuple([batch_size]) + self.shape
         ).astype(self.bounds.dtype)
         dt = (1.0 if self.dt_sampler is None else
-              self.dt_sampler.calculate_dt(batch_size=batch_size, model_states=model_states,
-                                           **kwargs))
+              self.dt_sampler.calculate(batch_size=batch_size, model_states=model_states,
+                                        **kwargs))
         model_states.update(actions=actions, dt=dt)
         return model_states
