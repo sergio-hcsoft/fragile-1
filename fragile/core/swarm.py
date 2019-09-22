@@ -176,18 +176,24 @@ class Swarm(BaseSwarm):
         """
         self.reset(model_states=model_states, env_states=env_states)
         self.epoch = 0
-        while not self.walkers.calculate_end_condition():
+        while not self.calculate_end_condition():
             try:
-                self.walkers.fix_best()
-                self.step_walkers()
-                old_ids, new_ids = self.walkers.balance()
-                self.prune_tree(old_ids=set(old_ids.tolist()), new_ids=set(new_ids.tolist()))
+                self.run_step()
                 if self.epoch % print_every == 0:
                     print(self.walkers)
                     clear_output(True)
                 self.epoch += 1
             except KeyboardInterrupt as e:
                 break
+
+    def calculate_end_condition(self) -> bool:
+        return self.walkers.calculate_end_condition()
+
+    def run_step(self):
+        self.walkers.fix_best()
+        self.step_walkers()
+        old_ids, new_ids = self.walkers.balance()
+        self.prune_tree(old_ids=set(old_ids.tolist()), new_ids=set(new_ids.tolist()))
 
     # @profile
     def step_walkers(self):
@@ -204,7 +210,8 @@ class Swarm(BaseSwarm):
             else None
         )
 
-        model_states = self.model.predict(env_states=env_states, model_states=model_states)
+        model_states = self.model.predict(env_states=env_states, model_states=model_states,
+                                          walkers_states=self.walkers.states)
         env_states = self.env.step(model_states=model_states, env_states=env_states)
         self.walkers.update_states(
             env_states=env_states, model_states=model_states, end_condition=env_states.ends
@@ -251,35 +258,11 @@ class Swarm(BaseSwarm):
 
 class NoBalance(Swarm):
 
-    def run_swarm(
-        self,
-        model_states: States = None,
-        env_states: States = None,
-        walkers_states: StatesWalkers = None,
-        print_every: int = 1e100,
-    ):
-        """
-        Run a new search process.
+    def run_step(self):
+        self.walkers.update_best()
+        self.walkers.fix_best()
+        self.step_walkers()
+        self.walkers.n_iters += 1
 
-        Args:
-            model_states: States that define the initial state of the environment.
-            env_states: States that define the initial state of the model.
-            walkers_states: States that define the internal states of the walkers.
-            print_every: Display the algorithm progress every `print_every` epochs.
-        Returns:
-            None.
-
-        """
-        self.reset(model_states=model_states, env_states=env_states)
-        self.epoch = 0
-        while self.epoch <= self.walkers.max_iters:
-            try:
-                self.walkers.update_best()
-                self.walkers.fix_best()
-                self.step_walkers()
-                if self.epoch % print_every == 0:
-                    print(self.walkers)
-                    clear_output(True)
-                self.epoch += 1
-            except KeyboardInterrupt as e:
-                break
+    def calculate_end_condition(self):
+        return self.epoch > self.walkers.max_iters

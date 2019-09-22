@@ -20,7 +20,8 @@ class StatesWalkers(States):
             kwargs: attributes that will not be set as numpy.ndarrays
         """
         self.will_clone = None
-        self.compas_ix = None
+        self.compas_dist = None
+        self.compas_clone = None
         self.processed_rewards = None
         self.cum_rewards = None
         self.virtual_rewards = None
@@ -41,7 +42,8 @@ class StatesWalkers(States):
         """
         params = {
             "id_walkers": {"dtype": np.int64},
-            "compas_ix": {"dtype": np.int64},
+            "compas_dist": {"dtype": np.int64},
+            "compas_clone": {"dtype": np.int64},
             "processed_rewards": {"dtype": float_type},
             "virtual_rewards": {"dtype": float_type},
             "cum_rewards": {"dtype": float_type},
@@ -55,7 +57,7 @@ class StatesWalkers(States):
 
     def clone(self, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         """Perform the clone only on cum_rewards and id_walkers and reset the other arrays."""
-        clone, compas = self.will_clone, self.compas_ix
+        clone, compas = self.will_clone, self.compas_clone
         self.cum_rewards[clone] = copy.deepcopy(self.cum_rewards[compas][clone])
         self.id_walkers[clone] = copy.deepcopy(self.id_walkers[compas][clone])
         return clone, compas
@@ -67,7 +69,8 @@ class StatesWalkers(States):
             setattr(self, attr, None)
         self.update(
             id_walkers=np.zeros(self.n, dtype=np.int64),
-            compas_ix=np.arange(self.n),
+            compas_dist=np.arange(self.n),
+            compas_clone=np.arange(self.n),
             processed_rewards=np.zeros(self.n, dtype=float_type),
             cum_rewards=np.zeros(self.n, dtype=float_type),
             virtual_rewards=np.ones(self.n, dtype=float_type),
@@ -196,11 +199,11 @@ class SimpleWalkers(BaseWalkers):
 
         The internal state is update with the relativized distance values.
         """
-        self.states.compas_ix = np.random.permutation(np.arange(self.n))  # self.get_alive_compas()
+        compas_ix = np.random.permutation(np.arange(self.n))  # self.get_alive_compas()
         obs = self.env_states.observs.reshape(self.n, -1)
-        distances = np.linalg.norm(obs - obs[self.states.compas_ix], axis=1)
+        distances = np.linalg.norm(obs - obs[compas_ix], axis=1)
         distances = relativize(distances.flatten())
-        self.update_states(distances=distances)
+        self.update_states(distances=distances, compas_dist=compas_ix)
 
     def calculate_virtual_reward(self):
         """
@@ -248,7 +251,7 @@ class SimpleWalkers(BaseWalkers):
             # This value can be negative!!
             companions = self.states.virtual_rewards[compas_ix]
             clone_probs = (companions - self.states.virtual_rewards) / self.states.virtual_rewards
-        self.update_states(clone_probs=clone_probs, compas_ix=compas_ix)
+        self.update_states(clone_probs=clone_probs, compas_clone=compas_ix)
 
     # @profile
     def balance(self) -> Tuple[np.ndarray, np.ndarray]:
