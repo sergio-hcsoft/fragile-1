@@ -5,9 +5,7 @@ import numpy as np
 from fragile.core.base_classes import BaseCritic, BaseModel
 from fragile.core.env import DiscreteEnv
 from fragile.core.states import States
-
-
-float_type = np.float32
+from fragile.core.utils import float_type
 
 
 class Bounds:
@@ -172,12 +170,7 @@ class RandomDiscrete(Model):
     def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
         """Return the dictionary with the parameters to create a new `RandomDiscrete` model."""
         actions = {"actions": {"dtype": np.int_}}
-        if self.dt_sampler is not None:
-            params = self.dt_sampler.get_params_dict()
-            params.update(actions)
-        else:
-            params = actions
-        return params
+        return self._add_dt_sample_params(actions)
 
     def sample(self, batch_size: int, model_states: States = None, **kwargs) -> States:
         """
@@ -260,5 +253,67 @@ class RandomContinous(Model):
         dt = (1.0 if self.dt_sampler is None else
               self.dt_sampler.calculate(batch_size=batch_size, model_states=model_states,
                                         **kwargs))
+        model_states.update(actions=actions, dt=dt)
+        return model_states
+
+
+class RandomNormal(RandomContinous):
+
+    def __init__(self, bounds: Optional[Bounds] = None,
+                 loc: Union[int, float, np.ndarray] = 0.,
+                 scale: Optional[Union[int, float, np.ndarray]] = 1.,
+                 shape: Optional[tuple] = None,
+                 dt_sampler: Optional[BaseCritic] = None):
+        """
+        Initialize a :class:`RandomContinuous`.
+
+        Args:
+            loc: Minimum value that the random variable can take.
+            scale: Maximum value that the random variable can take.
+            shape: Shape of the sampled random variable.
+            bounds: Bounds class defining the range of allowed values for the model.
+        """
+        super(RandomContinous, self).__init__(dt_sampler=dt_sampler)
+        self.loc = loc
+        self.scale = scale
+        self.bounds = bounds
+        if shape is not None:
+            shape = shape if not isinstance(shape, list) else tuple(shape)
+        self._shape = self.bounds.shape if bounds is not None else shape
+
+    @property
+    def shape(self):
+        return self._shape
+
+    def sample(
+            self,
+            batch_size: int,
+            model_states: States = None,
+            env_states: States = None,
+            walkers_states: "StatesWalkers" = None,
+    ) -> States:
+        """
+        Calculate the corresponding data to interact with the Environment and \
+        store it in model states.
+
+        Args:
+            batch_size: Number of new points to the sampled.
+            model_states: States corresponding to the environment data.
+            env_states: States corresponding to the model data.
+            walkers_states: States corresponding to the walkers data.
+
+        Returns:
+            Tuple containing a tensor with the sampled actions and the new model states variable.
+
+        """
+        batch_size = batch_size if model_states is None else model_states.n
+        actions = self.random_state.normal(size=tuple([batch_size]) + self.shape,
+                                           loc=self.loc, scale=self.scale)
+        if self.bounds is not None:
+            actions = self.bounds.clip(actions).astype(self.bounds.dtype)
+
+        dt = (1.0 if self.dt_sampler is None else
+              self.dt_sampler.calculate(batch_size=batch_size, model_states=model_states,
+                                        env_states=env_states, walkers_states=walkers_states))
         model_states.update(actions=actions, dt=dt)
         return model_states

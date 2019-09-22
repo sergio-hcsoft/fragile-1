@@ -27,6 +27,9 @@ class Swarm(BaseSwarm):
     Walkers instance to run the Swarm evolution algorithm.
     """
 
+    def __init__(self, walkers: Callable = Walkers, *args, **kwargs):
+        super(Swarm, self).__init__(walkers=walkers, *args, **kwargs)
+
     @property
     def env(self) -> BaseEnvironment:
         """All the simulation code (problem specific) will be handled here."""
@@ -244,3 +247,39 @@ class Swarm(BaseSwarm):
             dead_leaves = old_ids - new_ids
             for leaf_id in dead_leaves:
                 self.tree.prune_branch(leaf_id=leaf_id)
+
+
+class NoBalance(Swarm):
+
+    def run_swarm(
+        self,
+        model_states: States = None,
+        env_states: States = None,
+        walkers_states: StatesWalkers = None,
+        print_every: int = 1e100,
+    ):
+        """
+        Run a new search process.
+
+        Args:
+            model_states: States that define the initial state of the environment.
+            env_states: States that define the initial state of the model.
+            walkers_states: States that define the internal states of the walkers.
+            print_every: Display the algorithm progress every `print_every` epochs.
+        Returns:
+            None.
+
+        """
+        self.reset(model_states=model_states, env_states=env_states)
+        self.epoch = 0
+        while self.epoch <= self.walkers.max_iters:
+            try:
+                self.walkers.update_best()
+                self.walkers.fix_best()
+                self.step_walkers()
+                if self.epoch % print_every == 0:
+                    print(self.walkers)
+                    clear_output(True)
+                self.epoch += 1
+            except KeyboardInterrupt as e:
+                break

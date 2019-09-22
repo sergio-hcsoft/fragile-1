@@ -9,9 +9,10 @@ from fragile.optimize.env import Function
 class FunctionMapper(Swarm):
 
     def __init__(self, walkers=Walkers, model=RandomContinous,
-                 accumulate_rewards: bool = False, *args, **kwargs):
+                 accumulate_rewards: bool = False, minimize: bool = True, *args, **kwargs):
         super(FunctionMapper, self).__init__(walkers=walkers, model=model,
                                              accumulate_rewards=accumulate_rewards,
+                                             minimize=minimize,
                                              *args, **kwargs)
 
     @classmethod

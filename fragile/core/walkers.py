@@ -284,13 +284,17 @@ class SimpleWalkers(BaseWalkers):
         self._env_states.clone(will_clone=clone, compas_ix=compas)
         self._model_states.clone(will_clone=clone, compas_ix=compas)
 
-    def reset(self, env_states: States = None, model_states: States = None):
+    def reset(self, env_states: States = None, model_states: States = None,
+              walker_states: StatesWalkers = None):
         """
         Restart all the internal states involved in the algorithm iteration.
 
         After reset a new run of the algorithm will be ready to be launched.
         """
-        self.states.reset()
+        if walker_states is not None:
+            self.states.update(walker_states)
+        else:
+            self.states.reset()
         self.update_states(env_states=env_states, model_states=model_states)
         self.n_iters = 0
 
@@ -422,8 +426,10 @@ class Walkers(SimpleWalkers):
         self.env_states.observs[-1] = self.states.best_found
         self.env_states.rewards[-1] = self.states.best_reward_found
 
-    def reset(self, env_states: States = None, model_states: States = None):
-        super(Walkers, self).reset(env_states=env_states, model_states=model_states)
+    def reset(self, env_states: States = None, model_states: States = None,
+              walker_states: StatesWalkers = None):
+        super(Walkers, self).reset(env_states=env_states, model_states=model_states,
+                                   walker_states=walker_states)
         rewards = self.env_states.rewards
         ix = rewards.argmin() if self.minimize else rewards.argmax()
         self.states.update(best_found=copy.deepcopy(self.env_states.observs[ix]))

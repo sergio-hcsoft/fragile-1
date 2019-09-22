@@ -2,9 +2,8 @@ import pytest  # noqa: F401
 
 import numpy as np
 
-from fragile.core.models import Bounds, RandomContinous, RandomDiscrete
+from fragile.core.models import Bounds, RandomContinous, RandomDiscrete, RandomNormal
 from fragile.core.states import States
-from fragile.optimize.models import RandomNormal
 
 
 def create_model(name="discrete"):
@@ -13,13 +12,15 @@ def create_model(name="discrete"):
     elif name == "continuous":
         return lambda: RandomContinous(low=-1, high=1, shape=(3,))
     elif name == "random_normal":
-        return lambda: RandomNormal(low=-1, high=1, shape=(3,))
+        bs = Bounds(low=-1, high=1, shape=(3,))
+        return lambda: RandomNormal(loc=0, scale=1, shape=(3,), bounds=bs)
     raise ValueError("Invalid param `name`.")
 
 
 @pytest.fixture(scope="module")
 def model_fixture(request):
     return create_model(request.param)()
+
 
 @pytest.fixture(scope="module")
 def bounds() -> Bounds:

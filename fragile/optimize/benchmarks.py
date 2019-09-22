@@ -45,11 +45,13 @@ def _lennard_fast(state):
     return epot
 
 
-@jit(nopython=True)
 def lennard_jones(x: np.ndarray):
     result = np.zeros(x.shape[0])
     for i in range(x.shape[0]):
-        result[i] = _lennard_fast(x[i])
+        try:
+            result[i] = _lennard_fast(x[i])
+        except ZeroDivisionError:
+            result[i] = np.inf
     return result
 
 
@@ -62,6 +64,7 @@ class OptimBenchmark(Function):
     def __init__(self, shape, **kwargs):
         kwargs = self.process_default_kwargs(shape, kwargs)
         super(OptimBenchmark, self).__init__(**kwargs)
+        self.bounds = self.get_bounds(self.shape)
 
     @staticmethod
     def get_bounds(shape):
@@ -184,13 +187,3 @@ class LennardJones(OptimBenchmark):
     def get_bounds(shape):
         bounds = [(-1.5, 1.5) for _ in range(shape[0])]
         return Bounds.from_tuples(bounds)
-
-    def boundary_condition(self, points, rewards):
-        ends = super(LennardJones, self).boundary_condition(points, rewards)
-        mean = rewards.mean()
-        too_bad = rewards < mean  # -2_000_000  #
-        if int(too_bad.sum()) < len(too_bad):
-            ends[too_bad] = 1
-        else:
-            print(too_bad, rewards)
-        return ends

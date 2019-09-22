@@ -193,6 +193,14 @@ class BaseModel(StatesOwner):
         """
         raise NotImplementedError
 
+    def _add_dt_sample_params(self, params: dict):
+        if self.dt_sampler is not None:
+            dt_vals = self.dt_sampler.get_params_dict()
+            dt_vals.update(params)
+        else:
+            dt_vals = params
+        return dt_vals
+
     def reset(self, batch_size: int = 1, model_states: States = None, *args, **kwargs) -> States:
         """
         Restart the model and reset its internal state.
@@ -308,6 +316,7 @@ class BaseWalkers(StatesOwner):
             env_states: States containing the data associated with the Environment.
             model_states: States containing data associated with the Environment.
             **kwargs: Internal states will be updated via keyword arguments.
+
         """
         raise NotImplementedError
 
@@ -316,8 +325,6 @@ class BaseWalkers(StatesOwner):
         model_states: "States" = None,
         env_states: "States" = None,
         walkers_states: "StatesWalkers" = None,
-        *args,
-        **kwargs
     ):
         """
         Reset a :class:`fragile.Walkers` and clear the internal data to start a \
@@ -329,8 +336,6 @@ class BaseWalkers(StatesOwner):
             model_states: States that define the initial state of the environment.
             env_states: States that define the initial state of the model.
             walkers_states: States that define the internal states of the walkers.
-            args: Additional arguments not related to algorithm data.
-            kwargs: Additional keyword arguments not related to algorithm data.
 
         """
         raise NotImplementedError
