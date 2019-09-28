@@ -21,5 +21,8 @@ class FunctionMapper(Swarm):
         env = Function(function=function, bounds=bounds, shape=shape)
         return FunctionMapper(env=lambda: env, *args, **kwargs)
 
+    def __repr__(self):
+        return "{}\n{}".format(self.env.__repr__(), super(FunctionMapper, self).__repr__())
+
 
 

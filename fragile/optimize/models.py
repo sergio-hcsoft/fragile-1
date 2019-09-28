@@ -1,6 +1,7 @@
 import numpy as np
 from fragile.core.models import RandomNormal
 from fragile.core.states import States
+from fragile.core.utils import calculate_clone, calculate_virtual_reward, relativize
 
 
 class ESModel(RandomNormal):
@@ -61,3 +62,96 @@ class ESModel(RandomNormal):
                                         env_states=env_states, walkers_states=walkers_states))
         model_states.update(actions=actions, dt=dt)
         return model_states
+
+
+class CompasJump(RandomNormal):
+
+    def __init__(self, dist_coef: float = 1.0, reward_coef: float = 1.0, eps=1e-8,
+                 *args,  **kwargs):
+        super(CompasJump, self).__init__(*args, **kwargs)
+        self.dist_coef = dist_coef
+        self.reward_coef = reward_coef
+        self.eps = eps
+
+    def calculate(
+            self,
+            batch_size: int = None,
+            model_states: States = None,
+            env_states: States = None,
+            walkers_states: "StatesWalkers" = None,
+    ) -> np.ndarray:
+        """
+        Calculate the target time step values.
+
+        Args:
+            batch_size: Number of new points to the sampled.
+            model_states: States corresponding to the model data.
+            env_states: States corresponding to the environment data.
+            walkers_states: States corresponding to the walkers data.
+
+        Returns:
+            Array containing the target time step.
+
+        """
+        virtual_rewards, compas_dist = calculate_virtual_reward(observs=env_states.observs,
+                                                                rewards=env_states.rewards,
+                                                                dist_coef=self.dist_coef,
+                                                                reward_coef=self.reward_coef,
+                                                                return_compas=True)
+        compas_clone, will_clone = calculate_clone(ends=env_states.ends, eps=self.eps,
+                                                   virtual_rewards=virtual_rewards)
+        dif_dist = env_states.observs[compas_dist] - env_states.observs
+        dif_clone = env_states.observs[compas_clone] - env_states.observs
+        action_no_clone = dif_dist * self.random_state.normal(loc=self.loc, scale=self.scale)
+        actions = np.where(will_clone, dif_clone, action_no_clone)
+        return actions
+
+
+class BestCompasJump(RandomNormal):
+
+    def __init__(self, dist_coef: float = 1.0, reward_coef: float = 1.0, eps=1e-8,
+                 mutation: float = 0.5, recombination: float = 0.7, *args,  **kwargs):
+        super(BestCompasJump, self).__init__(*args, **kwargs)
+        self.dist_coef = dist_coef
+        self.reward_coef = reward_coef
+        self.eps = eps
+        self.mutation = mutation
+        self.recombination = recombination
+
+    def calculate(
+            self,
+            batch_size: int = None,
+            model_states: States = None,
+            env_states: States = None,
+            walkers_states: "StatesWalkers" = None,
+    ) -> np.ndarray:
+        """
+        Calculate the target time step values.
+
+        Args:
+            batch_size: Number of new points to the sampled.
+            model_states: States corresponding to the model data.
+            env_states: States corresponding to the environment data.
+            walkers_states: States corresponding to the walkers data.
+
+        Returns:
+            Array containing the target time step.
+
+        """
+        distance = np.linalg.norm(env_states.observs - walkers_states.best_found, axis=1)
+        distance_norm = relativize(distance.flatten())
+        rewards_norm = relativize(env_states.rewards)
+
+        virtual_rewards = distance_norm ** self.dist_coef * rewards_norm ** self.reward_coef
+        compas_clone, will_clone = calculate_clone(ends=env_states.ends, eps=self.eps,
+                                                   virtual_rewards=virtual_rewards)
+        dif_best = env_states.observs - walkers_states.best_found
+        action_no_clone = dif_best + self.random_state.normal(loc=self.loc, scale=self.scale)
+        rands = np.random.random(env_states.observs.shape)
+        grad = self.recombination * (env_states.observs - env_states.observs[compas_clone])
+        proposal = walkers_states.best_found + grad
+        best_mutations = np.where(rands < self.mutation, env_states.observs, proposal).copy()
+        best_actions = best_mutations - env_states.observs
+        actions = np.where(will_clone, best_actions, action_no_clone)
+        actions = self.bounds.clip(actions) if self.bounds is not None else actions
+        return actions

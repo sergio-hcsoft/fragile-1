@@ -30,6 +30,9 @@ class Swarm(BaseSwarm):
     def __init__(self, walkers: Callable = Walkers, *args, **kwargs):
         super(Swarm, self).__init__(walkers=walkers, *args, **kwargs)
 
+    def __repr__(self):
+        return self.walkers.__repr__()
+
     @property
     def env(self) -> BaseEnvironment:
         """All the simulation code (problem specific) will be handled here."""
@@ -180,7 +183,7 @@ class Swarm(BaseSwarm):
             try:
                 self.run_step()
                 if self.epoch % print_every == 0:
-                    print(self.walkers)
+                    print(self)
                     clear_output(True)
                 self.epoch += 1
             except KeyboardInterrupt as e:

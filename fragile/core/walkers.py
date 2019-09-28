@@ -98,7 +98,7 @@ class SimpleWalkers(BaseWalkers):
         model_state_params: dict,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
-        max_iters: int = 1000,
+        max_iters: int = None,
         accumulate_rewards: bool = True,
         **kwargs
     ):
@@ -135,7 +135,7 @@ class SimpleWalkers(BaseWalkers):
         self.reward_scale = reward_scale
         self.dist_scale = dist_scale
         self.n_iters = 0
-        self.max_iters = max_iters
+        self.max_iters = max_iters if max_iters is not None else 1e12
 
     def __len__(self) -> int:
         return self.n
@@ -189,7 +189,7 @@ class SimpleWalkers(BaseWalkers):
 
         """
         all_dead = self.states.end_condition.sum() == self.n
-        max_iters = self.n_iters > self.max_iters
+        max_iters = self.n_iters >= self.max_iters
         self.n_iters += 1
         return all_dead or max_iters
 
@@ -244,7 +244,7 @@ class SimpleWalkers(BaseWalkers):
             self.states.virtual_rewards == self.states.virtual_rewards[0]
         ).all()
         if all_virtual_rewards_are_equal:
-            clone_probs = np.zeros(self.n, dtype=float_type) / float(self.n)
+            clone_probs = np.zeros(self.n, dtype=float_type)
             compas_ix = np.arange(self.n)
         else:
             compas_ix = self.get_alive_compas()
@@ -367,7 +367,7 @@ class Walkers(SimpleWalkers):
         Initialize a :class:`MapperWalkers`.
 
         Args:
-            encoder: Encoder that will be used to calculate the pests.
+            critic: critic that will be used to calculate custom rewards.
             *args:
             **kwargs:
         """
@@ -379,20 +379,29 @@ class Walkers(SimpleWalkers):
         )
         self.critic = critic
         self.minimize = minimize
+        self.efficiency = 0
+        self.clone_ergo = 0
 
     def __repr__(self):
-        text = "\nBest reward found: {:.4f} , Critic: {}\n".format(
-            float(self.states.best_reward_found), self.critic
+        text = "\nBest reward found: {:.4f} , efficiency {:.3f}, Critic: {}\n".format(
+            float(self.states.best_reward_found), self.efficiency, self.critic
         )
         return text + super(Walkers, self).__repr__()
 
     def calculate_virtual_reward(self):
         rewards = -1 * self.states.cum_rewards if self.minimize else self.states.cum_rewards
         processed_rewards = relativize(rewards)
-        virt_rw = processed_rewards ** self.reward_scale * self.states.distances ** self.dist_scale
+        score_reward = processed_rewards ** self.reward_scale
+        reward_prob = score_reward / score_reward.sum()
+        score_dist = self.states.distances ** self.dist_scale
+        dist_prob = score_dist / score_dist.sum()
+        virt_rw = 2 - dist_prob ** reward_prob
+        total_entropy = np.prod(virt_rw)
+        self._min_entropy = np.prod(2 - reward_prob ** reward_prob)
+        self.efficiency = self._min_entropy / total_entropy
         self.update_states(virtual_rewards=virt_rw, processed_rewards=processed_rewards)
         if self.critic is not None:
-            self.critic.calculate_pest(
+            self.critic.calculate(
                 walkers_states=self.states,
                 model_states=self.model_states,
                 env_states=self.env_states,
@@ -437,3 +446,6 @@ class Walkers(SimpleWalkers):
         ix = rewards.argmin() if self.minimize else rewards.argmax()
         self.states.update(best_found=copy.deepcopy(self.env_states.observs[ix]))
         self.states.update(best_reward_found=np.inf if self.minimize else -np.inf)
+        if self.critic is not None:
+            self.critic.reset(env_states=self.env_states, model_states=model_states,
+                              walker_states=walker_states)

@@ -1,8 +1,11 @@
 from typing import Callable, Union
 
 import numpy as np
+import pandas as pd
+from pyearth import Earth as EarthModel
 from scipy.optimize import minimize
 from scipy.optimize import Bounds as ScipyBounds
+from statsmodels.tsa.tsatools import lagmat
 
 from fragile.core.base_classes import BaseEnvironment
 from fragile.core.states import States
@@ -35,9 +38,13 @@ class Function(BaseEnvironment):
         self.bounds = bounds if bounds is not None else Bounds(high=high, low=low, shape=shape)
         self.shape = shape
 
+    @property
+    def func(self):
+        return self.function
+
     def __repr__(self):
         text = "{} with function {}, obs shape {}, and bounds: {}".format(
-            self.__class__.__name__, self.function.__name__, self.shape, self.bounds
+            self.__class__.__name__, self.func.__name__, self.shape, self.bounds
         )
         return text
 
@@ -68,9 +75,8 @@ class Function(BaseEnvironment):
             # model_states.actions * model_states.dt.reshape(env_states.n, -1) + env_states.observs
             model_states.actions + env_states.observs
         )
-
         rewards = self.function(new_points).flatten()
-        ends = np.logical_not(self.bounds.points_in_bounds(new_points)).flatten()
+        ends = self.calculate_end(points=new_points)
 
         last_states = self._get_new_states(new_points, rewards, ends, model_states.n)
         return last_states
@@ -93,6 +99,9 @@ class Function(BaseEnvironment):
         rewards = self.function(new_points).flatten()
         new_states = self._get_new_states(new_points, rewards, ends, batch_size=batch_size)
         return new_states
+
+    def calculate_end(self, points):
+        return np.logical_not(self.bounds.points_in_bounds(points)).flatten()
 
     def _sample_init_points(self, batch_size: int):
         new_points = np.zeros(tuple([batch_size]) + self.shape, dtype=np.float32)
@@ -182,3 +191,106 @@ class MinimizerWrapper(Function):
         ends = np.logical_not(self.bounds.points_in_bounds(new_points)).flatten()
         optim_states = self._get_new_states(new_points, rewards.flatten(), ends, model_states.n)
         return optim_states
+
+
+from functools import partial
+def evaluate_one(point, y, data, columns):
+    cols = [c for (c, p) in zip(columns, point) if p]
+    if len(cols) == 0:
+        return 0, 0
+    X = data[cols].values
+    max_entropy = (2 - (1 / len(X)) ** (1 / len(X))) ** len(X)
+
+    earth = EarthModel()
+    model = earth.fit(X, y)
+    pred = model.predict(X)
+    error = np.abs(pred.flatten() - y.flatten())
+    norm = error / error.sum()
+    entropy = np.prod(2 - norm ** norm)
+    entropy = entropy / max_entropy
+    return entropy, model.rsq_
+
+
+class Earth(Function):
+
+    def __init__(self, data_path, target="ACINETO", *args, **kwargs):
+
+        self.X, self.y = None, None
+        self.n_cols = None
+        self.load_data(data_path, target=target)
+        self.earth = EarthModel()
+        super(Earth, self).__init__(function=self._evaluate_model,
+                                    shape=(len(self.X.columns),),
+                                    low=0,
+                                    high=len(self.X.columns) - 1,
+                                    *args,
+                                    **kwargs)
+        self.entropy = 0
+        self.rsq = 0
+        from multiprocessing import Pool
+
+        self.pool = Pool()
+
+    def __repr__(self):
+
+        msg = "Model R2: {:.3f}, entropy: {:.3f}\n".format(self.rsq, self.entropy)
+        return msg + super(Earth, self).__repr__()
+
+    def load_data(self, data_path="data.xls", target="ACINETO"):
+        raw_data = pd.read_excel(data_path, index_col="numero")
+        df = raw_data.drop("KLEBCRE", axis=1).set_index("year_month").copy()
+
+        def get_lags(df, col, lags, max_lags: int = 7):
+            data = pd.concat([df[[col]], lagmat(df[[col]], max_lags, use_pandas=True)],
+                             axis=1).iloc[max_lags:].copy()
+            cols = ["{}.L.{}".format(col, i) if i != 0 else str(col) for i in lags]
+
+            return data.loc[:, cols].copy()
+
+        lags = pd.concat([get_lags(df, c, range(6) if c == target else range(1, 3))
+                          for c in df.columns], axis=1)
+        self.X = lags.drop(target, axis=1)
+        self.y = lags[target].values
+        self.n_cols = len(self.X.columns)
+
+    def _evaluate_model_slow(self, points: np.ndarray) -> np.ndarray:
+        vals = [self._evaluate_one(p) for p in points.tolist()]
+        return np.array(vals)
+
+    def _evaluate_model(self, points):
+
+        func = partial(evaluate_one, y=np.array(self.y), data=pd.DataFrame(self.X),
+                       columns=list(self.X.columns))
+        result = self.pool.map(func, points)
+        entropy, r_squared = tuple(zip(*result))
+        entropy = np.array(entropy)
+        r_squared = np.array(r_squared)
+        self.entropy = max(self.entropy, entropy.max())
+        self.rsq = max(self.rsq, r_squared.max())
+        return entropy * r_squared
+
+    def _evaluate_one(self, point):
+        cols = [c for (c, p) in zip(self.X.columns, point) if p]
+        if len(cols) == 0:
+            return 100
+        X = self.X[cols].values
+        max_entropy = (2 - (1 / len(X)) ** (1 / len(X))) ** len(X)
+
+        self.earth = EarthModel()
+        model = self.earth.fit(X, self.y)
+        pred = model.predict(X)
+        error = np.abs(pred.flatten() - self.y.flatten())
+        norm = error / error.sum()
+        entropy = np.prod(2 - norm ** norm)
+        entropy = entropy / max_entropy
+        self.entropy = max(self.entropy, entropy)
+        self.rsq = max(self.rsq, model.rsq_)
+        return entropy * model.rsq_
+
+    def _sample_init_points(self, batch_size: int):
+        new_points = (np.random.random(tuple([batch_size]) + self.shape) > 0.5).astype(int)
+
+        return new_points
+
+    def calculate_end(self, points):
+        return np.zeros(len(points), dtype=bool)

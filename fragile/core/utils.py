@@ -53,13 +53,14 @@ def get_alives_indexes_np(ends: np.ndarray):
 def calculate_virtual_reward(
     observs: np.ndarray,
     rewards: np.ndarray,
-    ends: np.ndarray,
+    ends: np.ndarray = None,
     dist_coef: float = 1.0,
     reward_coef: float = 1.0,
     other_reward: np.ndarray = 1.0,
+    return_compas: bool=False,
 ):
     """Calculate the virtual rewards given the required data."""
-    compas = get_alives_indexes_np(ends)
+    compas = get_alives_indexes_np(ends) if ends is not None else np.arange(len(rewards))
     flattened_observs = observs.reshape(len(ends), -1)
     other_reward = other_reward.flatten() if isinstance(other_reward, np.ndarray) else other_reward
 
@@ -68,7 +69,7 @@ def calculate_virtual_reward(
     rewards_norm = relativize(rewards)
 
     virtual_reward = distance_norm ** dist_coef * rewards_norm ** reward_coef * other_reward
-    return virtual_reward.flatten()
+    return virtual_reward.flatten() if not return_compas else virtual_reward.flatten(), compas
 
 
 def calculate_clone(virtual_rewards: np.ndarray, ends: np.ndarray, eps=1e-3):
@@ -90,7 +91,7 @@ def fai_iteration(
     other_reward: np.ndarray = 1.0,
 ):
     """Perform a FAI iteration."""
-    virtual_reward = calculate_virtual_reward(
+    virtual_reward, vr_compas = calculate_virtual_reward(
         observs,
         rewards,
         ends,
