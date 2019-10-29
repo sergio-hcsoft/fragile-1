@@ -23,7 +23,7 @@ class GaussianRepulssion(BaseCritic):
         batch_size: int = None,
         model_states: States = None,
 
-    ) -> np.ndarray:
+    ) -> None:
         self._epoch += 1
         self.buffer.append(env_states.observs)
         if self._epoch < self.warmup and not self._warmed:

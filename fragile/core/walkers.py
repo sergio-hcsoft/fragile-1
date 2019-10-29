@@ -422,9 +422,17 @@ class Walkers(SimpleWalkers):
             )
         return returned
 
+    def _get_best_index(self):
+        rewards = self.states.cum_rewards[np.logical_not(self.states.end_condition)]
+        if len(rewards) == 0:
+            return 0
+        best = rewards.min() if self.minimize else rewards.max()
+        idx = (self.states.cum_rewards == best).astype(int)
+        ix = idx.argmin() if self.minimize else idx.argmax()
+        return ix
+
     def update_best(self):
-        rewards = self.states.cum_rewards
-        ix = rewards.argmin() if self.minimize else rewards.argmax()
+        ix = self._get_best_index()
         best = self.env_states.observs[ix].copy()
         best_reward = float(self.states.cum_rewards[ix])
         best_is_alive = not bool(self.env_states.ends[ix])
@@ -435,8 +443,9 @@ class Walkers(SimpleWalkers):
             self.states.update(best_found=best)
 
     def fix_best(self):
-        self.env_states.observs[-1] = self.states.best_found
-        self.env_states.rewards[-1] = self.states.best_reward_found
+        if self.states.best_found is not None:
+            self.env_states.observs[-1] = self.states.best_found
+            self.env_states.rewards[-1] = self.states.best_reward_found
 
     def reset(self, env_states: States = None, model_states: States = None,
               walker_states: StatesWalkers = None):
