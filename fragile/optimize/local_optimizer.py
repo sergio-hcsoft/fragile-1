@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 
-from fragile.core.base_classes import BaseStates
+from fragile.core.base_classes import States
 from fragile.optimize.env import Function
 
 
@@ -54,18 +54,18 @@ class MinimizerWrapper(Function):
     def step(
         self,
         actions: np.ndarray,
-        env_states: BaseStates,
+        env_states: States,
         n_repeat_action: [int, np.ndarray] = 1,
         *args,
         **kwargs
-    ) -> BaseStates:
+    ) -> States:
         """
         Sets the environment to the target states by applying the specified actions an arbitrary
         number of time steps.
 
         Args:
             actions: Vector containing the actions that will be applied to the target states.
-            env_states: BaseStates class containing the state data to be set on the Environment.
+            env_states: States class containing the state data to be set on the Environment.
             n_repeat_action: Number of times that an action will be applied. If it is an array
                 it corresponds to the different dts of each walker.
             *args: Ignored.

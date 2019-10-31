@@ -3,14 +3,14 @@ from typing import Callable
 import numpy as np
 
 from fragile.core.models import RandomContinous
-from fragile.core.states import BaseStates
+from fragile.core.states import States
 from fragile.core.swarm import clear_output, Swarm
 from fragile.core.utils import relativize
 from fragile.core.walkers import float_type, Walkers
 from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
 from fragile.optimize.local_optimizer import Minimizer
-from fragile.optimize.models import EncoderSampler
+from fragile.optimize.models_ import EncoderSampler
 
 
 class MapperWalkers(Walkers):
@@ -83,7 +83,7 @@ class MapperWalkers(Walkers):
             self.best_found = best
 
     def _distances(self, state_1, state_2):
-        if True:  # len(self.encoder) < 5:#self.encoder.n_vectors:
+        if True:  # len(self.critic) < 5:#self.critic.n_vectors:
             return self._pwise_dist_module(state_1, state_2)
 
         x = self.encoder.encode(state_1)
@@ -94,7 +94,7 @@ class MapperWalkers(Walkers):
         super(MapperWalkers, self).update_clone_probs()
         self.will_clone[-1] = 0
 
-    def reset(self, env_states: BaseStates = None, model_states: BaseStates = None):
+    def reset(self, env_states: States = None, model_states: States = None):
         super(MapperWalkers, self).reset(env_states=env_states, model_states=model_states)
         ix = self.cum_rewards.argmax()
         self.best_found = self.observs[ix].copy()

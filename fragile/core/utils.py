@@ -2,13 +2,11 @@ import copy
 
 import numpy as np
 
-# import torch
-
-# device = "cpu" if not torch.cuda.is_available() else "cuda"
+float_type = np.float32
 
 
 def relativize(x: np.ndarray) -> np.ndarray:
-    """Normalize the data using a custom smoothing techinique."""
+    """Normalize the data using a custom smoothing technique."""
     std = x.std()
     if float(std) == 0:
         return np.ones(len(x), dtype=type(std))
@@ -16,6 +14,13 @@ def relativize(x: np.ndarray) -> np.ndarray:
     standard[standard > 0] = np.log(1.0 + standard[standard > 0]) + 1.0
     standard[standard <= 0] = np.exp(standard[standard <= 0])
     return standard
+
+
+def update_defaults(target: dict, **kwargs) -> dict:
+    """Set the provided data in the target dictionary in case it didn't exist previously."""
+    for k, v in kwargs.items():
+        target[k] = target.get(k, v)
+    return target
 
 
 def params_to_tensors(param_dict, n_walkers: int):
@@ -31,7 +36,10 @@ def params_to_tensors(param_dict, n_walkers: int):
 
 def statistics_from_array(x: np.ndarray):
     """Return the (mean, std, max, min) of an array."""
-    return x.mean(), x.std(), x.max(), x.min()
+    try:
+        return x.mean(), x.std(), x.max(), x.min()
+    except AttributeError:
+        return np.nan, np.nan, np.nan, np.nan
 
 
 def get_alives_indexes_np(ends: np.ndarray):
@@ -45,13 +53,14 @@ def get_alives_indexes_np(ends: np.ndarray):
 def calculate_virtual_reward(
     observs: np.ndarray,
     rewards: np.ndarray,
-    ends: np.ndarray,
+    ends: np.ndarray = None,
     dist_coef: float = 1.0,
     reward_coef: float = 1.0,
     other_reward: np.ndarray = 1.0,
+    return_compas: bool=False,
 ):
     """Calculate the virtual rewards given the required data."""
-    compas = get_alives_indexes_np(ends)
+    compas = get_alives_indexes_np(ends) if ends is not None else np.arange(len(rewards))
     flattened_observs = observs.reshape(len(ends), -1)
     other_reward = other_reward.flatten() if isinstance(other_reward, np.ndarray) else other_reward
 
@@ -60,7 +69,7 @@ def calculate_virtual_reward(
     rewards_norm = relativize(rewards)
 
     virtual_reward = distance_norm ** dist_coef * rewards_norm ** reward_coef * other_reward
-    return virtual_reward.flatten()
+    return virtual_reward.flatten() if not return_compas else virtual_reward.flatten(), compas
 
 
 def calculate_clone(virtual_rewards: np.ndarray, ends: np.ndarray, eps=1e-3):
@@ -82,7 +91,7 @@ def fai_iteration(
     other_reward: np.ndarray = 1.0,
 ):
     """Perform a FAI iteration."""
-    virtual_reward = calculate_virtual_reward(
+    virtual_reward, vr_compas = calculate_virtual_reward(
         observs,
         rewards,
         ends,

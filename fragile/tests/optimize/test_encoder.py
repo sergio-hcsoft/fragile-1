@@ -1,12 +1,13 @@
+"""
 import numpy as np
 import pytest
 
-from fragile.optimize.encoder import Encoder, Vector
+from fragile.optimize.encoder import Critic, Vector
 
 
 @pytest.fixture()
 def encoder():
-    return Encoder(5, timeout=10)
+    return Critic(5, timeout=10)
 
 
 @pytest.fixture()
@@ -35,23 +36,25 @@ class TestVector:
         assert res == 1
 
 
+
 class TestEncoder:
-    def test_init(self, encoder):
+    def test_init(self, critic):
         pass
 
-    def test_append(self, encoder):
-        init_len = len(encoder)
+    def test_append(self, critic):
+        init_len = len(critic)
         start, end = np.array([0, 3]), np.array([3, 3])
-        encoder.append(origin=start, end=end, timeout=3)
-        assert len(encoder) > 0
-        assert len(encoder) == init_len + 1
-        assert isinstance(encoder[-1], Vector)
+        critic.append(origin=start, end=end, timeout=3)
+        assert len(critic) > 0
+        assert len(critic) == init_len + 1
+        assert isinstance(critic[-1], Vector)
 
-    def test_len(self, encoder):
-        encoder.reset()
-        assert len(encoder) == 0
+    def test_len(self, critic):
+        critic.reset()
+        assert len(critic) == 0
         start, end = np.array([0, 3]), np.array([3, 3])
         for _ in range(15):
-            encoder.append(origin=start, end=end, timeout=3)
+            critic.append(origin=start, end=end, timeout=3)
 
-        assert len(encoder) == encoder.n_vectors, encoder
+        assert len(critic) == critic.n_vectors, critic
+"""

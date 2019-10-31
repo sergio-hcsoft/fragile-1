@@ -1,8 +1,6 @@
 Cython>=0.28,<1.0; python_version == '3.7'
 Pillow-simd >= 5.3.0.post0
 numpy>=1.16.2
-torch >= 1.0
 pytest >= 4.0.1
-torchvision
-hypothesis
+hypothesis == 4.10.0
 -e git+https://github.com/Guillemdb/plangym.git#egg=plangym

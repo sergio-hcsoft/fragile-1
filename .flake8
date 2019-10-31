@@ -13,5 +13,6 @@ per-file-ignores=
     **/tests/**:D
     **/tests/**:F811
     # Should be resolved one by one
-    # Related issue: https://github.com/src-d/ml/issues/354
-    ./fragile/**:D
+    ./fragile/experimental/**:D
+    ./fragile/optimize/**:D
+    ./fragile/core/tree.py:D

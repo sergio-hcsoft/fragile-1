@@ -4,7 +4,7 @@ import numpy as np
 import sklearn
 from sklearn.neighbors import NearestNeighbors
 
-from fragile.core.states import BaseStates
+from fragile.core.states import States
 from fragile.core.utils import fai_iteration_np
 
 
@@ -30,7 +30,7 @@ class Memory:
     def observs(self):
         return self._observs
 
-    def update(self, states: BaseStates = None, observs: Union[np.ndarray, list] = None):
+    def update(self, states: States = None, observs: Union[np.ndarray, list] = None):
         if states is None and observs is None:
             raise ValueError("Both states and observs cannot be None.")
 

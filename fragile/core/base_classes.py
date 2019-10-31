@@ -1,219 +1,74 @@
-from typing import Callable, Generator, List, Tuple, Union
+from typing import Any, Callable, Dict, Optional
 
 import numpy as np
 
-
-class BaseStates:
-    """
-    Handle several tensors that will contain the data associated with the walkers
-    of a Swarm. This means that each tensor will have an extra dimension equal to
-    the number of walkers.
-
-    This class behaves as a dictionary of tensors with some extra functionality
-    to make easier the process of cloning the along the walkers dimension.
-
-    In order to define the tensors, a state_dict dictionary needs to be specified
-    using the following structure::
-
-        state_dict = {"name_1": {"size": tuple([1]),
-                                 "dtype": np.float32,
-                                },
-                     }
-
-    Where tuple is a tuple indicating the shape of the desired tensor, that will
-    be accessed using the name_1 attribute of the class.
+from fragile.core import RANDOM_SEED, random_state
+from fragile.core.states import States
 
 
-    Args:
-        batch_size: The number of items in the first dimension of the tensors.
-        state_dict: Dictionary defining the attributes of the tensors.
-        **kwargs: The name-tensor pairs can also be specified as kwargs.
-    """
+class BaseCritic:
 
-    def __init__(self, batch_size: int, state_dict=None, **kwargs):
+    random_state = random_state
+
+    def calculate(
+        self,
+        batch_size: int = None,
+        model_states: States = None,
+        env_states: States = None,
+        walkers_states: "StatesWalkers" = None,
+    ) -> np.ndarray:
         """
-        Initialize a `BaseStates`.
+        Calculate the target time step values.
 
         Args:
-             batch_size: The number of items in the first dimension of the tensors.
-             state_dict: Dictionary defining the attributes of the tensors.
-             **kwargs: The name-tensor pairs can also be specified as kwargs.
-        """
-
-        attr_dict = (
-            self.params_to_arrays(state_dict, batch_size) if state_dict is not None else kwargs
-        )
-        self._names = list(attr_dict.keys())
-        self._attr_dict = attr_dict
-        for key, val in attr_dict.items():
-            setattr(self, key, val)
-        self._n_walkers = batch_size
-
-    def ___getattr__(self, item):
-        if item in self._attr_dict:
-            return self[item]
-        return self.__getattribute__(item)
-
-    def __getitem__(self, item: Union[str, List[str]]) -> Union[np.ndarray, List[np.ndarray]]:
-        """
-        Query an attribute of the class as if it was a dictionary.
-
-        Args:
-            item: Name of the attribute to be selected.
+            batch_size: Number of new points to the sampled.
+            model_states: States corresponding to the model data.
+            env_states: States corresponding to the environment data.
+            walkers_states: States corresponding to the walkers data.
 
         Returns:
-            The corresponding item.
-        """
-        if isinstance(item, str):
-            try:
-                return getattr(self, item)
-            except TypeError as e:
-                raise TypeError("Tried to get an attribute with key {}".format(item))
-        elif isinstance(item, list):
-            return [getattr(self, it) for it in item]
-        else:
-            raise TypeError("item must be an instance of str or list, got {} instead".format(item))
+            Array containing the target time step.
 
-    def __setitem__(self, key, value: Union[Tuple, List, np.ndarray]):
         """
-        Allow the class to set its attributes as if it was a dict.
+        raise NotImplementedError
+
+    def reset(self, batch_size: int = 1, model_states: States = None, *args, **kwargs) -> States:
+        """
+        Restart the DtSampler and reset its internal state.
 
         Args:
-            key: Attribute to be set.
-            value: Value of the target attribute.
+            batch_size: Number of elements in the first dimension of the model \
+                        States data.
+            model_states: States corresponding to model data. If provided the \
+                          model will be reset to this state.
+            args: Additional arguments not related to model data.
+            kwargs: Additional keyword arguments not related to model data.
 
         Returns:
-            None
-        """
-        if isinstance(value, np.ndarray):
-            setattr(self, key, value)
-        else:
-            setattr(self, key, np.array(value))
+            States containing the information of the current state of the \
+            model (after the reset).
 
-    def __repr__(self):
-        string = "{} with {} walkers\n".format(self.__class__.__name__, self.n)
-        for k, v in self.items():
-            shape = v.shape if hasattr(v, "shape") else None
-            new_str = "{}: {} {}\n".format(k, type(v), shape)
-            string += new_str
-        return string
+        """
+        pass
+
+
+class StatesOwner:
+    """Every class meant to have its data stored in States must inherit from this class."""
+
+    random_state = random_state
+    STATE_CLASS = States
 
     @classmethod
-    def concat_states(cls, states: List["BaseStates"]) -> "BaseStates":
-        """Transform a list containing states with only one walker to a single
-         States instance with many walkers.
-        """
-        n_walkers = sum([s.n for s in states])
-        names = list(states[0].keys())
-        state_dict = {}
-        for name in names:
-            shape = tuple([n_walkers]) + tuple(states[0][name].shape)
-            state_dict[name] = np.concatenate(tuple([s[name] for s in states])).reshape(shape)
-        s = cls(batch_size=n_walkers, **state_dict)
-        return s
+    def seed(cls, seed: int = RANDOM_SEED):
+        """Set the random seed of the random number generator."""
+        cls.random_state.seed(seed)
 
-    @property
-    def n(self) -> int:
-        """Return the number of walkers."""
-        return self._n_walkers
-
-    def get(self, key: str, default=None):
-        """
-        Get an attribute by key and return the default value if it does not exist.
-
-        Args:
-            key: Attribute to be recovered.
-            default: Value returned in case the attribute is not part of state.
-
-        Returns:
-            Target attribute if found in the instance, otherwise returns the
-             default value.
-        """
-        if key not in self.keys():
-            return default
-        return self[key]
-
-    def keys(self) -> Generator:
-        return (n for n in self._names)
-
-    def vals(self) -> Generator:
-        return (self[name] for name in self._names)
-
-    def items(self) -> Generator:
-        return ((name, self[name]) for name in self._names)
-
-    def itervals(self):
-        """
-        Iterate the states attributes by walker.
-
-        Returns:
-            Tuple containing all the names of the attributes, and the values that
-            correspond to a given walker.
-        """
-        if self.n <= 1:
-            return self.vals()
-        for i in range(self.n):
-            yield tuple([v[i] for v in self.vals()])
-
-    def iteritems(self):
-        """
-        Iterate the states attributes by walker.
-
-        Returns:
-            Tuple containing all the names of the attributes, and the values that
-            correspond to a given walker.
-        """
-        if self.n < 1:
-            return self.vals()
-        for i in range(self.n):
-            yield tuple(self._names), tuple([v[i] for v in self.vals()])
-
-    def split_states(self) -> "BaseStates":
-        """Generator that returns n_walkers different states, where each one
-        contain only the  data corresponding to one walker.
-        """
-        for k, v in self.iteritems():
-            yield self.__class__(batch_size=1, **dict(zip(k, v)))
-
-    def params_to_arrays(self, param_dict, n_walkers: int):
-        """Transforms the param dict into a dict containing the name of the
-         attributes as keys, and initialized data structures as values.
-        """
-        raise NotImplementedError
-
-    def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray):
-        """
-        Perform the clone operation on all the data attributes.
-
-        Args:
-            will_clone: Array of booleans that will be True when a walker is
-             selected to clone. It is a flat array of length equal to n_walkers.
-            compas_ix: Array representing the index of the companions selected
-             to clone. It is a flat array of length equal to n_walkers.
-
-        Returns:
-            None
-        """
-        raise NotImplementedError
-
-    def update(self, other: "BaseStates" = None, **kwargs):
-        """
-        Update the data of the internal attributes of the array.
-
-        Args:
-            other: State instance that will be used to update the current values.
-            **kwargs: It is also possible to update the attributes passing them as
-                keyword arguments.
-
-        Returns:
-            None
-        """
-        raise NotImplementedError
-
-    def get_params_dict(self) -> dict:
+    @classmethod
+    def get_params_dict(cls) -> Dict[str, Dict[str, Any]]:
         """
         Return an state_dict to be used for instantiating an States class.
-        In order to define the tensors, a state_dict dictionary needs to be specified
+
+        In order to define the tensors, a state_dict dictionary needs to be specified \
         using the following structure::
 
             import numpy as np
@@ -222,153 +77,179 @@ class BaseStates:
                                    },
                           }
 
-        Where tuple is a tuple indicating the shape of the desired tensor, that will
-        be accessed using the name_1 attribute of the class.
+        Where tuple is a tuple indicating the shape of the desired tensor, that \
+        will be accessed using the name_1 attribute of the class.
         """
         raise NotImplementedError
 
+    def create_new_states(self, batch_size: int) -> STATE_CLASS:
+        """Create new states of given batch_size to store the data of the class."""
+        return self.STATE_CLASS(state_dict=self.get_params_dict(), batch_size=batch_size)
 
-class BaseEnvironment:
+
+class BaseEnvironment(StatesOwner):
     """
-    The Environment is in charge of stepping the walkers, acting as an state
-    transition function. For every different problem a new Environment needs to
-    be implemented following the BaseEnvironment interface.
+    The Environment is in charge of stepping the walkers, acting as an state \
+    transition function.
+
+    For every different problem a new Environment needs to be implemented \
+    following the :class:`BaseEnvironment` interface.
 
     """
 
-    def step(self, actions: np.ndarray, env_states: BaseStates, *args, **kwargs) -> BaseStates:
+    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Return an state_dict to be used for instantiating the states containing \
+        the data describing the Environment.
+
+        In order to define the arrays, a state_dict dictionary needs to be specified \
+        using the following structure::
+
+            import numpy as np
+            # Example of an state_dict for planning.
+            state_dict = {
+                "states": {"size": self._env.get_state().shape, "dtype": np.int64},
+                "observs": {"size": self._env.observation_space.shape, "dtype": np.float32},
+                "rewards": {"dtype": np.float32},
+                "ends": {"dtype": np.bool_},
+            }
+
+        """
+        raise NotImplementedError
+
+    def step(self, model_states: States, env_states: States) -> States:
         """
         Step the environment for a batch of walkers.
 
         Args:
-            actions: Batch of actions to be applied to the environment.
-            env_states: States representing a batch of states to be set in the
-                environment.
-            *args: Additional arguments.
-            **kwargs: Additional keyword arguments.
+            model_states: States representing the data to be used to act on the environment..
+            env_states: States representing the data to be set in the environment.
 
         Returns:
-            BaseStates representing the next state of the environment and all
+            States representing the next state of the environment and all \
             the needed information.
+
         """
         raise NotImplementedError
 
-    def reset(self, batch_size: int = 1, env_states: BaseStates = None) -> BaseStates:
+    def reset(self, batch_size: int = 1, env_states: States = None, *args, **kwargs) -> States:
         """
-        Reset the environment and return an States class with batch_size copies
+        Reset the environment and return an States class with batch_size copies \
         of the initial state.
 
         Args:
             batch_size: Number of walkers that the resulting state will have.
-            env_states: States class used to set the environment to an arbitrary
-             state.
+            env_states: States class used to set the environment to an arbitrary \
+                        state.
+             args: Additional arguments not related to environment data.
+             kwargs: Additional keyword arguments not related to environment data.
 
         Returns:
-            States class containing the information of the environment after the
+            States class containing the information of the environment after the \
              reset.
-        """
-        raise NotImplementedError
 
-    def get_params_dict(self) -> dict:
-        """
-        Return an state_dict to be used for instantiating an States class.
-        In order to define the tensors, a state_dict dictionary needs to be specified
-        using the following structure::
-
-            import numpy as np
-            state_dict = {"name_1": {"size": tuple([1]),
-                                     "dtype": np.float32,
-                                   },
-                          }
-
-        Where tuple is a tuple indicating the shape of the desired tensor, that will
-        be accessed using the name_1 attribute of the class.
         """
         raise NotImplementedError
 
 
-class BaseModel:
-
-    """The model is in charge of calculating how the walkers will act with the
+class BaseModel(StatesOwner):
+    """
+    The model is in charge of calculating how the walkers will act with the \
     Environment, effectively working as a policy.
     """
 
-    def get_params_dict(self) -> dict:
+    def __init__(self, dt_sampler: Optional[BaseCritic] = None):
         """
-        Return an state_dict to be used for instantiating an States class.
-        In order to define the tensors, a state_dict dictionary needs to be specified
-        using the following structure::
+        Initialize a BaseModel.
+
+        Args:
+            dt_sampler: dt_sampler used to calculate an additional time step strategy. \
+                        the vector output by this class will multiply the actions of the model.
+
+        """
+        self.dt_sampler = dt_sampler
+
+    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Return an state_dict to be used for instantiating the states containing \
+        the data describing the Model.
+
+        In order to define the arrays, a state_dict dictionary needs to be \
+        specified using the following structure::
 
             import numpy as np
-            state_dict = {"name_1": {"size": tuple([1]),
-                                     "dtype": np.float32,
+            # Example of an state_dict for a RandomDiscrete Model.
+            n_actions = 10
+            state_dict = {"actions": {"size": (n_actions,),
+                                      "dtype": np.float32,
                                    },
+                          "dt": {"size": tuple([n_actions]),
+                                 "dtype": np.float32,
+                               },
                           }
 
-        Where tuple is a tuple indicating the shape of the desired tensor, that will
-        be accessed using the name_1 attribute of the class.
+        Where size is a tuple indicating the shape of the desired tensor, \
+        that will be accessed using the actions attribute of the class.
         """
         raise NotImplementedError
 
-    def reset(self, batch_size: int = 1) -> BaseStates:
+    def _add_dt_sample_params(self, params: dict):
+        if self.dt_sampler is not None:
+            dt_vals = self.dt_sampler.get_params_dict()
+            dt_vals.update(params)
+        else:
+            dt_vals = params
+        return dt_vals
+
+    def reset(self, batch_size: int = 1, model_states: States = None, *args, **kwargs) -> States:
         """
         Restart the model and reset its internal state.
 
         Args:
-            batch_size: Number of elements in the first dimension of the model
-            States data.
+            batch_size: Number of elements in the first dimension of the model \
+                        States data.
+            model_states: States corresponding to model data. If provided the \
+                          model will be reset to this state.
+            args: Additional arguments not related to model data.
+            kwargs: Additional keyword arguments not related to model data.
 
         Returns:
-            BaseStates containing the information of the current
-             state of the model (after the reset).
+            States containing the information of the current state of the \
+            model (after the reset).
+
         """
         raise NotImplementedError
 
     def predict(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
+        self,
+        batch_size: int = None,
+        model_states: States = None,
+        env_states: States = None,
+        walkers_states: "StatesWalkers" = None,
+    ) -> States:
         """
-        Calculates the next action that needs to be taken at a given state.
+        Calculate States containing the data needed to interact with the environment.
 
         Args:
-            model_states: States corresponding to the environment data.
-            env_states: States corresponding to the model data.
+            batch_size: Number of new points to the sampled.
+            model_states: States corresponding to the model data.
+            env_states: States corresponding to the environment data.
+            walkers_states: States corresponding to the walkers data.
 
         Returns:
-            tuple(actions, updated model_states)
-        """
-        raise NotImplementedError
+            Updated model_states with new model data.
 
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
-        """
-        Calculates the number of times that the next action will be applied.
-
-        Args:
-           model_states: States corresponding to the environment data.
-           env_states: States corresponding to the model data.
-
-        Returns:
-           tuple(dt, updated model_states)
         """
         raise NotImplementedError
 
 
-class BaseWalkers:
+class BaseWalkers(StatesOwner):
     """
-    The Walkers is a data structure that takes care of all the data involved
+    The Walkers is a data structure that takes care of all the data involved \
     in making a Swarm evolve.
-
-    Args:
-            n_walkers: Number of walkers the Swarm will contain.
-            env_state_params: Contains the structure of the States
-                variable with all the information regarding the Environment.
-            model_state_params: Contains the structure of the States
-                variable with all the information regarding the Model.
-            accumulate_rewards: If true accumulate the rewards after each step
-                of the environment.
     """
+
+    random_state = random_state
 
     def __init__(
         self,
@@ -388,8 +269,9 @@ class BaseWalkers:
                 variable with all the information regarding the Model.
             accumulate_rewards: If true accumulate the rewards after each step
                 of the environment.
-        """
 
+        """
+        super(BaseWalkers, self).__init__()
         self.model_state_params = model_state_params
         self.env_state_params = env_state_params
         self.n_walkers = n_walkers
@@ -403,31 +285,63 @@ class BaseWalkers:
         return self.n_walkers
 
     @property
-    def env_states(self) -> BaseStates:
+    def env_states(self) -> "States":
         """Return the States class where all the environment information is stored."""
         raise NotImplementedError
 
     @property
-    def model_states(self) -> BaseStates:
+    def model_states(self) -> "States":
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
     @property
-    def states(self) -> BaseStates:
+    def states(self) -> States:
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
-    def get_env_states(self) -> BaseStates:
-        return self.env_states
+    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
+        """Return the params_dict of the internal StateOwners."""
+        state_dict = {
+            name: getattr(self, name).get_params_dict()
+            for name in {"states", "env_states", "model_states"}
+        }
+        return state_dict
 
-    def get_model_states(self) -> BaseStates:
-        return self.model_states
+    def update_states(self, env_states: States = None, model_states: States = None, **kwargs):
+        """
+        Update the States variables that do not contain internal data and \
+        accumulate the rewards in the internal states if applicable.
 
-    def update_states(self):
+        Args:
+            env_states: States containing the data associated with the Environment.
+            model_states: States containing data associated with the Environment.
+            **kwargs: Internal states will be updated via keyword arguments.
+
+        """
         raise NotImplementedError
 
-    def reset(self, *args, **kwargs):
-        """Restart all the variables needed to perform the fractal evolution process."""
+    def reset(
+        self,
+        model_states: "States" = None,
+        env_states: "States" = None,
+        walkers_states: "StatesWalkers" = None,
+    ):
+        """
+        Reset a :class:`fragile.Walkers` and clear the internal data to start a \
+        new search process.
+
+        Restart all the variables needed to perform the fractal evolution process.
+
+        Args:
+            model_states: States that define the initial state of the environment.
+            env_states: States that define the initial state of the model.
+            walkers_states: States that define the internal states of the walkers.
+
+        """
+        raise NotImplementedError
+
+    def balance(self):
+        """Perform FAI iteration to clone the states."""
         raise NotImplementedError
 
     def calculate_distances(self):
@@ -439,12 +353,8 @@ class BaseWalkers:
         raise NotImplementedError
 
     def calculate_end_condition(self) -> bool:
-        """Return a boolean that controls the stopping of the iteration loop. If True,
-        the iteration process stops."""
-        raise NotImplementedError
-
-    def update_clone_probs(self, clone_ix, will_clone):
-        """Calculate the clone probability of the walkers."""
+        """Return a boolean that controls the stopping of the iteration loop. \
+        If True, the iteration process stops."""
         raise NotImplementedError
 
     def clone_walkers(self):
@@ -452,31 +362,19 @@ class BaseWalkers:
         raise NotImplementedError
 
     def get_alive_compas(self) -> np.ndarray:
-        """Return an array of indexes corresponding to an alive walker chosen
-         at random.
         """
-        raise NotImplementedError
-
-    def balance(self):
-        """Perform FAI iteration to clone the states."""
+        Return an array of indexes corresponding to an alive walker chosen \
+        at random.
+        """
         raise NotImplementedError
 
 
 class BaseSwarm:
     """
-    The Swarm is in charge of performing a fractal evolution process. It contains \
-    the necessary logic to use an Environment, a Model, and a Walkers instance \
-    to run the Swarm evolution algorithm.
+    The Swarm is in charge of performing a fractal evolution process.
 
-    Args:
-        env: A function that returns an instance of an Environment.
-        model: A function that returns an instance of a Model.
-        walkers: A callable that returns an instance of BaseWalkers.
-        n_walkers: Number of walkers of the swarm.
-        reward_scale: Virtual reward exponent for the reward score.
-        dist_scale:Virtual reward exponent for the distance score.
-        *args: Additional args passed to init_swarm.
-        **kwargs: Additional kwargs passed to init_swarm.
+    It contains the necessary logic to use an Environment, a Model, and a \
+    Walkers instance to run the Swarm evolution algorithm.
     """
 
     def __init__(
@@ -490,6 +388,20 @@ class BaseSwarm:
         *args,
         **kwargs
     ):
+        """
+        Initialize a :class:`BaseSwarm`.
+
+        Args:
+            env: A function that returns an instance of an Environment.
+            model: A function that returns an instance of a Model.
+            walkers: A callable that returns an instance of BaseWalkers.
+            n_walkers: Number of walkers of the swarm.
+            reward_scale: Virtual reward exponent for the reward score.
+            dist_scale:Virtual reward exponent for the distance score.
+            *args: Additional args passed to init_swarm.
+            **kwargs: Additional kwargs passed to init_swarm.
+
+        """
         self._walkers = None
         self._model = None
         self._env = None
@@ -514,44 +426,65 @@ class BaseSwarm:
 
     @property
     def model(self) -> BaseModel:
-        """All the policy and random perturbation code (problem specific) will
-         be handled here.
-         """
+        """
+        All the policy and random perturbation code (problem specific) will \
+        be handled here.
+        """
         return self._model
 
     @property
-    def walkers(self) -> BaseWalkers:
+    def walkers(self) -> "Walkers":
+        """
+        Access the :class:`Walkers` in charge of implementing the FAI \
+        evolution process.
+        """
         return self._walkers
 
-    def init_walkers(self, model_states: "States" = None, env_states: "States" = None):
+    def reset(
+        self,
+        model_states: "States" = None,
+        env_states: "States" = None,
+        walkers_states: "StatesWalkers" = None,
+        *args,
+        **kwargs
+    ):
         """
-        Initialize the :class:`fragile.Walkers` and reset their values to start a new search
-        process.
+        Reset a :class:`fragile.Swarm` and clear the isnternal data to start a \
+        new search process.
 
         Args:
             model_states: States that define the initial state of the environment.
             env_states: States that define the initial state of the model.
-
-        Returns:
-
+            walkers_states: States that define the internal states of the walkers.
+            args: Additional arguments not related to algorithm data.
+            kwargs: Additional keyword arguments not related to algorithm data.
         """
         raise NotImplementedError
 
-    def run_swarm(self, model_states: "States" = None, env_states: "States" = None):
+    def run_swarm(
+        self,
+        model_states: "States" = None,
+        env_states: "States" = None,
+        walkers_states: "StatesWalkers" = None,
+    ):
         """
-        Run a new search process.
+        Run a new search process until the stop condition is met.
+
         Args:
             model_states: States that define the initial state of the environment.
             env_states: States that define the initial state of the model.
+            walkers_states: States that define the internal states of the walkers.
 
         Returns:
-            None
+            None.
+
         """
         raise NotImplementedError
 
     def step_walkers(self):
-        """Make the walkers undergo a random perturbation process in the swarm
-        Environment.
+        """
+        Make the walkers undergo a random perturbation process in the swarm \
+        :class:`Environment`.
         """
         raise NotImplementedError
 
@@ -568,7 +501,8 @@ class BaseSwarm:
     ):
         """
         Initialize and set up all the necessary internal variables to run the swarm.
-        This process involves instantiating the Swarm, the Environment and the
+
+        This process involves instantiating the Swarm, the Environment and the \
         model.
 
         Args:
@@ -581,10 +515,9 @@ class BaseSwarm:
             n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.
             dist_scale:Virtual reward exponent for the distance score.
-            *args: Additional args passed to init_swarm.
-            **kwargs: Additional kwargs passed to init_swarm.
 
         Returns:
-            None
+            None.
+
         """
         raise NotImplementedError

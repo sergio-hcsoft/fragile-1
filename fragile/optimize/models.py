@@ -1,251 +1,157 @@
-from typing import Tuple
-
 import numpy as np
-
-from fragile.core.base_classes import BaseEnvironment, BaseStates
-from fragile.core.models import RandomContinous
+from fragile.core.models import RandomNormal
 from fragile.core.states import States
-from fragile.core.utils import relativize
-from fragile.optimize.encoder import Encoder
-from fragile.optimize.env import Function
+from fragile.core.utils import calculate_clone, calculate_virtual_reward, relativize
 
 
-class UnitaryContinuous(RandomContinous):
-    def sample(self, batch_size: int = 1):
-        val = super(UnitaryContinuous, self).sample(batch_size=batch_size)
-        axis = 1 if len(val.shape) <= 2 else tuple(range(1, len(val.shape)))
-        norm = np.linalg.norm(val, axis=axis)
-        div = norm.reshape(-1, 1) if axis == 1 else np.expand_dims(np.expand_dims(norm, 1), 1)
-        return val / div
+class ESModel(RandomNormal):
 
-
-class RandomNormal(RandomContinous):
-    def __init__(self, env: Function = None, loc: float = 0, scale: float = 1, *args, **kwargs):
-        kwargs["shape"] = kwargs.get(
-            "shape", env.shape if isinstance(env, BaseEnvironment) else None
-        )
-        try:
-            super(RandomNormal, self).__init__(env=env, *args, **kwargs)
-        except Exception as e:
-            print(args, kwargs)
-            raise e
-        self._shape = self.bounds.shape
-        self._n_dims = self.bounds.shape
-        self.loc = loc
-        self.scale = scale
-
-    def sample(self, batch_size: int = 1, loc: float = None, scale: float = None):
-        loc = self.loc if loc is None else loc
-        scale = self.scale if scale is None else scale
-        high = (
-            self.bounds.high
-            if self.bounds.dtype.kind == "f"
-            else self.bounds.high.astype("int64") + 1
-        )
-        data = np.clip(
-            self.np_random.normal(
-                size=tuple([batch_size]) + self.shape, loc=loc, scale=scale
-            ).astype(self.bounds.dtype),
-            self.bounds.low,
-            high,
-        )
-        return data
-
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
-        """
-
-        Args:
-            model_states:
-            env_states:
-
-        Returns:
-            Tuple containing a tensor with the sampled actions and the new model states variable.
-        """
-        dt = np.ones(shape=tuple(env_states.rewards.shape)) * self.mean_dt
-        dt = np.clip(dt, self.min_dt, self.max_dt).reshape(-1, 1)
-        model_states.update(dt=dt)
-        return dt, model_states
-
-    def reset(self, batch_size: int = 1, *args, **kwargs) -> Tuple[np.ndarray, BaseStates]:
-        """
-
-        Args:
-            batch_size:
-            *args:
-            **kwargs:
-
-        Returns:
-            Tuple containing a tensor with the sampled actions and the new model states variable.
-        """
-
-        model_states = States(state_dict=self.get_params_dict(), batch_size=batch_size)
-        actions = super(RandomNormal, self).sample(batch_size=batch_size)
-        model_states.update(dt=np.ones(batch_size), actions=actions, init_actions=actions)
-        return actions, model_states
-
-
-class EncoderSampler(RandomNormal):
-    def __init__(self, env: Function = None, walkers: "MapperWalkers" = None, *args, **kwargs):
-        kwargs["shape"] = kwargs.get(
-            "shape", env.shape if isinstance(env, BaseEnvironment) else None
-        )
-        try:
-            super(EncoderSampler, self).__init__(env=env, *args, **kwargs)
-        except Exception as e:
-            print(args, kwargs)
-            raise e
-        self._shape = self.bounds.shape
-        self._n_dims = self.bounds.shape
-        self._walkers = walkers
-        self.bases = None
-
-    @property
-    def encoder(self):
-        return self._walkers.encoder
-
-    @property
-    def walkers(self):
-        return self._walkers
-
-    def set_walkers(self, encoder: Encoder):
-        self._walkers = encoder
-
-    def sample(self, batch_size: int = 1):
-        if self.encoder is None:
-            raise ValueError("You must first set the encoder before calling sample()")
-        if len(self.encoder) <= 5:
-            return RandomNormal.sample(self, batch_size=batch_size)
-        data = self._sample_encoder(batch_size)
-        return data
-
-    def _sample_encoder(self, batch_size: int = 1):
-        samples = super(EncoderSampler, self).sample(batch_size=batch_size, loc=0.0, scale=1.0)
-        self.bases = self.encoder.get_bases()
-        perturbation = np.abs(self.bases.mean(0)) * samples  # (samples - self.mean_dt) * 0.01 /
-        # self.std_dt
-        return perturbation / 2
-
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
-        """
-
-        Args:
-            model_states:
-            env_states:
-
-        Returns:
-            Tuple containing a tensor with the sampled actions and the new model states variable.
-        """
-        dt = np.ones(shape=tuple(env_states.rewards.shape))
-        # * self.mean_dt
-        model_states.update(dt=dt)
-        return dt, model_states
-
-
-class BestDtEncoderSamper(EncoderSampler):
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
-        """
-
-        Args:
-            model_states:
-            env_states:
-
-        Returns:
-            Tuple containing a tensor with the sampled actions and the new model states variable.
-        """
-        if True:  # self.bases is None:
-            return super(BestDtEncoderSamper, self).calculate_dt(
-                model_states=model_states, env_states=env_states
-            )
-        best = self.walkers.best_found
-        dist = np.sqrt((self.walkers.observs - best) ** 2)
-        max_mod = np.abs(self.bases.max(0))
-
-        dist = relativize(dist)
-        # dist = (dist - dist.mean()) / dist.std()
-        dt = np.ones(shape=tuple(env_states.rewards.shape)) * self.map_range(dist, max_=max_mod)
-
-        # * self.mean_dt
-        model_states.update(dt=dt)
-        return dt, model_states
-
-    @staticmethod
-    def map_range(x, max_: float = 1, min_: float = 0.0):
-        normed = (x - x.min()) / (x.max() - x.min())
-        return normed * (max_ - min_) + min_
-
-
-class ESSampler(EncoderSampler):
     def __init__(
-        self,
-        mutation: float = 0.5,
-        recombination: float = 0.7,
-        random_step_prob: float = 0.1,
-        *args,
-        **kwargs
+            self,
+            mutation: float = 0.5,
+            recombination: float = 0.7,
+            random_step_prob: float = 0.1,
+            *args,
+            **kwargs
     ):
-        super(ESSampler, self).__init__(*args, **kwargs)
+        super(ESModel, self).__init__(*args, **kwargs)
         self.mutation = mutation
         self.recombination = recombination
         self.random_step_prob = random_step_prob
 
-    @property
-    def walkers(self):
-        return self._walkers
-
-    def set_walkers(self, encoder: Encoder):
-        self._walkers = encoder
-
-    def calculate_dt(
-        self, model_states: BaseStates, env_states: BaseStates
-    ) -> Tuple[np.ndarray, BaseStates]:
+    def sample(
+            self,
+            batch_size: int,
+            model_states: States = None,
+            env_states: States = None,
+            walkers_states: "StatesWalkers" = None,
+    ) -> States:
         """
+        Calculate the corresponding data to interact with the Environment and \
+        store it in model states.
 
         Args:
-            model_states:
-            env_states:
+            batch_size: Number of new points to the sampled.
+            model_states: States corresponding to the environment data.
+            env_states: States corresponding to the model data.
+            walkers_states: States corresponding to the walkers data.
 
         Returns:
             Tuple containing a tensor with the sampled actions and the new model states variable.
+
         """
-        dt = np.ones(shape=tuple(env_states.rewards.shape))
-        # * self.mean_dt
-        model_states.update(dt=dt)
-        return dt, model_states
-
-    def sample(self, batch_size: int = 1, *args, **kwargs):
         if np.random.random() < self.random_step_prob:
-            return super(ESSampler, self).sample(batch_size=batch_size, *args, **kwargs)
-        states = self._walkers.observs.copy()
-        best = (
-            self._walkers.best_found.copy()
-            if self._walkers.best_found is not None
-            else np.zeros_like(states[0])
-        )
+            return super(ESModel, self).sample(batch_size=batch_size, env_states=env_states,
+                                               model_states=model_states)
+        observs = (env_states.observs if env_states is not None
+                   else np.zeros(((batch_size,) + self.shape)))
+        has_best = walkers_states is not None and walkers_states.best_found is not None
+        best = walkers_states.best_found if has_best else observs
         # Choose 2 random indices
-        a_rand = np.random.permutation(np.arange(states.shape[0]))
-        b_rand = np.random.permutation(np.arange(states.shape[0]))
-        # Calculate proposal using best and difference of two random choices
-        if np.random.random() > 0.5:
-            base_pert = super(ESSampler, self).sample(batch_size=batch_size, *args, **kwargs)
-            proposal = best + self.recombination * base_pert  # (states[a_rand] - states[b_rand])
-        else:
-            proposal = best + self.recombination * (states[a_rand] - states[b_rand])
+        a_rand = self.random_state.permutation(np.arange(observs.shape[0]))
+        b_rand = self.random_state.permutation(np.arange(observs.shape[0]))
+        proposal = best + self.recombination * (observs[a_rand] - observs[b_rand])
         # Randomly mutate the each coordinate of the original vector
-        assert states.shape == proposal.shape
-        rands = np.random.random(self._walkers.observs.shape)
-        perturbations = np.where(rands < self.mutation, states, proposal).copy()
-        new_states = perturbations - states
+        assert observs.shape == proposal.shape
+        rands = np.random.random(observs.shape)
+        perturbations = np.where(rands < self.mutation, observs, proposal).copy()
+        new_states = perturbations - observs
+        actions = self.bounds.clip(new_states) if self.bounds is not None else new_states
+        dt = (1 if self.dt_sampler is None else
+              self.dt_sampler.calculate(batch_size=batch_size, model_states=model_states,
+                                        env_states=env_states, walkers_states=walkers_states))
+        model_states.update(actions=actions, dt=dt)
+        return model_states
 
-        high = (
-            self.bounds.high
-            if self.bounds.dtype.kind == "f"
-            else self.bounds.high.astype("int64") + 1
-        )
-        data = np.clip(new_states, self.bounds.low, high)
-        return data
+
+class CompasJump(RandomNormal):
+
+    def __init__(self, dist_coef: float = 1.0, reward_coef: float = 1.0, eps=1e-8,
+                 *args,  **kwargs):
+        super(CompasJump, self).__init__(*args, **kwargs)
+        self.dist_coef = dist_coef
+        self.reward_coef = reward_coef
+        self.eps = eps
+
+    def calculate(
+            self,
+            batch_size: int = None,
+            model_states: States = None,
+            env_states: States = None,
+            walkers_states: "StatesWalkers" = None,
+    ) -> np.ndarray:
+        """
+        Calculate the target time step values.
+
+        Args:
+            batch_size: Number of new points to the sampled.
+            model_states: States corresponding to the model data.
+            env_states: States corresponding to the environment data.
+            walkers_states: States corresponding to the walkers data.
+
+        Returns:
+            Array containing the target time step.
+
+        """
+        virtual_rewards, compas_dist = calculate_virtual_reward(observs=env_states.observs,
+                                                                rewards=env_states.rewards,
+                                                                dist_coef=self.dist_coef,
+                                                                reward_coef=self.reward_coef,
+                                                                return_compas=True)
+        compas_clone, will_clone = calculate_clone(ends=env_states.ends, eps=self.eps,
+                                                   virtual_rewards=virtual_rewards)
+        dif_dist = env_states.observs[compas_dist] - env_states.observs
+        dif_clone = env_states.observs[compas_clone] - env_states.observs
+        action_no_clone = dif_dist * self.random_state.normal(loc=self.loc, scale=self.scale)
+        actions = np.where(will_clone, dif_clone, action_no_clone)
+        return actions
+
+
+class BestCompasJump(RandomNormal):
+
+    def __init__(self, dist_coef: float = 1.0, reward_coef: float = 1.0, eps=1e-8,
+                 mutation: float = 0.5, recombination: float = 0.7, *args,  **kwargs):
+        super(BestCompasJump, self).__init__(*args, **kwargs)
+        self.dist_coef = dist_coef
+        self.reward_coef = reward_coef
+        self.eps = eps
+        self.mutation = mutation
+        self.recombination = recombination
+
+    def calculate(
+            self,
+            batch_size: int = None,
+            model_states: States = None,
+            env_states: States = None,
+            walkers_states: "StatesWalkers" = None,
+    ) -> np.ndarray:
+        """
+        Calculate the target time step values.
+
+        Args:
+            batch_size: Number of new points to the sampled.
+            model_states: States corresponding to the model data.
+            env_states: States corresponding to the environment data.
+            walkers_states: States corresponding to the walkers data.
+
+        Returns:
+            Array containing the target time step.
+
+        """
+        distance = np.linalg.norm(env_states.observs - walkers_states.best_found, axis=1)
+        distance_norm = relativize(distance.flatten())
+        rewards_norm = relativize(env_states.rewards)
+
+        virtual_rewards = distance_norm ** self.dist_coef * rewards_norm ** self.reward_coef
+        compas_clone, will_clone = calculate_clone(ends=env_states.ends, eps=self.eps,
+                                                   virtual_rewards=virtual_rewards)
+        dif_best = env_states.observs - walkers_states.best_found
+        action_no_clone = dif_best + self.random_state.normal(loc=self.loc, scale=self.scale)
+        rands = np.random.random(env_states.observs.shape)
+        grad = self.recombination * (env_states.observs - env_states.observs[compas_clone])
+        proposal = walkers_states.best_found + grad
+        best_mutations = np.where(rands < self.mutation, env_states.observs, proposal).copy()
+        best_actions = best_mutations - env_states.observs
+        actions = np.where(will_clone, best_actions, action_no_clone)
+        actions = self.bounds.clip(actions) if self.bounds is not None else actions
+        return actions
