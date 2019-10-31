@@ -12,7 +12,7 @@ setup(
     download_url="https://github.com/Guillemdb/fragile",
     keywords=["reinforcement learning", "artificial intelligence", "monte carlo", "planning"],
     test_requires=["pytest", "hypothesis"],
-    install_requires=["numpy", "scipy", "Pillow-simd", "plangym"],
+    install_requires=["numpy", "scipy", "plangym"],
     package_data={"": ["README.md"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
