@@ -1,5 +1,5 @@
 import copy
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -164,6 +164,12 @@ class SimpleWalkers(BaseWalkers):
         )
         return text
 
+    def ids(self) -> List[int]:
+        return self.env_states.hash_values("states")
+
+    def update_ids(self):
+        self.states.update(id_walkers=self.ids())
+
     @property
     def states(self) -> StatesWalkers:
         """Return the `StatesWalkers` class that contains the data used by the instance."""
@@ -251,10 +257,11 @@ class SimpleWalkers(BaseWalkers):
             # This value can be negative!!
             companions = self.states.virtual_rewards[compas_ix]
             clone_probs = (companions - self.states.virtual_rewards) / self.states.virtual_rewards
+            clone_probs = np.sqrt(np.clip(clone_probs, 0, 1.1))
         self.update_states(clone_probs=clone_probs, compas_clone=compas_ix)
 
     # @profile
-    def balance(self) -> Tuple[np.ndarray, np.ndarray]:
+    def balance(self) -> Tuple[set, set]:
         """
         Perform an iteration of the FractalAI algorithm for balancing distributions.
 
@@ -267,12 +274,12 @@ class SimpleWalkers(BaseWalkers):
             one contains the ids of the states after the cloning process.
 
         """
-        old_ids = self.states.id_walkers.astype(int)
+        old_ids = set(self.states.id_walkers.copy())
         self.calculate_distances()
         self.calculate_virtual_reward()
         self.update_clone_probs()
         self.clone_walkers()
-        new_ids = self.states.id_walkers.astype(int)
+        new_ids = set(self.states.id_walkers.copy())
         return old_ids, new_ids
 
     def clone_walkers(self):
@@ -286,6 +293,7 @@ class SimpleWalkers(BaseWalkers):
         clone, compas = self.states.clone()
         self._env_states.clone(will_clone=clone, compas_ix=compas)
         self._model_states.clone(will_clone=clone, compas_ix=compas)
+
 
     def reset(self, env_states: States = None, model_states: States = None,
               walker_states: StatesWalkers = None):

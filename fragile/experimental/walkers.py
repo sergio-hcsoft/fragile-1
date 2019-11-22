@@ -34,6 +34,11 @@ class MetricWalkers(Walkers):
     def __getattr__(self, item):
         return getattr(self.walkers, item)
 
+    @classmethod
+    def from_walkers_class(cls, walkers, plot_interval: int=100, max_iters: int=1500, *args,
+                           **kwargs):
+        return MetricWalkers(walkers(*args, **kwargs), plot_interval=plot_interval, max_iters=max_iters)
+
     @property
     def df(self) -> pd.DataFrame:
         cols = ["vr_eff", "reward", "clone_pct"]

@@ -3,6 +3,8 @@ from typing import Generator, List, Tuple, Union
 
 import numpy as np
 
+from fragile.core.utils import hash_numpy
+
 
 class States:
     """
@@ -98,6 +100,18 @@ class States:
             new_str = "{}: {} {}\n".format(k, type(v), shape)
             string += new_str
         return string
+
+    def __hash__(self) -> int:
+        return hash(tuple([hash_numpy(x) if isinstance(x, np.ndarray) else hash(x) for x in
+                    self.vals()]))
+
+    def group_hash(self, name: str) -> int:
+        val = getattr(self, name)
+        return hash_numpy(val) if isinstance(val, np.ndarray) else hash(val)
+
+    def hash_values(self, name: str) -> List[int]:
+        values = getattr(self, name)
+        return [hash_numpy(val) if isinstance(val, np.ndarray) else hash(val) for val in values]
 
     @classmethod
     def concat_states(cls, states: List["States"]) -> "States":

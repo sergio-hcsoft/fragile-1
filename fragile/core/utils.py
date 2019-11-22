@@ -5,6 +5,10 @@ import numpy as np
 float_type = np.float32
 
 
+def hash_numpy(x: np.ndarray) -> int:
+    return hash(x.tostring())
+
+
 def relativize(x: np.ndarray) -> np.ndarray:
     """Normalize the data using a custom smoothing technique."""
     std = x.std()

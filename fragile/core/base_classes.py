@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 
@@ -85,6 +85,28 @@ class StatesOwner:
     def create_new_states(self, batch_size: int) -> STATE_CLASS:
         """Create new states of given batch_size to store the data of the class."""
         return self.STATE_CLASS(state_dict=self.get_params_dict(), batch_size=batch_size)
+
+
+class BaseStateTree:
+
+    def add_states(
+        self,
+        parent_ids: List[int],
+        env_states: States = None,
+        model_states: States = None,
+        walkers_states: States = None,
+    ) -> np.ndarray:
+        pass
+
+    def reset(self,
+        parent_ids: List[int]=None,
+        env_states: States = None,
+        model_states: States = None,
+        walkers_states: States = None,) -> None:
+        pass
+
+    def prune_tree(self,  alive_leafs: set, from_hash: bool=False) -> None:
+        pass
 
 
 class BaseEnvironment(StatesOwner):

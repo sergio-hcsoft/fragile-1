@@ -13,9 +13,8 @@ except ImportError:
 
 # from line_profiler import profile
 
-from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseSwarm
+from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseStateTree, BaseSwarm
 from fragile.core.states import States
-from fragile.core.tree import Tree
 from fragile.core.walkers import StatesWalkers, Walkers
 
 
@@ -74,7 +73,7 @@ class Swarm(BaseSwarm):
         n_walkers: int,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
-        use_tree: bool = False,
+        tree: Callable = None,
         prune_tree: bool = True,
         *args,
         **kwargs
@@ -118,10 +117,9 @@ class Swarm(BaseSwarm):
             *args,
             **kwargs
         )
-
-        self.tree = Tree() if use_tree else None
+        self._use_tree = tree is not None
+        self.tree: BaseStateTree = tree() if self._use_tree else None
         self._prune_tree = prune_tree
-        self._use_tree = use_tree
         self.epoch = 0
 
     def reset(
@@ -150,12 +148,14 @@ class Swarm(BaseSwarm):
 
         model_states.update(init_actions=model_states.actions)
         self.walkers.reset(env_states=env_sates, model_states=model_states)
+        self.walkers.update_ids()
         if self._use_tree:
             self.tree.reset(
-                env_state=self.walkers.env_states,
-                model_state=self.walkers.model_states,
-                reward=env_sates.rewards[0],
+                env_states=self.walkers.env_states,
+                model_states=self.walkers.model_states,
+                walkers_states=walkers_states,
             )
+            self.update_tree([0] * self.walkers.n)
 
     # @profile
     def run_swarm(
@@ -195,8 +195,10 @@ class Swarm(BaseSwarm):
     def run_step(self):
         self.walkers.fix_best()
         self.step_walkers()
-        old_ids, new_ids = self.walkers.balance()
-        self.prune_tree(old_ids=set(old_ids.tolist()), new_ids=set(new_ids.tolist()))
+        old_ids = set(self.walkers.states.id_walkers.copy())
+        self.walkers.balance()
+        new_ids = set(self.walkers.states.id_walkers)
+        self.prune_tree(old_ids=set(old_ids), new_ids=set(new_ids))
 
     # @profile
     def step_walkers(self):
@@ -219,6 +221,7 @@ class Swarm(BaseSwarm):
         self.walkers.update_states(
             env_states=env_states, model_states=model_states, end_condition=env_states.ends
         )
+        self.walkers.update_ids()
         self.update_tree(states_ids)
 
     def update_tree(self, states_ids: List[int]):
@@ -233,13 +236,12 @@ class Swarm(BaseSwarm):
 
         """
         if self._use_tree:
-            walker_ids = self.tree.add_states(
+            self.tree.add_states(
                 parent_ids=states_ids,
                 env_states=self.walkers.env_states,
                 model_states=self.walkers.model_states,
-                cum_rewards=copy.deepcopy(self.walkers.states.cum_rewards).flatten(),
+                walkers_states=self.walkers.states,
             )
-            self.walkers.update_states(id_walkers=walker_ids)
 
     def prune_tree(self, old_ids, new_ids):
         """
@@ -253,10 +255,8 @@ class Swarm(BaseSwarm):
             None.
 
         """
-        if self._prune_tree:
-            dead_leaves = old_ids - new_ids
-            for leaf_id in dead_leaves:
-                self.tree.prune_branch(leaf_id=leaf_id)
+        if self._prune_tree and self._use_tree:
+            self.tree.prune_tree(alive_leafs=new_ids, from_hash=True)
 
 
 class NoBalance(Swarm):

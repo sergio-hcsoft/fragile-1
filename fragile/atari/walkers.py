@@ -1,4 +1,7 @@
+import numpy as np
+
 from fragile.core.walkers import Walkers
+from fragile.core.utils import relativize
 
 
 class AtariWalkers(Walkers):
@@ -23,3 +26,20 @@ class AtariWalkers(Walkers):
         """
         end = super(AtariWalkers, self).calculate_end_condition()
         return self.env_states.game_ends.all() and end or self.states.cum_rewards > self.max_reward
+
+
+class MontezumaWalkers(Walkers):
+
+    def calculate_distances(self):
+        """Calculate the corresponding distance function for each state with \
+        respect to another state chosen at random.
+
+        The internal state is update with the relativized distance values.
+        """
+        compas_ix = np.random.permutation(np.arange(self.n))  # self.get_alive_compas()
+        obs = self.env_states.observs.reshape(self.n, -1)
+        dist_ram = np.linalg.norm(obs[:, :-3] - obs[compas_ix, :-3], axis=1).flatten()
+        dist_pos = np.linalg.norm(obs[:, -3:-1] - obs[compas_ix, -3:-1], axis=1).flatten()
+        dist_room = np.linalg.norm(obs[:, -1] - obs[compas_ix, -1]).flatten()
+        distances = relativize(dist_ram) * relativize(dist_pos) ** 2 * relativize(dist_room) ** 2
+        self.update_states(distances=distances, compas_dist=compas_ix)
