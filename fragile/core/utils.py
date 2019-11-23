@@ -1,12 +1,30 @@
 import copy
 
 import numpy as np
+from PIL import Image
 
 float_type = np.float32
 
 
 def hash_numpy(x: np.ndarray) -> int:
     return hash(x.tostring())
+
+
+def resize_frame(frame: np.ndarray, height: int, width: int, mode="RGB") -> np.ndarray:
+    """
+    Use PIL to resize an RGB frame to an specified height and width.
+
+    Args:
+        frame: Target numpy array representing the image that will be resized.
+        height: Height of the resized image.
+        width: Width of the resized image.
+
+    Returns:
+        The resized frame that matches the provided width and height.
+    """
+    frame = Image.fromarray(frame)
+    frame = frame.convert(mode).resize((height, width))
+    return np.array(frame)
 
 
 def relativize(x: np.ndarray) -> np.ndarray:

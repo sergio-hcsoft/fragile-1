@@ -224,7 +224,7 @@ class States:
         if kwargs:
             update_or_set_attributes(kwargs)
 
-    def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray):
+    def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray, ignore: set=None):
         """
         Clone all the stored data according to the provided arrays.
 
@@ -235,8 +235,9 @@ class States:
                        indexes of the walkers that will be copied.
 
         """
+        ignore = set() if ignore is None else ignore
         for name in self.keys():
-            if isinstance(self[name], np.ndarray):
+            if isinstance(self[name], np.ndarray) and name not in ignore:
                 self[name][will_clone] = self[name][compas_ix][will_clone]
 
     def get_params_dict(self) -> dict:

@@ -3,6 +3,7 @@ import numpy as np
 from fragile.core.walkers import Walkers
 from fragile.core.utils import relativize
 
+import line_profiler
 
 class AtariWalkers(Walkers):
     """
@@ -30,6 +31,7 @@ class AtariWalkers(Walkers):
 
 class MontezumaWalkers(Walkers):
 
+    #@profile
     def calculate_distances(self):
         """Calculate the corresponding distance function for each state with \
         respect to another state chosen at random.
@@ -37,9 +39,13 @@ class MontezumaWalkers(Walkers):
         The internal state is update with the relativized distance values.
         """
         compas_ix = np.random.permutation(np.arange(self.n))  # self.get_alive_compas()
-        obs = self.env_states.observs.reshape(self.n, -1)
-        dist_ram = np.linalg.norm(obs[:, :-3] - obs[compas_ix, :-3], axis=1).flatten()
-        dist_pos = np.linalg.norm(obs[:, -3:-1] - obs[compas_ix, -3:-1], axis=1).flatten()
-        dist_room = np.linalg.norm(obs[:, -1] - obs[compas_ix, -1]).flatten()
-        distances = relativize(dist_ram) * relativize(dist_pos) ** 2 * relativize(dist_room) ** 2
+        #obs = self.env_states.observs.reshape(self.n, -1)[:, -3:]
+        rams = self.env_states.states.reshape(self.n, -1)[:, :-12].astype(np.uint8)#[:, :-15]
+        vec = (rams - rams[compas_ix])
+        dist_ram = np.linalg.norm(vec, axis=1).flatten()
+        #dist_ram = distance(rams, compas_ix)
+        #dist_pos = np.linalg.norm(obs[:, :-1] - obs[compas_ix, :-1], axis=1).flatten()
+        #dist_room = np.linalg.norm(obs[:, -1] - obs[compas_ix, -1]).flatten()
+        #distances = relativize(dist_pos) * relativize(dist_room) * relativize(dist_ram)
+        distances = relativize(dist_ram)
         self.update_states(distances=distances, compas_dist=compas_ix)

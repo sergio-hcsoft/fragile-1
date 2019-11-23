@@ -7,6 +7,8 @@ from fragile.core.base_classes import BaseCritic, BaseWalkers
 from fragile.core.states import States
 from fragile.core.utils import float_type, relativize, statistics_from_array
 
+import line_profiler
+
 
 class StatesWalkers(States):
     """Keeps track of the data structures used by the `Walkers` class."""
@@ -137,6 +139,7 @@ class SimpleWalkers(BaseWalkers):
         self.n_iters = 0
         self.max_iters = max_iters if max_iters is not None else 1e12
 
+
     def __len__(self) -> int:
         return self.n
 
@@ -199,6 +202,7 @@ class SimpleWalkers(BaseWalkers):
         self.n_iters += 1
         return all_dead or max_iters
 
+    #@profile
     def calculate_distances(self):
         """Calculate the corresponding distance function for each state with \
         respect to another state chosen at random.
@@ -260,7 +264,7 @@ class SimpleWalkers(BaseWalkers):
             clone_probs = np.sqrt(np.clip(clone_probs, 0, 1.1))
         self.update_states(clone_probs=clone_probs, compas_clone=compas_ix)
 
-    # @profile
+    #@profile
     def balance(self) -> Tuple[set, set]:
         """
         Perform an iteration of the FractalAI algorithm for balancing distributions.
@@ -282,6 +286,7 @@ class SimpleWalkers(BaseWalkers):
         new_ids = set(self.states.id_walkers.copy())
         return old_ids, new_ids
 
+    #@profile
     def clone_walkers(self):
         """Sample the clone probability distribution and clone the walkers accordingly."""
         will_clone = self.states.clone_probs > self.random_state.random_sample(self.n)
@@ -291,9 +296,8 @@ class SimpleWalkers(BaseWalkers):
         self.update_states(will_clone=will_clone)
 
         clone, compas = self.states.clone()
-        self._env_states.clone(will_clone=clone, compas_ix=compas)
+        self._env_states.clone(will_clone=clone, compas_ix=compas, ignore={"observs"})
         self._model_states.clone(will_clone=clone, compas_ix=compas)
-
 
     def reset(self, env_states: States = None, model_states: States = None,
               walker_states: StatesWalkers = None):
@@ -396,6 +400,7 @@ class Walkers(SimpleWalkers):
         )
         return text + super(Walkers, self).__repr__()
 
+    #@profile
     def calculate_virtual_reward(self):
         rewards = -1 * self.states.cum_rewards if self.minimize else self.states.cum_rewards
         processed_rewards = relativize(rewards)
@@ -419,6 +424,7 @@ class Walkers(SimpleWalkers):
             virt_rew = self.states.virtual_rewards
         self.states.update(virtual_rewards=virt_rew)
 
+    #@profile
     def balance(self):
         self.update_best()
         returned = super(Walkers, self).balance()
@@ -461,8 +467,11 @@ class Walkers(SimpleWalkers):
                                    walker_states=walker_states)
         rewards = self.env_states.rewards
         ix = rewards.argmin() if self.minimize else rewards.argmax()
-        self.states.update(best_found=copy.deepcopy(self.env_states.observs[ix]))
-        self.states.update(best_reward_found=np.inf if self.minimize else -np.inf)
+        self.states.update()
+        self.states.update(best_reward_found=np.inf if self.minimize else -np.inf,
+                           best_found=copy.deepcopy(self.env_states.observs[ix]))
         if self.critic is not None:
-            self.critic.reset(env_states=self.env_states, model_states=model_states,
-                              walker_states=walker_states)
+            critic_score = self.critic.reset(env_states=self.env_states, model_states=model_states,
+                                             walker_states=walker_states)
+            self.states.update(critic_score=critic_score)
+

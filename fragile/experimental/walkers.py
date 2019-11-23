@@ -22,9 +22,9 @@ class MetricWalkers(Walkers):
         self.clone_pct_hist = np.zeros(self.max_iters + 1)
         self.clone_eff = 0
         self._max_ent = (2 - (1 / self.n) ** (1 / self.n)) ** self.n
-        self.stream = Stream()
         self._plot_iter = 0
         self.plot_interval = plot_interval
+        self.stream = Stream()
         example = pd.DataFrame({"vr_eff": [],
                                 "reward": [],
                                 "clone_eff": []})
@@ -89,7 +89,7 @@ class MetricWalkers(Walkers):
         self.reward_hist[self.n_iters - 1] = float(self.states.best_reward_found)
 
     def plot_best_evolution(self):
-        return (self.buffer_df.hvplot(y=["vr_eff", "clone_eff"]) +
+        return (# self.buffer_df.hvplot(y=["vr_eff", "clone_eff"]) +
                 self.buffer_df.hvplot(y=["reward"]))
         curve_dmap = hv.DynamicMap(hv.Curve, streams=[self.buffer_df])
         curve_dmap = curve_dmap.opts(

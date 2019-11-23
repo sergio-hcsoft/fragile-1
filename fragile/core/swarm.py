@@ -11,7 +11,8 @@ except ImportError:
         pass
 
 
-# from line_profiler import profile
+import line_profiler
+
 
 from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseStateTree, BaseSwarm
 from fragile.core.states import States
@@ -157,7 +158,7 @@ class Swarm(BaseSwarm):
             )
             self.update_tree([0] * self.walkers.n)
 
-    # @profile
+    #@profile
     def run_swarm(
         self,
         model_states: States = None,
@@ -192,6 +193,7 @@ class Swarm(BaseSwarm):
     def calculate_end_condition(self) -> bool:
         return self.walkers.calculate_end_condition()
 
+    #@profile
     def run_step(self):
         self.walkers.fix_best()
         self.step_walkers()
@@ -200,7 +202,7 @@ class Swarm(BaseSwarm):
         new_ids = set(self.walkers.states.id_walkers)
         self.prune_tree(old_ids=set(old_ids), new_ids=set(new_ids))
 
-    # @profile
+    #@profile
     def step_walkers(self):
         """
         Make the walkers undergo a random perturbation process in the swarm \
