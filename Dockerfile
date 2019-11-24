@@ -32,7 +32,7 @@ RUN pip3 install --no-cache-dir cython && \
         git+https://github.com/Guillem-db/atari-py \
         networkx jupyter h5py Pillow-simd PyOpenGL matplotlib && \
     git clone https://github.com/ray-project/ray.git && \
-    pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.8.0.dev6-cp36-cp36m-manylinux1_x86_$ &&\
+    pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.8.0.dev6-cp36-cp36m-manylinux1_x86_64.whl && \
     git clone https://github.com/Guillemdb/plangym.git && \
     cd plangym && pip3 install -e . && cd .. && \
     cd fragile && \
