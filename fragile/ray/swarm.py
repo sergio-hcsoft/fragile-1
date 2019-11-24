@@ -46,8 +46,9 @@ class RemoteSwarm:
 
     def add_walker(self, best):
         (state, obs, reward) = best
-        self._clone_to_walker(state, obs, reward)
-        self.swarm.walkers.update_best()
+        if state is not None:
+            self._clone_to_walker(state, obs, reward)
+            self.swarm.walkers.update_best()
 
     def get_end_condition(self):
         return self.swarm.calculate_end_condition()

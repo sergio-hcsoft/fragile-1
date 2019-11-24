@@ -1,11 +1,8 @@
 FROM ubuntu:18.04
-
 ENV BROWSER=/browser \
     LC_ALL=en_US.UTF-8 \
     JUPYTER_PASSWORD=fragile_in_the_cloud
-
 COPY requirements.txt fragile/requirements.txt
-
 RUN apt-get update && \
     apt-get install -y --no-install-suggests --no-install-recommends \
       ca-certificates locales pkg-config apt-utils gcc g++ wget make git cmake libffi-dev \
@@ -26,6 +23,7 @@ echo "  $@"\n\
 echo\n\' > /browser && \
     chmod +x /browser
 
+
 # install FractalAI deps
 ENV NPY_NUM_BUILD_JOBS 8
 RUN pip3 install --no-cache-dir cython && \
@@ -34,8 +32,8 @@ RUN pip3 install --no-cache-dir cython && \
         git+https://github.com/Guillem-db/atari-py \
         networkx jupyter h5py Pillow-simd PyOpenGL matplotlib && \
     git clone https://github.com/ray-project/ray.git && \
-    pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.8.0.dev6-cp36-cp36m-manylinux1_x86_64.whl && \
-    git clone git+https://github.com/Guillemdb/plangym.git#egg=plangym && \
+    pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.8.0.dev6-cp36-cp36m-manylinux1_x86_$ &&\
+    git clone https://github.com/Guillemdb/plangym.git && \
     cd plangym && pip3 install -e . && cd .. && \
     cd fragile && \
     pip3 install -U --no-cache-dir -r requirements.txt --no-use-pep517&& \
