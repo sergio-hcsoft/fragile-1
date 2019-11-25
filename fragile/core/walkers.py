@@ -199,7 +199,6 @@ class SimpleWalkers(BaseWalkers):
         """
         all_dead = self.states.end_condition.sum() == self.n
         max_iters = self.n_iters >= self.max_iters
-        self.n_iters += 1
         return all_dead or max_iters
 
     #@profile
@@ -298,6 +297,7 @@ class SimpleWalkers(BaseWalkers):
         clone, compas = self.states.clone()
         self._env_states.clone(will_clone=clone, compas_ix=compas, ignore={"observs"})
         self._model_states.clone(will_clone=clone, compas_ix=compas)
+        self.n_iters += 1
 
     def reset(self, env_states: States = None, model_states: States = None,
               walker_states: StatesWalkers = None):

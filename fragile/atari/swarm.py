@@ -55,14 +55,14 @@ class MontezumaSwarm(Swarm):
                 episodic_live=True,
                 min_dt=1,
             )
-        # env = RayEnv(env_callable=create_env, n_workers=env_workers)
+        env = RayEnv(env_callable=create_env, n_workers=env_workers)
         dt = GaussianDt(min_dt=3, max_dt=1000, loc_dt=6, scale_dt=4)
 
         swarm = MontezumaSwarm(
             model=lambda x: RandomDiscrete(x, dt_sampler=dt),
             walkers=MontezumaWalkers,
-            env=lambda: DiscreteEnv(create_env()),
-            tree=HistoryTree,
+            env=lambda: DiscreteEnv(env),
+            tree=None, #HistoryTree,
             critic=MontezumaGrid(scale=critic_scale),
             *args, **kwargs
 

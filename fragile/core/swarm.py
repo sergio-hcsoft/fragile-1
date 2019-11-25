@@ -193,14 +193,21 @@ class Swarm(BaseSwarm):
     def calculate_end_condition(self) -> bool:
         return self.walkers.calculate_end_condition()
 
-    #@profile
-    def run_step(self):
+    def step_and_update_best(self):
+        self.walkers.update_best()
         self.walkers.fix_best()
         self.step_walkers()
+
+    def balance_and_prune(self):
         old_ids = set(self.walkers.states.id_walkers.copy())
         self.walkers.balance()
         new_ids = set(self.walkers.states.id_walkers)
         self.prune_tree(old_ids=set(old_ids), new_ids=set(new_ids))
+
+    #@profile
+    def run_step(self):
+        self.step_and_update_best()
+        self.balance_and_prune()
 
     #@profile
     def step_walkers(self):
@@ -263,10 +270,12 @@ class Swarm(BaseSwarm):
 
 class NoBalance(Swarm):
 
+    def balance_and_prune(self):
+        pass
+
     def run_step(self):
-        self.walkers.update_best()
-        self.walkers.fix_best()
-        self.step_walkers()
+
+        self.step_and_update_best()
         self.walkers.n_iters += 1
 
     def calculate_end_condition(self):

@@ -158,7 +158,7 @@ class ParamServer:
     def _update_best(self):
         best_ix = np.argmax([r for _, _, r in self.buffer])
         state, obs, reward = self.buffer[best_ix]
-        if reward > self.best[2]:
+        if reward >= self.best[2]:
             self.best = copy.deepcopy((state, obs, reward))
 
 
