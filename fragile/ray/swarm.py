@@ -21,6 +21,7 @@ class RemoteSwarm:
         self._swarm_callable = swarm
         self.swarm: Swarm = None
         self.n_comp_add = n_comp_add
+        self.init_swarm()
 
     def init_swarm(self):
         self.swarm = self._swarm_callable()
@@ -189,12 +190,13 @@ class DistributedSwarm:
     def __init__(self, swarm: Callable,
                  n_swarms: int,
                  max_iters_ray: int=10,
-                 log_every: int=100, *args, **kwargs):
+                 log_every: int=100, n_com_add: int=5):
         self.n_swarms = n_swarms
         self.log_every = log_every
-        self.swarms = [RemoteSwarm.remote(swarm, *args, **kwargs) for _ in range(self.n_swarms)]
-        ray.get([s.init_swarm.remote() for s in self.swarms])
         self.param_server = ParamServer.remote()
+        ray.get(self.param_server.reset.remote())
+        self.swarms = [RemoteSwarm.remote(copy.copy(swarm), int(n_com_add))
+                       for _ in range(self.n_swarms)]
         self.max_iters_ray = max_iters_ray
         self.frame_pipe: Pipe = None
         self.stream = None
@@ -241,7 +243,8 @@ class DistributedSwarm:
             steps[worker.make_iteration.remote(new_best)] = worker
 
             if i % (self.log_every * len(self.swarms)) == 0:
-                state, best_obs, best_reward = (ray.get([self.param_server.get_best.remote()]))[0]
+                id_, _ = (ray.wait([self.param_server.get_best.remote()]))
+                (state, best_obs, best_reward) = ray.get(id_)[0]
                 if state is not None:
                     self.stream_progress(best_obs, best_reward)
                 else:

@@ -41,7 +41,7 @@ RUN pip3 install --no-cache-dir cython && \
 
 COPY . fragile/
 
-RUN cd fragile && pip3 install -e . --no-use-pep517 && pip3 install jupyter && \
+RUN cd fragile && pip3 install -e . --no-use-pep517 && pip3 install jupyter psutil setproctitle && \
     pip3 uninstall -y atari-py && pip3 install git+https://github.com/Guillem-db/atari-py
 
 RUN pip3 uninstall -y cython && \
