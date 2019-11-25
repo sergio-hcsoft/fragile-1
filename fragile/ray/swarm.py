@@ -24,6 +24,8 @@ class RemoteSwarm:
 
     def init_swarm(self):
         self.swarm = self._swarm_callable()
+        self.swarm.reset()
+        print(self.swarm.walkers.env_states.states.shape)
 
     def make_iteration(self, best_other):
         self.add_walker(best_other)
@@ -38,7 +40,10 @@ class RemoteSwarm:
         return self.swarm.run_step()
 
     def get_best(self):
-        best_ix = self.swarm.walkers.states.cum_rewards.argmax()
+        try:
+            best_ix = self.swarm.walkers.states.cum_rewards.argmax()
+        except:
+            return None, None, None
         state = self.swarm.walkers.env_states.states[best_ix].copy()
         obs = self.swarm.walkers.env_states.observs[best_ix].copy()
         reward = self.swarm.walkers.states.cum_rewards[best_ix].copy()
@@ -47,6 +52,14 @@ class RemoteSwarm:
     def add_walker(self, best):
         (state, obs, reward) = best
         if state is not None:
+            x = self.swarm.walkers.env_states.states[0]
+            try:
+                assert np.prod(state.shape) == np.prod(x.shape), "%s %s" % (state.shape, x.shape)
+            except Exception as e:
+                for i, s in enumerate(state.tolist()):
+                    if s != x[i]:
+                        print("FAILED i %s, %s x: %s" % (i, s, x[i]))
+                raise e
             self._clone_to_walker(state, obs, reward)
             self.swarm.walkers.update_best()
 
@@ -55,8 +68,9 @@ class RemoteSwarm:
 
     def _clone_to_walker(self, state, obs, reward):
         # Virtual reward with respect to the new state
-        indexes = np.random.choice(np.arange(self.swarm.walkers.n), self.n_comp_add)
+        indexes = np.random.choice(np.arange(self.swarm.walkers.n), size=self.n_comp_add)
         n_walkers = len(indexes)
+        assert n_walkers == self.n_comp_add
         w_rewards = self.swarm.walkers.states.cum_rewards[indexes]
         walkers_obs = self.swarm.walkers.env_states.observs[indexes].reshape(n_walkers, -1)
         distances = np.linalg.norm(walkers_obs - obs.reshape(1, -1), axis=1)
@@ -80,21 +94,26 @@ class RemoteSwarm:
         if will_clone.sum() == 0:
             return
         new_rewards = np.ones(n_walkers)[will_clone].copy() * reward
-        new_states = np.tile(state, (n_walkers, 1))[will_clone]
-        new_observs = np.tile(obs, (n_walkers, 1))[will_clone]
-        if len(new_states) == 0:
-            return
         try:
             self.swarm.walkers.states.cum_rewards[indexes][will_clone] = new_rewards
-            self.swarm.walkers.env_states.states[indexes][will_clone] = copy.deepcopy(new_states)
-            self.swarm.walkers.env_states.observs[indexes][will_clone] = copy.deepcopy(new_observs)
+            for ix, wc in zip(indexes, will_clone):
+                if wc:
+                    self.swarm.walkers.env_states.states[ix] = copy.deepcopy(state)
+                    self.swarm.walkers.env_states.observs[ix] = copy.deepcopy(obs)
             self.swarm.walkers.update_best()
         except Exception as e:
-            msg = "indexes: %s will_clone: %s new_states: %s states shape: %s"
-            data = (indexes, will_clone, new_states, self.swarm.walkers.env_states.states.shape)
-            msg_2 = "clone_probs: %s rewards: %s reward: %s state: %s"
+            return
+            orig_states = self.swarm.walkers.env_states.states
+            msg = "indexes: %s will_clone: %s new_states: %s states shape: %s\n"
+            data = (indexes, will_clone, [], orig_states.shape)
+            msg_2 = "clone_probs: %s rewards: %s reward: %s state: %s\n"
             data_2 = (clone_probs, rewards, reward, state)
-            print(msg % data + msg_2 % data_2)
+            x = orig_states[indexes][will_clone]
+            msg_3 = "will_clone shape: %s clone_probs shape: %s SHAPE: %s DATA: %s" % (
+                will_clone.shape,
+                                                                    clone_probs.shape,
+                                                                    type(x), x)
+            print((msg % data) + (msg_2 % data_2) + msg_3)
             raise e
 
 
@@ -143,6 +162,8 @@ class ParamServer:
         self.buffer = deque([], self._maxlen)
 
     def get_best(self):
+        if len(self.buffer) == 0:
+            return None, None, None
         best_ix = np.argmax([r for _, _, r in self.buffer])
         return self.buffer[best_ix]
 
@@ -172,8 +193,8 @@ class DistributedSwarm:
         self.n_swarms = n_swarms
         self.log_every = log_every
         self.swarms = [RemoteSwarm.remote(swarm, *args, **kwargs) for _ in range(self.n_swarms)]
-        self.param_server = ParamServer.remote()
         ray.get([s.init_swarm.remote() for s in self.swarms])
+        self.param_server = ParamServer.remote()
         self.max_iters_ray = max_iters_ray
         self.frame_pipe: Pipe = None
         self.stream = None
@@ -220,7 +241,10 @@ class DistributedSwarm:
             steps[worker.make_iteration.remote(new_best)] = worker
 
             if i % (self.log_every * len(self.swarms)) == 0:
-                _, best_obs, best_reward = (ray.get([self.param_server.get_best.remote()]))[0]
-                self.stream_progress(best_obs, best_reward)
+                state, best_obs, best_reward = (ray.get([self.param_server.get_best.remote()]))[0]
+                if state is not None:
+                    self.stream_progress(best_obs, best_reward)
+                else:
+                    print("skipping, not ready")
 
 
