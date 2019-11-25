@@ -36,7 +36,7 @@ class RemoteSwarm:
 
     def reset(self):
         self.swarm.reset()
-        return self.get_best()
+        return self.get_best(), self.get_best()
 
     def run_step(self):
         return self.swarm.run_step()
@@ -51,17 +51,24 @@ class RemoteSwarm:
         reward = self.swarm.walkers.states.cum_rewards[best_ix].copy()
         return (state, obs, reward)
 
-    def add_walker(self, best):
-        (state, obs, reward) = best
+    def add_walker(self, walkers):
+        if walkers[0] is None:
+            return
+        try:
+            best_state, best_obs, best_rew = walkers[0]
+        except Exception as e:
+            print("WALKERS", walkers)
+            raise Exception(str(walkers))
+
+        if best_rew > self.swarm.walkers.states.best_reward:
+            self.swarm.walkers.states.update(best_reward=best_rew, best_state=best_state,
+                                             best_obs=best_obs)
+            self.swarm.walkers.fix_best()
+        else:
+            self._clone_to_walker(best_state, best_obs, best_rew)
+
+        (state, obs, reward) = walkers[1]
         if state is not None:
-            x = self.swarm.walkers.env_states.states[0]
-            try:
-                assert np.prod(state.shape) == np.prod(x.shape), "%s %s" % (state.shape, x.shape)
-            except Exception as e:
-                for i, s in enumerate(state.tolist()):
-                    if s != x[i]:
-                        print("FAILED i %s, %s x: %s" % (i, s, x[i]))
-                raise e
             self._clone_to_walker(state, obs, reward)
             self.swarm.walkers.update_best()
 
@@ -120,57 +127,19 @@ class RemoteSwarm:
 
 
 @ray.remote
-class _ParamServer:
-
-    def __init__(self, maxlen: int=100):
-        self._maxlen = maxlen
-        self.states = deque([], self._maxlen)
-        self.observs = deque([], self._maxlen)
-        self.rewards = deque([], self._maxlen)
-
-    def get_best(self):
-        best_ix = np.argmax(np.array(self.rewards))
-        return self.states[best_ix], self.observs[best_ix], self.rewards[best_ix]
-
-    def reset(self):
-        self.states = deque([], self._maxlen)
-        self.observs = deque([], self._maxlen)
-        self.rewards = deque([], self._maxlen)
-
-    def exchange_walker(self, walker):
-        self.append_walker(walker)
-        return self.get_walker()
-
-    def append_walker(self, walker):
-        state, obs, reward = walker
-        self.states.append(copy.deepcopy(state))
-        self.observs.append(copy.deepcopy(obs))
-        self.rewards.append(reward)
-
-    def get_walker(self):
-        if len(self.states) == 0:
-            return None, None, None
-        ix = np.random.choice(np.arange(len(self.states)))
-        state = copy.deepcopy(self.states[ix])
-        obs = copy.deepcopy(self.observs[ix])
-        reward = float(self.rewards[ix])
-        return state, obs, reward
-
-@ray.remote
 class ParamServer:
 
     def __init__(self, maxlen: int = 20):
         self._maxlen = maxlen
         self.buffer = deque([], self._maxlen)
+        self.best = (None, None, - np.inf)
 
     def get_best(self):
-        if len(self.buffer) == 0:
-            return None, None, None
-        best_ix = np.argmax([r for _, _, r in self.buffer])
-        return self.buffer[best_ix]
+        return self.best
 
     def reset(self):
         self.buffer = deque([], self._maxlen)
+        self.best = (None, None, - np.inf)
 
     def exchange_walker(self, walker):
         self.append_walker(walker)
@@ -178,12 +147,19 @@ class ParamServer:
 
     def append_walker(self, walker):
         self.buffer.append(copy.deepcopy(walker))
+        self._update_best()
 
     def get_walker(self):
         if len(self.buffer) == 0:
-            return None, None, None
+            return (None, None, - np.inf), (None, None, - np.inf)
         ix = np.random.choice(np.arange(len(self.buffer)))
-        return copy.deepcopy(self.buffer[ix])
+        return copy.deepcopy(self.best), copy.deepcopy(self.buffer[ix])
+
+    def _update_best(self):
+        best_ix = np.argmax([r for _, _, r in self.buffer])
+        state, obs, reward = self.buffer[best_ix]
+        if reward > self.best[2]:
+            self.best = copy.deepcopy((state, obs, reward))
 
 
 class DistributedSwarm:
@@ -191,12 +167,12 @@ class DistributedSwarm:
     def __init__(self, swarm: Callable,
                  n_swarms: int,
                  max_iters_ray: int=10,
-                 log_every: int=100, n_com_add: int=5):
+                 log_every: int=100, n_comp_add: int=5):
         self.n_swarms = n_swarms
         self.log_every = log_every
         self.param_server = ParamServer.remote()
         ray.get(self.param_server.reset.remote())
-        self.swarms = [RemoteSwarm.remote(copy.copy(swarm), int(n_com_add))
+        self.swarms = [RemoteSwarm.remote(copy.copy(swarm), int(n_comp_add))
                        for _ in range(self.n_swarms)]
         self.max_iters_ray = max_iters_ray
         self.frame_pipe: Pipe = None

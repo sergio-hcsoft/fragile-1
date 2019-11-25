@@ -373,7 +373,7 @@ class SimpleWalkers(BaseWalkers):
 
 class Walkers(SimpleWalkers):
     def __init__(self, critic: BaseCritic = None, minimize: bool = False,
-                 best_reward_found: float = -1e10, best_found: Optional[np.ndarray] = None,
+                 best_walker: Tuple = None,
                  *args, **kwargs):
         """
         Initialize a :class:`MapperWalkers`.
@@ -386,8 +386,10 @@ class Walkers(SimpleWalkers):
         # Add data specific to the child class in the StatesWalkers class as new attributes.
         kwargs["critic_score"] = kwargs.get("critic_score", np.zeros(kwargs["n_walkers"]))
         self.dtype = float_type
+        best_state, best_obs, best_reward = (best_walker if best_walker is not None
+                                             else (None, None, -np.inf))
         super(Walkers, self).__init__(
-            best_reward_found=best_reward_found, best_found=best_found, *args, **kwargs
+            best_reward=best_reward, best_obs=best_obs, best_state=best_state, *args, **kwargs
         )
         self.critic = critic
         self.minimize = minimize
@@ -396,7 +398,7 @@ class Walkers(SimpleWalkers):
 
     def __repr__(self):
         text = "\nBest reward found: {:.4f} , efficiency {:.3f}, Critic: {}\n".format(
-            float(self.states.best_reward_found), self.efficiency, self.critic
+            float(self.states.best_reward), self.efficiency, self.critic
         )
         return text + super(Walkers, self).__repr__()
 
@@ -447,19 +449,22 @@ class Walkers(SimpleWalkers):
 
     def update_best(self):
         ix = self._get_best_index()
-        best = self.env_states.observs[ix].copy()
+        best_obs = self.env_states.observs[ix].copy()
         best_reward = float(self.states.cum_rewards[ix])
+        best_state = self.env_states.states[ix].copy()
         best_is_alive = not bool(self.env_states.ends[ix])
-        has_improved = (self.states.best_reward_found > best_reward if self.minimize else
-                        self.states.best_reward_found < best_reward)
+        has_improved = (self.states.best_reward > best_reward if self.minimize else
+                        self.states.best_reward < best_reward)
         if has_improved and best_is_alive:
-            self.states.update(best_reward_found=best_reward)
-            self.states.update(best_found=best)
+            self.states.update(best_reward=best_reward, best_state=best_state,
+                               best_obs=best_obs)
+            self.states.update()
 
     def fix_best(self):
-        if self.states.best_found is not None:
-            self.env_states.observs[-1] = self.states.best_found
-            self.env_states.rewards[-1] = self.states.best_reward_found
+        if self.states.best_reward is not None:
+            self.env_states.observs[-1] = self.states.best_obs
+            self.states.cum_rewards[-1] = self.states.best_reward
+            self.env_states.states[-1] = self.states.best_state
 
     def reset(self, env_states: States = None, model_states: States = None,
               walker_states: StatesWalkers = None):
@@ -468,8 +473,10 @@ class Walkers(SimpleWalkers):
         rewards = self.env_states.rewards
         ix = rewards.argmin() if self.minimize else rewards.argmax()
         self.states.update()
-        self.states.update(best_reward_found=np.inf if self.minimize else -np.inf,
-                           best_found=copy.deepcopy(self.env_states.observs[ix]))
+        self.states.update(best_reward=np.inf if self.minimize else -np.inf,
+                           best_obs=copy.deepcopy(self.env_states.observs[ix]),
+                           best_state=copy.deepcopy(self.env_states.states[ix])
+                           )
         if self.critic is not None:
             critic_score = self.critic.reset(env_states=self.env_states, model_states=model_states,
                                              walker_states=walker_states)
