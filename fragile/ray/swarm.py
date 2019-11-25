@@ -166,12 +166,12 @@ class DistributedSwarm:
 
     def __init__(self, swarm: Callable,
                  n_swarms: int,
+                 n_param_servers: int,
                  max_iters_ray: int=10,
                  log_every: int=100, n_comp_add: int=5):
         self.n_swarms = n_swarms
         self.log_every = log_every
-        self.param_server = ParamServer.remote()
-        ray.get(self.param_server.reset.remote())
+        self.param_servers = [ParamServer.remote() for _ in range(n_param_servers)]
         self.swarms = [RemoteSwarm.remote(copy.copy(swarm), int(n_comp_add))
                        for _ in range(self.n_swarms)]
         self.max_iters_ray = max_iters_ray
@@ -208,19 +208,29 @@ class DistributedSwarm:
         self.n_iters = 0
         best_ids = [s.reset.remote() for s in self.swarms]
         steps = {}
+        param_servers = deque([])
         for worker, best in zip(self.swarms, best_ids):
             steps[worker.make_iteration.remote(best)] = worker
+
+        bests = []
+        for ps, walker in zip(self.param_servers, list(steps.keys())[:len(self.param_servers)]):
+            bests.append(ps.exchange_walker.remote(walker))
+            param_servers.append(ps)
+        ray.get(bests)
 
         for i in range(self.max_iters_ray * len(self.swarms)):
             self.n_iters += 1
             ready_bests, _ = ray.wait(list(steps))
             ready_best_id = ready_bests[0]
             worker = steps.pop(ready_best_id)
-            new_best = self.param_server.exchange_walker.remote(ready_best_id)
+            ps = param_servers.popleft()
+
+            new_best = ps.exchange_walker.remote(ready_best_id)
+            param_servers.append(ps)
             steps[worker.make_iteration.remote(new_best)] = worker
 
             if i % (self.log_every * len(self.swarms)) == 0:
-                id_, _ = (ray.wait([self.param_server.get_best.remote()]))
+                id_, _ = (ray.wait([param_servers[-1].get_best.remote()]))
                 (state, best_obs, best_reward) = ray.get(id_)[0]
                 if state is not None:
                     self.stream_progress(best_obs, best_reward)
