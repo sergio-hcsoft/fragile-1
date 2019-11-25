@@ -29,7 +29,6 @@ ENV NPY_NUM_BUILD_JOBS 8
 RUN pip3 install --no-cache-dir cython && \
     pip3 install --no-cache-dir \
         git+https://github.com/openai/gym \
-        git+https://github.com/Guillem-db/atari-py \
         networkx jupyter h5py Pillow-simd PyOpenGL matplotlib && \
     git clone https://github.com/ray-project/ray.git && \
     pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.8.0.dev6-cp36-cp36m-manylinux1_x86_64.whl && \
@@ -37,18 +36,21 @@ RUN pip3 install --no-cache-dir cython && \
     cd plangym && pip3 install -e . && cd .. && \
     cd fragile && \
     pip3 install -U --no-cache-dir -r requirements.txt --no-use-pep517&& \
-    python3 -c "import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot" && \
-    pip3 uninstall -y cython && \
+    python3 -c "import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot"
+
+
+COPY . fragile/
+
+RUN cd fragile && pip3 install -e . --no-use-pep517 && pip3 install jupyter && \
+    pip3 uninstall -y atari-py && pip3 install git+https://github.com/Guillem-db/atari-py
+
+RUN pip3 uninstall -y cython && \
     apt-get remove -y cmake pkg-config flex bison curl libpng-dev \
         libjpeg-turbo8-dev zlib1g-dev libhdf5-dev libopenblas-dev gfortran \
         libfreetype6-dev && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-COPY . fragile/
-
-RUN cd fragile && pip3 install -e . --no-use-pep517 && pip3 install jupyter
 
 RUN mkdir /root/.jupyter && \
     echo 'c.NotebookApp.token = "'${JUPYTER_PASSWORD}'"' > /root/.jupyter/jupyter_notebook_config.py
