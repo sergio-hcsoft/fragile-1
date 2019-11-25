@@ -1,6 +1,8 @@
 from collections import deque
 import copy
 from typing import Callable
+import warnings
+warnings.filterwarnings("ignore")
 
 import holoviews as hv
 from holoviews.streams import Pipe
@@ -26,7 +28,6 @@ class RemoteSwarm:
     def init_swarm(self):
         self.swarm = self._swarm_callable()
         self.swarm.reset()
-        print(self.swarm.walkers.env_states.states.shape)
 
     def make_iteration(self, best_other):
         self.add_walker(best_other)
@@ -222,7 +223,7 @@ class DistributedSwarm:
        return self.frame_dmap + self.score_dmap
 
     def stream_progress(self, observation, reward):
-        example = pd.DataFrame({"reward": [reward]}, index=[self.n_iters])
+        example = pd.DataFrame({"reward": [reward]}, index=[self.n_iters // self.n_swarms])
         self.stream.emit(example)
         obs = observation[:-3].reshape((210, 160, 3)).astype(np.uint8)
         self.frame_pipe.send(obs)
