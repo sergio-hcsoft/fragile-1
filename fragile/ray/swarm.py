@@ -82,12 +82,20 @@ class RemoteSwarm:
         new_rewards = np.ones(n_walkers)[will_clone].copy() * reward
         new_states = np.tile(state, (n_walkers, 1))[will_clone]
         new_observs = np.tile(obs, (n_walkers, 1))[will_clone]
-
-        self.swarm.walkers.states.cum_rewards[indexes][will_clone] = new_rewards
-        self.swarm.walkers.env_states.states[indexes][will_clone] = copy.deepcopy(new_states)
-        self.swarm.walkers.env_states.observs[indexes][will_clone] = copy.deepcopy(new_observs)
-        self.swarm.walkers.update_best()
-
+        if len(new_states) == 0:
+            return
+        try:
+            self.swarm.walkers.states.cum_rewards[indexes][will_clone] = new_rewards
+            self.swarm.walkers.env_states.states[indexes][will_clone] = copy.deepcopy(new_states)
+            self.swarm.walkers.env_states.observs[indexes][will_clone] = copy.deepcopy(new_observs)
+            self.swarm.walkers.update_best()
+        except Exception as e:
+            msg = "indexes: %s will_clone: %s new_states: %s states shape: %s"
+            data = (indexes, will_clone, new_states, self.swarm.walkers.env_states.states.shape)
+            msg_2 = "clone_probs: %s rewards: %s reward: %s state: %s"
+            data_2 = (clone_probs, rewards, reward, state)
+            print(msg % data + msg_2 % data_2)
+            raise e
 
 
 @ray.remote
