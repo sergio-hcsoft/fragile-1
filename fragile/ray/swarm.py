@@ -77,6 +77,8 @@ class RemoteSwarm:
             clone_probs = np.sqrt(np.clip(clone_probs, 0, 1.1))
         # Clone the new state to the selected walkers
         will_clone = clone_probs > self.swarm.walkers.random_state.random_sample(n_walkers)
+        if will_clone.sum() == 0:
+            return
         new_rewards = np.ones(n_walkers)[will_clone].copy() * reward
         new_states = np.tile(state, (n_walkers, 1))[will_clone]
         new_observs = np.tile(obs, (n_walkers, 1))[will_clone]
@@ -85,6 +87,7 @@ class RemoteSwarm:
         self.swarm.walkers.env_states.states[indexes][will_clone] = copy.deepcopy(new_states)
         self.swarm.walkers.env_states.observs[indexes][will_clone] = copy.deepcopy(new_observs)
         self.swarm.walkers.update_best()
+
 
 
 @ray.remote
