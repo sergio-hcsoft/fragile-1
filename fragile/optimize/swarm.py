@@ -29,9 +29,14 @@ class FunctionMapper(Swarm):
 
 class LennardMapper(FunctionMapper):
 
-    def __init__(self,  best_reward_found: float = -1e10, best_found: Optional[np.ndarray] = None,*args, **kwargs):
+    def __init__(self,  best_walker: tuple = None, best_reward: float = -1e10, best_obs: Optional[
+        np.ndarray] = None,*args,
+                 **kwargs):
+        best_state, best_obs, best_reward = (best_walker if best_walker is not None
+                                             else (-1e10, None, None))
+
         super(LennardMapper, self).__init__(
-            true_best=best_reward_found, true_best_reward=best_found,
+            true_best=best_reward, true_best_reward=best_obs,
             true_best_end=False, *args, **kwargs
         )
         self.minimizer = Minimizer(function=self.env)

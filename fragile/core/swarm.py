@@ -56,11 +56,11 @@ class Swarm(BaseSwarm):
 
     @property
     def best_found(self):
-        return self.walkers.states.best_found
+        return self.walkers.states.best_obs
 
     @property
     def best_reward_found(self):
-        return self.walkers.states.best_reward_found
+        return self.walkers.states.best_reward
 
     @property
     def critic(self):

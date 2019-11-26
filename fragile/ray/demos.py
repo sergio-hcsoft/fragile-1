@@ -34,3 +34,12 @@ class DistributedRam(DistributedSwarm):
         self.stream.emit(example)
         obs = self.image_from_state(state)
         self.frame_pipe.send(obs)
+
+
+class DistributedOptimizer(DistributedSwarm):
+
+    def stream_progress(self, state, observation, reward):
+        example = pd.DataFrame({"reward": [reward]}, index=[self.n_iters // self.n_swarms])
+        self.stream.emit(example)
+        #obs = observation[:-3].reshape((210, 160, 3)).astype(np.uint8)
+        #self.frame_pipe.send(obs)
