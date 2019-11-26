@@ -6,6 +6,8 @@ warnings.filterwarnings("ignore")
 
 import holoviews as hv
 from holoviews.streams import Pipe
+import hvplot.pandas
+import hvplot.streamz
 import numpy as np
 import pandas as pd
 import ray
@@ -198,10 +200,10 @@ class DistributedSwarm:
     def plot(self):
        return self.frame_dmap + self.score_dmap
 
-    def stream_progress(self, observation, reward):
+    def stream_progress(self, state, observation, reward):
         example = pd.DataFrame({"reward": [reward]}, index=[self.n_iters // self.n_swarms])
         self.stream.emit(example)
-        obs = observation[:-3].reshape((210, 160, 3)).astype(np.uint8)
+        obs = observation.reshape((210, 160, 3)).astype(np.uint8)
         self.frame_pipe.send(obs)
 
     def run_swarm(self):
@@ -233,7 +235,7 @@ class DistributedSwarm:
                 id_, _ = (ray.wait([param_servers[-1].get_best.remote()]))
                 (state, best_obs, best_reward) = ray.get(id_)[0]
                 if state is not None:
-                    self.stream_progress(best_obs, best_reward)
+                    self.stream_progress(state, best_obs, best_reward)
                 else:
                     print("skipping, not ready")
 
