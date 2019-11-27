@@ -202,7 +202,6 @@ class LennardJones(OptimBenchmark):
     def __init__(self, n_atoms: int = 10, *args, **kwargs):
         self.n_atoms = n_atoms
         shape = (3 * n_atoms,)
-        print(shape)
         self.benchmark = [np.zeros(self.n_atoms * 3), self.minima.get(str(int(n_atoms)), 0)]
         super(LennardJones, self).__init__(shape=shape, *args, **kwargs)
 
