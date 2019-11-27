@@ -1,6 +1,12 @@
+import holoviews as hv
+from holoviews.streams import Pipe
+import hvplot.pandas
+import hvplot.streamz
 import numpy as np
 import pandas as pd
 from plangym import AtariEnvironment, ParallelEnvironment
+from streamz import Stream
+from streamz.dataframe import DataFrame
 
 from fragile.ray.swarm import DistributedSwarm
 
@@ -41,5 +47,20 @@ class DistributedOptimizer(DistributedSwarm):
     def stream_progress(self, state, observation, reward):
         example = pd.DataFrame({"reward": [reward]}, index=[self.n_iters // self.n_swarms])
         self.stream.emit(example)
-        #obs = observation[:-3].reshape((210, 160, 3)).astype(np.uint8)
-        #self.frame_pipe.send(obs)
+        msg_obs = "Best solution found:\n {}".format(np.round(observation, 2).tolist())
+        msg_reward = "Best value found: {:.4f}".format(reward)
+        data = [[0, 1, msg_reward], [0, 2, msg_obs]]
+        self.frame_pipe.send(pd.DataFrame(data, columns=["x", "y", "label"]))
+
+    def init_plot(self):
+        self.frame_pipe = Pipe(data=[])
+        self.frame_dmap = hv.DynamicMap(hv.Labels, streams=[self.frame_pipe])
+        self.frame_dmap = self.frame_dmap.opts(xlim=(-10, 10), ylim=(0.5, 2.5),
+                                               height=200, width=500,
+                                               xaxis=None, yaxis=None, title="Best solution")
+        example = pd.DataFrame({"reward": []})
+        self.stream = Stream()
+        self.buffer_df = DataFrame(stream=self.stream,
+                                   example=example)
+        self.score_dmap = self.buffer_df.hvplot(y=["reward"]).opts(height=200, width=400,
+                                                                   title="Best value found")

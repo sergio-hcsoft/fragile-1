@@ -81,7 +81,7 @@ class MetricWalkers(Walkers):
     def calculate_virtual_reward(self):
         super(MetricWalkers, self).calculate_virtual_reward()
         self.vr_eff_hist[self.n_iters - 1] = self.efficiency
-        self.reward_hist[self.n_iters - 1] = float(self.states.best_reward_found)
+        self.reward_hist[self.n_iters - 1] = float(self.states.best_reward)
 
     def plot_best_evolution(self):
         return (self.buffer_df.hvplot(y=["vr_eff", "clone_eff"]) +
@@ -93,7 +93,7 @@ class MetricWalkers(Walkers):
         self.clone_pct_hist[self.n_iters-1] = self.clone_eff
         if self.n_iters % self.plot_interval == 0:
             df = pd.DataFrame({"vr_eff": [self.efficiency],
-                               "reward": float(self.states.best_reward_found),
+                               "reward": float(self.states.best_reward),
                                "clone_eff": [self.clone_eff]}, index=[self.n_iters])
             self.stream.emit(df)
 
@@ -105,8 +105,8 @@ class TwoBestWalkers(Walkers):
         best_reward = float(self.states.true_best_reward)
         best_is_alive = not bool(self.states.true_best_end)
         if self.states.best_found is not None:
-            has_improved = (self.states.best_reward_found > best_reward if self.minimize else
-                            self.states.best_reward_found < best_reward)
+            has_improved = (self.states.best_reward > best_reward if self.minimize else
+                            self.states.best_reward < best_reward)
         else:
             has_improved = True
         if has_improved and best_is_alive:

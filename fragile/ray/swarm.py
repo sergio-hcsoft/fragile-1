@@ -21,7 +21,8 @@ from fragile.core.utils import float_type, relativize
 @ray.remote
 class RemoteSwarm:
 
-    def __init__(self, swarm: Callable, n_comp_add: int = 2):
+    def __init__(self, swarm: Callable, n_comp_add: int = 2, minimize: bool = False):
+        self.minimize = minimize
         self._swarm_callable = swarm
         self.swarm: Swarm = None
         self.n_comp_add = n_comp_add
@@ -45,16 +46,17 @@ class RemoteSwarm:
 
     def get_best(self):
         try:
-            best_ix = self.swarm.walkers.states.cum_rewards.argmax()
+            best_ix = (self.swarm.walkers.states.cum_rewards.argmin() if self.minimize else
+                       self.swarm.walkers.states.cum_rewards.argmax())
         except:
-            return None, None, None
+            return None, None, np.inf if self.minimize else -np.inf
         state = self.swarm.walkers.env_states.states[best_ix].copy()
         obs = self.swarm.walkers.env_states.observs[best_ix].copy()
         reward = self.swarm.walkers.states.cum_rewards[best_ix].copy()
         return (state, obs, reward)
 
     def add_walker(self, walkers):
-        if walkers[0] is None:
+        if walkers[0] is None or walkers is None:
             return
         try:
             best_state, best_obs, best_rew = walkers[0]
@@ -62,7 +64,9 @@ class RemoteSwarm:
             print("WALKERS", walkers)
             raise Exception(str(walkers))
 
-        if best_rew > self.swarm.walkers.states.best_reward:
+        update_reward = (best_rew < self.swarm.walkers.states.best_reward if self.minimize
+                         else best_rew > self.swarm.walkers.states.best_reward)
+        if update_reward:
             self.swarm.walkers.states.update(best_reward=best_rew, best_state=best_state,
                                              best_obs=best_obs)
             self.swarm.walkers.fix_best()
@@ -78,6 +82,8 @@ class RemoteSwarm:
         return self.swarm.calculate_end_condition()
 
     def _clone_to_walker(self, state, obs, reward):
+        if obs is None or state is None:
+            return
         # Virtual reward with respect to the new state
         indexes = np.random.choice(np.arange(self.swarm.walkers.n), size=self.n_comp_add)
         n_walkers = len(indexes)
@@ -131,21 +137,23 @@ class RemoteSwarm:
 @ray.remote
 class ParamServer:
 
-    def __init__(self, maxlen: int = 20):
+    def __init__(self, maxlen: int = 20, minimize: bool = False):
         self._maxlen = maxlen
+        self.minimize = minimize
         self.buffer = deque([], self._maxlen)
-        self.best = (None, None, - np.inf)
+        self.best = (None, None, np.inf if self.minimize else -np.inf)
 
     def get_best(self):
         return self.best
 
     def reset(self):
         self.buffer = deque([], self._maxlen)
-        self.best = (None, None, - np.inf)
+        self.best = (None, None, np.inf if self.minimize else -np.inf)
 
     def exchange_walker(self, walker):
-        self.append_walker(walker)
-        return self.get_walker()
+        if walker is not None and walker[0] is not None:
+            self.append_walker(walker)
+            return self.get_walker()
 
     def append_walker(self, walker):
         self.buffer.append(copy.deepcopy(walker))
@@ -153,14 +161,16 @@ class ParamServer:
 
     def get_walker(self):
         if len(self.buffer) == 0:
-            return (None, None, - np.inf), (None, None, - np.inf)
+            return ((None, None, np.inf if self.minimize else -np.inf),
+                    (None, None, np.inf if self.minimize else -np.inf))
         ix = np.random.choice(np.arange(len(self.buffer)))
         return copy.deepcopy(self.best), copy.deepcopy(self.buffer[ix])
 
     def _update_best(self):
-        best_ix = np.argmax([r for _, _, r in self.buffer])
+        rewards = [r for _, _, r in self.buffer]
+        best_ix = np.argmin(rewards) if self.minimize else np.argmax(rewards)
         state, obs, reward = self.buffer[best_ix]
-        if reward >= self.best[2]:
+        if reward <= self.best[2] if self.minimize else reward >= self.best[2]:
             self.best = copy.deepcopy((state, obs, reward))
 
 
@@ -170,11 +180,17 @@ class DistributedSwarm:
                  n_swarms: int,
                  n_param_servers: int,
                  max_iters_ray: int=10,
-                 log_every: int=100, n_comp_add: int=5):
+                 log_every: int=100, n_comp_add: int=5, minimize: bool = False,
+                 ps_maxlen: int=100, init_reward: float=None, log_reward: bool=False):
         self.n_swarms = n_swarms
+        self.minimize = minimize
+        self.log = log_reward
+        self.init_reward = (init_reward if init_reward is not None
+                            else (np.inf if minimize else -np.inf))
         self.log_every = log_every
-        self.param_servers = [ParamServer.remote() for _ in range(n_param_servers)]
-        self.swarms = [RemoteSwarm.remote(copy.copy(swarm), int(n_comp_add))
+        self.param_servers = [ParamServer.remote(minimize=minimize, maxlen=ps_maxlen) for _ in
+                              range(n_param_servers)]
+        self.swarms = [RemoteSwarm.remote(copy.copy(swarm), int(n_comp_add), minimize=minimize)
                        for _ in range(self.n_swarms)]
         self.max_iters_ray = max_iters_ray
         self.frame_pipe: Pipe = None
@@ -235,6 +251,10 @@ class DistributedSwarm:
                 id_, _ = (ray.wait([param_servers[-1].get_best.remote()]))
                 (state, best_obs, best_reward) = ray.get(id_)[0]
                 if state is not None:
+                    if ((best_reward > self.init_reward) if self.minimize else
+                    (best_reward < self.init_reward)):
+                        best_reward = self.init_reward
+                    best_reward = np.log(best_reward) if self.log else best_reward
                     self.stream_progress(state, best_obs, best_reward)
                 else:
                     print("skipping, not ready")
