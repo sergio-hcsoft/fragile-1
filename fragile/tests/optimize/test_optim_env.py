@@ -7,8 +7,12 @@ from fragile.optimize.env import Function
 
 @pytest.fixture()
 def env():
-    return Function(function=lambda x: np.ones(len(x)), shape=(2,),
-                    low=np.array([-10, -5]), high=np.array([10, 5]))
+    return Function(
+        function=lambda x: np.ones(len(x)),
+        shape=(2,),
+        low=np.array([-10, -5]),
+        high=np.array([10, 5]),
+    )
 
 
 class TestFunction:

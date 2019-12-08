@@ -158,7 +158,7 @@ class Swarm(BaseSwarm):
             )
             self.update_tree([0] * self.walkers.n)
 
-    #@profile
+    # @profile
     def run_swarm(
         self,
         model_states: States = None,
@@ -204,17 +204,18 @@ class Swarm(BaseSwarm):
         new_ids = set(self.walkers.states.id_walkers)
         self.prune_tree(old_ids=set(old_ids), new_ids=set(new_ids))
 
-    #@profile
+    # @profile
     def run_step(self):
         self.step_and_update_best()
         self.balance_and_prune()
 
-    #@profile
+    # @profile
     def step_walkers(self):
         """
         Make the walkers undergo a random perturbation process in the swarm \
         Environment.
         """
+        self.walkers.n_iters += 1
         model_states = self.walkers.model_states
         env_states = self.walkers.env_states
 
@@ -224,8 +225,9 @@ class Swarm(BaseSwarm):
             else None
         )
 
-        model_states = self.model.predict(env_states=env_states, model_states=model_states,
-                                          walkers_states=self.walkers.states)
+        model_states = self.model.predict(
+            env_states=env_states, model_states=model_states, walkers_states=self.walkers.states
+        )
         env_states = self.env.step(model_states=model_states, env_states=env_states)
         self.walkers.update_states(
             env_states=env_states, model_states=model_states, end_condition=env_states.ends
@@ -250,6 +252,7 @@ class Swarm(BaseSwarm):
                 env_states=self.walkers.env_states,
                 model_states=self.walkers.model_states,
                 walkers_states=self.walkers.states,
+                n_iter=int(self.walkers.n_iters),
             )
 
     def prune_tree(self, old_ids, new_ids):
@@ -269,14 +272,12 @@ class Swarm(BaseSwarm):
 
 
 class NoBalance(Swarm):
-
     def balance_and_prune(self):
         pass
 
     def run_step(self):
-
         self.step_and_update_best()
-        self.walkers.n_iters += 1
+
 
     def calculate_end_condition(self):
         return self.epoch > self.walkers.max_iters

@@ -79,7 +79,7 @@ def calculate_virtual_reward(
     dist_coef: float = 1.0,
     reward_coef: float = 1.0,
     other_reward: np.ndarray = 1.0,
-    return_compas: bool=False,
+    return_compas: bool = False,
 ):
     """Calculate the virtual rewards given the required data."""
     compas = get_alives_indexes_np(ends) if ends is not None else np.arange(len(rewards))

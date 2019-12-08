@@ -9,7 +9,6 @@ from fragile.optimize.env import Function, States
 from fragile.optimize.encoder import Critic
 
 
-
 class EncoderSampler(RandomNormal):
     def __init__(self, env: Function = None, walkers: "MapperWalkers" = None, *args, **kwargs):
         kwargs["shape"] = kwargs.get(

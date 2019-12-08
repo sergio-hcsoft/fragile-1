@@ -102,8 +102,9 @@ class States:
         return string
 
     def __hash__(self) -> int:
-        return hash(tuple([hash_numpy(x) if isinstance(x, np.ndarray) else hash(x) for x in
-                    self.vals()]))
+        return hash(
+            tuple([hash_numpy(x) if isinstance(x, np.ndarray) else hash(x) for x in self.vals()])
+        )
 
     def group_hash(self, name: str) -> int:
         val = getattr(self, name)
@@ -224,7 +225,7 @@ class States:
         if kwargs:
             update_or_set_attributes(kwargs)
 
-    def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray, ignore: set=None):
+    def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray, ignore: set = None):
         """
         Clone all the stored data according to the provided arrays.
 

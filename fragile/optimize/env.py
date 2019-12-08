@@ -72,7 +72,8 @@ class Function(BaseEnvironment):
         """
         new_points = (
             # model_states.actions * model_states.dt.reshape(env_states.n, -1) + env_states.observs
-            model_states.actions + env_states.observs
+            model_states.actions
+            + env_states.observs
         )
         ends = self.calculate_end(points=new_points)
         rewards = self.function(new_points).flatten()
@@ -105,9 +106,9 @@ class Function(BaseEnvironment):
     def _sample_init_points(self, batch_size: int):
         new_points = np.zeros(tuple([batch_size]) + self.shape, dtype=np.float32)
         for i in range(batch_size):
-            new_points[i, :] = self.random_state.uniform(low=self.bounds.low,
-                                                         high=self.bounds.high,
-                                                         size=self.shape)
+            new_points[i, :] = self.random_state.uniform(
+                low=self.bounds.low, high=self.bounds.high, size=self.shape
+            )
         return new_points
 
     def _get_new_states(self, states, rewards, ends, batch_size) -> States:
@@ -132,8 +133,11 @@ class Minimizer:
             except (ZeroDivisionError, RuntimeError) as e:
                 y = np.inf
             return y
-        bounds = ScipyBounds(ub=self.bounds.high if self.bounds is not None else None,
-                             lb=self.bounds.low if self.bounds is not None else None)
+
+        bounds = ScipyBounds(
+            ub=self.bounds.high if self.bounds is not None else None,
+            lb=self.bounds.low if self.bounds is not None else None,
+        )
         return minimize(_optimize, x, bounds=bounds, *self.args, **self.kwargs)
 
     def minimize_point(self, x):
@@ -154,7 +158,6 @@ class Minimizer:
 
 
 class MinimizerWrapper(Function):
-
     def __init__(self, function: Function, *args, **kwargs):
         self.env = function
         self.minimizer = Minimizer(function=self.env, *args, **kwargs)
@@ -165,11 +168,7 @@ class MinimizerWrapper(Function):
     def __repr__(self):
         return self.env.__repr__()
 
-    def step(
-        self,
-        model_states: States,
-        env_states: States,
-    ) -> States:
+    def step(self, model_states: States, env_states: States) -> States:
         """
         Sets the environment to the target states by applying the specified actions an arbitrary
         number of time steps.
@@ -183,8 +182,9 @@ class MinimizerWrapper(Function):
         Returns:
             States containing the information that describes the new state of the Environment.
         """
-        env_states = super(MinimizerWrapper, self).step(model_states=model_states,
-                                                        env_states=env_states)
+        env_states = super(MinimizerWrapper, self).step(
+            model_states=model_states, env_states=env_states
+        )
 
         new_points, rewards = self.minimizer.minimize_batch(env_states.observs)
         ends = np.logical_not(self.bounds.points_in_bounds(new_points)).flatten()

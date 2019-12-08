@@ -70,7 +70,6 @@ class TestModel:
 
 
 class TestBounds:
-
     def test_points_in_bounds(self, bounds):
         points = np.array([[0, 0], [11, 0], [0, 11]])
         res = bounds.points_in_bounds(points)

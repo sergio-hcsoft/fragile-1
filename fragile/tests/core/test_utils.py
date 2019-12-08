@@ -19,9 +19,9 @@ class TestFaiNumpy:
         arrays(np.bool, shape=(10, 1)),
     )
     def test_calculate_reward(self, observs, rewards, ends):
-        virtual_reward, compas = calculate_virtual_reward(observs=observs,
-                                                          rewards=rewards,
-                                                          ends=ends)
+        virtual_reward, compas = calculate_virtual_reward(
+            observs=observs, rewards=rewards, ends=ends
+        )
         assert isinstance(virtual_reward, np.ndarray)
         assert len(virtual_reward.shape) == 1
         assert len(virtual_reward) == len(rewards)

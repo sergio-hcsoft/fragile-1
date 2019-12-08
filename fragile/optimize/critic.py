@@ -5,8 +5,7 @@ from fragile.core.utils import relativize
 
 
 class GaussianRepulssion(BaseCritic):
-
-    def __init__(self, warmup:int=100, refresh_rate: int=1000, *args, **kwargs):
+    def __init__(self, warmup: int = 100, refresh_rate: int = 1000, *args, **kwargs):
         self.refresh_rate = refresh_rate
         self._model_args = args
         self._model_kwargs = kwargs
@@ -22,7 +21,6 @@ class GaussianRepulssion(BaseCritic):
         walkers_states: "StatesWalkers",
         batch_size: int = None,
         model_states: States = None,
-
     ) -> None:
         self._epoch += 1
         self.buffer.append(env_states.observs)
@@ -30,8 +28,12 @@ class GaussianRepulssion(BaseCritic):
             score = np.ones(env_states.n)
             walkers_states.update(critic_score=score)
             return
-        elif (self._epoch == self.refresh_rate and self._warmed or
-              self._epoch == self.warmup and not self._warmed):
+        elif (
+            self._epoch == self.refresh_rate
+            and self._warmed
+            or self._epoch == self.warmup
+            and not self._warmed
+        ):
             self.kde = self.kde.fit(np.concatenate(self.buffer, axis=0))
             self._warmed = True
             self._epoch = 0
@@ -48,4 +50,3 @@ class GaussianRepulssion(BaseCritic):
 
     def update(self, *args, **kwargs):
         pass
-

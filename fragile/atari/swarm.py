@@ -3,7 +3,8 @@ from PIL import Image
 from plangym import ParallelEnvironment
 from plangym.montezuma import Montezuma
 from plangym.ray import RayEnv
-#from plangym.montezuma import Montezuma
+
+# from plangym.montezuma import Montezuma
 from holoviews.streams import Pipe, Buffer
 from streamz.dataframe import DataFrame
 from streamz import Stream
@@ -12,6 +13,7 @@ import hvplot.pandas
 import hvplot.streamz
 import numpy as np
 import pandas as pd
+
 hv.extension("bokeh")
 
 from fragile.core.env import DiscreteEnv
@@ -27,11 +29,11 @@ from fragile.atari.critics import MontezumaGrid
 
 
 class MontezumaSwarm(Swarm):
-
     def __init__(self, plot_step=10, *args, **kwargs):
         super(MontezumaSwarm, self).__init__(*args, **kwargs)
         self.init_dmap()
         self.plot_step = plot_step
+
     @property
     def grid(self) -> MontezumaGrid:
         return self.critic
@@ -48,13 +50,10 @@ class MontezumaSwarm(Swarm):
         self.frame_dmap = self.frame_dmap.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5))
 
     @staticmethod
-    def create_swarm(critic_scale:float=1, env_workers: int=8, *args, **kwargs):
+    def create_swarm(critic_scale: float = 1, env_workers: int = 8, *args, **kwargs):
         def create_env():
-            return Montezuma(
-                autoreset=True,
-                episodic_live=True,
-                min_dt=1,
-            )
+            return Montezuma(autoreset=True, episodic_live=True, min_dt=1)
+
         env = RayEnv(env_callable=create_env, n_workers=env_workers)
         dt = GaussianDt(min_dt=3, max_dt=1000, loc_dt=6, scale_dt=4)
 
@@ -62,17 +61,16 @@ class MontezumaSwarm(Swarm):
             model=lambda x: RandomDiscrete(x, dt_sampler=dt),
             walkers=MontezumaWalkers,
             env=lambda: DiscreteEnv(env),
-            tree=None, #HistoryTree,
+            tree=None,  # HistoryTree,
             critic=MontezumaGrid(scale=critic_scale),
-            *args, **kwargs
-
+            *args,
+            **kwargs
         )
         return swarm
 
-
     @staticmethod
     def plot_grid_over_obs(observation, grid) -> hv.NdOverlay:
-        background = observation[50:, :, ].mean(axis=2).astype(bool).astype(int) * 255
+        background = observation[50:, :].mean(axis=2).astype(bool).astype(int) * 255
         peste = resize_frame(grid.T[::1, ::1], 160, 160, "L")
         peste = peste / peste.max() * 255
         return hv.RGB(background) * hv.Image(peste).opts(alpha=0.7)
@@ -96,7 +94,7 @@ class MontezumaSwarm(Swarm):
 
     def plot_critic(self) -> hv.NdOverlay:
         ix = np.random.randint(self.walkers.n)
-        #best_ix = self.walkers.states.cum_rewards.argmax()
+        # best_ix = self.walkers.states.cum_rewards.argmax()
         background = self.walkers.env_states.observs[ix, :-3].reshape((210, 160, 3))
         # best_room = int(self.walkers.env_states.observs[best_ix, -1])
 
@@ -108,4 +106,3 @@ class MontezumaSwarm(Swarm):
         if self.walkers.n_iters % self.plot_step == 0:
             self.stream_dmap()
         return returned
-

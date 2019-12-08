@@ -208,7 +208,7 @@ class SimpleWalkers(BaseWalkers):
         max_iters = self.n_iters >= self.max_iters
         return all_dead or max_iters
 
-    #@profile
+    # @profile
     def calculate_distances(self):
         """Calculate the corresponding distance function for each state with \
         respect to another state chosen at random.
@@ -270,7 +270,7 @@ class SimpleWalkers(BaseWalkers):
             clone_probs = np.sqrt(np.clip(clone_probs, 0, 1.1))
         self.update_states(clone_probs=clone_probs, compas_clone=compas_ix)
 
-    #@profile
+    # @profile
     def balance(self) -> Tuple[set, set]:
         """
         Perform an iteration of the FractalAI algorithm for balancing distributions.
@@ -292,7 +292,7 @@ class SimpleWalkers(BaseWalkers):
         new_ids = set(self.states.id_walkers.copy())
         return old_ids, new_ids
 
-    #@profile
+    # @profile
     def clone_walkers(self):
         """Sample the clone probability distribution and clone the walkers accordingly."""
         will_clone = self.states.clone_probs > self.random_state.random_sample(self.n)
@@ -304,10 +304,13 @@ class SimpleWalkers(BaseWalkers):
         clone, compas = self.states.clone()
         self._env_states.clone(will_clone=clone, compas_ix=compas, ignore={"observs"})
         self._model_states.clone(will_clone=clone, compas_ix=compas)
-        self.n_iters += 1
 
-    def reset(self, env_states: States = None, model_states: States = None,
-              walker_states: StatesWalkers = None):
+    def reset(
+        self,
+        env_states: States = None,
+        model_states: States = None,
+        walker_states: StatesWalkers = None,
+    ):
         """
         Restart all the internal states involved in the algorithm iteration.
 
@@ -379,9 +382,14 @@ class SimpleWalkers(BaseWalkers):
 
 
 class Walkers(SimpleWalkers):
-    def __init__(self, critic: BaseCritic = None, minimize: bool = False,
-                 best_walker: Tuple = None,
-                 *args, **kwargs):
+    def __init__(
+        self,
+        critic: BaseCritic = None,
+        minimize: bool = False,
+        best_walker: Tuple = None,
+        *args,
+        **kwargs
+    ):
         """
         Initialize a :class:`MapperWalkers`.
 
@@ -393,8 +401,9 @@ class Walkers(SimpleWalkers):
         # Add data specific to the child class in the StatesWalkers class as new attributes.
         kwargs["critic_score"] = kwargs.get("critic_score", np.zeros(kwargs["n_walkers"]))
         self.dtype = float_type
-        best_state, best_obs, best_reward = (best_walker if best_walker is not None
-                                             else (None, None, -np.inf))
+        best_state, best_obs, best_reward = (
+            best_walker if best_walker is not None else (None, None, -np.inf)
+        )
         super(Walkers, self).__init__(
             best_reward=best_reward, best_obs=best_obs, best_state=best_state, *args, **kwargs
         )
@@ -409,7 +418,7 @@ class Walkers(SimpleWalkers):
         )
         return text + super(Walkers, self).__repr__()
 
-    #@profile
+    # @profile
     def calculate_virtual_reward(self):
         rewards = -1 * self.states.cum_rewards if self.minimize else self.states.cum_rewards
         processed_rewards = relativize(rewards)
@@ -433,7 +442,7 @@ class Walkers(SimpleWalkers):
             virt_rew = self.states.virtual_rewards
         self.states.update(virtual_rewards=virt_rew)
 
-    #@profile
+    # @profile
     def balance(self):
         self.update_best()
         returned = super(Walkers, self).balance()
@@ -460,11 +469,13 @@ class Walkers(SimpleWalkers):
         best_reward = float(self.states.cum_rewards[ix])
         best_state = self.env_states.states[ix].copy()
         best_is_alive = not bool(self.env_states.ends[ix])
-        has_improved = (self.states.best_reward > best_reward if self.minimize else
-                        self.states.best_reward < best_reward)
+        has_improved = (
+            self.states.best_reward > best_reward
+            if self.minimize
+            else self.states.best_reward < best_reward
+        )
         if has_improved and best_is_alive:
-            self.states.update(best_reward=best_reward, best_state=best_state,
-                               best_obs=best_obs)
+            self.states.update(best_reward=best_reward, best_state=best_state, best_obs=best_obs)
             self.states.update()
 
     def fix_best(self):
@@ -473,19 +484,25 @@ class Walkers(SimpleWalkers):
             self.states.cum_rewards[-1] = self.states.best_reward
             self.env_states.states[-1] = self.states.best_state
 
-    def reset(self, env_states: States = None, model_states: States = None,
-              walker_states: StatesWalkers = None):
-        super(Walkers, self).reset(env_states=env_states, model_states=model_states,
-                                   walker_states=walker_states)
+    def reset(
+        self,
+        env_states: States = None,
+        model_states: States = None,
+        walker_states: StatesWalkers = None,
+    ):
+        super(Walkers, self).reset(
+            env_states=env_states, model_states=model_states, walker_states=walker_states
+        )
         rewards = self.env_states.rewards
         ix = rewards.argmin() if self.minimize else rewards.argmax()
         self.states.update()
-        self.states.update(best_reward=np.inf if self.minimize else -np.inf,
-                           best_obs=copy.deepcopy(self.env_states.observs[ix]),
-                           best_state=copy.deepcopy(self.env_states.states[ix])
-                           )
+        self.states.update(
+            best_reward=np.inf if self.minimize else -np.inf,
+            best_obs=copy.deepcopy(self.env_states.observs[ix]),
+            best_state=copy.deepcopy(self.env_states.states[ix]),
+        )
         if self.critic is not None:
-            critic_score = self.critic.reset(env_states=self.env_states, model_states=model_states,
-                                             walker_states=walker_states)
+            critic_score = self.critic.reset(
+                env_states=self.env_states, model_states=model_states, walker_states=walker_states
+            )
             self.states.update(critic_score=critic_score)
-

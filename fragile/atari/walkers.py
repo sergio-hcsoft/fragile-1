@@ -5,6 +5,7 @@ from fragile.core.utils import relativize
 
 import line_profiler
 
+
 class AtariWalkers(Walkers):
     """
     This class is in charge of performing all the mathematical operations involved in evolving a \
@@ -12,7 +13,7 @@ class AtariWalkers(Walkers):
 
     """
 
-    def __init__(self, max_reward: int=None, *args, **kwargs):
+    def __init__(self, max_reward: int = None, *args, **kwargs):
         super(AtariWalkers, self).__init__(*args, **kwargs)
         self.max_reward = max_reward
 
@@ -31,7 +32,7 @@ class AtariWalkers(Walkers):
 
 class MontezumaWalkers(Walkers):
 
-    #@profile
+    # @profile
     def calculate_distances(self):
         """Calculate the corresponding distance function for each state with \
         respect to another state chosen at random.
@@ -39,13 +40,13 @@ class MontezumaWalkers(Walkers):
         The internal state is update with the relativized distance values.
         """
         compas_ix = np.random.permutation(np.arange(self.n))  # self.get_alive_compas()
-        #obs = self.env_states.observs.reshape(self.n, -1)[:, -3:]
-        rams = self.env_states.states.reshape(self.n, -1)[:, :-12].astype(np.uint8)#[:, :-15]
-        vec = (rams - rams[compas_ix])
+        # obs = self.env_states.observs.reshape(self.n, -1)[:, -3:]
+        rams = self.env_states.states.reshape(self.n, -1)[:, :-12].astype(np.uint8)  # [:, :-15]
+        vec = rams - rams[compas_ix]
         dist_ram = np.linalg.norm(vec, axis=1).flatten()
-        #dist_ram = distance(rams, compas_ix)
-        #dist_pos = np.linalg.norm(obs[:, :-1] - obs[compas_ix, :-1], axis=1).flatten()
-        #dist_room = np.linalg.norm(obs[:, -1] - obs[compas_ix, -1]).flatten()
-        #distances = relativize(dist_pos) * relativize(dist_room) * relativize(dist_ram)
+        # dist_ram = distance(rams, compas_ix)
+        # dist_pos = np.linalg.norm(obs[:, :-1] - obs[compas_ix, :-1], axis=1).flatten()
+        # dist_room = np.linalg.norm(obs[:, -1] - obs[compas_ix, -1]).flatten()
+        # distances = relativize(dist_pos) * relativize(dist_room) * relativize(dist_ram)
         distances = relativize(dist_ram)
         self.update_states(distances=distances, compas_dist=compas_ix)

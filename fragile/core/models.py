@@ -36,8 +36,9 @@ class Bounds:
             self.dtype = type(low)
 
     def __repr__(self):
-        return "{} shape {} dtype {}low {} high {}".format(self.__class__.__name__, self.dtype,
-                                                           self.shape, self.low, self.high)
+        return "{} shape {} dtype {}low {} high {}".format(
+            self.__class__.__name__, self.dtype, self.shape, self.low, self.high
+        )
 
     @classmethod
     def from_tuples(cls, bounds) -> "Bounds":
@@ -56,7 +57,6 @@ class Bounds:
 
 
 class Model(BaseModel):
-
     def sample(
         self,
         batch_size: int,
@@ -143,10 +143,7 @@ class RandomDiscrete(Model):
     """
 
     def __init__(
-        self,
-        env: DiscreteEnv = None,
-        n_actions: int = None,
-        dt_sampler: BaseCritic = None,
+        self, env: DiscreteEnv = None, n_actions: int = None, dt_sampler: BaseCritic = None
     ):
         """
         Initialize a :class:`RandomDiscrete`.
@@ -185,15 +182,18 @@ class RandomDiscrete(Model):
 
         """
         actions = self.random_state.randint(0, self.n_actions, size=batch_size)
-        dt = (1 if self.dt_sampler is None else
-              self.dt_sampler.calculate(batch_size=batch_size, model_states=model_states,
-                                        **kwargs).astype(int))
+        dt = (
+            1
+            if self.dt_sampler is None
+            else self.dt_sampler.calculate(
+                batch_size=batch_size, model_states=model_states, **kwargs
+            ).astype(int)
+        )
         model_states.update(actions=actions, dt=dt)
         return model_states
 
 
 class BinarySwap(Model):
-
     def __init__(self, dim, *args, **kwargs):
         super(BinarySwap, self).__init__(*args, **kwargs)
         self.dim = dim
@@ -203,8 +203,9 @@ class BinarySwap(Model):
         actions = {"actions": {"dtype": np.int_}}
         return self._add_dt_sample_params(actions)
 
-    def sample(self, env_states: States=None, batch_size: int=1,
-               model_states: States = None, **kwargs) -> States:
+    def sample(
+        self, env_states: States = None, batch_size: int = 1, model_states: States = None, **kwargs
+    ) -> States:
         """
         Sample a random discrete variable from a uniform prior.
 
@@ -216,16 +217,23 @@ class BinarySwap(Model):
             Tuple containing a tensor with the sampled actions and the new model states variable.
 
         """
-        actions = env_states.observs.copy() if env_states is not None else np.zeros((batch_size,
-                                                                                    self.dim))
+        actions = (
+            env_states.observs.copy()
+            if env_states is not None
+            else np.zeros((batch_size, self.dim))
+        )
         actions = actions.astype(bool)
         flip_values = self.random_state.randint(0, actions.shape[1], size=len(actions))
         for i, n in enumerate(flip_values):
             actions[i, n] = np.logical_not(actions[i, n])
         actions = actions.astype(int)
-        dt = (1 if self.dt_sampler is None else
-              self.dt_sampler.calculate(batch_size=batch_size, model_states=model_states,
-                                        **kwargs).astype(int))
+        dt = (
+            1
+            if self.dt_sampler is None
+            else self.dt_sampler.calculate(
+                batch_size=batch_size, model_states=model_states, **kwargs
+            ).astype(int)
+        )
         model_states.update(actions=actions, dt=dt)
         return model_states
 
@@ -233,11 +241,14 @@ class BinarySwap(Model):
 class RandomContinous(Model):
     """Model that samples actions in a continuous random using a uniform prior."""
 
-    def __init__(self, bounds: Optional[Bounds] = None,
-                 low: Optional[Union[int, float, np.ndarray]] = None,
-                 high: Optional[Union[int, float, np.ndarray]] = None,
-                 shape: Optional[tuple] = None,
-                 dt_sampler: Optional[BaseCritic] = None, ):
+    def __init__(
+        self,
+        bounds: Optional[Bounds] = None,
+        low: Optional[Union[int, float, np.ndarray]] = None,
+        high: Optional[Union[int, float, np.ndarray]] = None,
+        shape: Optional[tuple] = None,
+        dt_sampler: Optional[BaseCritic] = None,
+    ):
         """
         Initialize a :class:`RandomContinuous`.
 
@@ -288,20 +299,26 @@ class RandomContinous(Model):
         actions = self.random_state.uniform(
             low=self.bounds.low, high=self.bounds.high, size=tuple([batch_size]) + self.shape
         ).astype(self.bounds.dtype)
-        dt = (1.0 if self.dt_sampler is None else
-              self.dt_sampler.calculate(batch_size=batch_size, model_states=model_states,
-                                        **kwargs))
+        dt = (
+            1.0
+            if self.dt_sampler is None
+            else self.dt_sampler.calculate(
+                batch_size=batch_size, model_states=model_states, **kwargs
+            )
+        )
         model_states.update(actions=actions, dt=dt)
         return model_states
 
 
 class RandomNormal(RandomContinous):
-
-    def __init__(self, bounds: Optional[Bounds] = None,
-                 loc: Union[int, float, np.ndarray] = 0.,
-                 scale: Optional[Union[int, float, np.ndarray]] = 1.,
-                 shape: Optional[tuple] = None,
-                 dt_sampler: Optional[BaseCritic] = None):
+    def __init__(
+        self,
+        bounds: Optional[Bounds] = None,
+        loc: Union[int, float, np.ndarray] = 0.0,
+        scale: Optional[Union[int, float, np.ndarray]] = 1.0,
+        shape: Optional[tuple] = None,
+        dt_sampler: Optional[BaseCritic] = None,
+    ):
         """
         Initialize a :class:`RandomContinuous`.
 
@@ -324,11 +341,11 @@ class RandomNormal(RandomContinous):
         return self._shape
 
     def sample(
-            self,
-            batch_size: int,
-            model_states: States = None,
-            env_states: States = None,
-            walkers_states: "StatesWalkers" = None,
+        self,
+        batch_size: int,
+        model_states: States = None,
+        env_states: States = None,
+        walkers_states: "StatesWalkers" = None,
     ) -> States:
         """
         Calculate the corresponding data to interact with the Environment and \
@@ -345,13 +362,21 @@ class RandomNormal(RandomContinous):
 
         """
         batch_size = batch_size if model_states is None else model_states.n
-        actions = self.random_state.normal(size=tuple([batch_size]) + self.shape,
-                                           loc=self.loc, scale=self.scale)
+        actions = self.random_state.normal(
+            size=tuple([batch_size]) + self.shape, loc=self.loc, scale=self.scale
+        )
         if self.bounds is not None and hasattr(self.bounds, "clip"):
             actions = self.bounds.clip(actions).astype(self.bounds.dtype)
 
-        dt = (1.0 if self.dt_sampler is None else
-              self.dt_sampler.calculate(batch_size=batch_size, model_states=model_states,
-                                        env_states=env_states, walkers_states=walkers_states))
+        dt = (
+            1.0
+            if self.dt_sampler is None
+            else self.dt_sampler.calculate(
+                batch_size=batch_size,
+                model_states=model_states,
+                env_states=env_states,
+                walkers_states=walkers_states,
+            )
+        )
         model_states.update(actions=actions, dt=dt)
         return model_states

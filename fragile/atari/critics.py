@@ -15,12 +15,14 @@ class MontezumaGrid(BaseCritic):
     NUM_ROOMS = 50
     MAX_COORDINATES = (320, 160)
 
-    def __init__(self, shape=(16, 16), scale: float=1.0, recover_n: int=1, decrease_n: int=10):
+    def __init__(
+        self, shape=(16, 16), scale: float = 1.0, recover_n: int = 1, decrease_n: int = 10
+    ):
         self.scale = scale
         self.grid_shape = shape
         self.recover_n = recover_n
         self.decrease_n = decrease_n
-        self.memory = np.zeros(shape + (self.NUM_ROOMS,), dtype=np.int64) # * 1000
+        self.memory = np.zeros(shape + (self.NUM_ROOMS,), dtype=np.int64)  # * 1000
         self.x_mod = self.MAX_COORDINATES[0] // self.grid_shape[0]
         self.y_mod = self.MAX_COORDINATES[1] // self.grid_shape[1]
         self.n_iter = 0
@@ -28,8 +30,7 @@ class MontezumaGrid(BaseCritic):
         self._cols = [str(i) for i in range(shape[0])]
         self._index = [str(i) for i in range(shape[1])]
         example = pd.DataFrame(self.memory[:, :, 0], columns=self._cols, index=self._index)
-        self.buffer_df = DataFrame(stream=self.stream,
-                                   example=example)
+        self.buffer_df = DataFrame(stream=self.stream, example=example)
 
     def calculate(
         self,
@@ -66,7 +67,7 @@ class MontezumaGrid(BaseCritic):
 
     def _calculate_values(self, x, y, rooms):
         prob_no_walker = 1 - self.memory[x, y, rooms] / self.n_iter / len(x)
-        #score = 1 / (1 + np.log(1 + vals))
+        # score = 1 / (1 + np.log(1 + vals))
         # self.stream.emit(pd.DataFrame(self.memory[:, :, rooms[0]],
         #                              columns=self._cols, index=self._index))
         # print(self.memory[:, :, rooms[0]], x, y, rooms)
@@ -95,7 +96,7 @@ class MontezumaGrid(BaseCritic):
         return np.ones(n_walkers)
 
     def plot_grid(self):
-        return self.buffer_df.hvplot(kind="bar")#heatmap()
+        return self.buffer_df.hvplot(kind="bar")  # heatmap()
 
     def update(self, *args, **kwargs):
         pass

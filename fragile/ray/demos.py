@@ -12,7 +12,6 @@ from fragile.ray.swarm import DistributedSwarm
 
 
 class DistributedMontezuma(DistributedSwarm):
-
     def stream_progress(self, state, observation, reward):
         example = pd.DataFrame({"reward": [reward]}, index=[self.n_iters // self.n_swarms])
         self.stream.emit(example)
@@ -21,7 +20,6 @@ class DistributedMontezuma(DistributedSwarm):
 
 
 class DistributedRam(DistributedSwarm):
-
     def __init__(self, swarm, *args, **kwargs):
         super(DistributedRam, self).__init__(swarm=swarm, *args, **kwargs)
         self.local_swarm = swarm()
@@ -43,7 +41,6 @@ class DistributedRam(DistributedSwarm):
 
 
 class DistributedOptimizer(DistributedSwarm):
-
     def stream_progress(self, state, observation, reward):
         example = pd.DataFrame({"reward": [reward]}, index=[self.n_iters // self.n_swarms])
         self.stream.emit(example)
@@ -55,12 +52,69 @@ class DistributedOptimizer(DistributedSwarm):
     def init_plot(self):
         self.frame_pipe = Pipe(data=[])
         self.frame_dmap = hv.DynamicMap(hv.Labels, streams=[self.frame_pipe])
-        self.frame_dmap = self.frame_dmap.opts(xlim=(-10, 10), ylim=(0.5, 2.5),
-                                               height=200, width=500,
-                                               xaxis=None, yaxis=None, title="Best solution")
+        self.frame_dmap = self.frame_dmap.opts(
+            xlim=(-10, 10),
+            ylim=(0.5, 2.5),
+            height=200,
+            width=500,
+            xaxis=None,
+            yaxis=None,
+            title="Best solution",
+        )
         example = pd.DataFrame({"reward": []})
         self.stream = Stream()
-        self.buffer_df = DataFrame(stream=self.stream,
-                                   example=example)
-        self.score_dmap = self.buffer_df.hvplot(y=["reward"]).opts(height=200, width=400,
-                                                                   title="Best value found")
+        self.buffer_df = DataFrame(stream=self.stream, example=example)
+        self.score_dmap = self.buffer_df.hvplot(y=["reward"]).opts(
+            height=200, width=400, title="Best value found"
+        )
+
+
+class DistributedLennardJonnes(DistributedSwarm):
+    def stream_progress(self, state, observation, reward):
+        ix = self.n_iters // self.n_swarms
+        example = pd.DataFrame({"reward": [reward]}, index=[ix])
+        self.stream.emit(example)
+        # msg_obs = "Best solution found:\n {}".format(np.round(observation, 2).tolist())
+        msg_reward = "Best value found: {:.4f}".format(reward)
+        data = [[ix * 0.5, self.init_reward - 3, msg_reward]]
+        self.label_pipe.send(pd.DataFrame(data, columns=["x", "y", "label"]))
+        if self.best[0] is not None:
+            x = self.best[0].reshape(-1, 3)
+            d = {
+                "x": x[:, 0].copy().tolist(),
+                "y": x[:, 1].copy().tolist(),
+                "z": x[:, 2].copy().tolist(),
+            }
+            self.best_pipe.send(d)
+
+    def plot(self):
+        return self.best_dmap + self.label_dmap * self.score_dmap
+
+    def init_plot(self):
+        hv.extension("plotly")
+        self.best_pipe = Pipe(data=[])
+        self.best_dmap = hv.DynamicMap(hv.Scatter3D, streams=[self.best_pipe])
+        self.best_dmap = self.best_dmap.opts(
+            xlim=(-2, 2),
+            ylim=(-2, 4),
+            color="red",
+            alpha=0.7,
+            # height=600, width=600,
+            xaxis=None,
+            yaxis=None,
+            title="Best solution",
+        )
+        self.label_pipe = Pipe(data=[])
+        self.label_dmap = hv.DynamicMap(hv.Labels, streams=[self.label_pipe])
+        self.label_dmap = self.label_dmap.opts(
+            # height=200, width=400,
+            xaxis=None,
+            yaxis=None,
+            title="Best solution",
+        )
+        example = pd.DataFrame({"reward": []})
+        self.stream = Stream()
+        self.buffer_df = DataFrame(stream=self.stream, example=example)
+        self.score_dmap = self.buffer_df.hvplot(y=["reward"]).opts(  # height=200, width=400,
+            title="Best value found"
+        )

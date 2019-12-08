@@ -88,24 +88,26 @@ class StatesOwner:
 
 
 class BaseStateTree:
-
     def add_states(
         self,
         parent_ids: List[int],
         env_states: States = None,
         model_states: States = None,
         walkers_states: States = None,
+        n_iter: int = None,
     ) -> np.ndarray:
         pass
 
-    def reset(self,
-        parent_ids: List[int]=None,
+    def reset(
+        self,
+        parent_ids: List[int] = None,
         env_states: States = None,
         model_states: States = None,
-        walkers_states: States = None,) -> None:
+        walkers_states: States = None,
+    ) -> None:
         pass
 
-    def prune_tree(self,  alive_leafs: set, from_hash: bool=False) -> None:
+    def prune_tree(self, alive_leafs: set, from_hash: bool = False) -> None:
         pass
 
 

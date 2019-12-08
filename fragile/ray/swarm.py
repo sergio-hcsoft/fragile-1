@@ -2,6 +2,7 @@ from collections import deque
 import copy
 from typing import Callable
 import warnings
+
 warnings.filterwarnings("ignore")
 
 import holoviews as hv
@@ -20,7 +21,6 @@ from fragile.core.utils import float_type, relativize
 
 @ray.remote
 class RemoteSwarm:
-
     def __init__(self, swarm: Callable, n_comp_add: int = 2, minimize: bool = False):
         self.minimize = minimize
         self._swarm_callable = swarm
@@ -46,8 +46,11 @@ class RemoteSwarm:
 
     def get_best(self):
         try:
-            best_ix = (self.swarm.walkers.states.cum_rewards.argmin() if self.minimize else
-                       self.swarm.walkers.states.cum_rewards.argmax())
+            best_ix = (
+                self.swarm.walkers.states.cum_rewards.argmin()
+                if self.minimize
+                else self.swarm.walkers.states.cum_rewards.argmax()
+            )
         except:
             return None, None, np.inf if self.minimize else -np.inf
         state = self.swarm.walkers.env_states.states[best_ix].copy()
@@ -64,11 +67,15 @@ class RemoteSwarm:
             print("WALKERS", walkers)
             raise Exception(str(walkers))
 
-        update_reward = (best_rew < self.swarm.walkers.states.best_reward if self.minimize
-                         else best_rew > self.swarm.walkers.states.best_reward)
+        update_reward = (
+            best_rew < self.swarm.walkers.states.best_reward
+            if self.minimize
+            else best_rew > self.swarm.walkers.states.best_reward
+        )
         if update_reward:
-            self.swarm.walkers.states.update(best_reward=best_rew, best_state=best_state,
-                                             best_obs=best_obs)
+            self.swarm.walkers.states.update(
+                best_reward=best_rew, best_state=best_state, best_obs=best_obs
+            )
             self.swarm.walkers.fix_best()
         else:
             self._clone_to_walker(best_state, best_obs, best_rew)
@@ -93,8 +100,9 @@ class RemoteSwarm:
         distances = np.linalg.norm(walkers_obs - obs.reshape(1, -1), axis=1)
         distances = relativize(distances.flatten()) ** self.swarm.walkers.dist_scale
         distances = distances / distances.sum()
-        rewards = relativize(np.concatenate([w_rewards,
-                                             [reward]])) ** self.swarm.walkers.reward_scale
+        rewards = (
+            relativize(np.concatenate([w_rewards, [reward]])) ** self.swarm.walkers.reward_scale
+        )
         rewards = rewards / rewards.sum()
         w_virt_rew = 2 - distances ** rewards[:-1]
         other_ix = np.random.permutation(np.arange(n_walkers))
@@ -128,15 +136,16 @@ class RemoteSwarm:
             x = orig_states[indexes][will_clone]
             msg_3 = "will_clone shape: %s clone_probs shape: %s SHAPE: %s DATA: %s" % (
                 will_clone.shape,
-                                                                    clone_probs.shape,
-                                                                    type(x), x)
+                clone_probs.shape,
+                type(x),
+                x,
+            )
             print((msg % data) + (msg_2 % data_2) + msg_3)
             raise e
 
 
 @ray.remote
 class ParamServer:
-
     def __init__(self, maxlen: int = 20, minimize: bool = False):
         self._maxlen = maxlen
         self.minimize = minimize
@@ -161,8 +170,10 @@ class ParamServer:
 
     def get_walker(self):
         if len(self.buffer) == 0:
-            return ((None, None, np.inf if self.minimize else -np.inf),
-                    (None, None, np.inf if self.minimize else -np.inf))
+            return (
+                (None, None, np.inf if self.minimize else -np.inf),
+                (None, None, np.inf if self.minimize else -np.inf),
+            )
         ix = np.random.choice(np.arange(len(self.buffer)))
         return copy.deepcopy(self.best), copy.deepcopy(self.buffer[ix])
 
@@ -175,23 +186,33 @@ class ParamServer:
 
 
 class DistributedSwarm:
-
-    def __init__(self, swarm: Callable,
-                 n_swarms: int,
-                 n_param_servers: int,
-                 max_iters_ray: int=10,
-                 log_every: int=100, n_comp_add: int=5, minimize: bool = False,
-                 ps_maxlen: int=100, init_reward: float=None, log_reward: bool=False):
+    def __init__(
+        self,
+        swarm: Callable,
+        n_swarms: int,
+        n_param_servers: int,
+        max_iters_ray: int = 10,
+        log_every: int = 100,
+        n_comp_add: int = 5,
+        minimize: bool = False,
+        ps_maxlen: int = 100,
+        init_reward: float = None,
+        log_reward: bool = False,
+    ):
         self.n_swarms = n_swarms
         self.minimize = minimize
         self.log = log_reward
-        self.init_reward = (init_reward if init_reward is not None
-                            else (np.inf if minimize else -np.inf))
+        self.init_reward = (
+            init_reward if init_reward is not None else (np.inf if minimize else -np.inf)
+        )
         self.log_every = log_every
-        self.param_servers = [ParamServer.remote(minimize=minimize, maxlen=ps_maxlen) for _ in
-                              range(n_param_servers)]
-        self.swarms = [RemoteSwarm.remote(copy.copy(swarm), int(n_comp_add), minimize=minimize)
-                       for _ in range(self.n_swarms)]
+        self.param_servers = [
+            ParamServer.remote(minimize=minimize, maxlen=ps_maxlen) for _ in range(n_param_servers)
+        ]
+        self.swarms = [
+            RemoteSwarm.remote(copy.copy(swarm), int(n_comp_add), minimize=minimize)
+            for _ in range(self.n_swarms)
+        ]
         self.max_iters_ray = max_iters_ray
         self.frame_pipe: Pipe = None
         self.stream = None
@@ -200,21 +221,23 @@ class DistributedSwarm:
         self.frame_dmap = None
         self.init_plot()
         self.n_iters = 0
+        self.best = (None, None, None)
 
     def init_plot(self):
         self.frame_pipe = Pipe(data=[])
         self.frame_dmap = hv.DynamicMap(hv.RGB, streams=[self.frame_pipe])
-        self.frame_dmap = self.frame_dmap.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
-                                               xaxis=None, yaxis=None, title="Game screen")
+        self.frame_dmap = self.frame_dmap.opts(
+            xlim=(-0.5, 0.5), ylim=(-0.5, 0.5), xaxis=None, yaxis=None, title="Game screen"
+        )
         example = pd.DataFrame({"reward": []})
         self.stream = Stream()
-        self.buffer_df = DataFrame(stream=self.stream,
-                                   example=example)
-        self.score_dmap = self.buffer_df.hvplot(y=["reward"]).opts(height=200, width=500,
-                                                                   title="Game score")
+        self.buffer_df = DataFrame(stream=self.stream, example=example)
+        self.score_dmap = self.buffer_df.hvplot(y=["reward"]).opts(
+            height=200, width=500, title="Game score"
+        )
 
     def plot(self):
-       return self.frame_dmap + self.score_dmap
+        return self.frame_dmap + self.score_dmap
 
     def stream_progress(self, state, observation, reward):
         example = pd.DataFrame({"reward": [reward]}, index=[self.n_iters // self.n_swarms])
@@ -231,7 +254,7 @@ class DistributedSwarm:
             steps[worker.make_iteration.remote(best)] = worker
 
         bests = []
-        for ps, walker in zip(self.param_servers, list(steps.keys())[:len(self.param_servers)]):
+        for ps, walker in zip(self.param_servers, list(steps.keys())[: len(self.param_servers)]):
             bests.append(ps.exchange_walker.remote(walker))
             param_servers.append(ps)
         ray.get(bests)
@@ -248,15 +271,17 @@ class DistributedSwarm:
             steps[worker.make_iteration.remote(new_best)] = worker
 
             if i % (self.log_every * len(self.swarms)) == 0:
-                id_, _ = (ray.wait([param_servers[-1].get_best.remote()]))
+                id_, _ = ray.wait([param_servers[-1].get_best.remote()])
                 (state, best_obs, best_reward) = ray.get(id_)[0]
                 if state is not None:
-                    if ((best_reward > self.init_reward) if self.minimize else
-                    (best_reward < self.init_reward)):
+                    self.best = (state, best_obs, float(best_reward))
+                    if (
+                        (best_reward > self.init_reward)
+                        if self.minimize
+                        else (best_reward < self.init_reward)
+                    ):
                         best_reward = self.init_reward
                     best_reward = np.log(best_reward) if self.log else best_reward
                     self.stream_progress(state, best_obs, best_reward)
                 else:
                     print("skipping, not ready")
-
-

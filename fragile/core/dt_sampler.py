@@ -20,7 +20,7 @@ class GaussianDt(BaseCritic):
         return params
 
     def __init__(
-        self, min_dt: float = 1., max_dt: float = 1., loc_dt: float = 0.01, scale_dt: float = 1.,
+        self, min_dt: float = 1.0, max_dt: float = 1.0, loc_dt: float = 0.01, scale_dt: float = 1.0
     ):
         """
         Initialize a :class:`DtSampler`.

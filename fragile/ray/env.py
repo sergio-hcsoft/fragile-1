@@ -1,4 +1,7 @@
 import atexit
+import warnings
+
+warnings.filterwarnings("ignore")
 import multiprocessing
 import sys
 import traceback
@@ -16,9 +19,9 @@ def split_similar_chunks(vector: list, n_chunks: int):
     for i in range(0, len(vector), chunk_size):
         yield vector[i : i + chunk_size]
 
+
 @ray.remote
 class RemoteFunction:
-
     def __init__(self, env_callable: Callable):
         self.function = env_callable().function
 
@@ -103,7 +106,7 @@ class ExternalProcess(object):
             pass
         self._process.join()
 
-    def step_batch(self, points: np.ndarray, blocking: bool=False):
+    def step_batch(self, points: np.ndarray, blocking: bool = False):
         """
         Vectorized version of the `step` method. It allows to step a vector of
         states and actions. The signature and behaviour is the same as `step`, but taking
@@ -224,8 +227,9 @@ class BatchEnv(object):
     def _make_transitions(self, points):
         chunks = len(self._envs)
         states_chunk = split_similar_chunks(points, n_chunks=chunks)
-        results = [env.step_batch(states_batch)
-                   for env, states_batch in zip(self._envs, states_chunk)]
+        results = [
+            env.step_batch(states_batch) for env, states_batch in zip(self._envs, states_chunk)
+        ]
         rewards = [result if self._blocking else result() for result in results]
         return rewards
 
@@ -265,10 +269,7 @@ class ParallelFunction:
 
     def __init__(self, env_callable, n_workers: int = 8, blocking: bool = False):
         self._env = env_callable()
-        envs = [
-            ExternalProcess(constructor=env_callable)
-            for _ in range(n_workers)
-        ]
+        envs = [ExternalProcess(constructor=env_callable) for _ in range(n_workers)]
         self._batch_env = BatchEnv(envs, blocking)
 
     def __getattr__(self, item):
@@ -294,12 +295,12 @@ class ParallelFunction:
 
 
 class Function(SequentialFunction):
-
     def __init__(self, env_callable: Callable, n_workers: int = 1, blocking: bool = False):
         self.n_workers = n_workers
         self.blocking = blocking
-        self.parallel_function = ParallelFunction(env_callable=env_callable, n_workers=n_workers,
-                                                  blocking=blocking)
+        self.parallel_function = ParallelFunction(
+            env_callable=env_callable, n_workers=n_workers, blocking=blocking
+        )
         self.local_function = env_callable()
 
     def __getattr__(self, item):
@@ -319,7 +320,8 @@ class Function(SequentialFunction):
         """
         new_points = (
             # model_states.actions * model_states.dt.reshape(env_states.n, -1) + env_states.observs
-            model_states.actions + env_states.observs
+            model_states.actions
+            + env_states.observs
         )
         ends = self.calculate_end(points=new_points)
         rewards = self.parallel_function.step_batch(new_points)
@@ -328,9 +330,11 @@ class Function(SequentialFunction):
         return last_states
 
     def __parallel_function(self, points):
-        reward_ids = [env.function.remote(p) for env, p in
-                      zip(self.workers, split_similar_chunks(points, self.n_workers))]
+        reward_ids = [
+            env.function.remote(p)
+            for env, p in zip(self.workers, split_similar_chunks(points, self.n_workers))
+        ]
         rewards = ray.get(reward_ids)
-        #rewards = self.pool.map(self.local_function.function,
+        # rewards = self.pool.map(self.local_function.function,
         #                        split_similar_chunks(points, self.n_workers))
         return np.concatenate([r.flatten() for r in rewards])

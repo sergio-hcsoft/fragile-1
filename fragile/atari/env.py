@@ -44,8 +44,9 @@ class AtariEnv(DiscreteEnv):
         )
         game_ends = [inf["game_end"] for inf in infos]
 
-        new_state = self._get_new_states(new_states, observs, rewards,
-                                         ends, len(actions), game_ends)
+        new_state = self._get_new_states(
+            new_states, observs, rewards, ends, len(actions), game_ends
+        )
         return new_state
 
     def reset(self, batch_size: int = 1, **kwargs) -> States:
@@ -79,6 +80,7 @@ class AtariEnv(DiscreteEnv):
         states = np.array(states)
         game_end = np.array(game_ends)
         state = self.create_new_states(batch_size=batch_size)
-        state.update(states=states, observs=observs, rewards=rewards, ends=ends,
-                     game_ends=game_end)
+        state.update(
+            states=states, observs=observs, rewards=rewards, ends=ends, game_ends=game_end
+        )
         return state

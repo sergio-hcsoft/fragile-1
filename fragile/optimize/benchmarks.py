@@ -71,7 +71,7 @@ def _one_random_lennard(state):
     return epot
 
 
-def random_lennard(x : np.ndarray):
+def random_lennard(x: np.ndarray):
     result = np.zeros(x.shape[0])
     for i in range(x.shape[0]):
         try:
@@ -151,7 +151,7 @@ class EggHolder(OptimBenchmark):
 
     @property
     def best_state(self):
-        return np.array([512., 404.2319])
+        return np.array([512.0, 404.2319])
 
 
 class StyblinskiTang(OptimBenchmark):
@@ -214,7 +214,6 @@ class LennardJones(OptimBenchmark):
 
 
 class RandomLennard(LennardJones):
-
     def __init__(self, *args, **kwargs):
         super(RandomLennard, self).__init__(*args, **kwargs)
         self.random_lennard = random_lennard
@@ -233,7 +232,8 @@ class RandomLennard(LennardJones):
         """
         new_points = (
             # model_states.actions * model_states.dt.reshape(env_states.n, -1) + env_states.observs
-            model_states.actions + env_states.observs
+            model_states.actions
+            + env_states.observs
         )
         rewards = self.random_lennard(new_points).flatten()
         ends = self.calculate_end(points=new_points)

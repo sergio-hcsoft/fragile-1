@@ -13,8 +13,7 @@ from fragile.core.walkers import Walkers
 
 
 class MetricWalkers(Walkers):
-
-    def __init__(self, walkers: Walkers, plot_interval:int=100, max_iters: int=1500):
+    def __init__(self, walkers: Walkers, plot_interval: int = 100, max_iters: int = 1500):
         self.walkers = walkers
         self.max_iters = max_iters
         self.vr_eff_hist = np.zeros(self.max_iters + 1)
@@ -25,19 +24,19 @@ class MetricWalkers(Walkers):
         self._plot_iter = 0
         self.plot_interval = plot_interval
         self.stream = Stream()
-        example = pd.DataFrame({"vr_eff": [],
-                                "reward": [],
-                                "clone_eff": []})
-        self.buffer_df = DataFrame(stream=self.stream,
-                                   example=example)
+        example = pd.DataFrame({"vr_eff": [], "reward": [], "clone_eff": []})
+        self.buffer_df = DataFrame(stream=self.stream, example=example)
 
     def __getattr__(self, item):
         return getattr(self.walkers, item)
 
     @classmethod
-    def from_walkers_class(cls, walkers, plot_interval: int=100, max_iters: int=1500, *args,
-                           **kwargs):
-        return MetricWalkers(walkers(*args, **kwargs), plot_interval=plot_interval, max_iters=max_iters)
+    def from_walkers_class(
+        cls, walkers, plot_interval: int = 100, max_iters: int = 1500, *args, **kwargs
+    ):
+        return MetricWalkers(
+            walkers(*args, **kwargs), plot_interval=plot_interval, max_iters=max_iters
+        )
 
     @property
     def df(self) -> pd.DataFrame:
@@ -51,14 +50,20 @@ class MetricWalkers(Walkers):
 
     @property
     def metrics(self):
-        cols = ["n_walkers", "n_dims", "best_reward", "eff_mean",
-                "eff_std", "clone_mean",  "clone_std"]
+        cols = [
+            "n_walkers",
+            "n_dims",
+            "best_reward",
+            "eff_mean",
+            "eff_std",
+            "clone_mean",
+            "clone_std",
+        ]
         df = self.df
         metrics = pd.DataFrame(columns=cols)
         metrics["n_walkers"] = [self.n]
         metrics["n_dims"] = [self.env_states.observs.shape[1]]
-        metrics["best_reward"] = [df["reward"].min() if self.minimize else
-                                  df["reward"].max()]
+        metrics["best_reward"] = [df["reward"].min() if self.minimize else df["reward"].max()]
         metrics["eff_mean"] = [df["vr_eff"].mean()]
         metrics["eff_std"] = [df["vr_eff"].std()]
         metrics["clone_mean"] = [df["clone_pct"].mean()]
@@ -79,8 +84,9 @@ class MetricWalkers(Walkers):
 
     def __repr__(self):
         msg = "Mean Efficiency: {:.4f}\n{}"
-        msg = msg.format(np.mean(self.vr_eff_hist[:self.n_iters]),
-                         super(MetricWalkers, self).__repr__())
+        msg = msg.format(
+            np.mean(self.vr_eff_hist[: self.n_iters]), super(MetricWalkers, self).__repr__()
+        )
         return msg
 
     def calculate_virtual_reward(self):
@@ -89,8 +95,9 @@ class MetricWalkers(Walkers):
         self.reward_hist[self.n_iters - 1] = float(self.states.best_reward_found)
 
     def plot_best_evolution(self):
-        return (# self.buffer_df.hvplot(y=["vr_eff", "clone_eff"]) +
-                self.buffer_df.hvplot(y=["reward"]))
+        return self.buffer_df.hvplot(  # self.buffer_df.hvplot(y=["vr_eff", "clone_eff"]) +
+            y=["reward"]
+        )
         curve_dmap = hv.DynamicMap(hv.Curve, streams=[self.buffer_df])
         curve_dmap = curve_dmap.opts(
             tools=["hover"], title="Best value found", xlabel="iteration", ylabel="Best value"
@@ -100,11 +107,14 @@ class MetricWalkers(Walkers):
     def update_clone_probs(self):
         super(MetricWalkers, self).update_clone_probs()
         self.clone_eff = 1 - self.states.will_clone.sum() / self.n
-        self.clone_pct_hist[self.n_iters-1] = self.clone_eff
+        self.clone_pct_hist[self.n_iters - 1] = self.clone_eff
         if self.n_iters % self.plot_interval == 0:
-            df = pd.DataFrame({"vr_eff": [self.efficiency],
-                               "reward": float(self.states.best_reward_found),
-                               "clone_eff": [self.clone_eff]}, index=[self.n_iters])
+            df = pd.DataFrame(
+                {
+                    "vr_eff": [self.efficiency],
+                    "reward": float(self.states.best_reward_found),
+                    "clone_eff": [self.clone_eff],
+                },
+                index=[self.n_iters],
+            )
             self.stream.emit(df)
-
-

@@ -82,6 +82,7 @@ class Tree(BaseStateTree):
         env_states: States = None,
         model_states: States = None,
         walkers_states: np.ndarray = None,
+        n_iter: int = None,
     ) -> np.ndarray:
         env_sts = env_states.split_states() if env_states is not None else [None] * len(parent_ids)
         mode_sts = (
@@ -97,6 +98,7 @@ class Tree(BaseStateTree):
                 reward=cum_rewards[i],
                 env_state=env_state,
                 model_state=model_state,
+                n_iter=n_iter,
             )
             node_ids.append(node_id)
         return np.array(node_ids, dtype=int)
@@ -155,8 +157,13 @@ class BaseNetworkxTree(BaseStateTree):
         self._node_count = 0
         self.leafs = {0}
 
-    def reset(self, parent_ids: List[int] = None, env_states: States = None,
-              model_states: States = None, walkers_states: States = None) -> None:
+    def reset(
+        self,
+        parent_ids: List[int] = None,
+        env_states: States = None,
+        model_states: States = None,
+        walkers_states: States = None,
+    ) -> None:
         self.data: nx.DiGraph = nx.DiGraph()
         self.data.add_node(0, state=None)
         self.root_id = 0
@@ -173,8 +180,16 @@ class BaseNetworkxTree(BaseStateTree):
             self.names_to_hash[node_name] = node_hash
         return node_name
 
-    def append_leaf(self, leaf_id: int, parent_id: int, state, action, dt: int,
-                    from_hash: bool = False):
+    def append_leaf(
+        self,
+        leaf_id: int,
+        parent_id: int,
+        state,
+        action,
+        dt: int,
+        n_iter: int = None,
+        from_hash: bool = False,
+    ):
         """
         Add a new state as a leaf node of the tree to keep track of the trajectories of the swarm.
         :param leaf_id: Id that identifies the state that will be added to the tree.
@@ -187,11 +202,11 @@ class BaseNetworkxTree(BaseStateTree):
         leaf_name = self.get_update_hash(leaf_id) if from_hash else leaf_id
         parent_name = self.get_update_hash(parent_id) if from_hash else parent_id
         if leaf_name not in self.data.nodes and leaf_name != parent_name:
-            self.data.add_node(leaf_name, state=state)
+            self.data.add_node(leaf_name, state=state, n_iter=n_iter)
             self.data.add_edge(parent_name, leaf_name, action=action, dt=dt)
             self.leafs.add(leaf_name)
 
-    def prune_tree(self, dead_leafs, alive_leafs, from_hash:bool=False):
+    def prune_tree(self, dead_leafs, alive_leafs, from_hash: bool = False):
         """This prunes the orphan leaves that will no longer be used to save memory."""
         for leaf in dead_leafs:
             self.prune_branch(leaf, alive_leafs, from_hash=from_hash)
@@ -206,7 +221,7 @@ class BaseNetworkxTree(BaseStateTree):
         leaf_name = self.node_names[leaf_id] if from_hash else leaf_id
         nodes = nx.shortest_path(self.data, 0, leaf_name)
         states = [self.data.nodes[n]["state"] for n in nodes]
-        actions = [self.data.edges[(n, nodes[i+1])]["action"] for i, n in enumerate(nodes[:-1])]
+        actions = [self.data.edges[(n, nodes[i + 1])]["action"] for i, n in enumerate(nodes[:-1])]
         dts = [self.data.edges[(n, nodes[i + 1])]["dt"] for i, n in enumerate(nodes[:-1])]
         return states, actions, dts
 
@@ -240,23 +255,24 @@ class BaseNetworkxTree(BaseStateTree):
 
 
 class HistoryTree(BaseNetworkxTree):
-
     def add_states(
         self,
         parent_ids: List[int],
         env_states: States = None,
         model_states: States = None,
         walkers_states: StatesWalkers = None,
+        n_iter: int=None,
     ) -> np.ndarray:
         leaf_ids = walkers_states.id_walkers.tolist()
         for i, (leaf, parent) in enumerate(zip(leaf_ids, parent_ids)):
             state = env_states.states[i].copy()
             action = copy.deepcopy(model_states.actions[i])
             dt = copy.copy(model_states.dt[i])
-            self.append_leaf(leaf, parent, state, action, dt, from_hash=True)
+            self.append_leaf(leaf, parent, state, action, dt, n_iter=n_iter, from_hash=True)
 
-    def prune_tree(self,  alive_leafs: set, from_hash: bool=False):
+    def prune_tree(self, alive_leafs: set, from_hash: bool = False):
         alive_leafs = set([self.node_names[le] if from_hash else le for le in set(alive_leafs)])
         dead_leafs = self.leafs - alive_leafs
-        super(HistoryTree, self).prune_tree(dead_leafs=dead_leafs, alive_leafs=alive_leafs,
-                                            from_hash=False)
+        super(HistoryTree, self).prune_tree(
+            dead_leafs=dead_leafs, alive_leafs=alive_leafs, from_hash=False
+        )
