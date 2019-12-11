@@ -38,6 +38,12 @@ RUN pip3 install --no-cache-dir cython && \
     pip3 install -U --no-cache-dir -r requirements.txt --no-use-pep517&& \
     python3 -c "import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot"
 
+# Install holoviews image save
+RUN pip3 install selenium && apt install curl -y && \
+    curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install phantomjs --unsafe-perm && \
+    npm install -g phantomjs-prebuilt --unsafe-perm
 
 COPY . fragile/
 
