@@ -148,14 +148,17 @@ class BaseNetworkxTree(BaseStateTree):
     happy!
     """
 
+    ROOT_ID = 0
+    ROOT_HASH = 0
+
     def __init__(self):
         self.data: nx.DiGraph = nx.DiGraph()
-        self.data.add_node(0, state=None)
-        self.root_id = 0
-        self.node_names = {0: 0}
-        self.names_to_hash = {0: 0}
+        self.data.add_node(self.ROOT_ID, state=None, n_iter=-1)
+        self.root_id = self.ROOT_ID
+        self.node_names = {self.ROOT_ID: self.ROOT_HASH}
+        self.names_to_hash = {self.ROOT_HASH: self.ROOT_ID}
         self._node_count = 0
-        self.leafs = {0}
+        self.leafs = {self.ROOT_ID}
 
     def reset(
         self,
@@ -165,19 +168,24 @@ class BaseNetworkxTree(BaseStateTree):
         walkers_states: States = None,
     ) -> None:
         self.data: nx.DiGraph = nx.DiGraph()
-        self.data.add_node(0, state=None)
-        self.root_id = 0
-        self.node_names = {0: 0}
+        self.data.add_node(self.ROOT_ID, state=None, n_iter=-1)
+        self.root_id = self.ROOT_ID
+        self.node_names = {self.ROOT_ID: self.ROOT_HASH}
+        self.names_to_hash = {self.ROOT_HASH: self.ROOT_ID}
         self._node_count = 0
-        self.leafs = {0}
+        self.leafs = {self.ROOT_ID}
 
     def get_update_hash(self, node_hash):
         node_name = self.node_names.get(node_hash, None)
         if node_name is None:
-            self._node_count += 1
-            node_name = self._node_count
-            self.node_names[node_hash] = node_name
-            self.names_to_hash[node_name] = node_hash
+            node_name = self.update_hash(node_hash)
+        return node_name
+
+    def update_hash(self, node_hash):
+        self._node_count += 1
+        node_name = int(self._node_count)
+        self.node_names[node_hash] = node_name
+        self.names_to_hash[node_name] = node_hash
         return node_name
 
     def append_leaf(
@@ -189,6 +197,8 @@ class BaseNetworkxTree(BaseStateTree):
         dt: int,
         n_iter: int = None,
         from_hash: bool = False,
+        reward: float = 0.,
+        cum_reward: float = 0.,
     ):
         """
         Add a new state as a leaf node of the tree to keep track of the trajectories of the swarm.
@@ -199,10 +209,11 @@ class BaseNetworkxTree(BaseStateTree):
         :param dt: parameters taken into account when integrating the action.
         :return:
         """
-        leaf_name = self.get_update_hash(leaf_id) if from_hash else leaf_id
-        parent_name = self.get_update_hash(parent_id) if from_hash else parent_id
+        leaf_name = self.update_hash(leaf_id) if from_hash else leaf_id
+        parent_name = self.node_names[parent_id] if from_hash else parent_id
         if leaf_name not in self.data.nodes and leaf_name != parent_name:
-            self.data.add_node(leaf_name, state=state, n_iter=n_iter)
+            self.data.add_node(leaf_name, state=state, n_iter=n_iter, reward=reward,
+                               cum_reward=cum_reward)
             self.data.add_edge(parent_name, leaf_name, action=action, dt=dt)
             self.leafs.add(leaf_name)
 
@@ -212,14 +223,14 @@ class BaseNetworkxTree(BaseStateTree):
             self.prune_branch(leaf, alive_leafs, from_hash=from_hash)
         return
 
-    def get_branch(self, leaf_id, from_hash: bool = False) -> tuple:
+    def get_branch(self, leaf_id, from_hash: bool = False, root=ROOT_ID) -> tuple:
         """
         Get the observation from the game ended at leaf_id
         :param leaf_id: id of the leaf node belonging to the branch that will be recovered.
         :return: Sequence of observations belonging to a given branch of the tree.
         """
         leaf_name = self.node_names[leaf_id] if from_hash else leaf_id
-        nodes = nx.shortest_path(self.data, 0, leaf_name)
+        nodes = nx.shortest_path(self.data, root, leaf_name)
         states = [self.data.nodes[n]["state"] for n in nodes]
         actions = [self.data.edges[(n, nodes[i + 1])]["action"] for i, n in enumerate(nodes[:-1])]
         dts = [self.data.edges[(n, nodes[i + 1])]["dt"] for i, n in enumerate(nodes[:-1])]
@@ -232,7 +243,7 @@ class BaseNetworkxTree(BaseStateTree):
         if is_not_a_leaf:
             self.leafs.discard(leaf)
             return
-        elif leaf == 0 or leaf not in self.data.nodes:
+        elif leaf == self.ROOT_ID or leaf not in self.data.nodes:
             return
         alive_leafs = set([self.node_names[le] if from_hash else le for le in set(alive_leafs)])
         if leaf in alive_leafs:
@@ -265,10 +276,13 @@ class HistoryTree(BaseNetworkxTree):
     ) -> np.ndarray:
         leaf_ids = walkers_states.id_walkers.tolist()
         for i, (leaf, parent) in enumerate(zip(leaf_ids, parent_ids)):
-            state = env_states.states[i].copy()
+            state = copy.deepcopy(env_states.states[i])
+            reward = copy.deepcopy(env_states.rewards[i])
+            cum_reward = copy.deepcopy(walkers_states.cum_rewards[i])
             action = copy.deepcopy(model_states.actions[i])
             dt = copy.copy(model_states.dt[i])
-            self.append_leaf(leaf, parent, state, action, dt, n_iter=n_iter, from_hash=True)
+            self.append_leaf(leaf, parent, state, action, dt, n_iter=n_iter, from_hash=True,
+                             reward=reward, cum_reward=cum_reward)
 
     def prune_tree(self, alive_leafs: set, from_hash: bool = False):
         alive_leafs = set([self.node_names[le] if from_hash else le for le in set(alive_leafs)])

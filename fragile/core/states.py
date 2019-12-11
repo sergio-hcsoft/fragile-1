@@ -102,9 +102,10 @@ class States:
         return string
 
     def __hash__(self) -> int:
-        return hash(
+        _hash = hash(
             tuple([hash_numpy(x) if isinstance(x, np.ndarray) else hash(x) for x in self.vals()])
         )
+        return _hash
 
     def group_hash(self, name: str) -> int:
         val = getattr(self, name)
@@ -112,7 +113,8 @@ class States:
 
     def hash_values(self, name: str) -> List[int]:
         values = getattr(self, name)
-        return [hash_numpy(val) if isinstance(val, np.ndarray) else hash(val) for val in values]
+        hashes = [hash_numpy(val) if isinstance(val, np.ndarray) else hash(val) for val in values]
+        return hashes
 
     @classmethod
     def concat_states(cls, states: List["States"]) -> "States":

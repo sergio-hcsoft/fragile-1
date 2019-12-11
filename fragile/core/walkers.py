@@ -43,7 +43,7 @@ class StatesWalkers(States):
         return self.best_obs
 
     @property
-    def best_rewward_found(self):
+    def best_reward_found(self):
         return self.best_reward
 
     def get_params_dict(self) -> dict:
@@ -146,6 +146,7 @@ class SimpleWalkers(BaseWalkers):
         self.dist_scale = dist_scale
         self.n_iters = 0
         self.max_iters = max_iters if max_iters is not None else 1e12
+        self._id_counter = 0
 
     def __len__(self) -> int:
         return self.n
@@ -175,10 +176,12 @@ class SimpleWalkers(BaseWalkers):
         return text
 
     def ids(self) -> List[int]:
+        #ids = np.arange(self.n) + self._id_counter
+        #self._id_counter += self.n
         return self.env_states.hash_values("states")
 
     def update_ids(self):
-        self.states.update(id_walkers=self.ids())
+        self.states.update(id_walkers=self.ids().copy())
 
     @property
     def states(self) -> StatesWalkers:
@@ -475,13 +478,16 @@ class Walkers(SimpleWalkers):
             else self.states.best_reward < best_reward
         )
         if has_improved and best_is_alive:
-            self.states.update(best_reward=best_reward, best_state=best_state, best_obs=best_obs)
+            self.states.update(best_reward=best_reward,
+                               best_state=best_state,
+                               best_obs=best_obs, best_id=int(self.states.id_walkers[ix]))
             self.states.update()
 
     def fix_best(self):
         if self.states.best_reward is not None:
             self.env_states.observs[-1] = self.states.best_obs
             self.states.cum_rewards[-1] = self.states.best_reward
+            self.states.id_walkers[-1] = self.states.best_id
             self.env_states.states[-1] = self.states.best_state
 
     def reset(

@@ -13,6 +13,8 @@ import hvplot.pandas
 import hvplot.streamz
 import numpy as np
 import pandas as pd
+import panel as pn
+pn.extension()
 
 hv.extension("bokeh")
 
@@ -33,21 +35,45 @@ class MontezumaSwarm(Swarm):
         super(MontezumaSwarm, self).__init__(*args, **kwargs)
         self.init_dmap()
         self.plot_step = plot_step
+        self.displayed_rooms = {}
 
     @property
     def grid(self) -> MontezumaGrid:
         return self.critic
 
+    @property
+    def n_rooms(self):
+        return self.grid.memory.shape[-1]
+
+    @property
+    def discovered_rooms(self):
+        return np.arange(self.n_rooms)[self.grid.memory.sum(axis=(0, 1)) != 0]
+
+
     def init_dmap(self):
         self.image_pipe = Pipe(data=[])
         self.image_dmap = hv.DynamicMap(hv.Image, streams=[self.image_pipe])
-        self.image_dmap = self.image_dmap.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5))
-        self.memory_pipe = Pipe(data=[])
-        self.memory_dmap = hv.DynamicMap(hv.Image, streams=[self.memory_pipe])
-        self.memory_dmap = self.memory_dmap.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5))
+        self.image_dmap = self.image_dmap.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
+                                               xaxis=None, yaxis=None)
+        self.best_pipe = Pipe(data=[])
+        self.best_dmap = hv.DynamicMap(hv.Image, streams=[self.best_pipe])
+        self.best_dmap = self.best_dmap.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
+                                             xaxis=None, yaxis=None, title="Memory",
+                                             colorbar=True)
         self.frame_pipe = Pipe(data=[])
         self.frame_dmap = hv.DynamicMap(hv.RGB, streams=[self.frame_pipe])
-        self.frame_dmap = self.frame_dmap.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5))
+        self.frame_dmap = self.frame_dmap.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
+                                               xaxis=None, yaxis=None, title="Screen")
+        self.table_pipe = Pipe(data=[])
+        self.table_dmap = hv.DynamicMap(hv.Table, streams=[self.table_pipe]
+                                        ).opts(title="MontezumaRevenge with memory")
+        self.memory_pipe = Pipe(data=[])
+        self.memory_dmap = hv.DynamicMap(self.plot_memories,
+                                         streams=[self.memory_pipe]
+                                         ).opts(shared_xaxis=False, shared_yaxis=False,
+                                                normalize=True)
+        self.top_row = self.table_dmap + self.frame_dmap + \
+                        self.image_dmap * self.best_dmap.opts(alpha=0.7)
 
     @staticmethod
     def create_swarm(critic_scale: float = 1, env_workers: int = 8, *args, **kwargs):
@@ -76,10 +102,52 @@ class MontezumaSwarm(Swarm):
         return hv.RGB(background) * hv.Image(peste).opts(alpha=0.7)
 
     def plot_dmap(self) -> hv.NdOverlay:
-        return self.frame_dmap + self.image_dmap * self.memory_dmap.opts(alpha=0.7)
+        return self.table_dmap
 
-    def stream_dmap(self):
-        best_ix = np.random.choice(self.walkers.n)
+    def update_displayed_rooms(self):
+        for i in self.discovered_rooms:
+            rooms = self.walkers.env_states.observs[:, -1]
+            room_available = rooms == i
+            if room_available.any():
+                room_ix = np.argmax(room_available)
+                if room_ix not in self.displayed_rooms.keys():
+                    frame = self.walkers.env_states.observs[room_ix, :-3].reshape((210, 160, 3))
+                    background = frame[50:, :].mean(axis=2).astype(bool).astype(int) * 255
+                    self.displayed_rooms[i] = hv.Image(background)
+
+    def create_memory_plots(self):
+        grid_plots = {}
+        for k in self.displayed_rooms.keys():
+            grid = self.grid.memory[:, :, k]
+            grid = resize_frame(grid.T, 160, 160, "L")
+            grid = grid / grid.max() * 255
+            room_grid_plot = hv.Image(grid).opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
+                                                 xaxis=None, yaxis=None, title="Room %s" % k,
+                                                 cmap="fire",
+                                                 alpha=0.7)
+            grid_plots[k] = room_grid_plot
+        return grid_plots
+
+    def plot_memories(self, data):
+        grid_plots = self.create_memory_plots()
+        memories = {ix: room * grid_plots[ix] for ix, room in self.displayed_rooms.items()}
+        gridspace = hv.GridSpace(label='Explored rooms').opts(xaxis=None, yaxis=None,
+                                                              normalize=False, shared_xaxis=False,
+                                                              shared_yaxis=False)
+        #grid = np.arange(54).reshape(9, 6)
+        #grid_indexes = list(np.ndenumerate(np.arange(54).reshape(9, 6)))
+        grid_indexes = [(j, i) for i in reversed(range(6)) for j in range(9)]
+        for ix in grid_indexes:
+            gridspace[ix] = hv.Overlay([hv.Image(np.ones((40, 40)) * 128).opts(
+                                                 cmap=["white"],
+                                                 shared_axes=False)])
+        for i, mem in enumerate(memories.values()):
+            if i < 100000:
+                a, b = grid_indexes[i]
+                gridspace[a, b] = mem.opts(xlabel="Room %s" % i, shared_axes=False)
+        return gridspace
+
+    def plot_best_found(self):
         best_ix = self.walkers.states.cum_rewards.argmax()
         raw_background = self.walkers.env_states.observs[best_ix, :-3].reshape((210, 160, 3))
         best_room = int(self.walkers.env_states.observs[best_ix, -1])
@@ -88,9 +156,43 @@ class MontezumaSwarm(Swarm):
         background = raw_background[50:, :].mean(axis=2).astype(bool).astype(int) * 255
         grid = resize_frame(grid.T, 160, 160, "L")
         grid = grid / grid.max() * 255
-        self.memory_pipe.send(grid)
+        self.best_pipe.send(grid)
         self.image_pipe.send(background)
-        self.frame_pipe.send(raw_background[50:, :].astype(np.uint8))
+        bg_img = hv.RGB(raw_background[50:, :].astype(np.uint8)
+                          ).opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
+                                 xaxis=None, yaxis=None, title="Screen")
+        memory_img = hv.Image(background).opts(shared_axes=False) * \
+                     hv.Image(grid).opts(alpha=0.7, colorbar=True)
+        memory_img = memory_img.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
+                                     xaxis=None, yaxis=None, title="Screen")
+        table = pd.DataFrame({"Iteration": self.walkers.n_iters,
+                              "Max reward sampled": self.walkers.states.best_reward_found,
+                              "Discovered rooms": [self.discovered_rooms]}, index=[0])
+        return hv.Table(table) + bg_img.opts(shared_axes=False) + memory_img
+
+    def stream_dmap(self):
+        # best_ix = np.random.choice(self.walkers.n)
+        best_ix = self.walkers.states.cum_rewards.argmax()
+        raw_background = self.walkers.env_states.observs[best_ix, :-3].reshape((210, 160, 3))
+        best_room = int(self.walkers.env_states.observs[best_ix, -1])
+        grid = self.grid.memory[:, :, best_room]
+
+        background = raw_background[50:, :].mean(axis=2).astype(bool).astype(int) * 255
+        grid = resize_frame(grid.T, 160, 160, "L")
+        grid = grid / grid.max() * 255
+        #self.best_pipe.send(grid)
+        #self.image_pipe.send(background)
+        #self.frame_pipe.send(raw_background[50:, :].astype(np.uint8))
+        table = pd.DataFrame({"Iteration": self.walkers.n_iters,
+                              "Max reward sampled": self.walkers.states.best_reward_found,
+                              "Discovered rooms": len(self.discovered_rooms)}, index=[0])
+        self.table_pipe.send(table)
+        self.update_displayed_rooms()
+        # self.memory_pipe.send(self.discovered_rooms)
+        mem = self.plot_memories(None)
+        hv.save(mem, filename="rooms_monte/image%s.png" % self.walkers.n_iters)
+        hv.save(self.plot_best_found(), filename="monte_best/image%s.png" % self.walkers.n_iters)
+
 
     def plot_critic(self) -> hv.NdOverlay:
         ix = np.random.randint(self.walkers.n)

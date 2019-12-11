@@ -275,9 +275,5 @@ class NoBalance(Swarm):
     def balance_and_prune(self):
         pass
 
-    def run_step(self):
-        self.step_and_update_best()
-
-
     def calculate_end_condition(self):
         return self.epoch > self.walkers.max_iters
