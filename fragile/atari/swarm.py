@@ -208,7 +208,7 @@ class MontezumaSwarm(Swarm):
             {
                 "Iteration": self.walkers.n_iters,
                 "Max reward sampled": self.walkers.states.best_reward_found,
-                "Discovered rooms": [self.discovered_rooms],
+                "Discovered rooms": len(self.discovered_rooms),
             },
             index=[0],
         )
