@@ -197,8 +197,8 @@ class BaseNetworkxTree(BaseStateTree):
         dt: int,
         n_iter: int = None,
         from_hash: bool = False,
-        reward: float = 0.,
-        cum_reward: float = 0.,
+        reward: float = 0.0,
+        cum_reward: float = 0.0,
     ):
         """
         Add a new state as a leaf node of the tree to keep track of the trajectories of the swarm.
@@ -212,8 +212,9 @@ class BaseNetworkxTree(BaseStateTree):
         leaf_name = self.update_hash(leaf_id) if from_hash else leaf_id
         parent_name = self.node_names[parent_id] if from_hash else parent_id
         if leaf_name not in self.data.nodes and leaf_name != parent_name:
-            self.data.add_node(leaf_name, state=state, n_iter=n_iter, reward=reward,
-                               cum_reward=cum_reward)
+            self.data.add_node(
+                leaf_name, state=state, n_iter=n_iter, reward=reward, cum_reward=cum_reward
+            )
             self.data.add_edge(parent_name, leaf_name, action=action, dt=dt)
             self.leafs.add(leaf_name)
 
@@ -272,7 +273,7 @@ class HistoryTree(BaseNetworkxTree):
         env_states: States = None,
         model_states: States = None,
         walkers_states: StatesWalkers = None,
-        n_iter: int=None,
+        n_iter: int = None,
     ) -> np.ndarray:
         leaf_ids = walkers_states.id_walkers.tolist()
         for i, (leaf, parent) in enumerate(zip(leaf_ids, parent_ids)):
@@ -281,8 +282,17 @@ class HistoryTree(BaseNetworkxTree):
             cum_reward = copy.deepcopy(walkers_states.cum_rewards[i])
             action = copy.deepcopy(model_states.actions[i])
             dt = copy.copy(model_states.dt[i])
-            self.append_leaf(leaf, parent, state, action, dt, n_iter=n_iter, from_hash=True,
-                             reward=reward, cum_reward=cum_reward)
+            self.append_leaf(
+                leaf,
+                parent,
+                state,
+                action,
+                dt,
+                n_iter=n_iter,
+                from_hash=True,
+                reward=reward,
+                cum_reward=cum_reward,
+            )
 
     def prune_tree(self, alive_leafs: set, from_hash: bool = False):
         alive_leafs = set([self.node_names[le] if from_hash else le for le in set(alive_leafs)])

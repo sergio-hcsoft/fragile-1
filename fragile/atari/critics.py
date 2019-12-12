@@ -16,7 +16,12 @@ class MontezumaGrid(BaseCritic):
     MAX_COORDINATES = (320, 160)
 
     def __init__(
-        self, shape=(16, 16), scale: float = 1.0, recover_n: int = 1, decrease_n: int = 10
+        self,
+        shape=(16, 16),
+        scale: float = 1.0,
+        recover_n: int = 1,
+        decrease_n: int = 10,
+        forget_val: float = 0.05,
     ):
         self.scale = scale
         self.grid_shape = shape
@@ -31,6 +36,7 @@ class MontezumaGrid(BaseCritic):
         self._index = [str(i) for i in range(shape[1])]
         example = pd.DataFrame(self.memory[:, :, 0], columns=self._cols, index=self._index)
         self.buffer_df = DataFrame(stream=self.stream, example=example)
+        self.forget_val = forget_val
 
     def calculate(
         self,
@@ -64,6 +70,7 @@ class MontezumaGrid(BaseCritic):
     def update_memory(self, xs, ys, rooms):
         # for x, y, room in zip(xs, ys, rooms):
         self.memory[xs, ys, rooms] += 1
+        self.memory = np.clip(self.memory - self.forget_val, 0, np.inf)
 
     def _calculate_values(self, x, y, rooms):
         prob_no_walker = 1 - self.memory[x, y, rooms] / self.n_iter / len(x)
