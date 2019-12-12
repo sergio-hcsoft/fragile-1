@@ -106,7 +106,9 @@ class MontezumaSwarm(Swarm):
         )
 
     @staticmethod
-    def create_swarm(critic_scale: float = 1, env_workers: int = 8, *args, **kwargs):
+    def create_swarm(critic_scale: float = 1, env_workers: int = 8, forget_val: float = 0.05,
+                     *args,  **kwargs):
+
         def create_env():
             return Montezuma(autoreset=True, episodic_live=True, min_dt=1)
 
@@ -117,7 +119,7 @@ class MontezumaSwarm(Swarm):
             model=lambda x: RandomDiscrete(x, dt_sampler=dt),
             walkers=MontezumaWalkers,
             env=lambda: DiscreteEnv(env),
-            critic=MontezumaGrid(scale=critic_scale),
+            critic=MontezumaGrid(scale=critic_scale, forget_val=forget_val),
             *args,
             **kwargs
         )
