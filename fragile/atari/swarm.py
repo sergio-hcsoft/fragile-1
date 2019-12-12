@@ -36,8 +36,8 @@ from multiprocessing import Pool
 
 def save_images(data):
     best_plot, room_plot, n_iter = data
-    hv.save(room_plot, filename="rooms_monte/image%s.png" % n_iter)
-    hv.save(best_plot, filename="monte_best/image%s.png" % n_iter)
+    hv.save(room_plot, filename="rooms_monte/image%05d.png" % n_iter)
+    hv.save(best_plot, filename="monte_best/image%05d.png" % n_iter)
 
 
 class MontezumaSwarm(Swarm):
