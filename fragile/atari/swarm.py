@@ -30,12 +30,26 @@ from fragile.atari.walkers import MontezumaWalkers
 from fragile.atari.critics import MontezumaGrid
 
 
+from multiprocessing import Pool
+
+
+def save_images(data):
+    import holoviews as hv
+    hv.extension("bokeh")
+    best_plot, room_plot, n_iter = data
+    hv.save(room_plot, filename="rooms_monte/image%s.png" % n_iter)
+    hv.save(best_plot, filename="monte_best/image%s.png" % n_iter)
+
+
 class MontezumaSwarm(Swarm):
-    def __init__(self, plot_step=10, *args, **kwargs):
+    def __init__(self, plot_step=10, dump_every: int = 32, *args, **kwargs):
         super(MontezumaSwarm, self).__init__(*args, **kwargs)
         self.init_dmap()
         self.plot_step = plot_step
         self.displayed_rooms = {}
+        self.plot_buffer = []
+        self.pool = Pool()
+        self.dump_every = dump_every
 
     @property
     def grid(self) -> MontezumaGrid:
@@ -72,8 +86,8 @@ class MontezumaSwarm(Swarm):
                                          streams=[self.memory_pipe]
                                          ).opts(shared_xaxis=False, shared_yaxis=False,
                                                 normalize=True)
-        self.top_row = self.table_dmap + self.frame_dmap + \
-                        self.image_dmap * self.best_dmap.opts(alpha=0.7)
+        self.top_row = (self.table_dmap + self.frame_dmap +
+                        self.image_dmap * self.best_dmap.opts(alpha=0.7))
 
     @staticmethod
     def create_swarm(critic_scale: float = 1, env_workers: int = 8, *args, **kwargs):
@@ -87,7 +101,6 @@ class MontezumaSwarm(Swarm):
             model=lambda x: RandomDiscrete(x, dt_sampler=dt),
             walkers=MontezumaWalkers,
             env=lambda: DiscreteEnv(env),
-            tree=None,  # HistoryTree,
             critic=MontezumaGrid(scale=critic_scale),
             *args,
             **kwargs
@@ -168,7 +181,9 @@ class MontezumaSwarm(Swarm):
         table = pd.DataFrame({"Iteration": self.walkers.n_iters,
                               "Max reward sampled": self.walkers.states.best_reward_found,
                               "Discovered rooms": [self.discovered_rooms]}, index=[0])
-        return hv.Table(table) + bg_img.opts(shared_axes=False) + memory_img
+        title = "FractalAI Swarm of %s walkers and %s samples" % (self.walkers.n, self.walkers.n *
+                                                                  self.walkers.n_iters)
+        return (hv.Table(table) + bg_img.opts(shared_axes=False) + memory_img).opts(title=title)
 
     def stream_dmap(self):
         # best_ix = np.random.choice(self.walkers.n)
@@ -189,10 +204,16 @@ class MontezumaSwarm(Swarm):
         self.table_pipe.send(table)
         self.update_displayed_rooms()
         # self.memory_pipe.send(self.discovered_rooms)
-        mem = self.plot_memories(None)
-        hv.save(mem, filename="rooms_monte/image%s.png" % self.walkers.n_iters)
-        hv.save(self.plot_best_found(), filename="monte_best/image%s.png" % self.walkers.n_iters)
-
+        memory_plot = self.plot_memories(None)
+        best_plot = self.plot_best_found()
+        data = best_plot, memory_plot, int(self.walkers.n_iters)
+        self.plot_buffer.append(data)
+        if self.walkers.n_iters % self.dump_every == 0:
+            self.pool.map(save_images, list(self.plot_buffer))
+            #ids = [save_images.remote(d) for d in self.plot_buffer]
+            #ray.get(ids)
+            del self.plot_buffer
+            self.plot_buffer = []
 
     def plot_critic(self) -> hv.NdOverlay:
         ix = np.random.randint(self.walkers.n)

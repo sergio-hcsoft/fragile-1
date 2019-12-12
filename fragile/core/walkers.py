@@ -37,6 +37,9 @@ class StatesWalkers(States):
         super(StatesWalkers, self).__init__(
             state_dict=self.get_params_dict(), batch_size=batch_size, **kwargs
         )
+        self.best_id = 0
+        self.best_obs = None
+        self.best_reward = -np.inf
 
     @property
     def best_found(self):
@@ -45,6 +48,7 @@ class StatesWalkers(States):
     @property
     def best_reward_found(self):
         return self.best_reward
+
 
     def get_params_dict(self) -> dict:
         """Return a dictionary containing the param_dict to build an instance \
