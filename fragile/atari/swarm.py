@@ -34,11 +34,19 @@ from multiprocessing import Pool
 
 
 def save_images(data):
-    import holoviews as hv
-    hv.extension("bokeh")
     best_plot, room_plot, n_iter = data
+
+    #import holoviews as hv
+    #hv.extension("bokeh")
     hv.save(room_plot, filename="rooms_monte/image%s.png" % n_iter)
     hv.save(best_plot, filename="monte_best/image%s.png" % n_iter)
+    return
+    best_plot = best_plot.opts(hv.opts.Image(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
+                                     xaxis=None, yaxis=None, title="FractalAI Swarm"))
+    room_plot = room_plot.opts(hv.opts.Image(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
+                                     xaxis=None, yaxis=None), xaxis=None, yaxis=None)
+
+
 
 
 class MontezumaSwarm(Swarm):
@@ -145,7 +153,7 @@ class MontezumaSwarm(Swarm):
         grid_plots = self.create_memory_plots()
         memories = {ix: room * grid_plots[ix] for ix, room in self.displayed_rooms.items()}
         gridspace = hv.GridSpace(label='Explored rooms').opts(xaxis=None, yaxis=None,
-                                                              normalize=False, shared_xaxis=False,
+                                                              normalize=True, shared_xaxis=False,
                                                               shared_yaxis=False)
         #grid = np.arange(54).reshape(9, 6)
         #grid_indexes = list(np.ndenumerate(np.arange(54).reshape(9, 6)))
@@ -157,7 +165,7 @@ class MontezumaSwarm(Swarm):
         for i, mem in enumerate(memories.values()):
             if i < 100000:
                 a, b = grid_indexes[i]
-                gridspace[a, b] = mem.opts(xlabel="Room %s" % i, shared_axes=False)
+                gridspace[a, b] = mem#.opts(xlabel="Room %s" % i, shared_axes=False)
         return gridspace
 
     def plot_best_found(self):
@@ -175,7 +183,7 @@ class MontezumaSwarm(Swarm):
                           ).opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
                                  xaxis=None, yaxis=None, title="Screen")
         memory_img = hv.Image(background).opts(shared_axes=False) * \
-                     hv.Image(grid).opts(alpha=0.7, colorbar=True)
+                     hv.Image(grid).opts(alpha=0.7, colorbar=True, shared_axes=False)
         memory_img = memory_img.opts(xlim=(-0.5, 0.5), ylim=(-0.5, 0.5),
                                      xaxis=None, yaxis=None, title="Screen")
         table = pd.DataFrame({"Iteration": self.walkers.n_iters,
@@ -183,7 +191,7 @@ class MontezumaSwarm(Swarm):
                               "Discovered rooms": [self.discovered_rooms]}, index=[0])
         title = "FractalAI Swarm of %s walkers and %s samples" % (self.walkers.n, self.walkers.n *
                                                                   self.walkers.n_iters)
-        return (hv.Table(table) + bg_img.opts(shared_axes=False) + memory_img).opts(title=title)
+        return (hv.Table(table).opts(title=title) + bg_img.opts(shared_axes=False) + memory_img)
 
     def stream_dmap(self):
         # best_ix = np.random.choice(self.walkers.n)
@@ -192,9 +200,9 @@ class MontezumaSwarm(Swarm):
         best_room = int(self.walkers.env_states.observs[best_ix, -1])
         grid = self.grid.memory[:, :, best_room]
 
-        background = raw_background[50:, :].mean(axis=2).astype(bool).astype(int) * 255
-        grid = resize_frame(grid.T, 160, 160, "L")
-        grid = grid / grid.max() * 255
+        #background = raw_background[50:, :].mean(axis=2).astype(bool).astype(int) * 255
+        #grid = resize_frame(grid.T, 160, 160, "L")
+        #grid = grid / grid.max() * 255
         #self.best_pipe.send(grid)
         #self.image_pipe.send(background)
         #self.frame_pipe.send(raw_background[50:, :].astype(np.uint8))
@@ -206,10 +214,11 @@ class MontezumaSwarm(Swarm):
         # self.memory_pipe.send(self.discovered_rooms)
         memory_plot = self.plot_memories(None)
         best_plot = self.plot_best_found()
-        data = best_plot, memory_plot, int(self.walkers.n_iters)
+        data = best_plot.clone(), memory_plot.clone(), int(self.walkers.n_iters)
         self.plot_buffer.append(data)
         if self.walkers.n_iters % self.dump_every == 0:
-            self.pool.map(save_images, list(self.plot_buffer))
+            _ = [save_images(d) for d in self.plot_buffer]
+            #self.pool.map(save_images, list(self.plot_buffer))
             #ids = [save_images.remote(d) for d in self.plot_buffer]
             #ray.get(ids)
             del self.plot_buffer
