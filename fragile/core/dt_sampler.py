@@ -39,10 +39,10 @@ class GaussianDt(BaseCritic):
 
     def calculate(
         self,
-        batch_size: int = None,
-        model_states: States = None,
-        env_states: States = None,
-        walkers_states: "StatesWalkers" = None,
+        batch_size: Optional[int] = None,
+        model_states: Optional[States] = None,
+        env_states: Optional[States] = None,
+        walkers_states: Optional["StatesWalkers"] = None,
     ) -> np.ndarray:
         """
         Calculate the target time step values.
