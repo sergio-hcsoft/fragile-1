@@ -491,10 +491,10 @@ class Walkers(SimpleWalkers):
 
     def fix_best(self):
         if self.states.best_reward is not None:
-            self.env_states.observs[-1] = self.states.best_obs
-            self.states.cum_rewards[-1] = self.states.best_reward
-            self.states.id_walkers[-1] = self.states.best_id
-            self.env_states.states[-1] = self.states.best_state
+            self.env_states.observs[-1] = self.states.best_obs.copy()
+            self.states.cum_rewards[-1] = float(self.states.best_reward)
+            self.states.id_walkers[-1] = copy.copy(self.states.best_id)
+            self.env_states.states[-1] = self.states.best_state.copy()
 
     def reset(
         self,

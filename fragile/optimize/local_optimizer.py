@@ -26,7 +26,7 @@ class Minimizer:
     def minimize_point(self, x):
         optim_result = self.minimize(x)
         point = optim_result["x"]
-        reward = -1.0 * float(optim_result["fun"])
+        reward = float(optim_result["fun"])
         return point, reward
 
     def minimize_batch(self, x: np.ndarray):
@@ -36,7 +36,6 @@ class Minimizer:
             new_x, reward = self.minimize_point(x[i, :])
             result[i, :] = new_x
             rewards[i, :] = float(reward)
-
         return result, rewards
 
 

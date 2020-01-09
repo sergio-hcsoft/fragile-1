@@ -42,13 +42,13 @@ class LennardMapper(FunctionMapper):
     def __init__(
         self,
         best_walker: tuple = None,
-        best_reward: float = -1e10,
+        best_reward: float = np.inf,
         best_obs: Optional[np.ndarray] = None,
         *args,
         **kwargs
     ):
         best_state, best_obs, best_reward = (
-            best_walker if best_walker is not None else (-1e10, None, None)
+            best_walker if best_walker is not None else (-10, best_obs, best_reward)
         )
 
         super(LennardMapper, self).__init__(

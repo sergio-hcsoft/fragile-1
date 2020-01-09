@@ -153,7 +153,6 @@ class Minimizer:
             new_x, reward = self.minimize_point(x[i, :])
             result[i, :] = new_x
             rewards[i, :] = float(reward)
-
         return result, rewards
 
 

@@ -208,6 +208,7 @@ class Swarm(BaseSwarm):
     def run_step(self):
         self.step_and_update_best()
         self.balance_and_prune()
+        self.walkers.fix_best()
 
     # @profile
     def step_walkers(self):

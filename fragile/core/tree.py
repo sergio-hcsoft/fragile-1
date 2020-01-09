@@ -1,6 +1,6 @@
 from collections import defaultdict
 import copy
-from typing import List
+from typing import List, Union
 
 import networkx as nx
 import numpy as np
@@ -61,9 +61,9 @@ class Tree(BaseStateTree):
     def new_id(self):
         return next(self._id_generator)
 
-    def add_one(self, parent_id, env_state, model_state, reward) -> int:
+    def add_one(self, parent_id: Union[int, None], env_state: States, model_state: States,
+                reward: float, n_iter: int = None) -> int:
         node_id = self.new_id()
-        # print("node_id : {} parent_id: {}".format(node_id, parent_id))
         node = Node(
             node_id=node_id,
             parent_id=parent_id,
@@ -123,7 +123,6 @@ class Tree(BaseStateTree):
         nodes = []
         node_id = int(end_node)
         while node_id is not None:
-            # node = self.nodes[node_id]
             nodes.append(node_id)
             node_id = self.parents[node_id]
         return nodes[::-1]
@@ -274,7 +273,7 @@ class HistoryTree(BaseNetworkxTree):
         model_states: States = None,
         walkers_states: StatesWalkers = None,
         n_iter: int = None,
-    ) -> np.ndarray:
+    ):
         leaf_ids = walkers_states.id_walkers.tolist()
         for i, (leaf, parent) in enumerate(zip(leaf_ids, parent_ids)):
             state = copy.deepcopy(env_states.states[i])

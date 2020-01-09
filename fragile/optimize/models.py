@@ -54,7 +54,7 @@ class ESModel(RandomNormal):
         a_rand = self.random_state.permutation(np.arange(observs.shape[0]))
         b_rand = self.random_state.permutation(np.arange(observs.shape[0]))
         proposal = best + self.recombination * (observs[a_rand] - observs[b_rand])
-        # Randomly mutate the each coordinate of the original vector
+        # Randomly mutate each coordinate of the original vector
         assert observs.shape == proposal.shape
         rands = np.random.random(observs.shape)
         perturbations = np.where(rands < self.mutation, observs, proposal).copy()

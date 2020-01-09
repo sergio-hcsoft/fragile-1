@@ -36,16 +36,16 @@ class Bounds:
             self.dtype = type(low)
 
     def __repr__(self):
-        return "{} shape {} dtype {}low {} high {}".format(
+        return "{} shape {} dtype {} low {} high {}".format(
             self.__class__.__name__, self.dtype, self.shape, self.low, self.high
         )
 
     @classmethod
     def from_tuples(cls, bounds) -> "Bounds":
         low, high = [], []
-        for l, h in bounds:
-            low.append(l)
-            high.append(h)
+        for lo, hi in bounds:
+            low.append(lo)
+            high.append(hi)
         low, high = np.array(low), np.array(high)
         return Bounds(low=low, high=high)
 
@@ -333,7 +333,7 @@ class RandomNormal(RandomContinous):
         self.scale = scale
         self.bounds = bounds
         if shape is not None:
-            shape = shape if not isinstance(shape, list) else tuple(shape)
+            shape = tuple(shape) if isinstance(shape, list) else shape
         self._shape = self.bounds.shape if bounds is not None else shape
 
     @property

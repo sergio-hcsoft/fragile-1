@@ -23,11 +23,7 @@ class PlotSwarm(FunctionMapper):
         self.umap = UMAP(n_components=2)
 
     def run_step(self):
-        self.walkers.fix_best()
-
-        self.step_walkers()
-        old_ids, new_ids = self.walkers.balance()
-        self.prune_tree(old_ids=set(old_ids.tolist()), new_ids=set(new_ids.tolist()))
+        super(PlotSwarm, self).run_step()
         self.stream_walkers()
         self.stream_best()
 
