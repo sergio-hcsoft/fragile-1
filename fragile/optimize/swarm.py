@@ -4,8 +4,17 @@ import numpy as np
 
 from fragile.core.models import Bounds, RandomContinous
 from fragile.core.swarm import Swarm
-from fragile.core.walkers import Walkers
+from fragile.core.walkers import Walkers, States, StatesWalkers
 from fragile.optimize.env import Function, Minimizer
+
+
+try:
+    from IPython.core.display import clear_output
+except ImportError:
+
+    def clear_output(**kwargs):
+        """If not using jupyter notebook do nothing."""
+        pass
 
 
 class FunctionMapper(Swarm):
@@ -15,8 +24,9 @@ class FunctionMapper(Swarm):
         model=RandomContinous,
         accumulate_rewards: bool = False,
         minimize: bool = True,
+        start_same_pos: bool = False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super(FunctionMapper, self).__init__(
             walkers=walkers,
@@ -26,6 +36,7 @@ class FunctionMapper(Swarm):
             *args,
             **kwargs
         )
+        self.start_same_pos = start_same_pos
 
     @classmethod
     def from_function(
@@ -36,6 +47,51 @@ class FunctionMapper(Swarm):
 
     def __repr__(self):
         return "{}\n{}".format(self.env.__repr__(), super(FunctionMapper, self).__repr__())
+
+    def run_swarm(
+        self,
+        model_states: States = None,
+        env_states: States = None,
+        walkers_states: StatesWalkers = None,
+        print_every: int = 1e100,
+    ):
+        """
+        Run a new search process.
+
+        Args:
+            model_states: States that define the initial state of the environment.
+            env_states: States that define the initial state of the model.
+            walkers_states: States that define the internal states of the walkers.
+            print_every: Display the algorithm progress every `print_every` epochs.
+        Returns:
+            None.
+
+        """
+        self.reset(model_states=model_states, env_states=env_states)
+        self.epoch = 0
+        while not self.calculate_end_condition():
+            try:
+                self.run_step()
+                if self.epoch % print_every == 0:
+                    print(self)
+                    clear_output(True)
+                self.epoch += 1
+            except KeyboardInterrupt as e:
+                break
+
+    def reset(
+        self,
+        walkers_states: StatesWalkers = None,
+        model_states: States = None,
+        env_states: States = None,
+    ):
+        super(FunctionMapper, self).reset(
+            walkers_states=walkers_states, model_states=model_states, env_states=env_states
+        )
+
+        if self.start_same_pos:
+            self.walkers.env_states.observs[:] = self.walkers.env_states.observs[0]
+            self.walkers.env_states.states[:] = self.walkers.env_states.states[0]
 
 
 class LennardMapper(FunctionMapper):
