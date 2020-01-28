@@ -3,57 +3,10 @@ from typing import Any, Dict, Optional, Union
 import numpy as np
 
 from fragile.core.base_classes import BaseCritic, BaseModel
+from fragile.core.bounds import Bounds
 from fragile.core.env import DiscreteEnv
 from fragile.core.states import States
 from fragile.core.utils import float_type
-
-
-class Bounds:
-    def __init__(
-        self,
-        high: Union[np.ndarray, float, int] = np.inf,
-        low: Union[np.ndarray, float, int] = -np.inf,
-        shape: Optional[tuple] = None,
-        dtype: type = None,
-    ):
-
-        if shape is None and hasattr(high, "shape"):
-            shape = high.shape
-        elif shape is None and hasattr(low, "shape"):
-            shape = low.shape
-        self.shape = shape
-        if self.shape is None:
-            raise TypeError("If shape is None high or low need to have .shape attribute.")
-        self.high = high
-        self.low = low
-        if dtype is not None:
-            self.dtype = dtype
-        elif hasattr(high, "dtype"):
-            self.dtype = high.dtype
-        elif hasattr(low, "dtype"):
-            self.dtype = low.dtype
-        else:
-            self.dtype = type(low)
-
-    def __repr__(self):
-        return "{} shape {} dtype {} low {} high {}".format(
-            self.__class__.__name__, self.dtype, self.shape, self.low, self.high
-        )
-
-    @classmethod
-    def from_tuples(cls, bounds) -> "Bounds":
-        low, high = [], []
-        for lo, hi in bounds:
-            low.append(lo)
-            high.append(hi)
-        low, high = np.array(low), np.array(high)
-        return Bounds(low=low, high=high)
-
-    def clip(self, points):
-        return np.clip(points, self.low, self.high)
-
-    def points_in_bounds(self, points: np.ndarray) -> np.ndarray:
-        return (self.clip(points) == points).all(axis=1).flatten()
 
 
 class Model(BaseModel):

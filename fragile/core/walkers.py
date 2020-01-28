@@ -167,12 +167,9 @@ class SimpleWalkers(BaseWalkers):
 
     def _print_stats(self) -> str:
         """Print several statistics of the current state of the swarm."""
-        text = (
-            "{} iteration {} Best reward: {:.2f} Dead walkers: {:.2f}% Cloned: {:.2f}%\n\n"
-        ).format(
+        text = ("{} iteration {} Dead walkers: {:.2f}% Cloned: {:.2f}%\n\n").format(
             self.__class__.__name__,
             self.n_iters,
-            self.states.cum_rewards.max(),
             100 * self.states.end_condition.sum() / self.n,
             100 * self.states.will_clone.sum() / self.n,
         )
@@ -303,12 +300,12 @@ class SimpleWalkers(BaseWalkers):
         """Sample the clone probability distribution and clone the walkers accordingly."""
         will_clone = self.states.clone_probs > self.random_state.random_sample(self.n)
         # Dead walkers always clone
-        dead_ix = np.arange(self.n)[self.states.end_condition]
-        will_clone[dead_ix] = 1
+        will_clone[self.states.end_condition] = True
         self.update_states(will_clone=will_clone)
 
         clone, compas = self.states.clone()
-        self._env_states.clone(will_clone=clone, compas_ix=compas, ignore={"observs"})
+        clone[self.states.end_condition] = True
+        self._env_states.clone(will_clone=clone, compas_ix=compas)  # , ignore={"observs"})
         self._model_states.clone(will_clone=clone, compas_ix=compas)
 
     def reset(
@@ -466,7 +463,7 @@ class Walkers(SimpleWalkers):
             return 0
         best = rewards.min() if self.minimize else rewards.max()
         idx = (self.states.cum_rewards == best).astype(int)
-        ix = idx.argmin() if self.minimize else idx.argmax()
+        ix = idx.argmax()  # if self.minimize else idx.argmax()
         return ix
 
     def update_best(self):

@@ -1,21 +1,9 @@
 import copy
 from typing import Callable, List
 
-
-try:
-    from IPython.core.display import clear_output
-except ImportError:
-
-    def clear_output(**kwargs):
-        """If not using jupyter notebook do nothing."""
-        pass
-
-
-import line_profiler
-
-
 from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseStateTree, BaseSwarm
 from fragile.core.states import States
+from fragile.core.utils import clear_output
 from fragile.core.walkers import StatesWalkers, Walkers
 
 

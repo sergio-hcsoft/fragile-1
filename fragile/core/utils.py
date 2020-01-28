@@ -3,6 +3,15 @@ import copy
 import numpy as np
 from PIL import Image
 
+try:
+    from IPython.core.display import clear_output
+except ImportError:
+
+    def clear_output(**kwargs):
+        """If not using jupyter notebook do nothing."""
+        pass
+
+
 float_type = np.float32
 
 

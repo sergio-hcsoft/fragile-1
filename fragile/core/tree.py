@@ -61,8 +61,14 @@ class Tree(BaseStateTree):
     def new_id(self):
         return next(self._id_generator)
 
-    def add_one(self, parent_id: Union[int, None], env_state: States, model_state: States,
-                reward: float, n_iter: int = None) -> int:
+    def add_one(
+        self,
+        parent_id: Union[int, None],
+        env_state: States,
+        model_state: States,
+        reward: float,
+        n_iter: int = None,
+    ) -> int:
         node_id = self.new_id()
         node = Node(
             node_id=node_id,
