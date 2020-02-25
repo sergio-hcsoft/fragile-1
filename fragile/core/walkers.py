@@ -1,13 +1,13 @@
 import copy
-from typing import List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
 from fragile.core.base_classes import BaseCritic, BaseWalkers
 from fragile.core.states import States
-from fragile.core.utils import float_type, relativize, statistics_from_array
+from fragile.core.utils import float_type, relativize, Scalar, statistics_from_array
 
-import line_profiler
+# import line_profiler
 
 
 class StatesWalkers(States):
@@ -42,11 +42,11 @@ class StatesWalkers(States):
         self.best_reward = -np.inf
 
     @property
-    def best_found(self):
+    def best_found(self) -> np.ndarray:
         return self.best_obs
 
     @property
-    def best_reward_found(self):
+    def best_reward_found(self) -> Scalar:
         return self.best_reward
 
     def get_params_dict(self) -> dict:
@@ -113,6 +113,8 @@ class SimpleWalkers(BaseWalkers):
         dist_scale: float = 1.0,
         max_iters: int = None,
         accumulate_rewards: bool = True,
+        distance_function: Optional[Callable[[np.ndarray, np.ndarray], np.ndarray]] = None,
+        ignore_clone: Optional[Dict[str, Set[str]]] = None,
         **kwargs
     ):
         """
@@ -133,6 +135,15 @@ class SimpleWalkers(BaseWalkers):
             accumulate_rewards: If True the rewards obtained after transitioning \
                                 to a new state will accumulate. If False only the last \
                                 reward will be taken into account.
+            distance_function: Function to compute the distances between two \
+                               groups of walkers. It will be applied row-wise \
+                               to the walkers observations and it will return a \
+                               vector of scalars. Defaults to l2 norm.
+            ignore_clone: Dictionary containing the attribute values that will \
+                          not be cloned. Its keys can be be either "env", of \
+                          "model", to reference the `env_states` and the \
+                          `model_states`. Its values are a set of string with \
+                          the names of the attributes that will not be cloned.
 
         """
         super(SimpleWalkers, self).__init__(
@@ -142,17 +153,19 @@ class SimpleWalkers(BaseWalkers):
             accumulate_rewards=accumulate_rewards,
         )
 
+        def l2_norm(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+            return np.linalg.norm(x - y, axis=1)
+
         self._model_states: States = States(state_dict=model_state_params, batch_size=n_walkers)
         self._env_states: States = States(state_dict=env_state_params, batch_size=n_walkers)
         self._states = self.STATE_CLASS(batch_size=n_walkers, **kwargs)
+        self.distance_function = distance_function if distance_function is not None else l2_norm
         self.reward_scale = reward_scale
         self.dist_scale = dist_scale
         self.n_iters = 0
         self.max_iters = max_iters if max_iters is not None else 1e12
         self._id_counter = 0
-
-    def __len__(self) -> int:
-        return self.n
+        self.ignore_clone = ignore_clone if ignore_clone is not None else {}
 
     def __repr__(self) -> str:
         """Print all the data involved in the current run of the algorithm."""
@@ -167,7 +180,7 @@ class SimpleWalkers(BaseWalkers):
 
     def _print_stats(self) -> str:
         """Print several statistics of the current state of the swarm."""
-        text = ("{} iteration {} Dead walkers: {:.2f}% Cloned: {:.2f}%\n\n").format(
+        text = "{} iteration {} Dead walkers: {:.2f}% Cloned: {:.2f}%\n\n".format(
             self.__class__.__name__,
             self.n_iters,
             100 * self.states.end_condition.sum() / self.n,
@@ -176,11 +189,17 @@ class SimpleWalkers(BaseWalkers):
         return text
 
     def ids(self) -> List[int]:
+        """
+        Returns a list of unique ids for each walker state.
+
+        The returned ids are integers representing the hash of the different states.
+        """
         # ids = np.arange(self.n) + self._id_counter
         # self._id_counter += self.n
         return self.env_states.hash_values("states")
 
     def update_ids(self):
+        """Update the unique id of each walker and store it in the :class:`StatesWalkers`"""
         self.states.update(id_walkers=self.ids().copy())
 
     @property
@@ -212,7 +231,7 @@ class SimpleWalkers(BaseWalkers):
         return all_dead or max_iters
 
     # @profile
-    def calculate_distances(self):
+    def calculate_distances(self) -> None:
         """Calculate the corresponding distance function for each state with \
         respect to another state chosen at random.
 
@@ -220,16 +239,16 @@ class SimpleWalkers(BaseWalkers):
         """
         compas_ix = np.random.permutation(np.arange(self.n))  # self.get_alive_compas()
         obs = self.env_states.observs.reshape(self.n, -1)
-        distances = np.linalg.norm(obs - obs[compas_ix], axis=1)
+        distances = self.distance_function(obs, obs[compas_ix])
         distances = relativize(distances.flatten())
         self.update_states(distances=distances, compas_dist=compas_ix)
 
-    def calculate_virtual_reward(self):
+    def calculate_virtual_reward(self) -> None:
         """
         Calculate the virtual reward and update the internal state.
 
         The cumulative_reward is transformed with the relativize function. \
-        The distances stored in the internal state are already assumed to be transformed.
+        The distances stored in the :class:`StatesWalkers` are already transformed.
         """
         processed_rewards = relativize(self.states.cum_rewards)
         virt_rw = processed_rewards ** self.reward_scale * self.states.distances ** self.dist_scale
@@ -240,8 +259,8 @@ class SimpleWalkers(BaseWalkers):
         Return the indexes of alive companions chosen at random.
 
         Returns:
-            Numpy array containing the int indexes of alive walkers chosen at random with
-            repetition.
+            Numpy array containing the int indexes of alive walkers chosen at \
+            random with replacement. Its length is equal to the number of walkers.
 
         """
         self.states.alive_mask = np.logical_not(self.states.end_condition)
@@ -252,12 +271,13 @@ class SimpleWalkers(BaseWalkers):
         compas[: len(compas_ix)] = compas_ix
         return compas
 
-    def update_clone_probs(self):
+    def update_clone_probs(self) -> None:
         """
         Calculate the new probability of cloning for each walker.
 
-        Updates the internal state with both the probability of cloning and the index of the
-        randomly chosen companions that were selected to compare the virtual rewards.
+        Updates the :class:`StatesWalkers` with both the probability of cloning \
+        and the index of the randomly chosen companions that were selected to \
+        compare the virtual rewards.
         """
         all_virtual_rewards_are_equal = (
             self.states.virtual_rewards == self.states.virtual_rewards[0]
@@ -267,16 +287,17 @@ class SimpleWalkers(BaseWalkers):
             compas_ix = np.arange(self.n)
         else:
             compas_ix = self.get_alive_compas()
-            # This value can be negative!!
             companions = self.states.virtual_rewards[compas_ix]
+            # This value can be negative!!
             clone_probs = (companions - self.states.virtual_rewards) / self.states.virtual_rewards
-            clone_probs = np.sqrt(np.clip(clone_probs, 0, 1.1))
+            # clone_probs = np.sqrt(np.clip(clone_probs, 0, 1.1))
         self.update_states(clone_probs=clone_probs, compas_clone=compas_ix)
 
     # @profile
     def balance(self) -> Tuple[set, set]:
         """
-        Perform an iteration of the FractalAI algorithm for balancing distributions.
+        Perform an iteration of the FractalAI algorithm for balancing the \
+        walkers distribution.
 
         It performs the necessary calculations to determine which walkers will clone, \
         and performs the cloning process.
@@ -285,7 +306,6 @@ class SimpleWalkers(BaseWalkers):
             A tuple containing two sets: The first one represent the unique ids \
             of the states for each walker at the start of the iteration. The second \
             one contains the ids of the states after the cloning process.
-
         """
         old_ids = set(self.states.id_walkers.copy())
         self.calculate_distances()
@@ -296,24 +316,30 @@ class SimpleWalkers(BaseWalkers):
         return old_ids, new_ids
 
     # @profile
-    def clone_walkers(self):
-        """Sample the clone probability distribution and clone the walkers accordingly."""
-        will_clone = self.states.clone_probs > self.random_state.random_sample(self.n)
-        # Dead walkers always clone
-        will_clone[self.states.end_condition] = True
-        self.update_states(will_clone=will_clone)
+    def clone_walkers(self) -> None:
+        """
+        Sample the clone probability distribution and clone the walkers accordingly.
 
+        This function will update the internal :class:`StatesWalkers`, \
+        env_states, and model_states.
+        """
+        will_clone = self.states.clone_probs > self.random_state.random_sample(self.n)
+        will_clone[self.states.end_condition] = True  # Dead walkers always clone
+        self.update_states(will_clone=will_clone)
         clone, compas = self.states.clone()
-        clone[self.states.end_condition] = True
-        self._env_states.clone(will_clone=clone, compas_ix=compas)  # , ignore={"observs"})
-        self._model_states.clone(will_clone=clone, compas_ix=compas)
+        self._env_states.clone(
+            will_clone=clone, compas_ix=compas, ignore=self.ignore_clone.get("env")
+        )
+        self._model_states.clone(
+            will_clone=clone, compas_ix=compas, ignore=self.ignore_clone.get("model")
+        )
 
     def reset(
         self,
         env_states: States = None,
         model_states: States = None,
         walker_states: StatesWalkers = None,
-    ):
+    ) -> None:
         """
         Restart all the internal states involved in the algorithm iteration.
 
@@ -426,11 +452,11 @@ class Walkers(SimpleWalkers):
         rewards = -1 * self.states.cum_rewards if self.minimize else self.states.cum_rewards
         processed_rewards = relativize(rewards)
         score_reward = processed_rewards ** self.reward_scale
-        reward_prob = score_reward / score_reward.sum()
         score_dist = self.states.distances ** self.dist_scale
+        virt_rw = score_reward * score_dist
         dist_prob = score_dist / score_dist.sum()
-        virt_rw = 2 - dist_prob ** reward_prob
-        total_entropy = np.prod(virt_rw)
+        reward_prob = score_reward / score_reward.sum()
+        total_entropy = np.prod(2 - dist_prob ** reward_prob)
         self._min_entropy = np.prod(2 - reward_prob ** reward_prob)
         self.efficiency = self._min_entropy / total_entropy
         self.update_states(virtual_rewards=virt_rw, processed_rewards=processed_rewards)

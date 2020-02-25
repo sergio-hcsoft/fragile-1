@@ -95,7 +95,8 @@ class Model(BaseModel):
         Args:
             batch_size: Number of walkers that the new model `State`.
             model_states: States corresponding to the environment data.
-            **kwargs: Ignored.
+            *args: Passed to `predict`.
+            **kwargs: Passed to `predict`.
 
         Returns:
             New model states containing sampled data.
@@ -228,6 +229,7 @@ class DiscreteUniform(DiscreteModel):
         Args:
             batch_size: Number of new points to the sampled.
             model_states: States corresponding to the environment data.
+            kwargs: passed to the :class:`Critic`.
 
         Returns:
             :class:`States` variable containing the calculated actions and dt.
@@ -286,6 +288,7 @@ class BinarySwap(DiscreteModel):
             batch_size: Number of new points to the sampled.
             model_states: :class:`States` corresponding to the :class:`Model`data.
             env_states: :class:`States` of the algorithms :class:`Environment`.
+            kwargs: passed to the :class:`Critic`.
 
         Returns:
             :class:`States` variable containing the calculated actions and dt.
@@ -359,6 +362,7 @@ class ContinousUniform(ContinuousModel):
         Args:
             batch_size: Number of new points to the sampled.
             model_states: States corresponding to the model data.
+            kwargs: passed to the :class:`Critic`.
 
         Returns:
             States containing the new sampled discrete random values inside \
@@ -372,7 +376,7 @@ class ContinousUniform(ContinuousModel):
         )
 
 
-class RandomNormal(ContinuousModel):
+class NormalContinuous(ContinuousModel):
     """
     Calculate continuous actions inside the given :class:`Bounds` sampling from \
     a normal distribution with the provided mean and standard deviation.
@@ -394,7 +398,7 @@ class RandomNormal(ContinuousModel):
             scale: Standard deviation of the gaussian distribution used for sampling actions.
             critic: :class:`Critic` that will be used to make additional computation.
         """
-        super(RandomNormal, self).__init__(critic=critic, bounds=bounds)
+        super(NormalContinuous, self).__init__(critic=critic, bounds=bounds)
         self.loc = loc
         self.scale = scale
 
@@ -414,6 +418,7 @@ class RandomNormal(ContinuousModel):
             model_states: States corresponding to the environment data.
             env_states: States corresponding to the model data.
             walkers_states: States corresponding to the walkers data.
+            kwargs: passed to the :class:`Critic`.
 
         Returns:
             :class:`States` variable containing the calculated actions and dt.

@@ -4,7 +4,7 @@ import pytest
 
 from fragile.core.dt_sampler import GaussianDt
 from fragile.core.env import BaseEnvironment, DiscreteEnv
-from fragile.core.models import BaseModel, Bounds, DiscreteUniform, RandomNormal
+from fragile.core.models import BaseModel, Bounds, DiscreteUniform, NormalContinuous
 from fragile.core.swarm import Swarm
 from fragile.core.walkers import BaseWalkers, Walkers
 from fragile.optimize.benchmarks import Rastrigin
@@ -50,7 +50,7 @@ def create_function_swarm():
     env = Rastrigin(shape=shape, high=5.12, low=5.12)
     bs = Bounds(low=-5.12, high=5.12, shape=shape)
     swarm = FunctionMapper(
-        model=lambda x: RandomNormal(bounds=bs),
+        model=lambda x: NormalContinuous(bounds=bs),
         env=lambda: env,
         n_walkers=5,
         max_iters=5,

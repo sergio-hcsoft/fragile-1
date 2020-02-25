@@ -96,6 +96,8 @@ class Swarm(BaseSwarm):
             tree: class:`Tree` that keeps track of the visited states.
             prune_tree: If `use_tree` is False it has no effect. If true, \
                        store in the :class:`Tree` the past history of alive walkers.
+            args: Passed to `walkers_callable`.
+            kwargs: Passed to `walkers_callable`.
 
         Returns:
             None.
@@ -188,30 +190,47 @@ class Swarm(BaseSwarm):
                 break
 
     def calculate_end_condition(self) -> bool:
+        """Implement the logic for deciding if the algorithm has finished. \
+        The algorithm will stop if it returns True."""
         return self.walkers.calculate_end_condition()
 
-    def step_and_update_best(self):
+    def step_and_update_best(self) -> None:
+        """
+        Make the positions of the walkers evolve and keep track of the new states found.
+
+        It also keeps track of the best state visited.
+        """
         self.walkers.update_best()
         self.walkers.fix_best()
         self.step_walkers()
 
-    def balance_and_prune(self):
+    def balance_and_prune(self) -> None:
+        """
+        Calculate the virtual reward and perform the cloning process.
+
+        It also updates the :class:`Tree` data structure that takes care of \
+        storing the visited states.
+        """
         # old_ids = set(self.walkers.states.id_walkers.copy())
         self.walkers.balance()
         new_ids = set(self.walkers.states.id_walkers)
         self.prune_tree(leaf_nodes=set(new_ids))
 
     # @profile
-    def run_step(self):
+    def run_step(self) -> None:
+        """
+        Compute one iteration of the :class:`Swarm` evolution process and \
+        update all the data structures.
+        """
         self.step_and_update_best()
         self.balance_and_prune()
         self.walkers.fix_best()
 
     # @profile
-    def step_walkers(self):
+    def step_walkers(self) -> None:
         """
-        Make the walkers undergo a random perturbation process in the swarm \
-        Environment.
+        Make the walkers evolve to their next state sampling an action from the \
+        :class:`Model` and applying it to the :class:`Environment`.
         """
         self.walkers.n_iters += 1
         model_states = self.walkers.model_states
@@ -233,16 +252,12 @@ class Swarm(BaseSwarm):
         self.walkers.update_ids()
         self.update_tree(states_ids)
 
-    def update_tree(self, states_ids: List[int]):
+    def update_tree(self, states_ids: List[int]) -> None:
         """
         Add a list of walker states represented by `states_ids` to the :class:`Tree`.
 
         Args:
             states_ids: list containing the ids of the new states added.
-
-        Returns:
-            None.
-
         """
         if self._use_tree:
             self.tree.add_states(
@@ -253,23 +268,24 @@ class Swarm(BaseSwarm):
                 n_iter=int(self.walkers.n_iters),
             )
 
-    def prune_tree(self, leaf_nodes):
+    def prune_tree(self, leaf_nodes) -> None:
         """
         Remove all the branches that are do not have alive walkers at their leaf nodes.
 
         Args:
             leaf_nodes: ids of the new leaf nodes.
 
-        Returns:
-            None.
         """
         if self._prune_tree and self._use_tree:
             self.tree.prune_tree(alive_leafs=leaf_nodes, from_hash=True)
 
 
 class NoBalance(Swarm):
+    """Swarm that does not perform the cloning process."""
     def balance_and_prune(self):
+        """Does noting."""
         pass
 
     def calculate_end_condition(self):
+        """Finish after reaching the maximum number of epochs."""
         return self.epoch > self.walkers.max_iters

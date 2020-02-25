@@ -1,154 +1,15 @@
-from collections import defaultdict
 import copy
 from typing import List, Union
 
 import networkx as nx
-import numpy as np
 
 from fragile.core.base_classes import States, BaseStateTree
 from fragile.core.walkers import StatesWalkers
 
 
-class Node:
-    def __init__(
-        self,
-        node_id: int,
-        parent_id: int,
-        env_state: States,
-        model_state: States,
-        reward: float = None,
-    ):
-        self._node_id = node_id
-        self._parent_id = parent_id
-        self.env_state = env_state
-        self.model_state = model_state
-        self.reward = reward
-
-    @property
-    def node_id(self) -> int:
-        return self._node_id
-
-    @property
-    def parent_id(self) -> int:
-        return self._parent_id
-
-    @property
-    def end(self) -> bool:
-        return bool(self.env_state.ends)
-
-
-class Tree(BaseStateTree):
-    def __init__(self):
-        self._curr_id = 0
-        self.parents = {}
-        self.nodes = {}
-        self.children = defaultdict(list)
-        self._id_generator = self._new_id_generator()
-
-    @property
-    def curr_id(self):
-        return self._curr_id
-
-    def has_children(self, node_id):
-        return len(self.children[node_id]) > 0
-
-    def _new_id_generator(self):
-        self._curr_id = 0
-        while True:
-            yield self._curr_id
-            self._curr_id += 1
-
-    def new_id(self):
-        return next(self._id_generator)
-
-    def add_one(
-        self,
-        parent_id: Union[int, None],
-        env_state: States,
-        model_state: States,
-        reward: float,
-        n_iter: int = None,
-    ) -> int:
-        node_id = self.new_id()
-        node = Node(
-            node_id=node_id,
-            parent_id=parent_id,
-            env_state=env_state.copy(),
-            model_state=model_state.copy(),
-            reward=reward,
-        )
-        self.nodes[node_id] = node
-        self.children[parent_id].append(node_id)
-        self.parents[node_id] = parent_id
-        return node_id
-
-    def add_states(
-        self,
-        parent_ids: List[int],
-        env_states: States = None,
-        model_states: States = None,
-        walkers_states: np.ndarray = None,
-        n_iter: int = None,
-    ) -> np.ndarray:
-        env_sts = env_states.split_states() if env_states is not None else [None] * len(parent_ids)
-        mode_sts = (
-            model_states.split_states() if model_states is not None else [None] * len(parent_ids)
-        )
-        cum_rewards = copy.deepcopy(walkers_states.cum_rewards)
-        node_ids = []
-        for i, (parent_id, env_state, model_state) in enumerate(
-            zip(parent_ids, env_sts, mode_sts)
-        ):
-            node_id = self.add_one(
-                parent_id=parent_id,
-                reward=cum_rewards[i],
-                env_state=env_state,
-                model_state=model_state,
-                n_iter=n_iter,
-            )
-            node_ids.append(node_id)
-        return np.array(node_ids, dtype=int)
-
-    def reset(self, env_state: States, model_state: States, reward=None):
-        if isinstance(env_state, States):
-            if env_state.n > 1:
-                env_state = list(env_state.split_states())[0]
-
-        if isinstance(model_state, States):
-            if model_state.n > 1:
-                model_state = list(model_state.split_states())[0]
-
-        self.parents = {}
-        self.nodes = {}
-        self.children = defaultdict(list)
-        self._id_generator = self._new_id_generator()
-
-        self.add_one(parent_id=None, env_state=env_state, model_state=model_state, reward=reward)
-
-    def get_path_ids(self, end_node: int):
-        nodes = []
-        node_id = int(end_node)
-        while node_id is not None:
-            nodes.append(node_id)
-            node_id = self.parents[node_id]
-        return nodes[::-1]
-
-    def prune_branch(self, leaf_id):
-        if self.has_children(leaf_id):
-            raise ValueError(
-                "You cannot delete a node that has children. Node id: {}".format(leaf_id)
-            )
-        while not self.has_children(leaf_id) and self.parents[leaf_id] > 0:
-            new_id = int(self.parents[leaf_id])
-            del self.nodes[leaf_id]
-            del self.parents[leaf_id]
-            del self.children[leaf_id]
-            leaf_id = new_id
-
-
-class BaseNetworkxTree(BaseStateTree):
+class _BaseNetworkxTree(BaseStateTree):
     """This is a tree data structure that stores the paths followed by the walkers. It can be
-    pruned to delete paths that will no longer be needed. It uses a networkx Graph. If someone
+    pruned to delete paths that are longer be needed. It uses a networkx Graph. If someone
     wants to spend time building a proper data structure, please make a PR, and I will be super
     happy!
     """
@@ -157,6 +18,7 @@ class BaseNetworkxTree(BaseStateTree):
     ROOT_HASH = 0
 
     def __init__(self):
+        """Initialize a :class:`_BaseNetworkxTree`."""
         self.data: nx.DiGraph = nx.DiGraph()
         self.data.add_node(self.ROOT_ID, state=None, n_iter=-1)
         self.root_id = self.ROOT_ID
@@ -172,6 +34,19 @@ class BaseNetworkxTree(BaseStateTree):
         model_states: States = None,
         walkers_states: States = None,
     ) -> None:
+        """
+        Delete all the data currently stored and reset the internal state of \
+        the tree .
+
+        Args:
+            parent_ids: Ignored. Only to implement interface.
+            env_states: Ignored. Only to implement interface.
+            model_states: Ignored. Only to implement interface.
+            walkers_states: Ignored. Only to implement interface.
+
+        Returns:
+            None.
+        """
         self.data: nx.DiGraph = nx.DiGraph()
         self.data.add_node(self.ROOT_ID, state=None, n_iter=-1)
         self.root_id = self.ROOT_ID
@@ -180,7 +55,15 @@ class BaseNetworkxTree(BaseStateTree):
         self._node_count = 0
         self.leafs = {self.ROOT_ID}
 
-    def get_update_hash(self, node_hash):
+    def get_update_hash(self, node_hash: int) -> None:
+        """
+
+        Args:
+            node_hash: Unique identifier of a Node.
+
+        Returns:
+            None.
+        """
         node_name = self.node_names.get(node_hash, None)
         if node_name is None:
             node_name = self.update_hash(node_hash)
@@ -271,7 +154,7 @@ class BaseNetworkxTree(BaseStateTree):
         return leafs
 
 
-class HistoryTree(BaseNetworkxTree):
+class HistoryTree(_BaseNetworkxTree):
     def add_states(
         self,
         parent_ids: List[int],

@@ -11,7 +11,7 @@ from fragile.core.models import (
     ContinousUniform,
     DiscreteModel,
     DiscreteUniform,
-    RandomNormal,
+    NormalContinuous,
     _DtModel,
 )
 from fragile.core.states import States
@@ -25,7 +25,7 @@ def create_model(name="discrete"):
         return lambda: ContinousUniform(bounds=bs)
     elif name == "random_normal":
         bs = Bounds(low=-1, high=1, shape=(3,))
-        return lambda: RandomNormal(loc=0, scale=1, bounds=bs)
+        return lambda: NormalContinuous(loc=0, scale=1, bounds=bs)
     raise ValueError("Invalid param `name`.")
 
 
@@ -226,7 +226,7 @@ class TestContinuousUniform:
 class TestRandomNormal:
     def test_sample(self):
         bounds = Bounds(low=-5, high=5, shape=(3,))
-        model = RandomNormal(bounds=bounds)
+        model = NormalContinuous(bounds=bounds)
         actions = model.predict(batch_size=10000).actions
         assert actions.min() >= -5
         assert actions.max() <= 5
@@ -234,7 +234,7 @@ class TestRandomNormal:
         assert numpy.allclose(actions.std(), 1, atol=0.05)
 
         bounds = Bounds(low=-10, high=30, shape=(3, 10))
-        model = RandomNormal(bounds=bounds, loc=5, scale=2)
+        model = NormalContinuous(bounds=bounds, loc=5, scale=2)
         actions = model.predict(batch_size=10000).actions
         assert actions.min() >= -10
         assert actions.max() <= 30

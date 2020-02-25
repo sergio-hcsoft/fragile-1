@@ -13,6 +13,9 @@ except ImportError:
         pass
 
 
+RANDOM_SEED = 160290
+random_state = np.random.RandomState(seed=RANDOM_SEED)
+
 float_type = np.float32
 Scalar = Union[int, np.int, float, np.float]
 
@@ -21,7 +24,7 @@ def hash_numpy(x: np.ndarray) -> int:
     return hash(x.tostring())
 
 
-def resize_frame(frame: np.ndarray, height: int, width: int, mode="RGB") -> np.ndarray:
+def resize_frame(frame: np.ndarray, height: int, width: int, mode: str = "RGB") -> np.ndarray:
     """
     Use PIL to resize an RGB frame to an specified height and width.
 

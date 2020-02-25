@@ -1,9 +1,9 @@
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 import numpy as np
 
-from fragile.core import RANDOM_SEED, random_state
 from fragile.core.states import States
+from fragile.core.utils import RANDOM_SEED, random_state
 
 
 class BaseCritic:
@@ -284,6 +284,10 @@ class BaseWalkers(StatesOwner):
         self.death_cond = None
         self._accumulate_rewards = accumulate_rewards
 
+    def __len__(self) -> int:
+        """The length is the number of walkers."""
+        return self.n
+
     @property
     def n(self) -> int:
         """Return the number of walkers."""
@@ -312,7 +316,9 @@ class BaseWalkers(StatesOwner):
         }
         return state_dict
 
-    def update_states(self, env_states: States = None, model_states: States = None, **kwargs):
+    def update_states(
+        self, env_states: States = None, model_states: States = None, **kwargs
+    ) -> None:
         """
         Update the States variables that do not contain internal data and \
         accumulate the rewards in the internal states if applicable.

@@ -1,5 +1,5 @@
 import copy
-from typing import Generator, List, Tuple, Union
+from typing import Generator, List, Optional, Set, Tuple, Union
 
 import numpy as np
 
@@ -224,7 +224,9 @@ class States:
         if kwargs:
             update_or_set_attributes(kwargs)
 
-    def clone(self, will_clone: np.ndarray, compas_ix: np.ndarray, ignore: set = None):
+    def clone(
+        self, will_clone: np.ndarray, compas_ix: np.ndarray, ignore: Optional[Set[str]] = None
+    ):
         """
         Clone all the stored data according to the provided arrays.
 
@@ -233,6 +235,8 @@ class States:
                         index of the walkers that will clone to a random companion.
             compas_ix: Array of integers of shape (n_walkers,). Contains the \
                        indexes of the walkers that will be copied.
+            ignore: set containing the names of the attributes that will not be \
+                    cloned.
 
         """
         ignore = set() if ignore is None else ignore
