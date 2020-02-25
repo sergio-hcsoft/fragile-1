@@ -1,9 +1,17 @@
 import copy
 from typing import Callable, List
 
-from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseStateTree, BaseSwarm
+import numpy
+
+from fragile.core.base_classes import (
+    BaseEnvironment,
+    BaseModel,
+    BaseStateTree,
+    BaseSwarm,
+    BaseCritic,
+)
 from fragile.core.states import States
-from fragile.core.utils import clear_output
+from fragile.core.utils import clear_output, Scalar
 from fragile.core.walkers import StatesWalkers, Walkers
 
 
@@ -16,6 +24,8 @@ class Swarm(BaseSwarm):
     """
 
     def __init__(self, walkers: Callable = Walkers, *args, **kwargs):
+        self._use_tree = False
+        self._prune_tree = False
         super(Swarm, self).__init__(walkers=walkers, *args, **kwargs)
 
     def __repr__(self):
@@ -43,18 +53,18 @@ class Swarm(BaseSwarm):
         return self._walkers
 
     @property
-    def best_found(self):
+    def best_found(self) -> numpy.ndarray:
         return self.walkers.states.best_obs
 
     @property
-    def best_reward_found(self):
+    def best_reward_found(self) -> Scalar:
         return self.walkers.states.best_reward
 
     @property
-    def critic(self):
+    def critic(self) -> BaseCritic:
         return self._walkers.critic
 
-    def _init_swarm(
+    def init_swarm(
         self,
         env_callable: Callable,
         model_callable: Callable,
@@ -83,8 +93,7 @@ class Swarm(BaseSwarm):
             n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.
             dist_scale: Virtual reward exponent for the distance score.
-            use_tree: If True, initialize a :class:`Tree` to store the \
-                      visited states.
+            tree: class:`Tree` that keeps track of the visited states.
             prune_tree: If `use_tree` is False it has no effect. If true, \
                        store in the :class:`Tree` the past history of alive walkers.
 
@@ -118,8 +127,8 @@ class Swarm(BaseSwarm):
         env_states: States = None,
     ):
         """
-        Reset a :class:`fragile.Walkers` and clear the isnternal data to start a \
-        new search process.
+        Reset the :class:`fragile.Walkers`, the :class:`Environment`, the \
+        :class:`Model` and clear the internal data to start a new search process.
 
         Args:
             model_states: States that define the initial state of the environment.
@@ -166,7 +175,7 @@ class Swarm(BaseSwarm):
             None.
 
         """
-        self.reset(model_states=model_states, env_states=env_states)
+        self.reset(model_states=model_states, env_states=env_states, walkers_states=walkers_states)
         self.epoch = 0
         while not self.calculate_end_condition():
             try:
@@ -187,10 +196,10 @@ class Swarm(BaseSwarm):
         self.step_walkers()
 
     def balance_and_prune(self):
-        old_ids = set(self.walkers.states.id_walkers.copy())
+        # old_ids = set(self.walkers.states.id_walkers.copy())
         self.walkers.balance()
         new_ids = set(self.walkers.states.id_walkers)
-        self.prune_tree(old_ids=set(old_ids), new_ids=set(new_ids))
+        self.prune_tree(leaf_nodes=set(new_ids))
 
     # @profile
     def run_step(self):
@@ -226,7 +235,7 @@ class Swarm(BaseSwarm):
 
     def update_tree(self, states_ids: List[int]):
         """
-        Update the states tracked by the tree.
+        Add a list of walker states represented by `states_ids` to the :class:`Tree`.
 
         Args:
             states_ids: list containing the ids of the new states added.
@@ -244,20 +253,18 @@ class Swarm(BaseSwarm):
                 n_iter=int(self.walkers.n_iters),
             )
 
-    def prune_tree(self, old_ids, new_ids):
+    def prune_tree(self, leaf_nodes):
         """
         Remove all the branches that are do not have alive walkers at their leaf nodes.
 
         Args:
-            old_ids: ids of the states that were leaf nodes before the cloning process.
-            new_ids: ids of the new leaf nodes.
+            leaf_nodes: ids of the new leaf nodes.
 
         Returns:
             None.
-
         """
         if self._prune_tree and self._use_tree:
-            self.tree.prune_tree(alive_leafs=new_ids, from_hash=True)
+            self.tree.prune_tree(alive_leafs=leaf_nodes, from_hash=True)
 
 
 class NoBalance(Swarm):

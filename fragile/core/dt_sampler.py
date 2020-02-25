@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 import numpy as np
 
@@ -15,7 +15,7 @@ class GaussianDt(BaseCritic):
 
     @classmethod
     def get_params_dict(cls) -> Dict[str, Dict[str, Any]]:
-        """Return the dictionary with the parameters to create a new `RandomDiscrete` model."""
+        """Return the dictionary with the parameters to create a new `GaussianDt` critic."""
         params = {"dt": {"dtype": float_type}}
         return params
 
@@ -23,7 +23,7 @@ class GaussianDt(BaseCritic):
         self, min_dt: float = 1.0, max_dt: float = 1.0, loc_dt: float = 0.01, scale_dt: float = 1.0
     ):
         """
-        Initialize a :class:`DtSampler`.
+        Initialize a :class:`GaussianDt`.
 
         Args:
             min_dt: Minimum dt that will be predicted by the model.
@@ -54,7 +54,7 @@ class GaussianDt(BaseCritic):
             walkers_states: States corresponding to the walkers data.
 
         Returns:
-            Array containing the target time step.
+            Array containing the sampled time step.
 
         """
         if batch_size is None and env_states is None:

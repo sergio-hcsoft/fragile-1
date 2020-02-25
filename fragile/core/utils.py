@@ -1,4 +1,5 @@
 import copy
+from typing import Union
 
 import numpy as np
 from PIL import Image
@@ -13,6 +14,7 @@ except ImportError:
 
 
 float_type = np.float32
+Scalar = Union[int, np.int, float, np.float]
 
 
 def hash_numpy(x: np.ndarray) -> int:

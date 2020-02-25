@@ -146,7 +146,7 @@ class BaseEnvironment(StatesOwner):
         Step the environment for a batch of walkers.
 
         Args:
-            model_states: States representing the data to be used to act on the environment..
+            model_states: States representing the data to be used to act on the environment.
             env_states: States representing the data to be set in the environment.
 
         Returns:
@@ -178,20 +178,9 @@ class BaseEnvironment(StatesOwner):
 
 class BaseModel(StatesOwner):
     """
-    The model is in charge of calculating how the walkers will act with the \
+    The model is in charge of calculating how the walkers will act on the \
     Environment, effectively working as a policy.
     """
-
-    def __init__(self, dt_sampler: Optional[BaseCritic] = None):
-        """
-        Initialize a BaseModel.
-
-        Args:
-            dt_sampler: dt_sampler used to calculate an additional time step strategy. \
-                        the vector output by this class will multiply the actions of the model.
-
-        """
-        self.dt_sampler = dt_sampler
 
     def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
         """
@@ -202,7 +191,7 @@ class BaseModel(StatesOwner):
         specified using the following structure::
 
             import numpy as np
-            # Example of an state_dict for a RandomDiscrete Model.
+            # Example of an state_dict for a DiscreteUniform Model.
             n_actions = 10
             state_dict = {"actions": {"size": (n_actions,),
                                       "dtype": np.float32,
@@ -216,14 +205,6 @@ class BaseModel(StatesOwner):
         that will be accessed using the actions attribute of the class.
         """
         raise NotImplementedError
-
-    def _add_dt_sample_params(self, params: dict):
-        if self.dt_sampler is not None:
-            dt_vals = self.dt_sampler.get_params_dict()
-            dt_vals.update(params)
-        else:
-            dt_vals = params
-        return dt_vals
 
     def reset(self, batch_size: int = 1, model_states: States = None, *args, **kwargs) -> States:
         """
@@ -398,7 +379,7 @@ class BaseSwarm:
     The Swarm is in charge of performing a fractal evolution process.
 
     It contains the necessary logic to use an Environment, a Model, and a \
-    Walkers instance to run the Swarm evolution algorithm.
+    Walkers instance to create the algorithm execution loop.
     """
 
     def __init__(
@@ -432,7 +413,7 @@ class BaseSwarm:
         self.tree = None
         self.epoch = 0
 
-        self._init_swarm(
+        self.init_swarm(
             env_callable=env,
             model_callable=model,
             walkers_callable=walkers,
@@ -512,7 +493,7 @@ class BaseSwarm:
         """
         raise NotImplementedError
 
-    def _init_swarm(
+    def init_swarm(
         self,
         env_callable: Callable,
         model_callable: Callable,
@@ -545,3 +526,32 @@ class BaseSwarm:
 
         """
         raise NotImplementedError
+
+
+class BaseWrapper:
+    def __init__(self, data):
+        self.unwrapped = data
+
+    def __repr__(self):
+        return self.unwrapped.__repr__()
+
+    def __call__(self, *args, **kwargs):
+        return self.unwrapped.__call__(*args, **kwargs)
+
+    def __str__(self):
+        return self.unwrapped.__str__()
+
+    def __len__(self):
+        return self.unwrapped.__len__()
+
+    def __getattr__(self, attr):
+        orig_attr = self.unwrapped.__getattribute__(attr)
+        if callable(orig_attr):
+
+            def hooked(*args, **kwargs):
+                result = orig_attr(*args, **kwargs)
+                return result
+
+            return hooked
+        else:
+            return orig_attr

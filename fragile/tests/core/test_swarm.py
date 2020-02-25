@@ -4,7 +4,7 @@ import pytest
 
 from fragile.core.dt_sampler import GaussianDt
 from fragile.core.env import BaseEnvironment, DiscreteEnv
-from fragile.core.models import BaseModel, Bounds, RandomDiscrete, RandomNormal
+from fragile.core.models import BaseModel, Bounds, DiscreteUniform, RandomNormal
 from fragile.core.swarm import Swarm
 from fragile.core.walkers import BaseWalkers, Walkers
 from fragile.optimize.benchmarks import Rastrigin
@@ -13,7 +13,7 @@ from fragile.optimize.swarm import FunctionMapper
 
 def create_cartpole_swarm():
     swarm = Swarm(
-        model=lambda x: RandomDiscrete(x),
+        model=lambda x: DiscreteUniform(env=x),
         walkers=Walkers,
         env=lambda: DiscreteEnv(ClassicControl()),
         n_walkers=15,
@@ -34,7 +34,7 @@ def create_atari_swarm():
     )
     dt = GaussianDt(min_dt=3, max_dt=100, loc_dt=5, scale_dt=2)
     swarm = Swarm(
-        model=lambda x: RandomDiscrete(x, dt_sampler=dt),
+        model=lambda x: DiscreteUniform(env=x, critic=dt),
         walkers=Walkers,
         env=lambda: DiscreteEnv(env),
         n_walkers=67,
@@ -50,7 +50,7 @@ def create_function_swarm():
     env = Rastrigin(shape=shape, high=5.12, low=5.12)
     bs = Bounds(low=-5.12, high=5.12, shape=shape)
     swarm = FunctionMapper(
-        model=lambda x: RandomNormal(shape=x.shape, bounds=bs),
+        model=lambda x: RandomNormal(bounds=bs),
         env=lambda: env,
         n_walkers=5,
         max_iters=5,

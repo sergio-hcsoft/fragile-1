@@ -8,25 +8,24 @@ from fragile.core.utils import hash_numpy
 
 class States:
     """
-    Handle several tensors that will contain the data associated with the walkers \
-    of a Swarm.
-
-    This means that each tensor will have an extra dimension equal to \
-    the number of walkers.
+    Handles several tensors that will contain the data associated with the \
+    walkers of a Swarm. Each tensor will be associated to a class attribute.
 
     This class behaves as a dictionary of tensors with some extra functionality
-    to make easier the process of cloning the along the walkers dimension.
+    to make easier the process of cloning the along the walkers dimension. Each \
+    tensor will have an extra dimension equal to the number of walkers.
 
-    In order to define the tensors, a state_dict dictionary needs to be specified
-    using the following structure::
+    In order to define the tensors, a `state_dict` dictionary needs to be \
+    specified using the following structure::
 
         state_dict = {"name_1": {"size": tuple([1]),
                                  "dtype": np.float32,
                                 },
                      }
 
-    Where tuple is a tuple indicating the shape of the desired tensor, that will
-    be accessed using the name_1 attribute of the class.
+    Where tuple is a tuple indicating the shape of the desired tensor, that will \
+    be accessed using the name_1 attribute of the class. If "size" is not defined \
+    the attribute will be considered a vector of length `batch_size`.
 
 
     Args:
@@ -45,9 +44,7 @@ class States:
              **kwargs: The name-tensor pairs can also be specified as kwargs.
 
         """
-        attr_dict = (
-            self._params_to_arrays(state_dict, batch_size) if state_dict is not None else {}
-        )
+        attr_dict = self.params_to_arrays(state_dict, batch_size) if state_dict is not None else {}
         attr_dict.update(kwargs)
         self._names = list(attr_dict.keys())
         self._attr_dict = attr_dict
@@ -133,7 +130,7 @@ class States:
 
     @property
     def n(self) -> int:
-        """Return the number of walkers."""
+        """Return the batch_size of the vectors, which is equivalent to the number of walkers."""
         return self._n_walkers
 
     def get(self, key: str, default=None):
@@ -257,7 +254,7 @@ class States:
         return States(batch_size=self.n, **param_dict)
 
     @staticmethod
-    def _params_to_arrays(param_dict: dict, n_walkers: int) -> dict:
+    def params_to_arrays(param_dict: dict, n_walkers: int) -> dict:
         """
         Create a dictionary containing the arrays specified by param_dict.
 
