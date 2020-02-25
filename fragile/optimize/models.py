@@ -1,10 +1,10 @@
 import numpy as np
-from fragile.core.models import RandomNormal
+from fragile.core.models import NormalContinuous
 from fragile.core.states import States
 from fragile.core.utils import calculate_clone, calculate_virtual_reward, relativize
 
 
-class ESModel(RandomNormal):
+class ESModel(NormalContinuous):
     def __init__(
         self,
         mutation: float = 0.5,
@@ -74,7 +74,7 @@ class ESModel(RandomNormal):
         return model_states
 
 
-class CompasJump(RandomNormal):
+class CompasJump(NormalContinuous):
     def __init__(
         self, dist_coef: float = 1.0, reward_coef: float = 1.0, eps=1e-8, *args, **kwargs
     ):
@@ -120,7 +120,7 @@ class CompasJump(RandomNormal):
         return actions
 
 
-class BestCompasJump(RandomNormal):
+class BestCompasJump(NormalContinuous):
     def __init__(
         self,
         dist_coef: float = 1.0,

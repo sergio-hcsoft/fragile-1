@@ -2,7 +2,7 @@ from typing import Callable, Optional
 
 import numpy as np
 
-from fragile.core.models import Bounds, RandomContinous
+from fragile.core.models import Bounds, ContinousUniform
 from fragile.core.swarm import Swarm
 from fragile.core.walkers import Walkers, States, StatesWalkers
 from fragile.optimize.env import Function, Minimizer
@@ -21,7 +21,7 @@ class FunctionMapper(Swarm):
     def __init__(
         self,
         walkers=Walkers,
-        model=RandomContinous,
+        model=ContinousUniform,
         accumulate_rewards: bool = False,
         minimize: bool = True,
         start_same_pos: bool = False,

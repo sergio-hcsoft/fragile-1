@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from fragile.optimize.mapper import FunctionMapper
-from fragile.optimize.models import RandomNormal
+from fragile.optimize.models import NormalContinuous
 
 
 @pytest.fixture()
@@ -14,7 +14,7 @@ def mapper():
     bounds = [(-10, 10), (-5, 5)]
 
     def model(x):
-        return RandomNormal(
+        return NormalContinuous(
             high=np.array([100, 100]), low=np.array([-100, -100]), env=x, shape=None
         )
 

@@ -128,7 +128,7 @@ class FunctionMapper(Swarm):
         kwargs = cls.add_default_kwargs(kwargs)
         return FunctionMapper(env=lambda: env, *args, **kwargs)
 
-    def _init_swarm(
+    def init_swarm(
         self,
         env_callable: Callable,
         model_callable: Callable,
@@ -140,7 +140,7 @@ class FunctionMapper(Swarm):
         *args,
         **kwargs
     ):
-        super(FunctionMapper, self)._init_swarm(
+        super(FunctionMapper, self).init_swarm(
             env_callable=env_callable,
             model_callable=model_callable,
             walkers_callable=walkers_callable,
@@ -163,13 +163,13 @@ class FunctionMapper(Swarm):
     def encoder(self):
         return self._walkers.encoder
 
-    def continue_optimizarion(self):
+    def continue_optimization(self):
         self.print_i = 0
         while not self.walkers.calculate_end_condition():
             try:
                 self.step_walkers()
-                old_ids, new_ids = self.walkers.balance()
-                self.prune_tree(old_ids=old_ids, new_ids=new_ids)
+                _, new_ids = self.walkers.balance()
+                self.prune_tree(leaf_nodes=new_ids)
                 if self.print_i % self.print_every == 0:
                     print(self.walkers)
                     clear_output(True)
