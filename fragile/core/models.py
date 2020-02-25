@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional, Union
 
+from numba import jit
 import numpy as np
 
 from fragile.core.base_classes import BaseCritic, BaseModel
@@ -10,6 +11,24 @@ from fragile.core.utils import float_type
 
 
 class Model(BaseModel):
+    """
+    Base class that incorporates a critic for adding arbitrary extra \
+    computation steps to any kind of Model.
+
+    It defines, resetting, handles parameter checking, error raising and inserts \
+    the calculated actions into its corresponding :class:`States`.
+    """
+
+    def __init__(self, critic: Optional[BaseCritic] = None):
+        """
+        Initialize a :class:`Model`.
+
+        Args:
+            critic: :class:`Critic` used to calculate an additional value.
+
+        """
+        self.critic: BaseCritic = critic
+
     def sample(
         self,
         batch_size: int,
@@ -19,7 +38,7 @@ class Model(BaseModel):
     ) -> States:
         """
         Calculate the corresponding data to interact with the Environment and \
-        store it in model states.
+        store it in the corresponding model_states.
 
         Args:
             batch_size: Number of new points to the sampled.
@@ -53,7 +72,7 @@ class Model(BaseModel):
             walkers_states: States corresponding to the walkers data.
 
         Returns:
-            Array containing the sampled actions and the new model states variable.
+            :class:`States` variable containing the calculated actions.
 
         """
         if batch_size is None and env_states is None:
@@ -70,7 +89,7 @@ class Model(BaseModel):
 
     def reset(self, batch_size: int = 1, model_states: States = None, *args, **kwargs) -> States:
         """
-        Return a new blank State for a `RandomDiscrete` instance, and a valid \
+        Return a new blank State for a `DiscreteUniform` instance, and a valid \
         prediction based on that new state.
 
         Args:
@@ -87,40 +106,120 @@ class Model(BaseModel):
         )
         return model_states
 
-
-class RandomDiscrete(Model):
-    """
-    Model that samples actions in a discrete state space using a uniform prior.
-
-    It samples the dt from a normal distribution.
-    """
-
-    def __init__(
-        self, env: DiscreteEnv = None, n_actions: int = None, dt_sampler: BaseCritic = None
-    ):
+    def add_critic_params(self, params: dict, override_params: bool = True) -> dict:
         """
-        Initialize a :class:`RandomDiscrete`.
+        Update the model parameters dictionary with the :class:`Critic` parameters.
 
         Args:
-            env: The number of possible discrete output can be extracted from an Environment.
-            n_actions: Number of different discrete. outcomes that the model can provide.
-            dt_sampler: dt_sampler used to calculate an additional time step strategy. \
-                        the vector output by this class will multiply the actions of the model.
+            params: Dictionary containing the parameters of the current :class:`Model`.
+            override_params: The :class:`Critic` parameters will override the \
+            :class:`Model` parameters if they both have parameters with the same name.
+
+        Returns:
+            dict containing the parameters of both the :class:`Model` and its :class:`Critic`.
         """
-        super(RandomDiscrete, self).__init__(dt_sampler=dt_sampler)
+        if self.critic is not None:
+            critic_vals = self.critic.get_params_dict()
+            if override_params:
+                params.update(critic_vals)
+            else:
+                critic_vals.update(params)
+        else:
+            critic_vals = params
+        return critic_vals
+
+
+class _DtModel(Model):
+    """
+    Model class that allows to sample actions meant to be applied a different \
+    number of time steps. In order to account for the target number of time \
+    steps it incorporates the `dt` attribute, that will represent the number of \
+    times that the calculated action should be applied.
+
+    This model is not mean to be instantiated directly but used for class inheritance.
+    """
+
+    def get_params_dict(self, override_params: bool = True) -> Dict[str, Dict[str, Any]]:
+        """
+        Return the dictionary with the parameters to create a new `DiscreteUniform` model.
+
+        Args:
+            override_params: The :class:`Critic` parameters will override the \
+            :class:`Model` parameters if they both have parameters with the same name.
+
+        Returns:
+            dict containing the parameters of both the :class:`Model` and its :class:`Critic`.
+        """
+        dt = {"dt": {"dtype": np.int_}}
+        all_params = self.add_critic_params(params=dt, override_params=override_params)
+        return all_params
+
+    def update_states_with_critic(
+        self, actions: np.ndarray, batch_size: int, model_states: States, **kwargs
+    ) -> States:
+        """
+        Compute the time steps generated by the critic and add them to \
+        `model_states`. If there is no Critic the default value of dt will be a \
+        vector of 1.
+
+        Args:
+            actions: Numpy array representing the actions calculated by the model.
+            batch_size: Same batch size used when calling `sample`.
+            model_states: Same model_states used when calling `sample`.
+            **kwargs: Kwargs for `critic.calculate`.
+
+        Returns:
+            model_states updated with the actions and the dt calculated by the Critic.
+        """
+        dt = (
+            1
+            if self.critic is None
+            else self.critic.calculate(
+                batch_size=batch_size, model_states=model_states, **kwargs
+            ).astype(int)
+        )
+        model_states.update(actions=actions, dt=dt)
+        return model_states
+
+
+class DiscreteModel(_DtModel):
+    """It represents the base Model class that handles a discrete set of possible outcomes."""
+
+    def __init__(
+        self, n_actions: int = None, critic: BaseCritic = None, env: DiscreteEnv = None,
+    ):
+        """
+        Initialize a :class:`DiscreteModel`.
+
+        Args:
+            n_actions: Number of different discrete outcomes that the model can provide.
+            env: :class:`DiscreteEnvironment` that will be used to extract the \
+            number of different possible outcomes.
+            critic: Critic used to calculate the time step strategy.
+        """
+        super(DiscreteModel, self).__init__(critic=critic)
         if n_actions is None and env is None:
             raise ValueError("Env and n_actions cannot be both None.")
         self._n_actions = env.n_actions if n_actions is None else n_actions
 
     @property
-    def n_actions(self):
+    def n_actions(self) -> int:
         """Return the number of different possible discrete actions that the model can output."""
         return self._n_actions
 
-    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
-        """Return the dictionary with the parameters to create a new `RandomDiscrete` model."""
-        actions = {"actions": {"dtype": np.int_}}
-        return self._add_dt_sample_params(actions)
+    def get_params_dict(self, override_params: bool = True) -> Dict[str, Dict[str, Any]]:
+        """Return the dictionary with the parameters to create a new `DiscreteUniform` model."""
+        params = super(DiscreteModel, self).get_params_dict(override_params=override_params)
+        params.update({"actions": {"dtype": np.int_}})
+        return params
+
+
+class DiscreteUniform(DiscreteModel):
+    """
+    Model that samples actions in a one dimensional discrete state space using \
+    a uniform prior. For each walker on the batch it will return an integer in \
+    the range [0, n_actions].
+    """
 
     def sample(self, batch_size: int, model_states: States = None, **kwargs) -> States:
         """
@@ -131,111 +230,127 @@ class RandomDiscrete(Model):
             model_states: States corresponding to the environment data.
 
         Returns:
-            Tuple containing a tensor with the sampled actions and the new model states variable.
+            :class:`States` variable containing the calculated actions and dt.
 
         """
         actions = self.random_state.randint(0, self.n_actions, size=batch_size)
-        dt = (
-            1
-            if self.dt_sampler is None
-            else self.dt_sampler.calculate(
-                batch_size=batch_size, model_states=model_states, **kwargs
-            ).astype(int)
+        return self.update_states_with_critic(
+            actions=actions, model_states=model_states, batch_size=batch_size, **kwargs
         )
-        model_states.update(actions=actions, dt=dt)
-        return model_states
 
 
-class BinarySwap(Model):
-    def __init__(self, dim, *args, **kwargs):
-        super(BinarySwap, self).__init__(*args, **kwargs)
-        self.dim = dim
-
-    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
-        """Return the dictionary with the parameters to create a new `RandomDiscrete` model."""
-        actions = {"actions": {"dtype": np.int_}}
-        return self._add_dt_sample_params(actions)
-
-    def sample(
-        self, env_states: States = None, batch_size: int = 1, model_states: States = None, **kwargs
-    ) -> States:
-        """
-        Sample a random discrete variable from a uniform prior.
-
-        Args:
-            batch_size: Number of new points to the sampled.
-            model_states: States corresponding to the environment data.
-
-        Returns:
-            Tuple containing a tensor with the sampled actions and the new model states variable.
-
-        """
-        actions = (
-            env_states.observs.copy()
-            if env_states is not None
-            else np.zeros((batch_size, self.dim))
-        )
-        actions = actions.astype(bool)
-        flip_values = self.random_state.randint(0, actions.shape[1], size=len(actions))
-        for i, n in enumerate(flip_values):
-            actions[i, n] = np.logical_not(actions[i, n])
-        actions = actions.astype(int)
-        dt = (
-            1
-            if self.dt_sampler is None
-            else self.dt_sampler.calculate(
-                batch_size=batch_size, model_states=model_states, **kwargs
-            ).astype(int)
-        )
-        model_states.update(actions=actions, dt=dt)
-        return model_states
-
-
-class RandomContinous(Model):
-    """Model that samples actions in a continuous random using a uniform prior."""
+class BinarySwap(DiscreteModel):
+    """
+    This model acts on a vector of binary values and swaps the values of a \
+    given number of dimensions chosen at random.
+    """
 
     def __init__(
         self,
-        bounds: Optional[Bounds] = None,
-        low: Optional[Union[int, float, np.ndarray]] = None,
-        high: Optional[Union[int, float, np.ndarray]] = None,
-        shape: Optional[tuple] = None,
-        dt_sampler: Optional[BaseCritic] = None,
+        n_swaps: Optional[int] = 1,
+        n_actions: int = None,
+        critic: BaseCritic = None,
+        env: DiscreteEnv = None,
+    ):
+        """
+        Initialize a :class:`BinarySwap`.
+
+        Args:
+            n_swaps: Number of binary dimensions that will be swapped every time \
+             `sample` is called. If `n_swaps` is None it will be the same as n_actions.
+            n_actions: Number of different discrete outcomes that the model can provide.
+            env: :class:`DiscreteEnvironment` that will be used to extract the \
+            dimension of the target vector.
+            critic: dt_sampler used to calculate an additional time step strategy.
+        """
+        super(BinarySwap, self).__init__(critic=critic, n_actions=n_actions, env=env)
+        if n_swaps <= 0:
+            raise ValueError("n_swaps must be greater than 0.")
+        self.n_swaps = n_swaps if n_swaps is not None else self.n_actions
+
+    def get_params_dict(self, override_params: bool = True) -> Dict[str, Dict[str, Any]]:
+        """Return the dictionary with the parameters to create a new :class:`BinarySwap` model."""
+        all_params = super(BinarySwap, self).get_params_dict(override_params=override_params)
+        actions = {"actions": {"dtype": np.int_, "size": (self.n_actions,)}}
+        all_params.update(actions)
+        return all_params
+
+    def sample(
+        self, batch_size: int, env_states: States = None, model_states: States = None, **kwargs
+    ) -> States:
+        """
+       Swaps the values of `n_swaps` dimensions chosen at random. It works on a \
+       matrix of binary values of size (batch_size, n_actions).
+
+        Args:
+            batch_size: Number of new points to the sampled.
+            model_states: :class:`States` corresponding to the :class:`Model`data.
+            env_states: :class:`States` of the algorithms :class:`Environment`.
+
+        Returns:
+            :class:`States` variable containing the calculated actions and dt.
+        """
+
+        @jit(nopython=True)
+        def flip_values(actions, flips):
+            for i in range(flips.shape[0]):
+                for j in range(flips.shape[1]):
+                    actions[i, flips[i, j]] = np.logical_not(actions[i, flips[i, j]])
+            return actions
+
+        actions = (
+            env_states.observs.copy()
+            if env_states is not None
+            else np.zeros((batch_size, self.n_actions))
+        )
+        actions = actions.astype(bool)
+        flips = self.random_state.randint(0, self.n_actions, size=(batch_size, self.n_swaps))
+        actions = flip_values(actions, flips).astype(int)
+        return self.update_states_with_critic(
+            actions=actions, batch_size=batch_size, model_states=model_states, **kwargs
+        )
+
+
+class ContinuousModel(_DtModel):
+    """
+    It represents the base Model class that handles a continuous interval of \
+    possible outcomes.
+    """
+
+    def __init__(
+        self, bounds: Bounds, critic: Optional[BaseCritic] = None,
     ):
         """
         Initialize a :class:`RandomContinuous`.
 
         Args:
-            low: Minimum value that the random variable can take.
-            high: Maximum value that the random variable can take.
-            shape: Shape of the sampled random variable.
-            bounds: Bounds class defining the range of allowed values for the model.
+            bounds: :class:`Bounds` class defining the range of allowed output \
+            values of the model.
+            critic: :class:`Critic` that will be used to make additional computation.
         """
-        super(RandomContinous, self).__init__(dt_sampler=dt_sampler)
-        if shape is not None:
-            shape = shape if not isinstance(shape, list) else tuple(shape)
-
-        self.bounds = bounds if bounds is not None else Bounds(low=low, high=high, shape=shape)
+        super(ContinuousModel, self).__init__(critic=critic)
+        self.bounds = bounds
 
     @property
-    def shape(self):
+    def shape(self) -> tuple:
         """Return the shape of the sampled random variable."""
         return self.bounds.shape
 
     @property
-    def n_dims(self):
+    def n_dims(self) -> int:
         """Return the number of dimensions of the sampled random variable."""
-        return self.bounds.shape[0] if isinstance(self.bounds.shape, tuple) else self.bounds.shape
+        return self.bounds.shape[0]
 
-    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
-        """Return the dictionary with the parameters to create a new `RandomDiscrete` model."""
+    def get_params_dict(self, override_params: bool = True) -> Dict[str, Dict[str, Any]]:
+        """Return the dictionary with the parameters to create a new `DiscreteUniform` model."""
+        all_params = super(ContinuousModel, self).get_params_dict(override_params=override_params)
         actions = {"actions": {"size": self.shape, "dtype": float_type}}
-        if self.dt_sampler is not None:
-            params = self.dt_sampler.get_params_dict()
-            params.update(actions)
-        else:
-            params = actions
-        return params
+        all_params.update(actions)
+        return all_params
+
+
+class ContinousUniform(ContinuousModel):
+    """Model that samples continuous actions in a given interval using a uniform prior."""
 
     def sample(self, batch_size: int, model_states: States = None, **kwargs) -> States:
         """
@@ -246,52 +361,42 @@ class RandomContinous(Model):
             model_states: States corresponding to the model data.
 
         Returns:
-            States containing the new sampled discrete random values.
-
+            States containing the new sampled discrete random values inside \
+            `state.actions` attribute.
         """
         actions = self.random_state.uniform(
             low=self.bounds.low, high=self.bounds.high, size=tuple([batch_size]) + self.shape
         ).astype(self.bounds.dtype)
-        dt = (
-            1.0
-            if self.dt_sampler is None
-            else self.dt_sampler.calculate(
-                batch_size=batch_size, model_states=model_states, **kwargs
-            )
+        return self.update_states_with_critic(
+            actions=actions, batch_size=batch_size, model_states=model_states, **kwargs
         )
-        model_states.update(actions=actions, dt=dt)
-        return model_states
 
 
-class RandomNormal(RandomContinous):
+class RandomNormal(ContinuousModel):
+    """
+    Calculate continuous actions inside the given :class:`Bounds` sampling from \
+    a normal distribution with the provided mean and standard deviation.
+    """
+
     def __init__(
         self,
-        bounds: Optional[Bounds] = None,
+        bounds: Bounds,
         loc: Union[int, float, np.ndarray] = 0.0,
         scale: Optional[Union[int, float, np.ndarray]] = 1.0,
-        shape: Optional[tuple] = None,
-        dt_sampler: Optional[BaseCritic] = None,
+        critic: Optional[BaseCritic] = None,
     ):
         """
         Initialize a :class:`RandomContinuous`.
 
         Args:
-            loc: Minimum value that the random variable can take.
-            scale: Maximum value that the random variable can take.
-            shape: Shape of the sampled random variable.
-            bounds: Bounds class defining the range of allowed values for the model.
+            bounds: :class:`Bounds` class defining the range of allowed values for the model.
+            loc: Mean of the gaussian distribution used for sampling actions.
+            scale: Standard deviation of the gaussian distribution used for sampling actions.
+            critic: :class:`Critic` that will be used to make additional computation.
         """
-        super(RandomContinous, self).__init__(dt_sampler=dt_sampler)
+        super(RandomNormal, self).__init__(critic=critic, bounds=bounds)
         self.loc = loc
         self.scale = scale
-        self.bounds = bounds
-        if shape is not None:
-            shape = tuple(shape) if isinstance(shape, list) else shape
-        self._shape = self.bounds.shape if bounds is not None else shape
-
-    @property
-    def shape(self):
-        return self._shape
 
     def sample(
         self,
@@ -299,10 +404,10 @@ class RandomNormal(RandomContinous):
         model_states: States = None,
         env_states: States = None,
         walkers_states: "StatesWalkers" = None,
+        **kwargs,
     ) -> States:
         """
-        Calculate the corresponding data to interact with the Environment and \
-        store it in model states.
+        Calculate the actions sampling from a Gaussian distribution.
 
         Args:
             batch_size: Number of new points to the sampled.
@@ -311,25 +416,13 @@ class RandomNormal(RandomContinous):
             walkers_states: States corresponding to the walkers data.
 
         Returns:
-            Tuple containing a tensor with the sampled actions and the new model states variable.
+            :class:`States` variable containing the calculated actions and dt.
 
         """
-        batch_size = batch_size if model_states is None else model_states.n
         actions = self.random_state.normal(
             size=tuple([batch_size]) + self.shape, loc=self.loc, scale=self.scale
         )
-        if self.bounds is not None and hasattr(self.bounds, "clip"):
-            actions = self.bounds.clip(actions).astype(self.bounds.dtype)
-
-        dt = (
-            1.0
-            if self.dt_sampler is None
-            else self.dt_sampler.calculate(
-                batch_size=batch_size,
-                model_states=model_states,
-                env_states=env_states,
-                walkers_states=walkers_states,
-            )
+        actions = self.bounds.clip(actions)
+        return self.update_states_with_critic(
+            actions=actions, batch_size=batch_size, model_states=model_states, **kwargs
         )
-        model_states.update(actions=actions, dt=dt)
-        return model_states

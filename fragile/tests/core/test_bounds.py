@@ -172,6 +172,3 @@ class TestBounds:
         new_bounds = bounds_fixture.safe_margin(low=low, scale=2)
         assert numpy.allclose(new_bounds.high, bounds_fixture.high * 2)
         assert numpy.allclose(new_bounds.low, low * 2)
-
-
-

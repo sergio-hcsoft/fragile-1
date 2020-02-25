@@ -1,4 +1,4 @@
-from collections import Iterable as _Iterable
+from collections.abc import Iterable as _Iterable
 from typing import Iterable, Tuple, Union, Optional
 
 import numpy as np
@@ -116,10 +116,9 @@ class Bounds:
         return Bounds(low=low, high=high)
 
     @staticmethod
-    def get_scaled_intervals(low: Union[np.ndarray, float, int],
-                             high: Union[np.ndarray, float, int],
-                             scale: float) -> Tuple[Union[np.ndarray, float],
-                                                    Union[np.ndarray, float]]:
+    def get_scaled_intervals(
+        low: Union[np.ndarray, float, int], high: Union[np.ndarray, float, int], scale: float
+    ) -> Tuple[Union[np.ndarray, float], Union[np.ndarray, float]]:
         """
         Scale the high and low vectors by an scale factor.
 
