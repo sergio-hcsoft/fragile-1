@@ -6,7 +6,7 @@ from scipy.optimize import minimize
 from scipy.optimize import Bounds as ScipyBounds
 
 from fragile.core.base_classes import BaseEnvironment
-from fragile.core.states import States
+from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
 from fragile.core.models import Bounds
 
 
@@ -15,7 +15,7 @@ class Function(BaseEnvironment):
     Environment that represents an arbitrary mathematical function.
     """
 
-    STATE_CLASS = States
+    STATE_CLASS = StatesEnv
 
     def __init__(
         self,
@@ -58,7 +58,7 @@ class Function(BaseEnvironment):
         }
         return params
 
-    def step(self, model_states: States, env_states: States) -> States:
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
         Sets the environment to the target states by applying the specified actions an arbitrary
         number of time steps.
@@ -81,7 +81,7 @@ class Function(BaseEnvironment):
         last_states = self._get_new_states(new_points, rewards, ends, model_states.n)
         return last_states
 
-    def reset(self, batch_size: int = 1, **kwargs) -> States:
+    def reset(self, batch_size: int = 1, **kwargs) -> StatesEnv:
         """
         Resets the environment to the start of a new episode and returns an
         States instance describing the state of the Environment.
@@ -111,7 +111,7 @@ class Function(BaseEnvironment):
             )
         return new_points
 
-    def _get_new_states(self, states, rewards, ends, batch_size) -> States:
+    def _get_new_states(self, states, rewards, ends, batch_size) -> StatesEnv:
         state = self.create_new_states(batch_size=batch_size)
         state.update(states=states, observs=states, rewards=rewards, ends=ends)
         return state
@@ -167,7 +167,7 @@ class MinimizerWrapper(Function):
     def __repr__(self):
         return self.env.__repr__()
 
-    def step(self, model_states: States, env_states: States) -> States:
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
         Sets the environment to the target states by applying the specified actions an arbitrary
         number of time steps.

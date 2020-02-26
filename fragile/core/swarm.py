@@ -282,6 +282,7 @@ class Swarm(BaseSwarm):
 
 class NoBalance(Swarm):
     """Swarm that does not perform the cloning process."""
+
     def balance_and_prune(self):
         """Does noting."""
         pass

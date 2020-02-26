@@ -4,7 +4,8 @@ import numpy as np
 
 from fragile.core.models import Bounds, ContinousUniform
 from fragile.core.swarm import Swarm
-from fragile.core.walkers import Walkers, States, StatesWalkers
+from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
+from fragile.core.walkers import Walkers
 from fragile.optimize.env import Function, Minimizer
 
 
@@ -50,8 +51,8 @@ class FunctionMapper(Swarm):
 
     def run_swarm(
         self,
-        model_states: States = None,
-        env_states: States = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
         walkers_states: StatesWalkers = None,
         print_every: int = 1e100,
     ):
@@ -82,8 +83,8 @@ class FunctionMapper(Swarm):
     def reset(
         self,
         walkers_states: StatesWalkers = None,
-        model_states: States = None,
-        env_states: States = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
     ):
         super(FunctionMapper, self).reset(
             walkers_states=walkers_states, model_states=model_states, env_states=env_states

@@ -14,7 +14,7 @@ from fragile.core.models import (
     NormalContinuous,
     _DtModel,
 )
-from fragile.core.states import States
+from fragile.core.states import StatesEnv, StatesModel
 
 
 def create_model(name="discrete"):
@@ -35,7 +35,7 @@ def model_fixture(request):
 
 
 def create_model_states(model: BaseModel, batch_size: int = 10):
-    return States(batch_size=batch_size, state_dict=model.get_params_dict())
+    return StatesModel(batch_size=batch_size, state_dict=model.get_params_dict())
 
 
 class TestModel:
@@ -58,7 +58,10 @@ class TestModel:
         assert isinstance(states, model_fixture.STATE_CLASS)
         model_states = create_model_states(model=model_fixture, batch_size=batch_size)
         states = model_fixture.reset(batch_size=batch_size, model_states=model_states)
-        assert isinstance(states, model_fixture.STATE_CLASS)
+        assert isinstance(states, model_fixture.STATE_CLASS), (
+            type(states),
+            model_fixture.STATE_CLASS,
+        )
         assert len(model_states.actions) == batch_size
 
     @pytest.mark.parametrize("model_fixture", model_fixture_params, indirect=True)
@@ -86,8 +89,8 @@ class DummyCritic(BaseCritic):
     def calculate(
         self,
         batch_size: int = None,
-        model_states: States = None,
-        env_states: States = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
         walkers_states: "StatesWalkers" = None,
     ) -> numpy.ndarray:
         batch_size = batch_size or env_states.n

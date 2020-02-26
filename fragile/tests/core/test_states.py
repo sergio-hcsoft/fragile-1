@@ -1,10 +1,9 @@
 import numpy as np
 import pytest  # noqa: F401
 
-from fragile.core.states import States
-from fragile.core.walkers import StatesWalkers
+from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
 
-state_classes = [StatesWalkers, States]
+state_classes = [States, StatesEnv, StatesModel, StatesWalkers]
 
 
 class TestStates:
@@ -89,7 +88,6 @@ class TestStates:
         compas_ix = np.array(np.arange(states.n)[::-1])
 
         states.clone(will_clone=will_clone, compas_ix=compas_ix)
-
         target_1 = np.arange(10)
 
         assert np.all(target_1 == states.miau), (target_1 - states.miau, states_class)

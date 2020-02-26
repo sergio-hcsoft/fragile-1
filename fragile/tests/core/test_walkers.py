@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 
 from fragile.core.utils import relativize
-from fragile.core.walkers import States, StatesWalkers, Walkers
+from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
+from fragile.core.walkers import Walkers
 
 
 @pytest.fixture()
@@ -93,8 +94,8 @@ class TestWalkers:
     def test_getattr(self, walkers):
         assert isinstance(walkers.states.will_clone, np.ndarray)
         assert isinstance(walkers.env_states.observs, np.ndarray)
-        assert isinstance(walkers.env_states, States)
-        assert isinstance(walkers.model_states, States)
+        assert isinstance(walkers.env_states, StatesEnv)
+        assert isinstance(walkers.model_states, StatesModel)
         with pytest.raises(AttributeError):
             assert isinstance(walkers.moco, np.ndarray)
 

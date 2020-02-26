@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, List
 
 import numpy as np
 
-from fragile.core.states import States
+from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.utils import RANDOM_SEED, random_state
 
 
@@ -13,9 +13,9 @@ class BaseCritic:
     def calculate(
         self,
         batch_size: int = None,
-        model_states: States = None,
-        env_states: States = None,
-        walkers_states: "StatesWalkers" = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
+        walkers_states: StatesWalkers = None,
     ) -> np.ndarray:
         """
         Calculate the target time step values.
@@ -32,7 +32,9 @@ class BaseCritic:
         """
         raise NotImplementedError
 
-    def reset(self, batch_size: int = 1, model_states: States = None, *args, **kwargs) -> States:
+    def reset(
+        self, batch_size: int = 1, model_states: StatesModel = None, *args, **kwargs
+    ) -> States:
         """
         Restart the DtSampler and reset its internal state.
 
@@ -121,6 +123,8 @@ class BaseEnvironment(StatesOwner):
 
     """
 
+    STATE_CLASS = StatesEnv
+
     def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
         """
         Return an state_dict to be used for instantiating the states containing \
@@ -141,7 +145,7 @@ class BaseEnvironment(StatesOwner):
         """
         raise NotImplementedError
 
-    def step(self, model_states: States, env_states: States) -> States:
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
         Step the environment for a batch of walkers.
 
@@ -156,7 +160,9 @@ class BaseEnvironment(StatesOwner):
         """
         raise NotImplementedError
 
-    def reset(self, batch_size: int = 1, env_states: States = None, *args, **kwargs) -> States:
+    def reset(
+        self, batch_size: int = 1, env_states: StatesEnv = None, *args, **kwargs
+    ) -> StatesEnv:
         """
         Reset the environment and return an States class with batch_size copies \
         of the initial state.
@@ -182,6 +188,8 @@ class BaseModel(StatesOwner):
     Environment, effectively working as a policy.
     """
 
+    STATE_CLASS = StatesModel
+
     def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
         """
         Return an state_dict to be used for instantiating the states containing \
@@ -206,7 +214,9 @@ class BaseModel(StatesOwner):
         """
         raise NotImplementedError
 
-    def reset(self, batch_size: int = 1, model_states: States = None, *args, **kwargs) -> States:
+    def reset(
+        self, batch_size: int = 1, model_states: StatesModel = None, *args, **kwargs
+    ) -> StatesModel:
         """
         Restart the model and reset its internal state.
 
@@ -228,10 +238,10 @@ class BaseModel(StatesOwner):
     def predict(
         self,
         batch_size: int = None,
-        model_states: States = None,
-        env_states: States = None,
-        walkers_states: "StatesWalkers" = None,
-    ) -> States:
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
+        walkers_states: StatesWalkers = None,
+    ) -> StatesModel:
         """
         Calculate States containing the data needed to interact with the environment.
 
@@ -255,6 +265,7 @@ class BaseWalkers(StatesOwner):
     """
 
     random_state = random_state
+    STATE_CLASS = StatesWalkers
 
     def __init__(
         self,
@@ -294,17 +305,17 @@ class BaseWalkers(StatesOwner):
         return self.n_walkers
 
     @property
-    def env_states(self) -> "States":
+    def env_states(self) -> StatesEnv:
         """Return the States class where all the environment information is stored."""
         raise NotImplementedError
 
     @property
-    def model_states(self) -> "States":
+    def model_states(self) -> StatesModel:
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
     @property
-    def states(self) -> States:
+    def states(self) -> StatesWalkers:
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
@@ -317,7 +328,7 @@ class BaseWalkers(StatesOwner):
         return state_dict
 
     def update_states(
-        self, env_states: States = None, model_states: States = None, **kwargs
+        self, env_states: StatesEnv = None, model_states: StatesModel = None, **kwargs
     ) -> None:
         """
         Update the States variables that do not contain internal data and \
@@ -333,9 +344,9 @@ class BaseWalkers(StatesOwner):
 
     def reset(
         self,
-        model_states: "States" = None,
-        env_states: "States" = None,
-        walkers_states: "StatesWalkers" = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
+        walkers_states: StatesWalkers = None,
     ):
         """
         Reset a :class:`fragile.Walkers` and clear the internal data to start a \
@@ -444,7 +455,7 @@ class BaseSwarm:
         return self._model
 
     @property
-    def walkers(self) -> "Walkers":
+    def walkers(self) -> BaseWalkers:
         """
         Access the :class:`Walkers` in charge of implementing the FAI \
         evolution process.
@@ -453,9 +464,9 @@ class BaseSwarm:
 
     def reset(
         self,
-        model_states: "States" = None,
-        env_states: "States" = None,
-        walkers_states: "StatesWalkers" = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
+        walkers_states: StatesWalkers = None,
         *args,
         **kwargs
     ):
@@ -474,9 +485,9 @@ class BaseSwarm:
 
     def run_swarm(
         self,
-        model_states: "States" = None,
-        env_states: "States" = None,
-        walkers_states: "StatesWalkers" = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
+        walkers_states: StatesWalkers = None,
     ):
         """
         Run a new search process until the stop condition is met.

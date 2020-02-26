@@ -1,5 +1,5 @@
 import copy
-from typing import Union
+from typing import Any, Dict, Union
 
 import numpy as np
 from PIL import Image
@@ -18,6 +18,7 @@ random_state = np.random.RandomState(seed=RANDOM_SEED)
 
 float_type = np.float32
 Scalar = Union[int, np.int, float, np.float]
+StateDict = Dict[str, Dict[str, Any]]
 
 
 def hash_numpy(x: np.ndarray) -> int:
