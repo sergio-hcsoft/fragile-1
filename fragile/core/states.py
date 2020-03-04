@@ -337,7 +337,6 @@ class StatesWalkers(States):
             kwargs: attributes that will not be set as numpy.ndarrays
         """
         self.will_clone = None
-        self.compas_dist = None
         self.compas_clone = None
         self.processed_rewards = None
         self.cum_rewards = None
@@ -371,7 +370,6 @@ class StatesWalkers(States):
         """
         params = {
             "id_walkers": {"dtype": np.int64},
-            "compas_dist": {"dtype": np.int64},
             "compas_clone": {"dtype": np.int64},
             "processed_rewards": {"dtype": float_type},
             "virtual_rewards": {"dtype": float_type},

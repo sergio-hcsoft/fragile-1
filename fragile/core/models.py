@@ -306,19 +306,19 @@ class BinarySwap(DiscreteModel):
     def sample(
         self,
         batch_size: int,
-        env_states: StatesModel = None,
+        env_states: StatesEnv = None,
         model_states: StatesModel = None,
-        **kwargs
+        **kwargs,
     ) -> StatesModel:
         """
-       Swaps the values of `n_swaps` dimensions chosen at random. It works on a \
-       matrix of binary values of size (batch_size, n_actions).
+        Swaps the values of `n_swaps` dimensions chosen at random. It works on a \
+        matrix of binary values of size (batch_size, n_actions).
 
         Args:
             batch_size: Number of new points to the sampled.
-            model_states: :class:`States` corresponding to the :class:`Model`data.
-            env_states: :class:`States` of the algorithms :class:`Environment`.
-            kwargs: passed to the :class:`Critic`.
+            model_states: :class:`StatesModel` corresponding to the :class:`Model` data.
+            env_states: :class:`StatesEnv` of the algorithm's :class:`Environment`.
+            kwargs: Passed to the :class:`Critic`.
 
         Returns:
             :class:`States` variable containing the calculated actions and dt.
