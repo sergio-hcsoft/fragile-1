@@ -3,7 +3,7 @@ from typing import Any, Dict
 import numpy as np
 
 from fragile.core.base_classes import StatesOwner
-from fragile.core.walkers import States, StatesWalkers
+from fragile.core.states import States, StatesWalkers
 
 
 class Critic(StatesOwner):

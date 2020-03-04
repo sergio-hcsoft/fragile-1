@@ -1,6 +1,6 @@
 import numpy as np
 from fragile.core.models import NormalContinuous
-from fragile.core.states import States
+from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.utils import calculate_clone, calculate_virtual_reward, relativize
 
 
@@ -21,9 +21,10 @@ class ESModel(NormalContinuous):
     def sample(
         self,
         batch_size: int,
-        model_states: States = None,
-        env_states: States = None,
-        walkers_states: "StatesWalkers" = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
+        walkers_states: StatesWalkers = None,
+        **kwargs,
     ) -> States:
         """
         Calculate the corresponding data to interact with the Environment and \
@@ -41,7 +42,7 @@ class ESModel(NormalContinuous):
         """
         if np.random.random() < self.random_step_prob:
             return super(ESModel, self).sample(
-                batch_size=batch_size, env_states=env_states, model_states=model_states
+                batch_size=batch_size, env_states=env_states, model_states=model_states, **kwargs,
             )
         observs = (
             env_states.observs
@@ -57,21 +58,17 @@ class ESModel(NormalContinuous):
         # Randomly mutate each coordinate of the original vector
         assert observs.shape == proposal.shape
         rands = np.random.random(observs.shape)
-        perturbations = np.where(rands < self.mutation, observs, proposal).copy()
+        perturbations = np.where(rands < self.mutation, observs, proposal)
         new_states = perturbations - observs
-        actions = self.bounds.clip(new_states) if self.bounds is not None else new_states
-        dt = (
-            1
-            if self.dt_sampler is None
-            else self.dt_sampler.calculate(
-                batch_size=batch_size,
-                model_states=model_states,
-                env_states=env_states,
-                walkers_states=walkers_states,
-            )
+        actions = self.bounds.clip(new_states)
+        return self.update_states_with_critic(
+            actions=actions,
+            batch_size=batch_size,
+            model_states=model_states,
+            env_states=env_states,
+            walkers_states=walkers_states,
+            **kwargs
         )
-        model_states.update(actions=actions, dt=dt)
-        return model_states
 
 
 class CompasJump(NormalContinuous):

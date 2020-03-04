@@ -10,7 +10,6 @@ from fragile.core.walkers import float_type, Walkers
 from fragile.optimize.encoder import Encoder
 from fragile.optimize.env import Function
 from fragile.optimize.local_optimizer import Minimizer
-from fragile.optimize.models_ import EncoderSampler
 
 
 class MapperWalkers(Walkers):

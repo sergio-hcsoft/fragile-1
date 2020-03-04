@@ -3,7 +3,6 @@ from typing import Callable
 
 from scipy.interpolate import griddata
 import holoviews as hv
-from holoviews import opts
 from holoviews.streams import Pipe
 import numpy as np
 from sklearn.neighbors import KernelDensity

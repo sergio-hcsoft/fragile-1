@@ -1,10 +1,16 @@
 import math
+from typing import Callable
 
 from numba import jit
 import numpy as np
 
 from fragile.core.states import States
 from fragile.optimize.env import Function, Bounds
+
+"""
+This file includes several test functions for optimization described here:
+https://en.wikipedia.org/wiki/Test_functions_for_optimization
+"""
 
 
 def sphere(x: np.ndarray):
@@ -84,29 +90,21 @@ class OptimBenchmark(Function):
 
     benchmark = None
     best_state = None
-    function = None
 
-    def __init__(self, shape, **kwargs):
-        kwargs = self.process_default_kwargs(shape, kwargs)
-        super(OptimBenchmark, self).__init__(**kwargs)
-        self.bounds = self.get_bounds(self.shape)
+    def __init__(self, shape: tuple, function: Callable):
+        bounds = self.get_bounds(shape=shape)
+        super(OptimBenchmark, self).__init__(bounds=bounds, function=function)
 
     @staticmethod
     def get_bounds(shape):
         raise NotImplementedError
 
-    @classmethod
-    def process_default_kwargs(cls, shape, kwargs):
-        kwargs["function"] = kwargs.get("function", cls.function)
-        kwargs["shape"] = kwargs.get("shape", shape)
-        if kwargs.get("bounds") is None:
-            kwargs["bounds"] = cls.get_bounds(shape)
-        return kwargs
-
 
 class Sphere(OptimBenchmark):
-    function = sphere
     benchmark = 0.0
+
+    def __init__(self, shape: tuple):
+        super(Sphere, self).__init__(shape=shape, function=sphere)
 
     @staticmethod
     def get_bounds(shape):
@@ -119,8 +117,10 @@ class Sphere(OptimBenchmark):
 
 
 class Rastrigin(OptimBenchmark):
-    function = rastrigin
     benchmark = 0
+
+    def __init__(self, shape: tuple):
+        super(Rastrigin, self).__init__(shape=shape, function=rastrigin)
 
     @staticmethod
     def get_bounds(shape):
@@ -133,21 +133,15 @@ class Rastrigin(OptimBenchmark):
 
 
 class EggHolder(OptimBenchmark):
-    function = eggholder
     benchmark = -959.64066271
 
-    def __init__(self, shape=(2,), **kwargs):
-        kwargs = self.process_default_kwargs(shape, kwargs)
-        super(OptimBenchmark, self).__init__(**kwargs)
+    def __init__(self, shape=None):
+        super(EggHolder, self).__init__(shape=(2,), function=eggholder)
 
     @staticmethod
     def get_bounds(shape):
         bounds = [(-512, 512), (-512, 512)]
         return Bounds.from_tuples(bounds)
-
-    @classmethod
-    def process_default_kwargs(cls, shape, kwargs):
-        return super(EggHolder, cls).process_default_kwargs(shape=tuple([2]), kwargs=kwargs)
 
     @property
     def best_state(self):
@@ -155,7 +149,8 @@ class EggHolder(OptimBenchmark):
 
 
 class StyblinskiTang(OptimBenchmark):
-    function = styblinski_tang
+    def __init__(self, shape: tuple):
+        super(StyblinskiTang, self).__init__(shape=shape, function=styblinski_tang)
 
     @staticmethod
     def get_bounds(shape):
@@ -203,9 +198,7 @@ class LennardJones(OptimBenchmark):
         self.n_atoms = n_atoms
         shape = (3 * n_atoms,)
         self.benchmark = [np.zeros(self.n_atoms * 3), self.minima.get(str(int(n_atoms)), 0)]
-        super(LennardJones, self).__init__(shape=shape, *args, **kwargs)
-
-        self.function = lennard_jones
+        super(LennardJones, self).__init__(shape=shape, function=lennard_jones)
 
     @staticmethod
     def get_bounds(shape):
@@ -230,15 +223,12 @@ class RandomLennard(LennardJones):
         Returns:
             States containing the information that describes the new state of the Environment.
         """
-        new_points = (
-            # model_states.actions * model_states.dt.reshape(env_states.n, -1) + env_states.observs
-            model_states.actions
-            + env_states.observs
-        )
+        new_points = model_states.actions + env_states.observs
+
         rewards = self.random_lennard(new_points).flatten()
         ends = self.calculate_end(points=new_points)
 
-        last_states = self._get_new_states(new_points, rewards, ends, model_states.n)
+        last_states = self.states_from_data(new_points, new_points, rewards, ends, model_states.n)
         return last_states
 
     def reset(self, batch_size: int = 1, **kwargs) -> States:
@@ -255,7 +245,9 @@ class RandomLennard(LennardJones):
             batch_size.
         """
         ends = np.zeros(batch_size, dtype=np.bool_)
-        new_points = self._sample_init_points(batch_size=batch_size)
+        new_points = self.sample_bounds(batch_size=batch_size)
         rewards = self.random_lennard(new_points).flatten()
-        new_states = self._get_new_states(new_points, rewards, ends, batch_size=batch_size)
+        new_states = self.states_from_data(
+            new_points, new_points, rewards, ends, batch_size=batch_size
+        )
         return new_states
