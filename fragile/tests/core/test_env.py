@@ -4,6 +4,7 @@ import numpy as np
 from plangym import AtariEnvironment, ClassicControl
 import pytest
 
+from fragile.core.bounds import Bounds
 from fragile.core.env import DiscreteEnv, Environment
 from fragile.core.states import States
 from fragile.optimize.env import Function
@@ -16,9 +17,9 @@ def create_env_and_model_states(name="classic") -> Callable:
         env = AtariEnvironment(name="MsPacman-v0", clone_seeds=True, autoreset=True)
         env.reset()
         env = DiscreteEnv(env)
-        params = {"actions": {"dtype": np.int64}, "dt": {"dtype": np.float32}}
+        params = {"actions": {"dtype": np.int64}, "critic": {"dtype": np.float32}}
         states = States(state_dict=params, batch_size=N_WALKERS)
-        states.update(actions=np.ones(N_WALKERS), dt=np.ones(N_WALKERS))
+        states.update(actions=np.ones(N_WALKERS), critic=np.ones(N_WALKERS))
         return env, states
 
     def classic_control_env():
@@ -31,7 +32,8 @@ def create_env_and_model_states(name="classic") -> Callable:
         return env, states
 
     def function_env():
-        env = Function(function=lambda x: np.ones(N_WALKERS), shape=(2,), high=1, low=1, dtype=int)
+        bounds = Bounds(shape=(2,), high=1, low=1, dtype=int)
+        env = Function(function=lambda x: np.ones(N_WALKERS), bounds=bounds)
         params = {"actions": {"dtype": np.int64, "size": (2,)}, "dt": {"dtype": np.float32}}
         states = States(state_dict=params, batch_size=N_WALKERS)
         return env, states

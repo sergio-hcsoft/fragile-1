@@ -84,7 +84,7 @@ class TestModel:
 
 class DummyCritic(BaseCritic):
     def get_params_dict(self):
-        return {"dt": {"dtype": float}}
+        return {"critic": {"dtype": float}}
 
     def calculate(
         self,
@@ -100,22 +100,22 @@ class DummyCritic(BaseCritic):
 class TestDtModel:
     def test_get_params_dict_content(self):
         params = _DtModel().get_params_dict()
-        assert "dt" in params
-        assert "dtype" in params["dt"]
-        assert params["dt"]["dtype"] == numpy.int_
+        assert "critic" in params
+        assert "dtype" in params["critic"]
+        assert params["critic"]["dtype"] == numpy.int_
 
     def test_override_get_params_dict(self):
         critic = DummyCritic()
         model = _DtModel(critic=critic)
         params = model.get_params_dict(override_params=False)
-        assert "dt" in params
-        assert "dtype" in params["dt"]
-        assert params["dt"]["dtype"] == numpy.int_
+        assert "critic" in params
+        assert "dtype" in params["critic"]
+        assert params["critic"]["dtype"] == numpy.int_
 
         params = model.get_params_dict(override_params=True)
-        assert "dt" in params
-        assert "dtype" in params["dt"]
-        assert params["dt"]["dtype"] == float
+        assert "critic" in params
+        assert "dtype" in params["critic"]
+        assert params["critic"]["dtype"] == float
 
 
 class DummyEnv:
@@ -146,9 +146,9 @@ class TestDiscreteUniform:
         assert len(numpy.unique(actions)) <= n_actions
         assert all(actions >= 0)
         assert all(actions <= n_actions)
-        assert "dt" in model_states.keys()
-        assert isinstance(model_states.dt, numpy.ndarray)
-        assert (model_states.dt == 1).all(), model_states.dt
+        assert "critic" in model_states.keys()
+        assert isinstance(model_states.critic, numpy.ndarray)
+        assert (model_states.critic == 1).all(), model_states.critic
 
         states = create_model_states(batch_size=100, model=model)
         model_states = model.sample(batch_size=states.n, model_states=states)
@@ -158,8 +158,8 @@ class TestDiscreteUniform:
         assert all(actions >= 0)
         assert all(actions <= n_actions)
         assert numpy.allclose(actions, actions.astype(int))
-        assert "dt" in model_states.keys()
-        assert (model_states.dt == 1).all()
+        assert "critic" in model_states.keys()
+        assert (model_states.critic == 1).all()
 
     @pytest.mark.parametrize("n_actions", [2, 5, 10, 20])
     def test_sample_with_critic(self, n_actions):
@@ -170,8 +170,8 @@ class TestDiscreteUniform:
         assert len(numpy.unique(actions)) <= n_actions
         assert all(actions >= 0)
         assert all(actions <= n_actions)
-        assert "dt" in model_states.keys()
-        assert (model_states.dt == 5).all()
+        assert "critic" in model_states.keys()
+        assert (model_states.critic == 5).all()
 
         states = create_model_states(batch_size=100, model=model)
         model_states = model.sample(batch_size=states.n, model_states=states)
@@ -181,8 +181,8 @@ class TestDiscreteUniform:
         assert all(actions >= 0)
         assert all(actions <= n_actions)
         assert numpy.allclose(actions, actions.astype(int))
-        assert "dt" in model_states.keys()
-        assert (model_states.dt == 5).all()
+        assert "critic" in model_states.keys()
+        assert (model_states.critic == 5).all()
 
 
 class TestBinarySwap:

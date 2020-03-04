@@ -36,7 +36,7 @@ class BaseCritic:
         self, batch_size: int = 1, model_states: StatesModel = None, *args, **kwargs
     ) -> States:
         """
-        Restart the DtSampler and reset its internal state.
+        Restart the `Critic` and reset its internal state.
 
         Args:
             batch_size: Number of elements in the first dimension of the model \
@@ -55,7 +55,10 @@ class BaseCritic:
 
 
 class StatesOwner:
-    """Every class meant to have its data stored in States must inherit from this class."""
+    """
+    Every class meant to have its data stored in :class:`States` must inherit \
+    from this class.
+     """
 
     random_state = random_state
     STATE_CLASS = States
@@ -278,22 +281,23 @@ class BaseWalkers(StatesOwner):
         Initialize a `BaseWalkers`.
 
         Args:
-            n_walkers: Number of walkers the Swarm will contain.
-            env_state_params: Contains the structure of the States
-                variable with all the information regarding the Environment.
-            model_state_params: Contains the structure of the States
-                variable with all the information regarding the Model.
-            accumulate_rewards: If true accumulate the rewards after each step
+            n_walkers: Number of walkers. This is the number of states that will\
+             be iterated in parallel.
+            env_state_params: Dictionary to instantiate the :class:`StatesEnv`\
+             of an :class:`Environment`.
+            model_state_params: Dictionary to instantiate the :class:`StatesModel`\
+             of a :class:`Model`.
+            accumulate_rewards: If `True` accumulate the rewards after each step
                 of the environment.
 
         """
         super(BaseWalkers, self).__init__()
-        self.model_state_params = model_state_params
-        self.env_state_params = env_state_params
         self.n_walkers = n_walkers
         self.id_walkers = None
         self.death_cond = None
         self._accumulate_rewards = accumulate_rewards
+        self.env_states_params = env_state_params
+        self.model_states_params = model_state_params
 
     def __len__(self) -> int:
         """The length is the number of walkers."""
@@ -393,7 +397,7 @@ class BaseWalkers(StatesOwner):
 
 class BaseSwarm:
     """
-    The Swarm is in charge of performing a fractal evolution process.
+    The Swarm implements the iteration logic to make the :class:`Walkers` evolve.
 
     It contains the necessary logic to use an Environment, a Model, and a \
     Walkers instance to create the algorithm execution loop.
@@ -471,7 +475,7 @@ class BaseSwarm:
         **kwargs
     ):
         """
-        Reset a :class:`fragile.Swarm` and clear the isnternal data to start a \
+        Reset a :class:`fragile.Swarm` and clear the internal data to start a \
         new search process.
 
         Args:
@@ -505,8 +509,10 @@ class BaseSwarm:
 
     def step_walkers(self):
         """
-        Make the walkers undergo a random perturbation process in the swarm \
+        Make the walkers undergo a perturbation process in the swarm \
         :class:`Environment`.
+
+        This function updates the :class:`StatesEnv` and the :class:`StatesModel`.
         """
         raise NotImplementedError
 

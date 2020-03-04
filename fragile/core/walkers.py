@@ -36,8 +36,8 @@ class SimpleWalkers(BaseWalkers):
 
         Args:
             n_walkers: Number of walkers of the instance.
-            env_state_params: Dictionary to instantiate the States of an Environment.
-            model_state_params: Dictionary to instantiate the States of an Model.
+            env_state_params: Dictionary to instantiate the States of an :class:`Environment`.
+            model_state_params: Dictionary to instantiate the States of a :class:`Model`.
             reward_scale: Regulates the importance of the reward. Recommended to \
                           keep in the [0, 5] range. Higher values correspond to \
                           higher importance.
@@ -149,7 +149,7 @@ class SimpleWalkers(BaseWalkers):
         """Calculate the corresponding distance function for each state with \
         respect to another state chosen at random.
 
-        The internal state is update with the relativized distance values.
+        The internal state is updated with the relativized distance values.
         """
         compas_ix = np.random.permutation(np.arange(self.n))  # self.get_alive_compas()
         obs = self.env_states.observs.reshape(self.n, -1)
@@ -235,7 +235,7 @@ class SimpleWalkers(BaseWalkers):
         Sample the clone probability distribution and clone the walkers accordingly.
 
         This function will update the internal :class:`StatesWalkers`, \
-        env_states, and model_states.
+        :class:`StatesEnv`, and :class:`StatesModel`.
         """
         will_clone = self.states.clone_probs > self.random_state.random_sample(self.n)
         will_clone[self.states.end_condition] = True  # Dead walkers always clone
@@ -355,7 +355,6 @@ class Walkers(SimpleWalkers):
         self.critic = critic
         self.minimize = minimize
         self.efficiency = 0
-        self.clone_ergo = 0
 
     def __repr__(self):
         text = "\nBest reward found: {:.4f} , efficiency {:.3f}, Critic: {}\n".format(

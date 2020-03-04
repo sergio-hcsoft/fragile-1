@@ -47,10 +47,10 @@ def create_atari_swarm():
 
 def create_function_swarm():
     shape = (2,)
-    env = Rastrigin(shape=shape, high=5.12, low=5.12)
+    env = Rastrigin(shape=shape)
     bs = Bounds(low=-5.12, high=5.12, shape=shape)
     swarm = FunctionMapper(
-        model=lambda x: NormalContinuous(bounds=bs),
+        model=lambda x: NormalContinuous(bounds=env.bounds),
         env=lambda: env,
         n_walkers=5,
         max_iters=5,
