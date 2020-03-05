@@ -141,7 +141,7 @@
 
 <span class="sd">        The returned ids are integers representing the hash of the different states.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># ids = np.arange(self.n) + self._id_counter</span>
+        <span class="c1"># ids = numpy.arange(self.n) + self._id_counter</span>
         <span class="c1"># self._id_counter += self.n</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">hash_values</span><span class="p">(</span><span class="s2">&quot;states&quot;</span><span class="p">)</span>
 
@@ -237,7 +237,7 @@
             <span class="n">companions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span><span class="p">[</span><span class="n">compas_ix</span><span class="p">]</span>
             <span class="c1"># This value can be negative!!</span>
             <span class="n">clone_probs</span> <span class="o">=</span> <span class="p">(</span><span class="n">companions</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span>
-            <span class="c1"># clone_probs = np.sqrt(np.clip(clone_probs, 0, 1.1))</span>
+            <span class="c1"># clone_probs = numpy.sqrt(numpy.clip(clone_probs, 0, 1.1))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_states</span><span class="p">(</span><span class="n">clone_probs</span><span class="o">=</span><span class="n">clone_probs</span><span class="p">,</span> <span class="n">compas_clone</span><span class="o">=</span><span class="n">compas_ix</span><span class="p">)</span>
 
     <span class="c1"># @profile</span>
@@ -359,8 +359,8 @@
         <span class="k">pass</span>
 
 
-<div class="viewcode-block" id="Walkers"><a class="viewcode-back" href="../../../core_module.html#fragile.core.walkers.Walkers">[docs]</a><span class="k">class</span> <span class="nc">Walkers</span><span class="p">(</span><span class="n">SimpleWalkers</span><span class="p">):</span>
-<div class="viewcode-block" id="Walkers.__init__"><a class="viewcode-back" href="../../../core_module.html#fragile.core.walkers.Walkers.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="Walkers"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers">[docs]</a><span class="k">class</span> <span class="nc">Walkers</span><span class="p">(</span><span class="n">SimpleWalkers</span><span class="p">):</span>
+<div class="viewcode-block" id="Walkers.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">critic</span><span class="p">:</span> <span class="n">BaseCritic</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -396,7 +396,7 @@
         <span class="k">return</span> <span class="n">text</span> <span class="o">+</span> <span class="nb">super</span><span class="p">(</span><span class="n">Walkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
 
     <span class="c1"># @profile</span>
-<div class="viewcode-block" id="Walkers.calculate_virtual_reward"><a class="viewcode-back" href="../../../core_module.html#fragile.core.walkers.Walkers.calculate_virtual_reward">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_virtual_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Walkers.calculate_virtual_reward"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.calculate_virtual_reward">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_virtual_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">rewards</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span>
         <span class="n">processed_rewards</span> <span class="o">=</span> <span class="n">relativize</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
         <span class="n">score_reward</span> <span class="o">=</span> <span class="n">processed_rewards</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_scale</span>
@@ -421,7 +421,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">virtual_rewards</span><span class="o">=</span><span class="n">virt_rew</span><span class="p">)</span></div>
 
     <span class="c1"># @profile</span>
-<div class="viewcode-block" id="Walkers.balance"><a class="viewcode-back" href="../../../core_module.html#fragile.core.walkers.Walkers.balance">[docs]</a>    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Walkers.balance"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.balance">[docs]</a>    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_best</span><span class="p">()</span>
         <span class="n">returned</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Walkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">balance</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -469,7 +469,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_id</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Walkers.reset"><a class="viewcode-back" href="../../../core_module.html#fragile.core.walkers.Walkers.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+<div class="viewcode-block" id="Walkers.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -513,7 +513,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../core_module.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 </ul>
 
 <div class="relations">

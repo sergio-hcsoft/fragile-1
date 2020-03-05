@@ -125,8 +125,8 @@ In order to save memory we will be setting it to ``True``.
     from fragile.core.tree import HistoryTree
     prune_tree = True
 
-Initializing a Swarm
---------------------
+Initializing a ``Swarm``
+------------------------
 
 Once we have defined the problem-specific callables for the ``Model``
 and the ``Environment``, we need to define the parameters used by the

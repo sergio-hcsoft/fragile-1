@@ -61,9 +61,9 @@
 <span class="sd">        In order to define the tensors, a state_dict dictionary needs to be specified \</span>
 <span class="sd">        using the following structure::</span>
 
-<span class="sd">            import numpy as np</span>
+<span class="sd">            import numpy as numpy</span>
 <span class="sd">            state_dict = {&quot;name_1&quot;: {&quot;size&quot;: tuple([1]),</span>
-<span class="sd">                                     &quot;dtype&quot;: np.float32,</span>
+<span class="sd">                                     &quot;dtype&quot;: numpy.float32,</span>
 <span class="sd">                                   },</span>
 <span class="sd">                          }</span>
 
@@ -94,7 +94,7 @@
         <span class="k">return</span> <span class="n">state</span>
 
 
-<div class="viewcode-block" id="BaseStateTree"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseStateTree">[docs]</a><span class="k">class</span> <span class="nc">BaseStateTree</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseStateTree"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseStateTree">[docs]</a><span class="k">class</span> <span class="nc">BaseStateTree</span><span class="p">:</span>
     <span class="k">def</span> <span class="nf">add_states</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">parent_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
@@ -130,9 +130,9 @@
 <span class="sd">        In order to define the tensors, a state_dict dictionary needs to be specified \</span>
 <span class="sd">        using the following structure::</span>
 
-<span class="sd">            import numpy as np</span>
+<span class="sd">            import numpy as numpy</span>
 <span class="sd">            state_dict = {&quot;name_1&quot;: {&quot;size&quot;: tuple([1]),</span>
-<span class="sd">                                     &quot;dtype&quot;: np.float32,</span>
+<span class="sd">                                     &quot;dtype&quot;: numpy.float32,</span>
 <span class="sd">                                   },</span>
 <span class="sd">                          }</span>
 
@@ -224,7 +224,7 @@
         <span class="k">pass</span>
 
 
-<div class="viewcode-block" id="BaseEnvironment"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseEnvironment">[docs]</a><span class="k">class</span> <span class="nc">BaseEnvironment</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseEnvironment"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseEnvironment">[docs]</a><span class="k">class</span> <span class="nc">BaseEnvironment</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The Environment is in charge of stepping the walkers, acting as an state \</span>
 <span class="sd">    transition function.</span>
@@ -236,7 +236,7 @@
 
     <span class="n">STATE_CLASS</span> <span class="o">=</span> <span class="n">StatesEnv</span>
 
-<div class="viewcode-block" id="BaseEnvironment.get_params_dict"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseEnvironment.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseEnvironment.get_params_dict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseEnvironment.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return an state_dict to be used for instantiating the states containing \</span>
 <span class="sd">        the data describing the Environment.</span>
@@ -244,19 +244,19 @@
 <span class="sd">        In order to define the arrays, a state_dict dictionary needs to be specified \</span>
 <span class="sd">        using the following structure::</span>
 
-<span class="sd">            import numpy as np</span>
+<span class="sd">            import numpy as numpy</span>
 <span class="sd">            # Example of an state_dict for planning.</span>
 <span class="sd">            state_dict = {</span>
-<span class="sd">                &quot;states&quot;: {&quot;size&quot;: self._env.get_state().shape, &quot;dtype&quot;: np.int64},</span>
-<span class="sd">                &quot;observs&quot;: {&quot;size&quot;: self._env.observation_space.shape, &quot;dtype&quot;: np.float32},</span>
-<span class="sd">                &quot;rewards&quot;: {&quot;dtype&quot;: np.float32},</span>
-<span class="sd">                &quot;ends&quot;: {&quot;dtype&quot;: np.bool_},</span>
+<span class="sd">                &quot;states&quot;: {&quot;size&quot;: self._env.get_state().shape, &quot;dtype&quot;: numpy.int64},</span>
+<span class="sd">                &quot;observs&quot;: {&quot;size&quot;: self._env.observation_space.shape, &quot;dtype&quot;: numpy.float32},</span>
+<span class="sd">                &quot;rewards&quot;: {&quot;dtype&quot;: numpy.float32},</span>
+<span class="sd">                &quot;ends&quot;: {&quot;dtype&quot;: numpy.bool_},</span>
 <span class="sd">            }</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseEnvironment.step"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseEnvironment.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesEnv</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseEnvironment.step"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseEnvironment.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesEnv</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Step the environment for a batch of walkers.</span>
 
@@ -271,7 +271,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseEnvironment.reset"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseEnvironment.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseEnvironment.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseEnvironment.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesEnv</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -293,7 +293,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="BaseModel"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseModel">[docs]</a><span class="k">class</span> <span class="nc">BaseModel</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseModel"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseModel">[docs]</a><span class="k">class</span> <span class="nc">BaseModel</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The model is in charge of calculating how the walkers will act on the \</span>
 <span class="sd">    Environment, effectively working as a policy.</span>
@@ -301,7 +301,7 @@
 
     <span class="n">STATE_CLASS</span> <span class="o">=</span> <span class="n">StatesModel</span>
 
-<div class="viewcode-block" id="BaseModel.get_params_dict"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseModel.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseModel.get_params_dict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseModel.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return an state_dict to be used for instantiating the states containing \</span>
 <span class="sd">        the data describing the Model.</span>
@@ -309,14 +309,14 @@
 <span class="sd">        In order to define the arrays, a state_dict dictionary needs to be \</span>
 <span class="sd">        specified using the following structure::</span>
 
-<span class="sd">            import numpy as np</span>
+<span class="sd">            import numpy as numpy</span>
 <span class="sd">            # Example of an state_dict for a DiscreteUniform Model.</span>
 <span class="sd">            n_actions = 10</span>
 <span class="sd">            state_dict = {&quot;actions&quot;: {&quot;size&quot;: (n_actions,),</span>
-<span class="sd">                                      &quot;dtype&quot;: np.float32,</span>
+<span class="sd">                                      &quot;dtype&quot;: numpy.float32,</span>
 <span class="sd">                                   },</span>
 <span class="sd">                          &quot;critic&quot;: {&quot;size&quot;: tuple([n_actions]),</span>
-<span class="sd">                                 &quot;dtype&quot;: np.float32,</span>
+<span class="sd">                                 &quot;dtype&quot;: numpy.float32,</span>
 <span class="sd">                               },</span>
 <span class="sd">                          }</span>
 
@@ -325,7 +325,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseModel.reset"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseModel.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseModel.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseModel.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -346,7 +346,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseModel.predict"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseModel.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseModel.predict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseModel.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -369,7 +369,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="BaseWalkers"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers">[docs]</a><span class="k">class</span> <span class="nc">BaseWalkers</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseWalkers"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers">[docs]</a><span class="k">class</span> <span class="nc">BaseWalkers</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The Walkers is a data structure that takes care of all the data involved \</span>
 <span class="sd">    in making a Swarm evolve.</span>
@@ -378,7 +378,7 @@
     <span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
     <span class="n">STATE_CLASS</span> <span class="o">=</span> <span class="n">StatesWalkers</span>
 
-<div class="viewcode-block" id="BaseWalkers.__init__"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseWalkers.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_walkers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">env_state_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
@@ -407,7 +407,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">env_states_params</span> <span class="o">=</span> <span class="n">env_state_params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_states_params</span> <span class="o">=</span> <span class="n">model_state_params</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.__len__"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.__len__">[docs]</a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseWalkers.__len__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.__len__">[docs]</a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;The length is the number of walkers.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span></div>
 
@@ -431,7 +431,7 @@
         <span class="sd">&quot;&quot;&quot;Return the States class where all the model information is stored.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-<div class="viewcode-block" id="BaseWalkers.get_params_dict"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseWalkers.get_params_dict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return the params_dict of the internal StateOwners.&quot;&quot;&quot;</span>
         <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
@@ -439,7 +439,7 @@
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">state_dict</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.update_states"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.update_states">[docs]</a>    <span class="k">def</span> <span class="nf">update_states</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseWalkers.update_states"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.update_states">[docs]</a>    <span class="k">def</span> <span class="nf">update_states</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -454,7 +454,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.reset"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseWalkers.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -474,28 +474,28 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.balance"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.balance">[docs]</a>    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseWalkers.balance"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.balance">[docs]</a>    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Perform FAI iteration to clone the states.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.calculate_distances"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.calculate_distances">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseWalkers.calculate_distances"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.calculate_distances">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate the distances between the different observations of the walkers.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.calculate_virtual_reward"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.calculate_virtual_reward">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_virtual_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseWalkers.calculate_virtual_reward"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.calculate_virtual_reward">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_virtual_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Apply the virtual reward formula to account for all the different goal scores.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.calculate_end_condition"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.calculate_end_condition">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_end_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseWalkers.calculate_end_condition"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.calculate_end_condition">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_end_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return a boolean that controls the stopping of the iteration loop. \</span>
 <span class="sd">        If True, the iteration process stops.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.clone_walkers"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.clone_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">clone_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseWalkers.clone_walkers"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.clone_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">clone_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Sample the clone probability distribution and clone the walkers accordingly.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.get_alive_compas"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWalkers.get_alive_compas">[docs]</a>    <span class="k">def</span> <span class="nf">get_alive_compas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseWalkers.get_alive_compas"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.get_alive_compas">[docs]</a>    <span class="k">def</span> <span class="nf">get_alive_compas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return an array of indexes corresponding to an alive walker chosen \</span>
 <span class="sd">        at random.</span>
@@ -503,7 +503,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="BaseSwarm"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseSwarm">[docs]</a><span class="k">class</span> <span class="nc">BaseSwarm</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseSwarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseSwarm">[docs]</a><span class="k">class</span> <span class="nc">BaseSwarm</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The Swarm implements the iteration logic to make the :class:`Walkers` evolve.</span>
 
@@ -511,7 +511,7 @@
 <span class="sd">    Walkers instance to create the algorithm execution loop.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="BaseSwarm.__init__"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseSwarm.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseSwarm.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseSwarm.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">env</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
@@ -574,7 +574,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walkers</span>
 
-<div class="viewcode-block" id="BaseSwarm.reset"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseSwarm.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseSwarm.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseSwarm.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -595,7 +595,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseSwarm.run_swarm"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseSwarm.run_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">run_swarm</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseSwarm.run_swarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseSwarm.run_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">run_swarm</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -615,7 +615,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseSwarm.step_walkers"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseSwarm.step_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">step_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseSwarm.step_walkers"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseSwarm.step_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">step_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the walkers undergo a perturbation process in the swarm \</span>
 <span class="sd">        :class:`Environment`.</span>
@@ -624,7 +624,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseSwarm.init_swarm"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseSwarm.init_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">init_swarm</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseSwarm.init_swarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseSwarm.init_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">init_swarm</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">env_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
         <span class="n">model_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
@@ -659,7 +659,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="BaseWrapper"><a class="viewcode-back" href="../../../core_module.html#fragile.core.base_classes.BaseWrapper">[docs]</a><span class="k">class</span> <span class="nc">BaseWrapper</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseWrapper"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWrapper">[docs]</a><span class="k">class</span> <span class="nc">BaseWrapper</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unwrapped</span> <span class="o">=</span> <span class="n">data</span>
 
@@ -708,7 +708,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../core_module.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 </ul>
 
 <div class="relations">

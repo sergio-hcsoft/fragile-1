@@ -12,7 +12,8 @@ Welcome to Fragile's documentation!
 
    resources/architecture.rst
    resources/getting_started.rst
-   core_module.rst
+   module_docs/core.rst
+   module_docs/atari.rst
 
 
 Indices and tables

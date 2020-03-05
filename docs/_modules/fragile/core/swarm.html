@@ -48,7 +48,7 @@
 <span class="kn">from</span> <span class="nn">fragile.core.walkers</span> <span class="kn">import</span> <span class="n">StatesWalkers</span><span class="p">,</span> <span class="n">Walkers</span>
 
 
-<div class="viewcode-block" id="Swarm"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm">[docs]</a><span class="k">class</span> <span class="nc">Swarm</span><span class="p">(</span><span class="n">BaseSwarm</span><span class="p">):</span>
+<div class="viewcode-block" id="Swarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm">[docs]</a><span class="k">class</span> <span class="nc">Swarm</span><span class="p">(</span><span class="n">BaseSwarm</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The Swarm is in charge of performing a fractal evolution process.</span>
 
@@ -97,7 +97,7 @@
     <span class="k">def</span> <span class="nf">critic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseCritic</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walkers</span><span class="o">.</span><span class="n">critic</span>
 
-<div class="viewcode-block" id="Swarm.init_swarm"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.init_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">init_swarm</span><span class="p">(</span>
+<div class="viewcode-block" id="Swarm.init_swarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.init_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">init_swarm</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">env_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
         <span class="n">model_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
@@ -157,7 +157,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_prune_tree</span> <span class="o">=</span> <span class="n">prune_tree</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="Swarm.reset"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+<div class="viewcode-block" id="Swarm.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -193,7 +193,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">update_tree</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n</span><span class="p">)</span></div>
 
     <span class="c1"># @profile</span>
-<div class="viewcode-block" id="Swarm.run_swarm"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.run_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">run_swarm</span><span class="p">(</span>
+<div class="viewcode-block" id="Swarm.run_swarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.run_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">run_swarm</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -224,12 +224,12 @@
             <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">break</span></div>
 
-<div class="viewcode-block" id="Swarm.calculate_end_condition"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.calculate_end_condition">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_end_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="Swarm.calculate_end_condition"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.calculate_end_condition">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_end_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Implement the logic for deciding if the algorithm has finished. \</span>
 <span class="sd">        The algorithm will stop if it returns True.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">calculate_end_condition</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Swarm.step_and_update_best"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.step_and_update_best">[docs]</a>    <span class="k">def</span> <span class="nf">step_and_update_best</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Swarm.step_and_update_best"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.step_and_update_best">[docs]</a>    <span class="k">def</span> <span class="nf">step_and_update_best</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the positions of the walkers evolve and keep track of the new states found.</span>
 
@@ -239,7 +239,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">fix_best</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step_walkers</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Swarm.balance_and_prune"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.balance_and_prune">[docs]</a>    <span class="k">def</span> <span class="nf">balance_and_prune</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Swarm.balance_and_prune"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.balance_and_prune">[docs]</a>    <span class="k">def</span> <span class="nf">balance_and_prune</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the virtual reward and perform the cloning process.</span>
 
@@ -252,7 +252,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">prune_tree</span><span class="p">(</span><span class="n">leaf_nodes</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">new_ids</span><span class="p">))</span></div>
 
     <span class="c1"># @profile</span>
-<div class="viewcode-block" id="Swarm.run_step"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.run_step">[docs]</a>    <span class="k">def</span> <span class="nf">run_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Swarm.run_step"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.run_step">[docs]</a>    <span class="k">def</span> <span class="nf">run_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute one iteration of the :class:`Swarm` evolution process and \</span>
 <span class="sd">        update all the data structures.</span>
@@ -262,7 +262,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">fix_best</span><span class="p">()</span></div>
 
     <span class="c1"># @profile</span>
-<div class="viewcode-block" id="Swarm.step_walkers"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.step_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">step_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Swarm.step_walkers"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.step_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">step_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the walkers evolve to their next state sampling an action from the \</span>
 <span class="sd">        :class:`Model` and applying it to the :class:`Environment`.</span>
@@ -287,7 +287,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">update_ids</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_tree</span><span class="p">(</span><span class="n">states_ids</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Swarm.update_tree"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.update_tree">[docs]</a>    <span class="k">def</span> <span class="nf">update_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Swarm.update_tree"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.update_tree">[docs]</a>    <span class="k">def</span> <span class="nf">update_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a list of walker states represented by `states_ids` to the :class:`Tree`.</span>
 
@@ -303,7 +303,7 @@
                 <span class="n">n_iter</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n_iters</span><span class="p">),</span>
             <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Swarm.prune_tree"><a class="viewcode-back" href="../../../core_module.html#fragile.core.swarm.Swarm.prune_tree">[docs]</a>    <span class="k">def</span> <span class="nf">prune_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leaf_nodes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Swarm.prune_tree"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.prune_tree">[docs]</a>    <span class="k">def</span> <span class="nf">prune_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leaf_nodes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Remove all the branches that are do not have alive walkers at their leaf nodes.</span>
 
@@ -347,7 +347,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../core_module.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 </ul>
 
 <div class="relations">
