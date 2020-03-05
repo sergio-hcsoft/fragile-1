@@ -16,8 +16,8 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath(""))
+sys.path.insert(0, os.path.abspath("../../fragile"))
 sys.setrecursionlimit(15000)
 sys.path.append("/home/guillem/github/Fragile")
 
