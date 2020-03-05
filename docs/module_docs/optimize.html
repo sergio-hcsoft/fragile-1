@@ -306,37 +306,57 @@ the observations will have shape (5, 2)</p></li>
 <h3><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionMapper</span></code><a class="headerlink" href="#functionmapper" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.optimize.swarm.FunctionMapper">
-<em class="property">class </em><code class="sig-prename descclassname">fragile.optimize.swarm.</code><code class="sig-name descname">FunctionMapper</code><span class="sig-paren">(</span><em class="sig-param">walkers=&lt;class 'fragile.core.walkers.Walkers'&gt;</em>, <em class="sig-param">model=&lt;class 'fragile.core.models.ContinuousUniform'&gt;</em>, <em class="sig-param">accumulate_rewards: bool = False</em>, <em class="sig-param">minimize: bool = True</em>, <em class="sig-param">start_same_pos: bool = False</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/optimize/swarm.html#FunctionMapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.optimize.swarm.FunctionMapper" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="fragile.optimize.swarm.FunctionMapper.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/optimize/swarm.html#FunctionMapper.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.optimize.swarm.FunctionMapper.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset the <code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Walkers</span></code>, the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>, the         <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> and clear the internal data to start a new search process.</p>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.optimize.swarm.</code><code class="sig-name descname">FunctionMapper</code><span class="sig-paren">(</span><em class="sig-param">walkers: Callable = &lt;class 'fragile.core.walkers.Walkers'&gt;</em>, <em class="sig-param">model: Callable = &lt;class 'fragile.core.models.ContinuousUniform'&gt;</em>, <em class="sig-param">accumulate_rewards: bool = False</em>, <em class="sig-param">minimize: bool = True</em>, <em class="sig-param">start_same_pos: bool = False</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/optimize/swarm.html#FunctionMapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.optimize.swarm.FunctionMapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>It is a swarm adapted to minimize mathematical functions.</p>
+<dl class="method">
+<dt id="fragile.optimize.swarm.FunctionMapper.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">walkers: Callable = &lt;class 'fragile.core.walkers.Walkers'&gt;</em>, <em class="sig-param">model: Callable = &lt;class 'fragile.core.models.ContinuousUniform'&gt;</em>, <em class="sig-param">accumulate_rewards: bool = False</em>, <em class="sig-param">minimize: bool = True</em>, <em class="sig-param">start_same_pos: bool = False</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/optimize/swarm.html#FunctionMapper.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.optimize.swarm.FunctionMapper.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.optimize.swarm.FunctionMapper" title="fragile.optimize.swarm.FunctionMapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionMapper</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model_states</strong> – States that define the initial state of the environment.</p></li>
-<li><p><strong>env_states</strong> – States that define the initial state of the model.</p></li>
-<li><p><strong>walkers_states</strong> – States that define the internal states of the walkers.</p></li>
+<li><p><strong>model</strong> – A function that returns an instance of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p></li>
+<li><p><strong>walkers</strong> – A function that returns an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p></li>
+<li><p><strong>accumulate_rewards</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the rewards obtained after transitioning                                 to a new state will accumulate. If <code class="docutils literal notranslate"><span class="pre">False</span></code> only the last                                 reward will be taken into account.</p></li>
+<li><p><strong>minimize</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the algorithm will perform a minimization                       process. If <code class="docutils literal notranslate"><span class="pre">False</span></code> it will be a maximization process.</p></li>
+<li><p><strong>start_same_pos</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> all the walkers will have the same                             starting position.</p></li>
+<li><p><strong>*args</strong> – Passed <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> __init__.</p></li>
+<li><p><strong>**kwargs</strong> – Passed <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> __init__.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.optimize.swarm.FunctionMapper.run_swarm">
-<code class="sig-name descname">run_swarm</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em>, <em class="sig-param">print_every: int = 1e+100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/optimize/swarm.html#FunctionMapper.run_swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.optimize.swarm.FunctionMapper.run_swarm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a new search process.</p>
+<dt id="fragile.optimize.swarm.FunctionMapper.from_function">
+<em class="property">classmethod </em><code class="sig-name descname">from_function</code><span class="sig-paren">(</span><em class="sig-param">function: Callable</em>, <em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.optimize.swarm.FunctionMapper<a class="reference internal" href="../_modules/fragile/optimize/swarm.html#FunctionMapper.from_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.optimize.swarm.FunctionMapper.from_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.optimize.swarm.FunctionMapper" title="fragile.optimize.swarm.FunctionMapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionMapper</span></code></a> using a python callable and a         <code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code> instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model_states</strong> – States that define the initial state of the environment.</p></li>
-<li><p><strong>env_states</strong> – States that define the initial state of the model.</p></li>
-<li><p><strong>walkers_states</strong> – States that define the internal states of the walkers.</p></li>
-<li><p><strong>print_every</strong> – Display the algorithm progress every <cite>print_every</cite> epochs.</p></li>
+<li><p><strong>function</strong> – Callable representing an arbitrary function to be optimized.</p></li>
+<li><p><strong>bounds</strong> – Represents the domain of the function to be optimized.</p></li>
+<li><p><strong>*args</strong> – Passed to <a class="reference internal" href="#fragile.optimize.swarm.FunctionMapper" title="fragile.optimize.swarm.FunctionMapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionMapper</span></code></a> __init__.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to <a class="reference internal" href="#fragile.optimize.swarm.FunctionMapper" title="fragile.optimize.swarm.FunctionMapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionMapper</span></code></a> __init__.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None.</p>
+<dd class="field-even"><p>Instance of <a class="reference internal" href="#fragile.optimize.swarm.FunctionMapper" title="fragile.optimize.swarm.FunctionMapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionMapper</span></code></a> that optimizes the target function.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.optimize.swarm.FunctionMapper.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/optimize/swarm.html#FunctionMapper.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.optimize.swarm.FunctionMapper.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the <code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Walkers</span></code>, the <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> environment, the         <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> and clear the internal data to start a new search process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> that define the initial state of                           the <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> that define the initial state of                         the <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code>.</p></li>
+<li><p><strong>walkers_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> that define the internal                             states of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

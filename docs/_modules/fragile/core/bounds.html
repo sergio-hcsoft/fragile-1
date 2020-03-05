@@ -70,14 +70,16 @@
 <span class="sd">                    or `low` (the type of `high` takes priority).</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            Initializing :class:`Bounds` using  numpy arrays.</span>
+<span class="sd">            Initializing :class:`Bounds` using  numpy arrays:</span>
+
 <span class="sd">            &gt;&gt;&gt; import numpy</span>
 <span class="sd">            &gt;&gt;&gt; high, low = numpy.ones(3, dtype=float), -1 * numpy.ones(3, dtype=int)</span>
 <span class="sd">            &gt;&gt;&gt; bounds = Bounds(high=high, low=low)</span>
 <span class="sd">            &gt;&gt;&gt; print(bounds)</span>
 <span class="sd">            Bounds shape float64 dtype (3,) low [-1 -1 -1] high [1. 1. 1.]</span>
 
-<span class="sd">            Initializing :class:`Bounds` using  scalars.</span>
+<span class="sd">            Initializing :class:`Bounds` using  scalars:</span>
+<span class="sd">            </span>
 <span class="sd">            &gt;&gt;&gt; import numpy</span>
 <span class="sd">            &gt;&gt;&gt; high, low, shape = 4, 2.1, (5,)</span>
 <span class="sd">            &gt;&gt;&gt; bounds = Bounds(high=high, low=low, shape=shape)</span>

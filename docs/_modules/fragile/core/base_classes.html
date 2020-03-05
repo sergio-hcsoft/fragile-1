@@ -579,8 +579,6 @@
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reset a :class:`fragile.Swarm` and clear the internal data to start a \</span>
@@ -590,8 +588,6 @@
 <span class="sd">            model_states: States that define the initial state of the environment.</span>
 <span class="sd">            env_states: States that define the initial state of the model.</span>
 <span class="sd">            walkers_states: States that define the internal states of the walkers.</span>
-<span class="sd">            args: Additional arguments not related to algorithm data.</span>
-<span class="sd">            kwargs: Additional keyword arguments not related to algorithm data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 

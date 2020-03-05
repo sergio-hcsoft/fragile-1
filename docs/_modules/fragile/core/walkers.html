@@ -79,8 +79,8 @@
 <span class="sd">                          higher importance.</span>
 <span class="sd">            max_iters: Maximum number of iterations that the walkers are allowed \</span>
 <span class="sd">                       to perform.</span>
-<span class="sd">            accumulate_rewards: If True the rewards obtained after transitioning \</span>
-<span class="sd">                                to a new state will accumulate. If False only the last \</span>
+<span class="sd">            accumulate_rewards: If ``True`` the rewards obtained after transitioning \</span>
+<span class="sd">                                to a new state will accumulate. If ``False`` only the last \</span>
 <span class="sd">                                reward will be taken into account.</span>
 <span class="sd">            distance_function: Function to compute the distances between two \</span>
 <span class="sd">                               groups of walkers. It will be applied row-wise \</span>
@@ -373,6 +373,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            critic: critic that will be used to calculate custom rewards.</span>
+<span class="sd">            minimize: If ``True`` the algorithm will perform a minimization \</span>
+<span class="sd">                      process. If ``False`` it will be a maximization process.</span>
 <span class="sd">            *args:</span>
 <span class="sd">            **kwargs:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
