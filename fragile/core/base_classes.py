@@ -1,62 +1,14 @@
-from typing import Any, Callable, Dict, List
+from typing import Callable, List, Union
 
 import numpy as np
 
 from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
-from fragile.core.utils import RANDOM_SEED, random_state
-
-
-class BaseCritic:
-
-    random_state = random_state
-
-    def calculate(
-        self,
-        batch_size: int = None,
-        model_states: StatesModel = None,
-        env_states: StatesEnv = None,
-        walkers_states: StatesWalkers = None,
-    ) -> np.ndarray:
-        """
-        Calculate the target time step values.
-
-        Args:
-            batch_size: Number of new points to the sampled.
-            model_states: States corresponding to the model data.
-            env_states: States corresponding to the environment data.
-            walkers_states: States corresponding to the walkers data.
-
-        Returns:
-            Array containing the target time step.
-
-        """
-        raise NotImplementedError
-
-    def reset(
-        self, batch_size: int = 1, model_states: StatesModel = None, *args, **kwargs
-    ) -> States:
-        """
-        Restart the `Critic` and reset its internal state.
-
-        Args:
-            batch_size: Number of elements in the first dimension of the model \
-                        States data.
-            model_states: States corresponding to model data. If provided the \
-                          model will be reset to this state.
-            args: Additional arguments not related to model data.
-            kwargs: Additional keyword arguments not related to model data.
-
-        Returns:
-            States containing the information of the current state of the \
-            model (after the reset).
-
-        """
-        pass
+from fragile.core.utils import RANDOM_SEED, random_state, StateDict
 
 
 class StatesOwner:
     """
-    Every class meant to have its data stored in :class:`States` must inherit \
+    Every class that stores its data in :class:`States` must inherit \
     from this class.
      """
 
@@ -69,7 +21,7 @@ class StatesOwner:
         cls.random_state.seed(seed)
 
     @classmethod
-    def get_params_dict(cls) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(cls) -> StateDict:
         """
         Return an state_dict to be used for instantiating an States class.
 
@@ -90,6 +42,23 @@ class StatesOwner:
     def create_new_states(self, batch_size: int) -> STATE_CLASS:
         """Create new states of given batch_size to store the data of the class."""
         return self.STATE_CLASS(state_dict=self.get_params_dict(), batch_size=batch_size)
+
+    def states_from_data(self, batch_size: int, **kwargs) -> States:
+        """
+        Initialize a :class:`States` with the data provided as kwargs.
+
+        Args:
+            batch_size: Number of elements in the first dimension of the \
+                       :class:`State` attributes.
+            **kwargs: Attributes that will be added to the returned :class:`States`.
+
+        Returns:
+            A new :class:`States` created with the class ``params_dict`` updated \
+            with the attributes passed as keyword arguments.
+        """
+        state = self.create_new_states(batch_size=batch_size)
+        state.update(**kwargs)
+        return state
 
 
 class BaseStateTree:
@@ -116,6 +85,112 @@ class BaseStateTree:
         pass
 
 
+class BaseCritic(StatesOwner):
+
+    random_state = random_state
+
+    @classmethod
+    def get_params_dict(cls) -> StateDict:
+        """
+        Return an state_dict to be used for instantiating an States class.
+
+        In order to define the tensors, a state_dict dictionary needs to be specified \
+        using the following structure::
+
+            import numpy as np
+            state_dict = {"name_1": {"size": tuple([1]),
+                                     "dtype": np.float32,
+                                   },
+                          }
+
+        Where tuple is a tuple indicating the shape of the desired tensor, that \
+        will be accessed using the name_1 attribute of the class.
+        """
+        state_dict = {
+            "critic_score": {"size": tuple([1]), "dtype": np.float32},
+        }
+        return state_dict
+
+    def calculate(
+        self,
+        batch_size: int = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
+        walkers_states: StatesWalkers = None,
+    ) -> States:
+        """
+        Calculate the target time step values.
+
+        Args:
+            batch_size: Number of new points to the sampled.
+            model_states: :class:`StatesModel` corresponding to the :class:`Model` data.
+            env_states: :class:`StatesEnv` corresponding to the :class:`Environment` data.
+            walkers_states: :class:`StatesWalkers` corresponding to the :class:`Walkers` data.
+
+        Returns:
+            States containing the the internal state of the :class:`BaseCritic`
+
+        """
+        raise NotImplementedError
+
+    def reset(
+        self,
+        batch_size: int = 1,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
+        walkers_states: StatesWalkers = None,
+        *args,
+        **kwargs
+    ) -> Union[States, None]:
+        """
+        Restart the `Critic` and reset its internal state.
+
+        Args:
+            batch_size: Number of elements in the first dimension of the model \
+                        States data.
+            model_states: States corresponding to model data. If provided the \
+                          model will be reset to this state.
+            env_states: :class:`StatesEnv` corresponding to the :class:`Environment` data.
+            walkers_states: :class:`StatesWalkers` corresponding to the :class:`Walkers` data.
+            args: Additional arguments not related to :class:`BaseCritic` data.
+            kwargs: Additional keyword arguments not related to :class:`BaseCritic` data.
+
+        Returns:
+            States containing the information of the current state of the \
+            :class:`BaseCritic` (after the reset).
+
+        """
+        pass
+
+    def update(
+        self,
+        batch_size: int = 1,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
+        walkers_states: StatesWalkers = None,
+        *args,
+        **kwargs
+    ) -> Union[States, None]:
+        """
+        Update the :class:`BaseCritic` internal state.
+
+        Args:
+            batch_size: Number of elements in the first dimension of the model \
+                        States data.
+            model_states: States corresponding to model data. If provided the \
+                          model will be reset to this state.
+            env_states: :class:`StatesEnv` corresponding to the :class:`Environment` data.
+            walkers_states: :class:`StatesWalkers` corresponding to the :class:`Walkers` data.
+            args: Additional arguments not related to :class:`BaseCritic` data.
+            kwargs: Additional keyword arguments not related to :class:`BaseCritic` data.
+
+        Returns:
+            States containing the information of the current state of the \
+            :class:`BaseCritic`.
+        """
+        pass
+
+
 class BaseEnvironment(StatesOwner):
     """
     The Environment is in charge of stepping the walkers, acting as an state \
@@ -128,7 +203,7 @@ class BaseEnvironment(StatesOwner):
 
     STATE_CLASS = StatesEnv
 
-    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(self) -> StateDict:
         """
         Return an state_dict to be used for instantiating the states containing \
         the data describing the Environment.
@@ -193,7 +268,7 @@ class BaseModel(StatesOwner):
 
     STATE_CLASS = StatesModel
 
-    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(self) -> StateDict:
         """
         Return an state_dict to be used for instantiating the states containing \
         the data describing the Model.
@@ -207,7 +282,7 @@ class BaseModel(StatesOwner):
             state_dict = {"actions": {"size": (n_actions,),
                                       "dtype": np.float32,
                                    },
-                          "dt": {"size": tuple([n_actions]),
+                          "critic": {"size": tuple([n_actions]),
                                  "dtype": np.float32,
                                },
                           }
@@ -323,7 +398,7 @@ class BaseWalkers(StatesOwner):
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
-    def get_params_dict(self) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(self) -> StateDict:
         """Return the params_dict of the internal StateOwners."""
         state_dict = {
             name: getattr(self, name).get_params_dict()

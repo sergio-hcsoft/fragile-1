@@ -34,15 +34,21 @@ class Environment(BaseEnvironment):
         }
         return params
 
-    def states_from_data(self, states, observs, rewards, ends, batch_size, **kwargs) -> StatesEnv:
+    def states_from_data(self, batch_size, states, observs, rewards, ends, **kwargs) -> StatesEnv:
         """Return a new :class:`StatesEnv` object containing the data generated \
         by the environment."""
         ends = np.array(ends, dtype=np.bool_)
         rewards = np.array(rewards, dtype=np.float32)
         observs = np.array(observs)
         states = np.array(states)
-        state = self.create_new_states(batch_size=batch_size)
-        state.update(states=states, observs=observs, rewards=rewards, ends=ends, **kwargs)
+        state = super(Environment, self).states_from_data(
+            batch_size=batch_size,
+            states=states,
+            observs=observs,
+            rewards=rewards,
+            ends=ends,
+            **kwargs
+        )
         return state
 
 
@@ -92,7 +98,7 @@ class DiscreteEnv(Environment):
             actions=actions, states=env_states.states, n_repeat_action=n_repeat_actions
         )
 
-        new_state = self.states_from_data(new_states, observs, rewards, ends, len(actions))
+        new_state = self.states_from_data(len(actions), new_states, observs, rewards, ends)
         return new_state
 
     # @profile
@@ -116,5 +122,5 @@ class DiscreteEnv(Environment):
         observs = np.array([copy.deepcopy(obs) for _ in range(batch_size)])
         rewards = np.zeros(batch_size, dtype=np.float32)
         ends = np.zeros(batch_size, dtype=np.uint8)
-        new_states = self.states_from_data(states, observs, rewards, ends, batch_size)
+        new_states = self.states_from_data(batch_size, states, observs, rewards, ends)
         return new_states

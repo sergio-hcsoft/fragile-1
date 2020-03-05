@@ -8,13 +8,13 @@ from fragile.core.models import (
     BinarySwap,
     Bounds,
     ContinuousModel,
-    ContinousUniform,
+    ContinuousUniform,
     DiscreteModel,
     DiscreteUniform,
     NormalContinuous,
     _DtModel,
 )
-from fragile.core.states import StatesEnv, StatesModel
+from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
 
 
 def create_model(name="discrete"):
@@ -22,7 +22,7 @@ def create_model(name="discrete"):
         return lambda: DiscreteUniform(n_actions=10)
     elif name == "continuous":
         bs = Bounds(low=-1, high=1, shape=(3,))
-        return lambda: ContinousUniform(bounds=bs)
+        return lambda: ContinuousUniform(bounds=bs)
     elif name == "random_normal":
         bs = Bounds(low=-1, high=1, shape=(3,))
         return lambda: NormalContinuous(loc=0, scale=1, bounds=bs)
@@ -84,38 +84,38 @@ class TestModel:
 
 class DummyCritic(BaseCritic):
     def get_params_dict(self):
-        return {"critic": {"dtype": float}}
+        return {"critic_score": {"dtype": float}}
 
     def calculate(
         self,
         batch_size: int = None,
         model_states: StatesModel = None,
         env_states: StatesEnv = None,
-        walkers_states: "StatesWalkers" = None,
-    ) -> numpy.ndarray:
+        walkers_states: StatesWalkers = None,
+    ) -> States:
         batch_size = batch_size or env_states.n
-        return 5 * numpy.ones(batch_size)
+        return States(batch_size=batch_size, critic_score=5 * numpy.ones(batch_size))
 
 
 class TestDtModel:
     def test_get_params_dict_content(self):
         params = _DtModel().get_params_dict()
-        assert "critic" in params
-        assert "dtype" in params["critic"]
-        assert params["critic"]["dtype"] == numpy.int_
+        assert "critic_score" in params
+        assert "dtype" in params["critic_score"]
+        assert params["critic_score"]["dtype"] == numpy.int_
 
     def test_override_get_params_dict(self):
         critic = DummyCritic()
         model = _DtModel(critic=critic)
         params = model.get_params_dict(override_params=False)
-        assert "critic" in params
-        assert "dtype" in params["critic"]
-        assert params["critic"]["dtype"] == numpy.int_
+        assert "critic_score" in params
+        assert "dtype" in params["critic_score"]
+        assert params["critic_score"]["dtype"] == numpy.int_
 
         params = model.get_params_dict(override_params=True)
-        assert "critic" in params
-        assert "dtype" in params["critic"]
-        assert params["critic"]["dtype"] == float
+        assert "critic_score" in params
+        assert "dtype" in params["critic_score"]
+        assert params["critic_score"]["dtype"] == float
 
 
 class DummyEnv:
@@ -146,9 +146,9 @@ class TestDiscreteUniform:
         assert len(numpy.unique(actions)) <= n_actions
         assert all(actions >= 0)
         assert all(actions <= n_actions)
-        assert "critic" in model_states.keys()
-        assert isinstance(model_states.critic, numpy.ndarray)
-        assert (model_states.critic == 1).all(), model_states.critic
+        assert "critic_score" in model_states.keys()
+        assert isinstance(model_states.critic_score, numpy.ndarray)
+        assert (model_states.critic_score == 1).all(), model_states.critic_score
 
         states = create_model_states(batch_size=100, model=model)
         model_states = model.sample(batch_size=states.n, model_states=states)
@@ -158,8 +158,8 @@ class TestDiscreteUniform:
         assert all(actions >= 0)
         assert all(actions <= n_actions)
         assert numpy.allclose(actions, actions.astype(int))
-        assert "critic" in model_states.keys()
-        assert (model_states.critic == 1).all()
+        assert "critic_score" in model_states.keys()
+        assert (model_states.critic_score == 1).all()
 
     @pytest.mark.parametrize("n_actions", [2, 5, 10, 20])
     def test_sample_with_critic(self, n_actions):
@@ -170,8 +170,8 @@ class TestDiscreteUniform:
         assert len(numpy.unique(actions)) <= n_actions
         assert all(actions >= 0)
         assert all(actions <= n_actions)
-        assert "critic" in model_states.keys()
-        assert (model_states.critic == 5).all()
+        assert "critic_score" in model_states.keys()
+        assert (model_states.critic_score == 5).all()
 
         states = create_model_states(batch_size=100, model=model)
         model_states = model.sample(batch_size=states.n, model_states=states)
@@ -181,8 +181,8 @@ class TestDiscreteUniform:
         assert all(actions >= 0)
         assert all(actions <= n_actions)
         assert numpy.allclose(actions, actions.astype(int))
-        assert "critic" in model_states.keys()
-        assert (model_states.critic == 5).all()
+        assert "critic_score" in model_states.keys()
+        assert (model_states.critic_score == 5).all()
 
 
 class TestBinarySwap:
@@ -214,13 +214,13 @@ class TestContinuousModel:
 class TestContinuousUniform:
     def test_sample(self):
         bounds = Bounds(low=-1, high=3, shape=(3,))
-        model = ContinousUniform(bounds=bounds)
+        model = ContinuousUniform(bounds=bounds)
         actions = model.predict(batch_size=100).actions
         assert actions.min() >= -1
         assert actions.max() <= 3
 
         bounds = Bounds(low=-1, high=3, shape=(3, 10))
-        model = ContinousUniform(bounds=bounds)
+        model = ContinuousUniform(bounds=bounds)
         actions = model.predict(batch_size=100).actions
         assert actions.min() >= -1
         assert actions.max() <= 3

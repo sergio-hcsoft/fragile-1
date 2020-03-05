@@ -7,7 +7,7 @@ from fragile.core.base_classes import BaseCritic, BaseModel
 from fragile.core.bounds import Bounds
 from fragile.core.env import DiscreteEnv
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
-from fragile.core.utils import float_type
+from fragile.core.utils import float_type, StateDict
 
 
 class Model(BaseModel):
@@ -109,7 +109,7 @@ class Model(BaseModel):
         )
         return model_states
 
-    def add_critic_params(self, params: dict, override_params: bool = True) -> dict:
+    def add_critic_params(self, params: dict, override_params: bool = True) -> StateDict:
         """
         Update the model parameters dictionary with the :class:`Critic` parameters.
 
@@ -148,12 +148,13 @@ class Model(BaseModel):
         Returns:
             model_states updated with the actions and the dt calculated by the Critic.
         """
-        critic_score = (
-            1
-            if self.critic is None
-            else self.critic.calculate(batch_size=batch_size, model_states=model_states, **kwargs)
-        )
-        model_states.update(actions=actions, critic=critic_score)
+        if self.critic is None:
+            model_states.update(actions=actions)
+        else:
+            critic_state = self.critic.calculate(
+                batch_size=batch_size, model_states=model_states, **kwargs
+            )
+            model_states.update(other=critic_state, actions=actions)
         return model_states
 
 
@@ -167,7 +168,7 @@ class _DtModel(Model):
     This model is not mean to be instantiated directly but used for class inheritance.
     """
 
-    def get_params_dict(self, override_params: bool = True) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(self, override_params: bool = True) -> StateDict:
         """
         Return the dictionary with the parameters to create a new `DiscreteUniform` model.
 
@@ -178,7 +179,7 @@ class _DtModel(Model):
         Returns:
             dict containing the parameters of both the :class:`Model` and its :class:`Critic`.
         """
-        dt = {"dt": {"dtype": np.int_}, "critic": {"dtype": np.int_}}
+        dt = {"dt": {"dtype": np.int_}, "critic_score": {"dtype": np.int_}}
         all_params = self.add_critic_params(params=dt, override_params=override_params)
         return all_params
 
@@ -199,13 +200,20 @@ class _DtModel(Model):
         Returns:
             model_states updated with the actions and the dt calculated by the Critic.
         """
-        critic_score = (
-            1
-            if self.critic is None
-            else self.critic.calculate(batch_size=batch_size, model_states=model_states, **kwargs)
-        )
-        dt = critic_score.astype(int) if isinstance(critic_score, np.ndarray) else critic_score
-        model_states.update(actions=actions, critic=critic_score, dt=dt)
+        if self.critic is not None:
+            critic_states = self.critic.calculate(
+                batch_size=batch_size, model_states=model_states, **kwargs
+            )
+
+            dt = (
+                critic_states.critic_score.astype(int)
+                if isinstance(critic_states.critic_score, np.ndarray)
+                else critic_states.critic_score
+            )
+            model_states.update(actions=actions, other=critic_states, dt=dt)
+        else:
+            dt = np.ones(batch_size, dtype=int)
+            model_states.update(actions=actions, critic_score=dt, dt=dt)
         return model_states
 
 
@@ -234,7 +242,7 @@ class DiscreteModel(_DtModel):
         """Return the number of different possible discrete actions that the model can output."""
         return self._n_actions
 
-    def get_params_dict(self, override_params: bool = True) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(self, override_params: bool = True) -> StateDict:
         """Return the dictionary with the parameters to create a new `DiscreteUniform` model."""
         params = super(DiscreteModel, self).get_params_dict(override_params=override_params)
         params.update({"actions": {"dtype": np.int_}})
@@ -296,7 +304,7 @@ class BinarySwap(DiscreteModel):
             raise ValueError("n_swaps must be greater than 0.")
         self.n_swaps = n_swaps if n_swaps is not None else self.n_actions
 
-    def get_params_dict(self, override_params: bool = True) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(self, override_params: bool = True) -> StateDict:
         """Return the dictionary with the parameters to create a new :class:`BinarySwap` model."""
         all_params = super(BinarySwap, self).get_params_dict(override_params=override_params)
         actions = {"actions": {"dtype": np.int_, "size": (self.n_actions,)}}
@@ -374,7 +382,7 @@ class ContinuousModel(_DtModel):
         """Return the number of dimensions of the sampled random variable."""
         return self.bounds.shape[0]
 
-    def get_params_dict(self, override_params: bool = True) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(self, override_params: bool = True) -> StateDict:
         """Return the dictionary with the parameters to create a new `DiscreteUniform` model."""
         all_params = super(ContinuousModel, self).get_params_dict(override_params=override_params)
         actions = {"actions": {"size": self.shape, "dtype": float_type}}
@@ -382,7 +390,7 @@ class ContinuousModel(_DtModel):
         return all_params
 
 
-class ContinousUniform(ContinuousModel):
+class ContinuousUniform(ContinuousModel):
     """Model that samples continuous actions in a given interval using a uniform prior."""
 
     def sample(self, batch_size: int, model_states: StatesModel = None, **kwargs) -> StatesModel:

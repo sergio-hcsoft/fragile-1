@@ -6,7 +6,7 @@ import numpy as np
 
 from fragile.core.base_classes import BaseCritic, BaseWalkers
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
-from fragile.core.utils import float_type, relativize, Scalar, StateDict, statistics_from_array
+from fragile.core.utils import float_type, relativize, StateDict, statistics_from_array
 
 
 class SimpleWalkers(BaseWalkers):
@@ -21,8 +21,8 @@ class SimpleWalkers(BaseWalkers):
     def __init__(
         self,
         n_walkers: int,
-        env_state_params: dict,
-        model_state_params: dict,
+        env_state_params: StateDict,
+        model_state_params: StateDict,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
         max_iters: int = None,
@@ -123,7 +123,7 @@ class SimpleWalkers(BaseWalkers):
 
     @property
     def env_states(self) -> StatesEnv:
-        """Return the `States` class that contains the data used by an environment."""
+        """Return the `States` class that contains the data used by the :class:`Environment`."""
         return self._env_states
 
     @property
@@ -136,8 +136,8 @@ class SimpleWalkers(BaseWalkers):
         Process data from the current state to decide if the iteration process should stop.
 
         Returns:
-            Boolean indicating if the iteration process should be finished. True means \
-            it should be stopped, and False means it should continue.
+            Boolean indicating if the iteration process should be finished. ``True`` means \
+            it should be stopped, and ``False`` means it should continue.
 
         """
         all_dead = self.states.end_condition.sum() == self.n
@@ -146,10 +146,10 @@ class SimpleWalkers(BaseWalkers):
 
     # @profile
     def calculate_distances(self) -> None:
-        """Calculate the corresponding distance function for each state with \
-        respect to another state chosen at random.
+        """Calculate the corresponding distance function for each observation with \
+        respect to another observation chosen at random.
 
-        The internal state is updated with the relativized distance values.
+        The internal :class:`StateWalkers` is updated with the relativized distance values.
         """
         compas_ix = np.random.permutation(np.arange(self.n))  # self.get_alive_compas()
         obs = self.env_states.observs.reshape(self.n, -1)
@@ -376,12 +376,13 @@ class Walkers(SimpleWalkers):
         self.efficiency = self._min_entropy / total_entropy
         self.update_states(virtual_rewards=virt_rw, processed_rewards=processed_rewards)
         if self.critic is not None:
-            self.critic.calculate(
+            critic_states = self.critic.calculate(
                 walkers_states=self.states,
                 model_states=self.model_states,
                 env_states=self.env_states,
             )
-            virt_rew = self.states.virtual_rewards * self.states.critic_score
+            self.states.update(other=critic_states)
+            virt_rew = self.states.virtual_rewards * self.states.critic
         else:
             virt_rew = self.states.virtual_rewards
         self.states.update(virtual_rewards=virt_rew)
@@ -391,11 +392,12 @@ class Walkers(SimpleWalkers):
         self.update_best()
         returned = super(Walkers, self).balance()
         if self.critic is not None:
-            self.critic.update(
+            critic_states = self.critic.update(
                 walkers_states=self.states,
                 model_states=self.model_states,
                 env_states=self.env_states,
             )
+            self.states.update(other=critic_states)
         return returned
 
     def _get_best_index(self):

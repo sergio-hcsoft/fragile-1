@@ -3,8 +3,8 @@ from typing import Any, Dict, Optional
 import numpy as np
 
 from fragile.core.base_classes import BaseCritic
-from fragile.core.states import States
-from fragile.core.utils import float_type
+from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
+from fragile.core.utils import float_type, StateDict
 
 
 class GaussianDt(BaseCritic):
@@ -14,9 +14,11 @@ class GaussianDt(BaseCritic):
     """
 
     @classmethod
-    def get_params_dict(cls) -> Dict[str, Dict[str, Any]]:
+    def get_params_dict(cls) -> StateDict:
         """Return the dictionary with the parameters to create a new `GaussianDt` critic."""
+        base_params = super(GaussianDt, cls).get_params_dict()
         params = {"dt": {"dtype": float_type}}
+        base_params.update(params)
         return params
 
     def __init__(
@@ -40,10 +42,10 @@ class GaussianDt(BaseCritic):
     def calculate(
         self,
         batch_size: Optional[int] = None,
-        model_states: Optional[States] = None,
-        env_states: Optional[States] = None,
-        walkers_states: Optional["StatesWalkers"] = None,
-    ) -> np.ndarray:
+        model_states: Optional[StatesModel] = None,
+        env_states: Optional[StatesEnv] = None,
+        walkers_states: Optional[StatesWalkers] = None,
+    ) -> States:
         """
         Calculate the target time step values.
 
@@ -62,4 +64,5 @@ class GaussianDt(BaseCritic):
         batch_size = batch_size or env_states.n
         dt = self.random_state.normal(loc=self.mean_dt, scale=self.std_dt, size=batch_size)
         dt = np.clip(dt, self.min_dt, self.max_dt)
-        return dt
+        states = self.states_from_data(batch_size=batch_size, critic_score=dt, dt=dt)
+        return states
