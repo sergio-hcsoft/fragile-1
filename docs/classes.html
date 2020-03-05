@@ -1,21 +1,20 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Swarm &#8212; Fragile 0.01a documentation</title>
+    <meta charset="utf-8" />
+    <title>Core &#8212; Fragile 0.01a documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Welcome to Fragile’s documentation!" href="index.html" />
+    <link rel="prev" title="Architecture" href="doc_resources/algorithm.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -32,467 +31,479 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="swarm">
-<h1>Swarm<a class="headerlink" href="#swarm" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="core">
+<h1>Core<a class="headerlink" href="#core" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="swarm">
+<h2>Swarm<a class="headerlink" href="#swarm" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="baseswarm">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSwarm</span></code><a class="headerlink" href="#baseswarm" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.base_classes.BaseSwarm">
-<em class="property">class </em><code class="descclassname">fragile.core.base_classes.</code><code class="descname">BaseSwarm</code><span class="sig-paren">(</span><em>env: Callable</em>, <em>model: Callable</em>, <em>walkers: Callable</em>, <em>n_walkers: int</em>, <em>reward_scale: float = 1.0</em>, <em>dist_scale: float = 1.0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Swarm is in charge of performing a fractal evolution process.</p>
-<p>It contains the necessary logic to use an Environment, a Model, and a     Walkers instance to run the Swarm evolution algorithm.</p>
-<dl class="attribute">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseSwarm</code><span class="sig-paren">(</span><em class="sig-param">env: Callable</em>, <em class="sig-param">model: Callable</em>, <em class="sig-param">walkers: Callable</em>, <em class="sig-param">n_walkers: int</em>, <em class="sig-param">reward_scale: float = 1.0</em>, <em class="sig-param">dist_scale: float = 1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Swarm implements the iteration logic to make the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> evolve.</p>
+<p>It contains the necessary logic to use an Environment, a Model, and a     Walkers instance to create the algorithm execution loop.</p>
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseSwarm.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">env: Callable</em>, <em class="sig-param">model: Callable</em>, <em class="sig-param">walkers: Callable</em>, <em class="sig-param">n_walkers: int</em>, <em class="sig-param">reward_scale: float = 1.0</em>, <em class="sig-param">dist_scale: float = 1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.base_classes.BaseSwarm" title="fragile.core.base_classes.BaseSwarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSwarm</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> – A function that returns an instance of an Environment.</p></li>
+<li><p><strong>model</strong> – A function that returns an instance of a Model.</p></li>
+<li><p><strong>walkers</strong> – A callable that returns an instance of BaseWalkers.</p></li>
+<li><p><strong>n_walkers</strong> – Number of walkers of the swarm.</p></li>
+<li><p><strong>reward_scale</strong> – Virtual reward exponent for the reward score.</p></li>
+<li><p><strong>dist_scale</strong> – Virtual reward exponent for the distance score.</p></li>
+<li><p><strong>*args</strong> – Additional args passed to init_swarm.</p></li>
+<li><p><strong>**kwargs</strong> – Additional kwargs passed to init_swarm.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.base_classes.BaseSwarm.env">
-<code class="descname">env</code><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.env" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">env</code><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.env" title="Permalink to this definition">¶</a></dt>
 <dd><p>All the simulation code (problem specific) will be handled here.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseSwarm.init_swarm">
+<code class="sig-name descname">init_swarm</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable</em>, <em class="sig-param">model_callable: Callable</em>, <em class="sig-param">walkers_callable: Callable</em>, <em class="sig-param">n_walkers: int</em>, <em class="sig-param">reward_scale: float = 1.0</em>, <em class="sig-param">dist_scale: float = 1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm.init_swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.init_swarm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize and set up all the necessary internal variables to run the swarm.</p>
+<p>This process involves instantiating the Swarm, the Environment and the         model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_callable</strong> – A function that returns an instance of an
+<code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Environment</span></code>.</p></li>
+<li><p><strong>model_callable</strong> – A function that returns an instance of a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Model</span></code>.</p></li>
+<li><p><strong>walkers_callable</strong> – A function that returns an instance of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Walkers</span></code>.</p></li>
+<li><p><strong>n_walkers</strong> – Number of walkers of the swarm.</p></li>
+<li><p><strong>reward_scale</strong> – Virtual reward exponent for the reward score.</p></li>
+<li><p><strong>dist_scale</strong> – Virtual reward exponent for the distance score.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.base_classes.BaseSwarm.model">
-<code class="descname">model</code><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.model" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">model</code><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.model" title="Permalink to this definition">¶</a></dt>
 <dd><p>All the policy and random perturbation code (problem specific) will         be handled here.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseSwarm.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><em>model_states: States = None</em>, <em>env_states: States = None</em>, <em>walkers_states: StatesWalkers = None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset a <code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Swarm</span></code> and clear the isnternal data to start a         new search process.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model_states</strong> – States that define the initial state of the environment.</li>
-<li><strong>env_states</strong> – States that define the initial state of the model.</li>
-<li><strong>walkers_states</strong> – States that define the internal states of the walkers.</li>
-<li><strong>args</strong> – Additional arguments not related to algorithm data.</li>
-<li><strong>kwargs</strong> – Additional keyword arguments not related to algorithm data.</li>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset a <code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Swarm</span></code> and clear the internal data to start a         new search process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – States that define the initial state of the environment.</p></li>
+<li><p><strong>env_states</strong> – States that define the initial state of the model.</p></li>
+<li><p><strong>walkers_states</strong> – States that define the internal states of the walkers.</p></li>
+<li><p><strong>args</strong> – Additional arguments not related to algorithm data.</p></li>
+<li><p><strong>kwargs</strong> – Additional keyword arguments not related to algorithm data.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseSwarm.run_swarm">
-<code class="descname">run_swarm</code><span class="sig-paren">(</span><em>model_states: States = None</em>, <em>env_states: States = None</em>, <em>walkers_states: StatesWalkers = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm.run_swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.run_swarm" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_swarm</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm.run_swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.run_swarm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a new search process until the stop condition is met.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>model_states</strong> – States that define the initial state of the environment.</li>
-<li><strong>env_states</strong> – States that define the initial state of the model.</li>
-<li><strong>walkers_states</strong> – States that define the internal states of the walkers.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – States that define the initial state of the environment.</p></li>
+<li><p><strong>env_states</strong> – States that define the initial state of the model.</p></li>
+<li><p><strong>walkers_states</strong> – States that define the internal states of the walkers.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseSwarm.step_walkers">
-<code class="descname">step_walkers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm.step_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.step_walkers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make the walkers undergo a random perturbation process in the swarm         <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+<code class="sig-name descname">step_walkers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseSwarm.step_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.step_walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the walkers undergo a perturbation process in the swarm         <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+<p>This function updates the <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> and the <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code>.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
 <dt id="fragile.core.base_classes.BaseSwarm.walkers">
-<code class="descname">walkers</code><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.walkers" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">walkers</code><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.walkers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> in charge of implementing the FAI         evolution process.</p>
 </dd></dl>
 
 </dd></dl>
 
+</div>
+<div class="section" id="id1">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.swarm.Swarm">
-<em class="property">class </em><code class="descclassname">fragile.core.swarm.</code><code class="descname">Swarm</code><span class="sig-paren">(</span><em>env: Callable</em>, <em>model: Callable</em>, <em>walkers: Callable</em>, <em>n_walkers: int</em>, <em>reward_scale: float = 1.0</em>, <em>dist_scale: float = 1.0</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.swarm.</code><code class="sig-name descname">Swarm</code><span class="sig-paren">(</span><em class="sig-param">walkers: Callable = &lt;class 'fragile.core.walkers.Walkers'&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Swarm is in charge of performing a fractal evolution process.</p>
 <p>It contains the necessary logic to use an Environment, a Model, and a     Walkers instance to run the Swarm evolution algorithm.</p>
-<dl class="attribute">
+<dl class="method">
+<dt id="fragile.core.swarm.Swarm.balance_and_prune">
+<code class="sig-name descname">balance_and_prune</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.balance_and_prune"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.balance_and_prune" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the virtual reward and perform the cloning process.</p>
+<p>It also updates the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> data structure that takes care of         storing the visited states.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.swarm.Swarm.calculate_end_condition">
+<code class="sig-name descname">calculate_end_condition</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.calculate_end_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.calculate_end_condition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implement the logic for deciding if the algorithm has finished.         The algorithm will stop if it returns True.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.swarm.Swarm.env">
-<code class="descname">env</code><a class="headerlink" href="#fragile.core.swarm.Swarm.env" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">env</code><a class="headerlink" href="#fragile.core.swarm.Swarm.env" title="Permalink to this definition">¶</a></dt>
 <dd><p>All the simulation code (problem specific) will be handled here.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
+<dt id="fragile.core.swarm.Swarm.init_swarm">
+<code class="sig-name descname">init_swarm</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable</em>, <em class="sig-param">model_callable: Callable</em>, <em class="sig-param">walkers_callable: Callable</em>, <em class="sig-param">n_walkers: int</em>, <em class="sig-param">reward_scale: float = 1.0</em>, <em class="sig-param">dist_scale: float = 1.0</em>, <em class="sig-param">tree: Callable = None</em>, <em class="sig-param">prune_tree: bool = True</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.init_swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.init_swarm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize and set up all the necessary internal variables to run the swarm.</p>
+<p>This process involves instantiating the Swarm, the Environment and the         model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_callable</strong> – A function that returns an instance of an
+<code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Environment</span></code>.</p></li>
+<li><p><strong>model_callable</strong> – A function that returns an instance of a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Model</span></code>.</p></li>
+<li><p><strong>walkers_callable</strong> – A function that returns an instance of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Walkers</span></code>.</p></li>
+<li><p><strong>n_walkers</strong> – Number of walkers of the swarm.</p></li>
+<li><p><strong>reward_scale</strong> – Virtual reward exponent for the reward score.</p></li>
+<li><p><strong>dist_scale</strong> – Virtual reward exponent for the distance score.</p></li>
+<li><p><strong>tree</strong> – class:<cite>Tree</cite> that keeps track of the visited states.</p></li>
+<li><p><strong>prune_tree</strong> – If <cite>use_tree</cite> is False it has no effect. If true,                        store in the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> the past history of alive walkers.</p></li>
+<li><p><strong>args</strong> – Passed to <cite>walkers_callable</cite>.</p></li>
+<li><p><strong>kwargs</strong> – Passed to <cite>walkers_callable</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.swarm.Swarm.model">
-<code class="descname">model</code><a class="headerlink" href="#fragile.core.swarm.Swarm.model" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">model</code><a class="headerlink" href="#fragile.core.swarm.Swarm.model" title="Permalink to this definition">¶</a></dt>
 <dd><p>All the policy and random perturbation code (problem specific) will         be handled here.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.swarm.Swarm.prune_tree">
-<code class="descname">prune_tree</code><span class="sig-paren">(</span><em>old_ids</em>, <em>new_ids</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.prune_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.prune_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">prune_tree</code><span class="sig-paren">(</span><em class="sig-param">leaf_nodes</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.prune_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.prune_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove all the branches that are do not have alive walkers at their leaf nodes.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>old_ids</strong> – ids of the states that were leaf nodes before the cloning process.</li>
-<li><strong>new_ids</strong> – ids of the new leaf nodes.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>leaf_nodes</strong> – ids of the new leaf nodes.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.swarm.Swarm.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><em>walkers_states: fragile.core.walkers.StatesWalkers = None</em>, <em>model_states: fragile.core.states.States = None</em>, <em>env_states: fragile.core.states.States = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset a <code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Walkers</span></code> and clear the isnternal data to start a         new search process.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model_states</strong> – States that define the initial state of the environment.</li>
-<li><strong>env_states</strong> – States that define the initial state of the model.</li>
-<li><strong>walkers_states</strong> – States that define the internal states of the walkers.</li>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em>, <em class="sig-param">model_states: fragile.core.states.States = None</em>, <em class="sig-param">env_states: fragile.core.states.States = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the <code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Walkers</span></code>, the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>, the         <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> and clear the internal data to start a new search process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – States that define the initial state of the environment.</p></li>
+<li><p><strong>env_states</strong> – States that define the initial state of the model.</p></li>
+<li><p><strong>walkers_states</strong> – States that define the internal states of the walkers.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.swarm.Swarm.run_step">
+<code class="sig-name descname">run_step</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.run_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.run_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute one iteration of the <a class="reference internal" href="#fragile.core.swarm.Swarm" title="fragile.core.swarm.Swarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code></a> evolution process and         update all the data structures.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.swarm.Swarm.run_swarm">
-<code class="descname">run_swarm</code><span class="sig-paren">(</span><em>model_states: fragile.core.states.States = None</em>, <em>env_states: fragile.core.states.States = None</em>, <em>walkers_states: fragile.core.walkers.StatesWalkers = None</em>, <em>print_every: int = 1e+100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.run_swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.run_swarm" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_swarm</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.States = None</em>, <em class="sig-param">env_states: fragile.core.states.States = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em>, <em class="sig-param">print_every: int = 1e+100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.run_swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.run_swarm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a new search process.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>model_states</strong> – States that define the initial state of the environment.</li>
-<li><strong>env_states</strong> – States that define the initial state of the model.</li>
-<li><strong>walkers_states</strong> – States that define the internal states of the walkers.</li>
-<li><strong>print_every</strong> – Display the algorithm progress every <cite>print_every</cite> epochs.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – States that define the initial state of the environment.</p></li>
+<li><p><strong>env_states</strong> – States that define the initial state of the model.</p></li>
+<li><p><strong>walkers_states</strong> – States that define the internal states of the walkers.</p></li>
+<li><p><strong>print_every</strong> – Display the algorithm progress every <cite>print_every</cite> epochs.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.swarm.Swarm.step_and_update_best">
+<code class="sig-name descname">step_and_update_best</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.step_and_update_best"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.step_and_update_best" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the positions of the walkers evolve and keep track of the new states found.</p>
+<p>It also keeps track of the best state visited.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.swarm.Swarm.step_walkers">
-<code class="descname">step_walkers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.step_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.step_walkers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make the walkers undergo a random perturbation process in the swarm         Environment.</p>
+<code class="sig-name descname">step_walkers</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.step_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.step_walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the walkers evolve to their next state sampling an action from the         <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> and applying it to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.swarm.Swarm.update_tree">
-<code class="descname">update_tree</code><span class="sig-paren">(</span><em>states_ids: List[int]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.update_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.update_tree" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update the states tracked by the tree.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>states_ids</strong> – list containing the ids of the new states added.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None.</td>
-</tr>
-</tbody>
-</table>
+<code class="sig-name descname">update_tree</code><span class="sig-paren">(</span><em class="sig-param">states_ids: List[int]</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/fragile/core/swarm.html#Swarm.update_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.update_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a list of walker states represented by <cite>states_ids</cite> to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>states_ids</strong> – list containing the ids of the new states added.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
 <dt id="fragile.core.swarm.Swarm.walkers">
-<code class="descname">walkers</code><a class="headerlink" href="#fragile.core.swarm.Swarm.walkers" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">walkers</code><a class="headerlink" href="#fragile.core.swarm.Swarm.walkers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> in charge of implementing the FAI         evolution process.</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
+</div>
 <div class="section" id="walkers">
-<h1>Walkers<a class="headerlink" href="#walkers" title="Permalink to this headline">¶</a></h1>
+<h2>Walkers<a class="headerlink" href="#walkers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basewalkers">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWalkers</span></code><a class="headerlink" href="#basewalkers" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.base_classes.BaseWalkers">
-<em class="property">class </em><code class="descclassname">fragile.core.base_classes.</code><code class="descname">BaseWalkers</code><span class="sig-paren">(</span><em>n_walkers: int</em>, <em>env_state_params: dict</em>, <em>model_state_params: dict</em>, <em>accumulate_rewards: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseWalkers</code><span class="sig-paren">(</span><em class="sig-param">n_walkers: int</em>, <em class="sig-param">env_state_params: dict</em>, <em class="sig-param">model_state_params: dict</em>, <em class="sig-param">accumulate_rewards: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Walkers is a data structure that takes care of all the data involved     in making a Swarm evolve.</p>
+<dl class="attribute">
+<dt id="fragile.core.base_classes.BaseWalkers.STATE_CLASS">
+<code class="sig-name descname">STATE_CLASS</code><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.STATE_CLASS" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#fragile.core.states.StatesWalkers" title="fragile.core.states.StatesWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.core.states.StatesWalkers</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseWalkers.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_walkers: int</em>, <em class="sig-param">env_state_params: dict</em>, <em class="sig-param">model_state_params: dict</em>, <em class="sig-param">accumulate_rewards: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <cite>BaseWalkers</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_walkers</strong> – Number of walkers. This is the number of states that will             be iterated in parallel.</p></li>
+<li><p><strong>env_state_params</strong> – Dictionary to instantiate the <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code>             of an <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p></li>
+<li><p><strong>model_state_params</strong> – Dictionary to instantiate the <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code>             of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p></li>
+<li><p><strong>accumulate_rewards</strong> – If <cite>True</cite> accumulate the rewards after each step
+of the environment.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseWalkers.__len__">
+<code class="sig-name descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length is the number of walkers.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.balance">
-<code class="descname">balance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.balance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">balance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.balance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform FAI iteration to clone the states.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.calculate_distances">
-<code class="descname">calculate_distances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.calculate_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.calculate_distances" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_distances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.calculate_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.calculate_distances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the distances between the different observations of the walkers.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.calculate_end_condition">
-<code class="descname">calculate_end_condition</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.calculate_end_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.calculate_end_condition" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_end_condition</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.calculate_end_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.calculate_end_condition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a boolean that controls the stopping of the iteration loop.         If True, the iteration process stops.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.calculate_virtual_reward">
-<code class="descname">calculate_virtual_reward</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.calculate_virtual_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.calculate_virtual_reward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_virtual_reward</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.calculate_virtual_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.calculate_virtual_reward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the virtual reward formula to account for all the different goal scores.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.clone_walkers">
-<code class="descname">clone_walkers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.clone_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.clone_walkers" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">clone_walkers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.clone_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.clone_walkers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sample the clone probability distribution and clone the walkers accordingly.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.env_states">
-<code class="descname">env_states</code><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.env_states" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">env_states</code><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.env_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the States class where all the environment information is stored.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.get_alive_compas">
-<code class="descname">get_alive_compas</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.get_alive_compas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.get_alive_compas" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_alive_compas</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.get_alive_compas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.get_alive_compas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an array of indexes corresponding to an alive walker chosen         at random.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.BaseWalkers.get_env_states">
-<code class="descname">get_env_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; States<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.get_env_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.get_env_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the States class where all the environment information is stored.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.base_classes.BaseWalkers.get_model_states">
-<code class="descname">get_model_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; States<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.get_model_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.get_model_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the States class where all the model information is stored.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.get_params_dict">
-<code class="descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.get_params_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the params_dict of the internal StateOwners.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.model_states">
-<code class="descname">model_states</code><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.model_states" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">model_states</code><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.model_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the States class where all the model information is stored.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.n">
-<code class="descname">n</code><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.n" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">n</code><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of walkers.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><em>model_states: States = None</em>, <em>env_states: States = None</em>, <em>walkers_states: StatesWalkers = None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.reset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset a <code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Walkers</span></code> and clear the internal data to start a         new search process.</p>
 <p>Restart all the variables needed to perform the fractal evolution process.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model_states</strong> – States that define the initial state of the environment.</li>
-<li><strong>env_states</strong> – States that define the initial state of the model.</li>
-<li><strong>walkers_states</strong> – States that define the internal states of the walkers.</li>
-<li><strong>args</strong> – Additional arguments not related to algorithm data.</li>
-<li><strong>kwargs</strong> – Additional keyword arguments not related to algorithm data.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – States that define the initial state of the environment.</p></li>
+<li><p><strong>env_states</strong> – States that define the initial state of the model.</p></li>
+<li><p><strong>walkers_states</strong> – States that define the internal states of the walkers.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.states">
-<code class="descname">states</code><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.states" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">states</code><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the States class where all the model information is stored.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.update_states">
-<code class="descname">update_states</code><span class="sig-paren">(</span><em>env_states: fragile.core.base_classes.States = None</em>, <em>model_states: fragile.core.base_classes.States = None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.update_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.update_states" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_states</code><span class="sig-paren">(</span><em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseWalkers.update_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.update_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the States variables that do not contain internal data and         accumulate the rewards in the internal states if applicable.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>env_states</strong> – States containing the data associated with the Environment.</li>
-<li><strong>model_states</strong> – States containing data associated with the Environment.</li>
-<li><strong>**kwargs</strong> – Internal states will be updated via keyword arguments.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_states</strong> – States containing the data associated with the Environment.</p></li>
+<li><p><strong>model_states</strong> – States containing data associated with the Environment.</p></li>
+<li><p><strong>**kwargs</strong> – Internal states will be updated via keyword arguments.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="fragile.core.walkers.Walkers">
-<em class="property">class </em><code class="descclassname">fragile.core.walkers.</code><code class="descname">Walkers</code><span class="sig-paren">(</span><em>n_walkers: int</em>, <em>env_state_params: dict</em>, <em>model_state_params: dict</em>, <em>reward_scale: float = 1.0</em>, <em>dist_scale: float = 1.0</em>, <em>max_iters: int = 1000</em>, <em>accumulate_rewards: bool = True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class is in charge of performing all the mathematical operations involved in evolving a     cloud of walkers.</p>
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.__getattr__">
-<code class="descname">__getattr__</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.__getattr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.__getattr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Access all the data involved in the algorithm as attributes.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.__repr__">
-<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.__repr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print all the data involved in the current run of the algorithm.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.balance">
-<code class="descname">balance</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Tuple[numpy.ndarray, numpy.ndarray]<a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.balance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform an iteration of the FractalAI algorithm for balancing distributions.</p>
-<p>It performs the necessary calculations to determine which walkers will clone,         and performs the cloning process.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The first one represent the unique ids             of the states for each walker at the start of the iteration. The second             one contains the ids of the states after the cloning process.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">A tuple containing two sets</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.calculate_distances">
-<code class="descname">calculate_distances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.calculate_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.calculate_distances" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the corresponding distance function for each state with         respect to another state chosen at random.</p>
-<p>The internal state is update with the relativized distance values.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.calculate_end_condition">
-<code class="descname">calculate_end_condition</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.calculate_end_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.calculate_end_condition" title="Permalink to this definition">¶</a></dt>
-<dd><p>Process data from the current state to decide if the iteration process should stop.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Boolean indicating if the iteration process should be finished. True means             it should be stopped, and False means it should continue.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.calculate_virtual_reward">
-<code class="descname">calculate_virtual_reward</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.calculate_virtual_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.calculate_virtual_reward" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the virtual reward and update the internal state.</p>
-<p>The cumulative_reward is transformed with the relativize function.         The distances stored in the internal state are already assumed to be transformed.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.clone_walkers">
-<code class="descname">clone_walkers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.clone_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.clone_walkers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sample the clone probability distribution and clone the walkers accordingly.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fragile.core.walkers.Walkers.env_states">
-<code class="descname">env_states</code><a class="headerlink" href="#fragile.core.walkers.Walkers.env_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the <cite>States</cite> class that contains the data used by an environment.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.get_alive_compas">
-<code class="descname">get_alive_compas</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.get_alive_compas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.get_alive_compas" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the indexes of alive companions chosen at random.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Numpy array containing the int indexes of alive walkers chosen at random with
-repetition.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fragile.core.walkers.Walkers.model_states">
-<code class="descname">model_states</code><a class="headerlink" href="#fragile.core.walkers.Walkers.model_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the <cite>States</cite> class that contains the data used by a Model.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><em>env_states: fragile.core.states.States = None</em>, <em>model_states: fragile.core.states.States = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Restart all the internal states involved in the algorithm iteration.</p>
-<p>After reset a new run of the algorithm will be ready to be launched.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fragile.core.walkers.Walkers.states">
-<code class="descname">states</code><a class="headerlink" href="#fragile.core.walkers.Walkers.states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the <cite>StatesWalkers</cite> class that contains the data used by the instance.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.update_clone_probs">
-<code class="descname">update_clone_probs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.update_clone_probs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.update_clone_probs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the new probability of cloning for each walker.</p>
-<p>Updates the internal state with both the probability of cloning and the index of the
-randomly chosen companions that were selected to compare the virtual rewards.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.walkers.Walkers.update_states">
-<code class="descname">update_states</code><span class="sig-paren">(</span><em>env_states: fragile.core.states.States = None</em>, <em>model_states: fragile.core.states.States = None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.update_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.update_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update the States variables that do not contain internal data and         accumulate the rewards in the internal states if applicable.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>env_states</strong> – States containing the data associated with the Environment.</li>
-<li><strong>model_states</strong> – States containing data associated with the Environment.</li>
-<li><strong>**kwargs</strong> – Internal states will be updated via keyword arguments.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
 </div>
+<div class="section" id="id2">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.walkers.Walkers">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.walkers.</code><code class="sig-name descname">Walkers</code><span class="sig-paren">(</span><em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">best_walker: Tuple = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fragile.core.walkers.Walkers.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">best_walker: Tuple = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <code class="xref py py-class docutils literal notranslate"><span class="pre">MapperWalkers</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>critic</strong> – critic that will be used to calculate custom rewards.</p></li>
+<li><p><strong>*args</strong> – </p></li>
+<li><p><strong>**kwargs</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.walkers.Walkers.balance">
+<code class="sig-name descname">balance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.balance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform an iteration of the FractalAI algorithm for balancing the         walkers distribution.</p>
+<p>It performs the necessary calculations to determine which walkers will clone,         and performs the cloning process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The first one represent the unique ids             of the states for each walker at the start of the iteration. The second             one contains the ids of the states after the cloning process.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>A tuple containing two sets</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.walkers.Walkers.calculate_virtual_reward">
+<code class="sig-name descname">calculate_virtual_reward</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.calculate_virtual_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.calculate_virtual_reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the virtual reward and update the internal state.</p>
+<p>The cumulative_reward is transformed with the relativize function.         The distances stored in the <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> are already transformed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.walkers.Walkers.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">walker_states: fragile.core.states.StatesWalkers = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/walkers.html#Walkers.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restart all the internal states involved in the algorithm iteration.</p>
+<p>After reset a new run of the algorithm will be ready to be launched.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="environment">
-<h1>Environment<a class="headerlink" href="#environment" title="Permalink to this headline">¶</a></h1>
+<h2>Environment<a class="headerlink" href="#environment" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="baseenvironment">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEnvironment</span></code><a class="headerlink" href="#baseenvironment" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.base_classes.BaseEnvironment">
-<em class="property">class </em><code class="descclassname">fragile.core.base_classes.</code><code class="descname">BaseEnvironment</code><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseEnvironment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseEnvironment</code><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseEnvironment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Environment is in charge of stepping the walkers, acting as an state     transition function.</p>
 <p>For every different problem a new Environment needs to be implemented     following the <a class="reference internal" href="#fragile.core.base_classes.BaseEnvironment" title="fragile.core.base_classes.BaseEnvironment"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEnvironment</span></code></a> interface.</p>
+<dl class="attribute">
+<dt id="fragile.core.base_classes.BaseEnvironment.STATE_CLASS">
+<code class="sig-name descname">STATE_CLASS</code><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment.STATE_CLASS" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#fragile.core.states.StatesEnv" title="fragile.core.states.StatesEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.core.states.StatesEnv</span></code></a></p>
+</dd></dl>
+
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseEnvironment.get_params_dict">
-<code class="descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseEnvironment.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseEnvironment.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment.get_params_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an state_dict to be used for instantiating the states containing         the data describing the Environment.</p>
 <p>In order to define the arrays, a state_dict dictionary needs to be specified         using the following structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -505,174 +516,146 @@ randomly chosen companions that were selected to compare the virtual rewards.</p
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Where tuple is a tuple indicating the shape of the desired tensor, that         will be accessed using the name_1 attribute of the class.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseEnvironment.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><em>batch_size: int = 1</em>, <em>env_states: fragile.core.base_classes.States = None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.base_classes.States<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseEnvironment.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment.reset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseEnvironment.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the environment and return an States class with batch_size copies         of the initial state.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>batch_size</strong> – Number of walkers that the resulting state will have.</li>
-<li><strong>env_states</strong> – States class used to set the environment to an arbitrary                         state.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of walkers that the resulting state will have.</p></li>
+<li><p><strong>env_states</strong> – States class used to set the environment to an arbitrary                         state.
 args: Additional arguments not related to environment data.
-kwargs: Additional keyword arguments not related to environment data.</li>
+kwargs: Additional keyword arguments not related to environment data.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">States class containing the information of the environment after the              reset.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States class containing the information of the environment after the              reset.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseEnvironment.step">
-<code class="descname">step</code><span class="sig-paren">(</span><em>model_states: fragile.core.base_classes.States</em>, <em>env_states: fragile.core.base_classes.States</em><span class="sig-paren">)</span> &#x2192; fragile.core.base_classes.States<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseEnvironment.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseEnvironment.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Step the environment for a batch of walkers.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>model_states</strong> – States representing the data to be used to act on the environment..</li>
-<li><strong>env_states</strong> – States representing the data to be set in the environment.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – States representing the data to be used to act on the environment.</p></li>
+<li><p><strong>env_states</strong> – States representing the data to be set in the environment.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">States representing the next state of the environment and all             the needed information.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="fragile.core.env.Environment">
-<em class="property">class </em><code class="descclassname">fragile.core.env.</code><code class="descname">Environment</code><span class="sig-paren">(</span><em>name</em>, <em>n_repeat_action: int = 1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plangym/env.html#Environment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inherit from this class to adapt environments to different problem.
-Pretty much the same as the OpenAI gym env.</p>
-<dl class="method">
-<dt id="fragile.core.env.Environment.get_state">
-<code class="descname">get_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/plangym/env.html#Environment.get_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.get_state" title="Permalink to this definition">¶</a></dt>
-<dd><p>Recover the internal state of the simulation. An state must completely
-describe the Environment at a given moment.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fragile.core.env.Environment.name">
-<code class="descname">name</code><a class="headerlink" href="#fragile.core.env.Environment.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is the name of the environment</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.env.Environment.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><em>return_state: bool = True</em><span class="sig-paren">)</span> &#x2192; [&lt;class 'numpy.ndarray'&gt;, &lt;class 'tuple'&gt;]<a class="reference internal" href="_modules/plangym/env.html#Environment.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Restart the environment.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.env.Environment.set_state">
-<code class="descname">set_state</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plangym/env.html#Environment.set_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.set_state" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the internal state of the simulation.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>state</strong> – Target state to be set in the environment.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.env.Environment.step">
-<code class="descname">step</code><span class="sig-paren">(</span><em>action</em>, <em>state=None</em>, <em>n_repeat_action: int = 1</em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/plangym/env.html#Environment.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Take a simulation step and make the environment evolve.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>action</strong> – Chosen action applied to the environment.</li>
-<li><strong>state</strong> – Set the environment to the given state before stepping it.
-If state is None the behaviour of this function will be the
-same as in OpenAI gym.</li>
-<li><strong>n_repeat_action</strong> – Consecutive number of times to apply an action.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">if states is None returns (observs, rewards, ends, infos)
-else returns(new_states, observs, rewards, ends, infos)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.env.Environment.step_batch">
-<code class="descname">step_batch</code><span class="sig-paren">(</span><em>actions: [&lt;class 'numpy.ndarray'&gt;, &lt;class 'list'&gt;], states=None, n_repeat_action: int = 1</em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/plangym/env.html#Environment.step_batch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.step_batch" title="Permalink to this definition">¶</a></dt>
-<dd><p>Take a step on a batch of states and actions.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>actions</strong> – Chosen actions applied to the environment.</li>
-<li><strong>states</strong> – Set the environment to the given states before stepping it.
-If state is None the behaviour of this function will be the same
-as in OpenAI gym.</li>
-<li><strong>n_repeat_action</strong> – Consecutive number of times that the action will be
-applied.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">if states is None returns (observs, rewards, ends, infos)
-else returns(new_states, observs, rewards, ends, infos)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fragile.core.env.Environment.unwrapped">
-<code class="descname">unwrapped</code><a class="headerlink" href="#fragile.core.env.Environment.unwrapped" title="Permalink to this definition">¶</a></dt>
-<dd><p>Completely unwrap this Environment.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The base non-wrapped plangym.Environment instance</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">plangym.Environment</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States representing the next state of the environment and all             the needed information.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
 </div>
+<div class="section" id="id3">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.env.Environment">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.env.</code><code class="sig-name descname">Environment</code><span class="sig-paren">(</span><em class="sig-param">states_shape: tuple</em>, <em class="sig-param">observs_shape: tuple</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/env.html#Environment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fragile.core.env.Environment.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/env.html#Environment.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing the param_dict to build an instance         of <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> that can handle all the data generated by a         <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.env.Environment.states_from_data">
+<code class="sig-name descname">states_from_data</code><span class="sig-paren">(</span><em class="sig-param">states</em>, <em class="sig-param">observs</em>, <em class="sig-param">rewards</em>, <em class="sig-param">ends</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="_modules/fragile/core/env.html#Environment.states_from_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.states_from_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> object containing the data generated         by the environment.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="discreteenv">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteEnv</span></code><a class="headerlink" href="#discreteenv" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.env.DiscreteEnv">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.env.</code><code class="sig-name descname">DiscreteEnv</code><span class="sig-paren">(</span><em class="sig-param">env: plangym.env.Environment</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/env.html#DiscreteEnv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.DiscreteEnv" title="Permalink to this definition">¶</a></dt>
+<dd><p>The DiscreteEnv acts as an interface with <cite>plangym</cite> discrete actions.</p>
+<p>It can interact with any environment that accepts discrete actions and     follows the interface of <cite>plangym</cite>.</p>
+<dl class="method">
+<dt id="fragile.core.env.DiscreteEnv.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">env: plangym.env.Environment</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/env.html#DiscreteEnv.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.DiscreteEnv.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.env.DiscreteEnv" title="fragile.core.env.DiscreteEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteEnv</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>env</strong> – Instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">plangym.Environment</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.env.DiscreteEnv.n_actions">
+<em class="property">property </em><code class="sig-name descname">n_actions</code><a class="headerlink" href="#fragile.core.env.DiscreteEnv.n_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of different discrete actions that can be taken in the environment.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.env.DiscreteEnv.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="_modules/fragile/core/env.html#DiscreteEnv.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.DiscreteEnv.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the environment to the start of a new episode and returns a new         States instance describing the state of the Environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of walkers that the returned state will have.</p></li>
+<li><p><strong>**kwargs</strong> – Ignored. This environment resets without using any external data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States instance describing the state of the Environment. The first             dimension of the data tensors (number of walkers) will be equal to             batch_size.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.env.DiscreteEnv.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="_modules/fragile/core/env.html#DiscreteEnv.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.DiscreteEnv.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the environment to the target states by applying the specified         actions an arbitrary number of time steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – States representing the data to be used to act on the environment..</p></li>
+<li><p><strong>env_states</strong> – States representing the data to be set in the environment.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States containing the information that describes the new state of the Environment.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="model">
-<h1>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h1>
+<h2>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basemodel">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code><a class="headerlink" href="#basemodel" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.base_classes.BaseModel">
-<em class="property">class </em><code class="descclassname">fragile.core.base_classes.</code><code class="descname">BaseModel</code><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>The model is in charge of calculating how the walkers will act with the     Environment, effectively working as a policy.</p>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseModel</code><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>The model is in charge of calculating how the walkers will act on the     Environment, effectively working as a policy.</p>
+<dl class="attribute">
+<dt id="fragile.core.base_classes.BaseModel.STATE_CLASS">
+<code class="sig-name descname">STATE_CLASS</code><a class="headerlink" href="#fragile.core.base_classes.BaseModel.STATE_CLASS" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#fragile.core.states.StatesModel" title="fragile.core.states.StatesModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.core.states.StatesModel</span></code></a></p>
+</dd></dl>
+
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseModel.get_params_dict">
-<code class="descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseModel.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseModel.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseModel.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseModel.get_params_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an state_dict to be used for instantiating the states containing         the data describing the Model.</p>
 <p>In order to define the arrays, a state_dict dictionary needs to be         specified using the following structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -692,430 +675,510 @@ else returns(new_states, observs, rewards, ends, infos)</p>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseModel.predict">
-<code class="descname">predict</code><span class="sig-paren">(</span><em>model_states: fragile.core.base_classes.States = None</em>, <em>env_states: fragile.core.base_classes.States = None</em>, <em>walkers_states: StatesWalkers = None</em><span class="sig-paren">)</span> &#x2192; fragile.core.base_classes.States<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseModel.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseModel.predict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseModel.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseModel.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate States containing the data needed to interact with the environment.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>model_states</strong> – States corresponding to the model data.</li>
-<li><strong>env_states</strong> – States corresponding to the environment data.</li>
-<li><strong>walkers_states</strong> – States corresponding to the walkers data.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of new points to the sampled.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to the model data.</p></li>
+<li><p><strong>env_states</strong> – States corresponding to the environment data.</p></li>
+<li><p><strong>walkers_states</strong> – States corresponding to the walkers data.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Updated model_states with new model data.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Updated model_states with new model data.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseModel.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><em>batch_size: int = 1</em>, <em>model_states: fragile.core.base_classes.States = None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.base_classes.States<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseModel.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseModel.reset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseModel.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseModel.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restart the model and reset its internal state.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>batch_size</strong> – Number of elements in the first dimension of the model                         States data.</li>
-<li><strong>model_states</strong> – States corresponding to model data. If provided the                           model will be reset to this state.</li>
-<li><strong>args</strong> – Additional arguments not related to model data.</li>
-<li><strong>kwargs</strong> – Additional keyword arguments not related to model data.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of elements in the first dimension of the model                         States data.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to model data. If provided the                           model will be reset to this state.</p></li>
+<li><p><strong>args</strong> – Additional arguments not related to model data.</p></li>
+<li><p><strong>kwargs</strong> – Additional keyword arguments not related to model data.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">States containing the information of the current state of the             model (after the reset).</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="fragile.core.models.DiscreteUniform">
-<em class="property">class </em><code class="descclassname">fragile.core.models.</code><code class="descname">DiscreteUniform</code><span class="sig-paren">(</span><em>env: fragile.core.env.DiscreteEnv = None</em>, <em>n_actions: int = None</em>, <em>min_dt=3</em>, <em>max_dt=10</em>, <em>loc_dt=4</em>, <em>scale_dt=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/models.html#DiscreteUniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.DiscreteUniform" title="Permalink to this definition">¶</a></dt>
-<dd><p>Model that samples actions in a discrete state space using a uniform prior.</p>
-<p>It samples the dt from a normal distribution.</p>
-<dl class="classmethod">
-<dt id="fragile.core.models.DiscreteUniform.get_params_dict">
-<em class="property">classmethod </em><code class="descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/models.html#DiscreteUniform.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.DiscreteUniform.get_params_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the dictionary with the parameters to create a new <cite>DiscreteUniform</cite> model.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fragile.core.models.DiscreteUniform.n_actions">
-<code class="descname">n_actions</code><a class="headerlink" href="#fragile.core.models.DiscreteUniform.n_actions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the number of different possible discrete actions that the model can output.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.models.DiscreteUniform.sample">
-<code class="descname">sample</code><span class="sig-paren">(</span><em>batch_size: int</em>, <em>model_states: fragile.core.states.States = None</em>, <em>**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="_modules/fragile/core/models.html#DiscreteUniform.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.DiscreteUniform.sample" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sample a random discrete variable from a uniform prior.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>batch_size</strong> – Number of new points to the sampled.</li>
-<li><strong>model_states</strong> – States corresponding to the environment data.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Tuple containing a tensor with the sampled actions and the new model states variable.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States containing the information of the current state of the             model (after the reset).</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="states">
-<h1>States<a class="headerlink" href="#states" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="discreteuniform">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteUniform</span></code><a class="headerlink" href="#discreteuniform" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
-<dt id="fragile.core.base_classes.States">
-<em class="property">class </em><code class="descclassname">fragile.core.base_classes.</code><code class="descname">States</code><span class="sig-paren">(</span><em>batch_size: int</em>, <em>state_dict=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#States"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handle several tensors that will contain the data associated with the walkers     of a Swarm.</p>
-<p>This means that each tensor will have an extra dimension equal to     the number of walkers.</p>
+<dt id="fragile.core.models.DiscreteUniform">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.models.</code><code class="sig-name descname">DiscreteUniform</code><span class="sig-paren">(</span><em class="sig-param">n_actions: int = None</em>, <em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">env: fragile.core.env.DiscreteEnv = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/models.html#DiscreteUniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.DiscreteUniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model that samples actions in a one dimensional discrete state space using     a uniform prior. For each walker on the batch it will return an integer in     the interval [0, n_actions].</p>
+<dl class="method">
+<dt id="fragile.core.models.DiscreteUniform.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="_modules/fragile/core/models.html#DiscreteUniform.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.DiscreteUniform.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a random discrete variable from a uniform prior.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of new points to the sampled.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to the environment data.</p></li>
+<li><p><strong>kwargs</strong> – passed to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code> variable containing the calculated actions and dt.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="binaryswap">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">BinarySwap</span></code><a class="headerlink" href="#binaryswap" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.models.BinarySwap">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.models.</code><code class="sig-name descname">BinarySwap</code><span class="sig-paren">(</span><em class="sig-param">n_swaps: Optional[int] = 1</em>, <em class="sig-param">n_actions: int = None</em>, <em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">env: fragile.core.env.DiscreteEnv = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/models.html#BinarySwap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.BinarySwap" title="Permalink to this definition">¶</a></dt>
+<dd><p>This model acts on a vector of binary values and swaps the values of a     given number of dimensions chosen at random.</p>
+<dl class="method">
+<dt id="fragile.core.models.BinarySwap.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_swaps: Optional[int] = 1</em>, <em class="sig-param">n_actions: int = None</em>, <em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">env: fragile.core.env.DiscreteEnv = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/models.html#BinarySwap.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.BinarySwap.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.models.BinarySwap" title="fragile.core.models.BinarySwap"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinarySwap</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_swaps</strong> – Number of binary dimensions that will be swapped every time              <cite>sample</cite> is called. If <cite>n_swaps</cite> is None it will be the same as n_actions.</p></li>
+<li><p><strong>n_actions</strong> – Number of different discrete outcomes that the model can provide.</p></li>
+<li><p><strong>env</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteEnvironment</span></code> that will be used to extract the             dimension of the target vector.</p></li>
+<li><p><strong>critic</strong> – dt_sampler used to calculate an additional time step strategy.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.models.BinarySwap.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><em class="sig-param">override_params: bool = True</em><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/models.html#BinarySwap.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.BinarySwap.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the dictionary with the parameters to create a new <a class="reference internal" href="#fragile.core.models.BinarySwap" title="fragile.core.models.BinarySwap"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinarySwap</span></code></a> model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.models.BinarySwap.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="_modules/fragile/core/models.html#BinarySwap.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.BinarySwap.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Swaps the values of <cite>n_swaps</cite> dimensions chosen at random. It works on a         matrix of binary values of size (batch_size, n_actions).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of new points to the sampled.</p></li>
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> data.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> of the algorithm’s <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p></li>
+<li><p><strong>kwargs</strong> – Passed to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code> variable containing the calculated actions and dt.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="continuousmodel">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousModel</span></code><a class="headerlink" href="#continuousmodel" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.models.ContinuousModel">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.models.</code><code class="sig-name descname">ContinuousModel</code><span class="sig-paren">(</span><em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">critic: Optional[fragile.core.base_classes.BaseCritic] = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/models.html#ContinuousModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinuousModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>It represents the base Model class that handles a continuous interval of     possible outcomes.</p>
+<dl class="method">
+<dt id="fragile.core.models.ContinuousModel.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">critic: Optional[fragile.core.base_classes.BaseCritic] = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/models.html#ContinuousModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinuousModel.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <code class="xref py py-class docutils literal notranslate"><span class="pre">RandomContinuous</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bounds</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code> class defining the range of allowed output             values of the model.</p></li>
+<li><p><strong>critic</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code> that will be used to make additional computation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.models.ContinuousModel.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><em class="sig-param">override_params: bool = True</em><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/models.html#ContinuousModel.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinuousModel.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the dictionary with the parameters to create a new <cite>DiscreteUniform</cite> model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.models.ContinuousModel.n_dims">
+<em class="property">property </em><code class="sig-name descname">n_dims</code><a class="headerlink" href="#fragile.core.models.ContinuousModel.n_dims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of dimensions of the sampled random variable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.models.ContinuousModel.shape">
+<em class="property">property </em><code class="sig-name descname">shape</code><a class="headerlink" href="#fragile.core.models.ContinuousModel.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the shape of the sampled random variable.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="continuousuniform">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousUniform</span></code><a class="headerlink" href="#continuousuniform" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.models.ContinousUniform">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.models.</code><code class="sig-name descname">ContinousUniform</code><span class="sig-paren">(</span><em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">critic: Optional[fragile.core.base_classes.BaseCritic] = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/models.html#ContinousUniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinousUniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model that samples continuous actions in a given interval using a uniform prior.</p>
+<dl class="method">
+<dt id="fragile.core.models.ContinousUniform.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="_modules/fragile/core/models.html#ContinousUniform.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinousUniform.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a random continuous variable from a uniform prior.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of new points to the sampled.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to the model data.</p></li>
+<li><p><strong>kwargs</strong> – passed to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States containing the new sampled discrete random values inside             <cite>state.actions</cite> attribute.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="states">
+<h2>States<a class="headerlink" href="#states" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code><a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.states.States">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">States</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles several tensors that will contain the data associated with the     walkers of a Swarm. Each tensor will be associated to a class attribute.</p>
 <p>This class behaves as a dictionary of tensors with some extra functionality
-to make easier the process of cloning the along the walkers dimension.</p>
-<p>In order to define the tensors, a state_dict dictionary needs to be specified
-using the following structure:</p>
+to make easier the process of cloning the along the walkers dimension. Each     tensor will have an extra dimension equal to the number of walkers.</p>
+<p>In order to define the tensors, a <cite>state_dict</cite> dictionary needs to be     specified using the following structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name_1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span>
                          <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
                         <span class="p">},</span>
              <span class="p">}</span>
 </pre></div>
 </div>
-<p>Where tuple is a tuple indicating the shape of the desired tensor, that will
-be accessed using the name_1 attribute of the class.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>batch_size</strong> – The number of items in the first dimension of the tensors.</li>
-<li><strong>state_dict</strong> – Dictionary defining the attributes of the tensors.</li>
-<li><strong>**kwargs</strong> – Data can be directly specified as keyword arguments.</li>
+<p>Where tuple is a tuple indicating the shape of the desired tensor, that will     be accessed using the name_1 attribute of the class. If “size” is not defined     the attribute will be considered a vector of length <cite>batch_size</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – The number of items in the first dimension of the tensors.</p></li>
+<li><p><strong>state_dict</strong> – Dictionary defining the attributes of the tensors.</p></li>
+<li><p><strong>**kwargs</strong> – Data can be directly specified as keyword arguments.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <dl class="method">
-<dt id="fragile.core.base_classes.States.__getitem__">
-<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>item: Union[str, List[str]]</em><span class="sig-paren">)</span> &#x2192; Union[numpy.ndarray, List[numpy.ndarray]]<a class="reference internal" href="_modules/fragile/core/base_classes.html#States.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.States.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">item: str</em><span class="sig-paren">)</span> &#x2192; Union[numpy.ndarray, List[numpy.ndarray]]<a class="reference internal" href="_modules/fragile/core/states.html#States.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Query an attribute of the class as if it was a dictionary.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> – Name of the attribute to be selected.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The corresponding item.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>item</strong> – Name of the attribute to be selected.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The corresponding item.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.__setitem__">
-<code class="descname">__setitem__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#States.__setitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.States.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise a <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – The number of items in the first dimension of the tensors.</p></li>
+<li><p><strong>state_dict</strong> – Dictionary defining the attributes of the tensors.</p></li>
+<li><p><strong>**kwargs</strong> – The name-tensor pairs can also be specified as kwargs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.states.States.__len__">
+<code class="sig-name descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length is equal to n_walkers.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.states.States.__setitem__">
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">key, value: Union[Tuple, List, numpy.ndarray]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.__setitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.__setitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allow the class to set its attributes as if it was a dict.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> – Attribute to be set.</li>
-<li><strong>value</strong> – Value of the target attribute.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – Attribute to be set.</p></li>
+<li><p><strong>value</strong> – Value of the target attribute.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.clone">
-<code class="descname">clone</code><span class="sig-paren">(</span><em>will_clone: numpy.ndarray</em>, <em>compas_ix: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#States.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.clone" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform the clone operation on all the data attributes.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>will_clone</strong> – Array of booleans that will be True when a walker is
-selected to clone. It is a flat array of length equal                         to n_walkers.</li>
-<li><strong>compas_ix</strong> – Array representing the index of the companions selected
-to clone. It is a flat array of length equal to n_walkers.</li>
+<dt id="fragile.core.states.States.clone">
+<code class="sig-name descname">clone</code><span class="sig-paren">(</span><em class="sig-param">will_clone: numpy.ndarray</em>, <em class="sig-param">compas_ix: numpy.ndarray</em>, <em class="sig-param">ignore: Optional[Set[str]] = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clone all the stored data according to the provided arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>will_clone</strong> – Array of shape (n_walkers,) of booleans indicating the                         index of the walkers that will clone to a random companion.</p></li>
+<li><p><strong>compas_ix</strong> – Array of integers of shape (n_walkers,). Contains the                        indexes of the walkers that will be copied.</p></li>
+<li><p><strong>ignore</strong> – set containing the names of the attributes that will not be                     cloned.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="classmethod">
-<dt id="fragile.core.base_classes.States.concat_states">
-<em class="property">classmethod </em><code class="descname">concat_states</code><span class="sig-paren">(</span><em>states: List[States]</em><span class="sig-paren">)</span> &#x2192; fragile.core.base_classes.States<a class="reference internal" href="_modules/fragile/core/base_classes.html#States.concat_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.concat_states" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="fragile.core.states.States.concat_states">
+<em class="property">classmethod </em><code class="sig-name descname">concat_states</code><span class="sig-paren">(</span><em class="sig-param">states: List[States]</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="_modules/fragile/core/states.html#States.concat_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.concat_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform a list containing states with only one walker to a single         States instance with many walkers.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.get">
-<code class="descname">get</code><span class="sig-paren">(</span><em>key: str</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#States.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.get" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.States.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="_modules/fragile/core/states.html#States.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crete a copy of the current instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.states.States.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">key: str</em>, <em class="sig-param">default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an attribute by key and return the default value if it does not exist.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>key</strong> – Attribute to be recovered.</li>
-<li><strong>default</strong> – Value returned in case the attribute is not part of state.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – Attribute to be recovered.</p></li>
+<li><p><strong>default</strong> – Value returned in case the attribute is not part of state.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><dl class="docutils">
-<dt>Target attribute if found in the instance, otherwise returns the</dt>
-<dd><p class="first last">default value.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Target attribute if found in the instance, otherwise returns the</dt><dd><p>default value.</p>
 </dd>
 </dl>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.get_params_dict">
-<code class="descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#States.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.get_params_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an state_dict to be used for instantiating an States class.</p>
-<p>In order to define the tensors, a state_dict dictionary needs to be         specified using the following structure:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name_1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span>
-                         <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-                       <span class="p">},</span>
-              <span class="p">}</span>
-</pre></div>
-</div>
-<p>Where tuple is a tuple indicating the shape of the desired tensor, that will
-be accessed using the name_1 attribute of the class.</p>
+<dt id="fragile.core.states.States.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/states.html#States.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary describing the data stored in the <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.items">
-<code class="descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Generator<a class="reference internal" href="_modules/fragile/core/base_classes.html#States.items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.items" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.States.items">
+<code class="sig-name descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Generator<a class="reference internal" href="_modules/fragile/core/states.html#States.items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a generator for the attribute names and the values of the stored data.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.iteritems">
-<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#States.iteritems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.iteritems" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.States.iteritems">
+<code class="sig-name descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.iteritems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.iteritems" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate the states attributes by walker.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Tuple containing all the names of the attributes, and the values that
-correspond to a given walker.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Tuple containing all the names of the attributes, and the values that
+correspond to a given walker.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.itervals">
-<code class="descname">itervals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#States.itervals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.itervals" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.States.itervals">
+<code class="sig-name descname">itervals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.itervals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.itervals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate the states attributes by walker.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Tuple containing all the names of the attributes, and the values that
-correspond to a given walker.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Tuple containing all the names of the attributes, and the values that
+correspond to a given walker.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.keys">
-<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Generator<a class="reference internal" href="_modules/fragile/core/base_classes.html#States.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.keys" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.States.keys">
+<code class="sig-name descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Generator<a class="reference internal" href="_modules/fragile/core/states.html#States.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a generator for the attribute names of the stored data.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="fragile.core.base_classes.States.n">
-<code class="descname">n</code><a class="headerlink" href="#fragile.core.base_classes.States.n" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the number of walkers.</p>
+<dl class="method">
+<dt id="fragile.core.states.States.n">
+<em class="property">property </em><code class="sig-name descname">n</code><a class="headerlink" href="#fragile.core.states.States.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the batch_size of the vectors, which is equivalent to the number of walkers.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.params_to_arrays">
-<code class="descname">params_to_arrays</code><span class="sig-paren">(</span><em>param_dict</em>, <em>n_walkers: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#States.params_to_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.params_to_arrays" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transform the param dict into a dict containing the name of the          attributes as keys, and initialized data structures as values.</p>
+<dt id="fragile.core.states.States.params_to_arrays">
+<em class="property">static </em><code class="sig-name descname">params_to_arrays</code><span class="sig-paren">(</span><em class="sig-param">param_dict: Dict[str, Dict[str, Any]], n_walkers: int</em><span class="sig-paren">)</span> &#x2192; Dict[str, numpy.ndarray]<a class="reference internal" href="_modules/fragile/core/states.html#States.params_to_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.params_to_arrays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a dictionary containing the arrays specified by param_dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_dict</strong> – Dictionary defining the attributes of the tensors.</p></li>
+<li><p><strong>n_walkers</strong> – Number items in the first dimension of the data tensors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the same keys as param_dict, containing arrays specified               by <cite>param_dict</cite> values.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.split_states">
-<code class="descname">split_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; fragile.core.base_classes.States<a class="reference internal" href="_modules/fragile/core/base_classes.html#States.split_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.split_states" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.States.split_states">
+<code class="sig-name descname">split_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="_modules/fragile/core/states.html#States.split_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.split_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a generator for n_walkers different states, where each one         contain only the  data corresponding to one walker.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>other: Optional[fragile.core.base_classes.States] = None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/base_classes.html#States.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update the data of the internal attributes of the array.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>other</strong> – State instance that will be used to update the current values.</li>
-<li><strong>**kwargs</strong> – It is also possible to update the attributes passing them as
-keyword arguments.</li>
+<dt id="fragile.core.states.States.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">other: Optional[fragile.core.states.States] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify the data stored in the States instance.</p>
+<p>Existing attributes will be updated, and new attributes will be created if needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> – State class that will be copied upon update.</p></li>
+<li><p><strong>**kwargs</strong> – It is possible to specify the update as key value attributes,                      where key is the name of the attribute to be updated, and value                       is the new value for the attribute.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.States.vals">
-<code class="descname">vals</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Generator<a class="reference internal" href="_modules/fragile/core/base_classes.html#States.vals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.States.vals" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.States.vals">
+<code class="sig-name descname">vals</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Generator<a class="reference internal" href="_modules/fragile/core/states.html#States.vals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.vals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a generator for the values of the stored data.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="fragile.core.states.States">
-<em class="property">class </em><code class="descclassname">fragile.core.states.</code><code class="descname">States</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class is meant to handle several tensors that will contain the data     associated with the walkers of a Swarm.</p>
-<p>This means that each tensor will have an extra dimension equal to the number     of walkers.</p>
-<p>This class behaves as a dictionary of tensors with some extra functionality     to make easier the process of cloning the along the walkers dimension.</p>
-<p>In order to define the tensors, a state_dict dictionary needs to be specified     using the following structure:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">name_1</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
-                       <span class="n">dtype</span><span class="o">=</span><span class="n">valid_datatype</span><span class="p">,</span>
-                       <span class="p">},</span>
-              <span class="p">}</span>
-</pre></div>
 </div>
-<p>Where tuple is a tuple indicating the shape of the desired tensor, that will     be accessed using the name_1 attribute of the class.</p>
-<p>If no <cite>size</cite> parameter is passed, the resulting vector will have lenght equal      to <cite>n_walkers</cite>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>param_dict</strong> – Dictionary defining the attributes of the tensors.</li>
-<li><strong>n_walkers</strong> – Number items in the first dimension of the data tensors.</li>
-<li><strong>**kwargs</strong> – The name-tensor pairs can also be specified as kwargs.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
+<div class="section" id="statesenv">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code><a class="headerlink" href="#statesenv" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.states.StatesEnv">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">StatesEnv</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#StatesEnv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesEnv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keeps track of the data structures used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Env</span></code>.</p>
 <dl class="method">
-<dt id="fragile.core.states.States.clone">
-<code class="descname">clone</code><span class="sig-paren">(</span><em>will_clone: numpy.ndarray</em>, <em>compas_ix: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.clone" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clone all the stored data according to the provided arrays.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>will_clone</strong> – Array of shape (n_walkers,) of booleans indicating the                         index of the walkers that will clone to a random companion.</li>
-<li><strong>compas_ix</strong> – Array of integers of shape (n_walkers,). Contains the                        indexes of the walkers that will be copied.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.states.States.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="_modules/fragile/core/states.html#States.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Crete a copy of the current instance.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.states.States.get_params_dict">
-<code class="descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/fragile/core/states.html#States.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.get_params_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a dictionary containing the data stored in the <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.states.States.params_to_arrays">
-<code class="descname">params_to_arrays</code><span class="sig-paren">(</span><em>param_dict: dict</em>, <em>n_walkers: int</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/fragile/core/states.html#States.params_to_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.params_to_arrays" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a dictionary containing the arrays specified by param_dict.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>param_dict</strong> – Dictionary defining the attributes of the tensors.</li>
-<li><strong>n_walkers</strong> – Number items in the first dimension of the data tensors.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Dictionary with the same keys as param_dict, containing arrays specified               by <cite>param_dict</cite> values.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.states.States.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>other: Optional[fragile.core.base_classes.States] = None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#States.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Modify the data stored in the States instance.</p>
-<p>Existing attributes will be updated, and new attributes will be created if needed.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>other</strong> – State class that will be copied upon update.</li>
-<li><strong>**kwargs</strong> – It is possible to specify the update as key value attributes,                      where key is the name of the attribute to be updated, and value                       is the new value for the attribute.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
+<dt id="fragile.core.states.StatesEnv.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/states.html#StatesEnv.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesEnv.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary describing the data stored in the <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
-<div class="section" id="tree">
-<h1>Tree<a class="headerlink" href="#tree" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="statesmodel">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code><a class="headerlink" href="#statesmodel" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
-<dt id="fragile.core.tree.Tree">
-<em class="property">class </em><code class="descclassname">fragile.core.tree.</code><code class="descname">Tree</code><a class="reference internal" href="_modules/fragile/core/tree.html#Tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.tree.Tree" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.states.StatesModel">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">StatesModel</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#StatesModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keeps track of the data structures used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p>
+<dl class="method">
+<dt id="fragile.core.states.StatesModel.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/states.html#StatesModel.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesModel.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary describing the data stored in the <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="stateswalkers">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code><a class="headerlink" href="#stateswalkers" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.states.StatesWalkers">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">StatesWalkers</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#StatesWalkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesWalkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keeps track of the data structures used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+<dl class="method">
+<dt id="fragile.core.states.StatesWalkers.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#StatesWalkers.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesWalkers.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.states.StatesWalkers" title="fragile.core.states.StatesWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of walkers that the class will be tracking.</p></li>
+<li><p><strong>kwargs</strong> – attributes that will not be set as numpy.ndarrays</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.states.StatesWalkers.clone">
+<code class="sig-name descname">clone</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; Tuple[numpy.ndarray, numpy.ndarray]<a class="reference internal" href="_modules/fragile/core/states.html#StatesWalkers.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesWalkers.clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the clone only on cum_rewards and id_walkers and reset the other arrays.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.states.StatesWalkers.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="_modules/fragile/core/states.html#StatesWalkers.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesWalkers.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing the param_dict to build an instance         of States that can handle all the data generated by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.states.StatesWalkers.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/states.html#StatesWalkers.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesWalkers.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the internal data of the class.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="statetree">
+<h2>StateTree<a class="headerlink" href="#statetree" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basestatetree">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStateTree</span></code><a class="headerlink" href="#basestatetree" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.base_classes.BaseStateTree">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseStateTree</code><a class="reference internal" href="_modules/fragile/core/base_classes.html#BaseStateTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseStateTree" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</div>
+<div class="section" id="historytree">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">HistoryTree</span></code><a class="headerlink" href="#historytree" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.tree.HistoryTree">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.tree.</code><code class="sig-name descname">HistoryTree</code><a class="reference internal" href="_modules/fragile/core/tree.html#HistoryTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.tree.HistoryTree" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fragile.core.tree.HistoryTree.prune_tree">
+<code class="sig-name descname">prune_tree</code><span class="sig-paren">(</span><em class="sig-param">alive_leafs: set</em>, <em class="sig-param">from_hash: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fragile/core/tree.html#HistoryTree.prune_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.tree.HistoryTree.prune_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>This prunes the orphan leaves that will no longer be used to save memory.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
 </div>
 
 
@@ -1137,34 +1200,66 @@ keyword arguments.</li>
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Swarm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#walkers">Walkers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#environment">Environment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#model">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#states">States</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#tree">Tree</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_resources/algorithm.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#swarm">Swarm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#baseswarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSwarm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1"><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#walkers">Walkers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basewalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWalkers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2"><code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#environment">Environment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#baseenvironment"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEnvironment</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#discreteenv"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteEnv</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#model">Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basemodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#discreteuniform"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteUniform</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#binaryswap"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinarySwap</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#continuousmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousModel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#continuousuniform"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousUniform</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#states">States</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#statesenv"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#statesmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stateswalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#statetree">StateTree</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basestatetree"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStateTree</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#historytree"><code class="xref py py-class docutils literal notranslate"><span class="pre">HistoryTree</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">Welcome to Fragile’s documentation!</a></li>
+      <li>Previous: <a href="doc_resources/algorithm.html" title="previous chapter">Architecture</a></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -1181,7 +1276,7 @@ keyword arguments.</li>
       &copy;2019, Guillem Duran, Sergio Hernandez.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

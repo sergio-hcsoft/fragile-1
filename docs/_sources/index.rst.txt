@@ -7,9 +7,10 @@ Welcome to Fragile's documentation!
 ===================================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 5
    :caption: Contents:
 
+   doc_resources/algorithm.rst
    classes.rst
 
 
