@@ -123,3 +123,4 @@ examples/*.gif
 examples/*.png
 examples/
 fragile/experimental/
+data/
