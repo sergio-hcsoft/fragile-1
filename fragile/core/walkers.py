@@ -108,7 +108,7 @@ class SimpleWalkers(BaseWalkers):
 
         The returned ids are integers representing the hash of the different states.
         """
-        # ids = np.arange(self.n) + self._id_counter
+        # ids = numpy.arange(self.n) + self._id_counter
         # self._id_counter += self.n
         return self.env_states.hash_values("states")
 
@@ -204,7 +204,7 @@ class SimpleWalkers(BaseWalkers):
             companions = self.states.virtual_rewards[compas_ix]
             # This value can be negative!!
             clone_probs = (companions - self.states.virtual_rewards) / self.states.virtual_rewards
-            # clone_probs = np.sqrt(np.clip(clone_probs, 0, 1.1))
+            # clone_probs = numpy.sqrt(numpy.clip(clone_probs, 0, 1.1))
         self.update_states(clone_probs=clone_probs, compas_clone=compas_ix)
 
     # @profile

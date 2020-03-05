@@ -19,7 +19,7 @@ class States:
     specified using the following structure::
 
         state_dict = {"name_1": {"size": tuple([1]),
-                                 "dtype": np.float32,
+                                 "dtype": numpy.float32,
                                 },
                      }
 

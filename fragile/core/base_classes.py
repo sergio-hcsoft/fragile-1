@@ -28,9 +28,9 @@ class StatesOwner:
         In order to define the tensors, a state_dict dictionary needs to be specified \
         using the following structure::
 
-            import numpy as np
+            import numpy as numpy
             state_dict = {"name_1": {"size": tuple([1]),
-                                     "dtype": np.float32,
+                                     "dtype": numpy.float32,
                                    },
                           }
 
@@ -97,9 +97,9 @@ class BaseCritic(StatesOwner):
         In order to define the tensors, a state_dict dictionary needs to be specified \
         using the following structure::
 
-            import numpy as np
+            import numpy as numpy
             state_dict = {"name_1": {"size": tuple([1]),
-                                     "dtype": np.float32,
+                                     "dtype": numpy.float32,
                                    },
                           }
 
@@ -211,13 +211,13 @@ class BaseEnvironment(StatesOwner):
         In order to define the arrays, a state_dict dictionary needs to be specified \
         using the following structure::
 
-            import numpy as np
+            import numpy as numpy
             # Example of an state_dict for planning.
             state_dict = {
-                "states": {"size": self._env.get_state().shape, "dtype": np.int64},
-                "observs": {"size": self._env.observation_space.shape, "dtype": np.float32},
-                "rewards": {"dtype": np.float32},
-                "ends": {"dtype": np.bool_},
+                "states": {"size": self._env.get_state().shape, "dtype": numpy.int64},
+                "observs": {"size": self._env.observation_space.shape, "dtype": numpy.float32},
+                "rewards": {"dtype": numpy.float32},
+                "ends": {"dtype": numpy.bool_},
             }
 
         """
@@ -276,14 +276,14 @@ class BaseModel(StatesOwner):
         In order to define the arrays, a state_dict dictionary needs to be \
         specified using the following structure::
 
-            import numpy as np
+            import numpy as numpy
             # Example of an state_dict for a DiscreteUniform Model.
             n_actions = 10
             state_dict = {"actions": {"size": (n_actions,),
-                                      "dtype": np.float32,
+                                      "dtype": numpy.float32,
                                    },
                           "critic": {"size": tuple([n_actions]),
-                                 "dtype": np.float32,
+                                 "dtype": numpy.float32,
                                },
                           }
 

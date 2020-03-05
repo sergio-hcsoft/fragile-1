@@ -151,21 +151,21 @@ def relativize_torch(x, device=device):
     standard[standard <= 0] = torch.exp(standard[standard <= 0])
     return standard
 
-def to_numpy(x: [np.ndarray, torch.Tensor, list]) -> np.ndarray:
-    if isinstance(x, np.ndarray):
+def to_numpy(x: [numpy.ndarray, torch.Tensor, list]) -> numpy.ndarray:
+    if isinstance(x, numpy.ndarray):
         return x
     elif isinstance(x, torch.Tensor):
         return x.cpu().numpy()
     else:
-        return np.ndarray(x)
+        return numpy.ndarray(x)
 
 
-def to_tensor(x: [torch.Tensor, np.ndarray, list], device=device, *args, **kwargs) -> torch.Tensor:
+def to_tensor(x: [torch.Tensor, numpy.ndarray, list], device=device, *args, **kwargs) -> torch.Tensor:
     if isinstance(x, torch.Tensor):
         return x
     elif isinstance(x, list):
-        return torch.from_numpy(np.array(x)).to(device)
-    elif isinstance(x, np.ndarray):
+        return torch.from_numpy(numpy.array(x)).to(device)
+    elif isinstance(x, numpy.ndarray):
         return torch.from_numpy(x).to(device)
     else:
         return torch.Tensor(x, device=device, *args, **kwargs)
