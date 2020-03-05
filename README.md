@@ -56,6 +56,7 @@ You can access the documentation on [GitHub Pages](https://guillemdb.github.io/f
 - Update CI and publish docs on ReadTheDocs.org
 - Document and test the `dataviz` module. Write example notebook
 - Document and test the `ray` module. Write example notebook
+- Document and refactor Montezuma solver
 - Improve the tests (currently 154 for the `core` and `optimize` modules)
 - Get rid of the `experimental` module
 - Add a module to generate data for training deep learning models
