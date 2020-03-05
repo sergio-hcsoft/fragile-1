@@ -133,3 +133,11 @@ StateTree
 ^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: fragile.core.tree.HistoryTree
    :members:
+
+Bounds
+------
+
+:class:`Bounds`
+^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.bounds.Bounds
+   :members:

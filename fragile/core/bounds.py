@@ -8,7 +8,7 @@ from fragile.core.utils import Scalar
 
 class Bounds:
     """
-    The :class:`Bounds` implements the logic for defining and managing open intervals, \
+    The :class:`Bounds` implements the logic for defining and managing closed intervals, \
     and checking if a numpy array's values are inside a given interval.
 
     It is used on a numpy array of a target shape.
@@ -92,12 +92,12 @@ class Bounds:
     @classmethod
     def from_tuples(cls, bounds: Iterable[tuple]) -> "Bounds":
         """
-        Instantiate a :class:`Bounds` from a collection of tuples containig the higher and lower \
-        bounds for every dimension as a tuple.
+        Instantiate a :class:`Bounds` from a collection of tuples containing \
+        the higher and lower bounds for every dimension as a tuple.
 
         Args:
-            bounds: Iterable that returns tuples containing the higher and lower bound for every \
-                    dimension of the target bounds.
+            bounds: Iterable that returns tuples containing the higher and lower \
+                    bound for every dimension of the target bounds.
 
         Returns:
                 :class:`Bounds` instance.

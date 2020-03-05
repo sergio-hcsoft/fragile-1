@@ -158,7 +158,7 @@ class Function(Environment):
             batch_size: Number of points that will be sampled.
 
         Returns:
-            Array containing :param:`batch_size` points that lie inside the \
+            Array containing ``batch_size`` points that lie inside the \
             :class:`Function` domain, stacked across the first dimension.
         """
         new_points = numpy.zeros(tuple([batch_size]) + self.shape, dtype=numpy.float32)

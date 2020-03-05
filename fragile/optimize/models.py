@@ -11,7 +11,7 @@ class ESModel(NormalContinuous):
     substituting them with a proposal solution. This proposal solution is the \
     difference between two random permutations of the best solution found.
 
-    It applies a gaussian normal perturbation with a probability given by :param:`mutation`.
+    It applies a gaussian normal perturbation with a probability given by ``mutation``.
     """
 
     def __init__(
