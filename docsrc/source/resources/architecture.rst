@@ -1,4 +1,4 @@
-.. include:: /../source/doc_resources/color_roles.rst
+.. include:: /../source/resources/color_roles.rst
 
 Architecture
 ============
@@ -49,7 +49,7 @@ The :class:`States` contain functionality for storing, accessing and cloning all
 Class dependency
 ----------------
 
-.. figure:: /../source/doc_resources/fragile_architecture.png
+.. figure:: /../source/resources/fragile_architecture.png
    :alt: Composition relationships among the different fragile classes.
 
    Composition relationship among the different classes

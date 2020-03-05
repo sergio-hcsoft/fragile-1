@@ -10,7 +10,7 @@ Welcome to Fragile's documentation!
    :maxdepth: 5
    :caption: Contents:
 
-   doc_resources/architecture.rst
+   resources/architecture.rst
    core_module.rst
 
 

@@ -1,5 +1,5 @@
-Core
-====
+Core module
+===========
 
 Swarm
 -----
@@ -70,7 +70,7 @@ Model
 
 :class:`ContinuousUniform`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.core.models.ContinousUniform
+.. autoclass:: fragile.core.models.ContinuousUniform
    :members:
 
 States
