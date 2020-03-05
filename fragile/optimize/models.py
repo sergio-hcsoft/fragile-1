@@ -1,10 +1,19 @@
 import numpy as np
 from fragile.core.models import NormalContinuous
-from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
-from fragile.core.utils import calculate_clone, calculate_virtual_reward, relativize
+from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
 
 
 class ESModel(NormalContinuous):
+    """
+    The ESModel implements an evolutionary strategy policy.
+
+    It mutates randomly some of the coordinates of the best solution found by \
+    substituting them with a proposal solution. This proposal solution is the \
+    difference between two random permutations of the best solution found.
+
+    It applies a gaussian normal perturbation with a probability given by :param:`mutation`.
+    """
+
     def __init__(
         self,
         mutation: float = 0.5,
@@ -13,6 +22,16 @@ class ESModel(NormalContinuous):
         *args,
         **kwargs
     ):
+        """
+        Initialize a :class:`ESModel`.
+
+        Args:
+            mutation: Probability of mutating a coordinate of the solution vector.
+            recombination: Step size of the update applied to the best solution found.
+            random_step_prob: Probability of applying a random normal perturbation.
+            *args: Passed to the parent :class:`NormalContinuous`.
+            **kwargs: Passed to the parent :class:`NormalContinuous`.
+        """
         super(ESModel, self).__init__(*args, **kwargs)
         self.mutation = mutation
         self.recombination = recombination
@@ -25,7 +44,7 @@ class ESModel(NormalContinuous):
         env_states: StatesEnv = None,
         walkers_states: StatesWalkers = None,
         **kwargs,
-    ) -> States:
+    ) -> StatesModel:
         """
         Calculate the corresponding data to interact with the Environment and \
         store it in model states.
@@ -40,6 +59,7 @@ class ESModel(NormalContinuous):
             Tuple containing a tensor with the sampled actions and the new model states variable.
 
         """
+        # There is a chance of performing a gaussian perturbation
         if np.random.random() < self.random_step_prob:
             return super(ESModel, self).sample(
                 batch_size=batch_size, env_states=env_states, model_states=model_states, **kwargs,
@@ -52,13 +72,15 @@ class ESModel(NormalContinuous):
         has_best = walkers_states is not None and walkers_states.best_found is not None
         best = walkers_states.best_found if has_best else observs
         # Choose 2 random indices
-        a_rand = self.random_state.permutation(np.arange(observs.shape[0]))
-        b_rand = self.random_state.permutation(np.arange(observs.shape[0]))
+        indexes = np.arange(observs.shape[0])
+        a_rand = self.random_state.permutation(indexes)
+        b_rand = self.random_state.permutation(indexes)
         proposal = best + self.recombination * (observs[a_rand] - observs[b_rand])
         # Randomly mutate each coordinate of the original vector
         assert observs.shape == proposal.shape
         rands = np.random.random(observs.shape)
         perturbations = np.where(rands < self.mutation, observs, proposal)
+        # The Environment will sum the observations to perform the step
         new_states = perturbations - observs
         actions = self.bounds.clip(new_states)
         return self.update_states_with_critic(
@@ -69,107 +91,3 @@ class ESModel(NormalContinuous):
             walkers_states=walkers_states,
             **kwargs
         )
-
-
-class CompasJump(NormalContinuous):
-    def __init__(
-        self, dist_coef: float = 1.0, reward_coef: float = 1.0, eps=1e-8, *args, **kwargs
-    ):
-        super(CompasJump, self).__init__(*args, **kwargs)
-        self.dist_coef = dist_coef
-        self.reward_coef = reward_coef
-        self.eps = eps
-
-    def calculate(
-        self,
-        batch_size: int = None,
-        model_states: States = None,
-        env_states: States = None,
-        walkers_states: "StatesWalkers" = None,
-    ) -> np.ndarray:
-        """
-        Calculate the target time step values.
-
-        Args:
-            batch_size: Number of new points to the sampled.
-            model_states: States corresponding to the model data.
-            env_states: States corresponding to the environment data.
-            walkers_states: States corresponding to the walkers data.
-
-        Returns:
-            Array containing the target time step.
-
-        """
-        virtual_rewards, compas_dist = calculate_virtual_reward(
-            observs=env_states.observs,
-            rewards=env_states.rewards,
-            dist_coef=self.dist_coef,
-            reward_coef=self.reward_coef,
-            return_compas=True,
-        )
-        compas_clone, will_clone = calculate_clone(
-            ends=env_states.ends, eps=self.eps, virtual_rewards=virtual_rewards
-        )
-        dif_dist = env_states.observs[compas_dist] - env_states.observs
-        dif_clone = env_states.observs[compas_clone] - env_states.observs
-        action_no_clone = dif_dist * self.random_state.normal(loc=self.loc, scale=self.scale)
-        actions = np.where(will_clone, dif_clone, action_no_clone)
-        return actions
-
-
-class BestCompasJump(NormalContinuous):
-    def __init__(
-        self,
-        dist_coef: float = 1.0,
-        reward_coef: float = 1.0,
-        eps=1e-8,
-        mutation: float = 0.5,
-        recombination: float = 0.7,
-        *args,
-        **kwargs
-    ):
-        super(BestCompasJump, self).__init__(*args, **kwargs)
-        self.dist_coef = dist_coef
-        self.reward_coef = reward_coef
-        self.eps = eps
-        self.mutation = mutation
-        self.recombination = recombination
-
-    def calculate(
-        self,
-        batch_size: int = None,
-        model_states: States = None,
-        env_states: States = None,
-        walkers_states: "StatesWalkers" = None,
-    ) -> np.ndarray:
-        """
-        Calculate the target time step values.
-
-        Args:
-            batch_size: Number of new points to the sampled.
-            model_states: States corresponding to the model data.
-            env_states: States corresponding to the environment data.
-            walkers_states: States corresponding to the walkers data.
-
-        Returns:
-            Array containing the target time step.
-
-        """
-        distance = np.linalg.norm(env_states.observs - walkers_states.best_found, axis=1)
-        distance_norm = relativize(distance.flatten())
-        rewards_norm = relativize(env_states.rewards)
-
-        virtual_rewards = distance_norm ** self.dist_coef * rewards_norm ** self.reward_coef
-        compas_clone, will_clone = calculate_clone(
-            ends=env_states.ends, eps=self.eps, virtual_rewards=virtual_rewards
-        )
-        dif_best = env_states.observs - walkers_states.best_found
-        action_no_clone = dif_best + self.random_state.normal(loc=self.loc, scale=self.scale)
-        rands = np.random.random(env_states.observs.shape)
-        grad = self.recombination * (env_states.observs - env_states.observs[compas_clone])
-        proposal = walkers_states.best_found + grad
-        best_mutations = np.where(rands < self.mutation, env_states.observs, proposal).copy()
-        best_actions = best_mutations - env_states.observs
-        actions = np.where(will_clone, best_actions, action_no_clone)
-        actions = self.bounds.clip(actions) if self.bounds is not None else actions
-        return actions

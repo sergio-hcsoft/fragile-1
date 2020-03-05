@@ -4,7 +4,7 @@ from typing import Callable
 from numba import jit
 import numpy as np
 
-from fragile.core.states import States
+from fragile.core.states import StatesEnv, StatesModel
 from fragile.optimize.env import Function, Bounds
 
 """
@@ -13,18 +13,18 @@ https://en.wikipedia.org/wiki/Test_functions_for_optimization
 """
 
 
-def sphere(x: np.ndarray):
+def sphere(x: np.ndarray) -> np.ndarray:
     return np.sum(x ** 2, 1).flatten()
 
 
-def rastrigin(x: np.ndarray):
+def rastrigin(x: np.ndarray) -> np.ndarray:
     dims = x.shape[1]
     A = 10
     result = A * dims + np.sum(x ** 2 - A * np.cos(2 * math.pi * x), 1)
     return result.flatten()
 
 
-def eggholder(tensor: np.ndarray):
+def eggholder(tensor: np.ndarray) -> np.ndarray:
     x, y = tensor[:, 0], tensor[:, 1]
     first_root = np.sqrt(np.abs(x / 2.0 + (y + 47)))
     second_root = np.sqrt(np.abs(x - (y + 47)))
@@ -32,7 +32,7 @@ def eggholder(tensor: np.ndarray):
     return result
 
 
-def styblinski_tang(x):
+def styblinski_tang(x) -> np.ndarray:
     return np.sum(x ** 4 - 16 * x ** 2 + 5 * x, 1) / 2.0
 
 
@@ -52,7 +52,7 @@ def _lennard_fast(state):
     return epot
 
 
-def lennard_jones(x: np.ndarray):
+def lennard_jones(x: np.ndarray) -> np.ndarray:
     result = np.zeros(x.shape[0])
     for i in range(x.shape[0]):
         try:
@@ -211,7 +211,7 @@ class RandomLennard(LennardJones):
         super(RandomLennard, self).__init__(*args, **kwargs)
         self.random_lennard = random_lennard
 
-    def step(self, model_states: States, env_states: States) -> States:
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
         Sets the environment to the target states by applying the specified actions an arbitrary
         number of time steps.
@@ -228,10 +228,10 @@ class RandomLennard(LennardJones):
         rewards = self.random_lennard(new_points).flatten()
         ends = self.calculate_end(points=new_points)
 
-        last_states = self.states_from_data(new_points, new_points, rewards, ends, model_states.n)
+        last_states = self.states_from_data(model_states.n, new_points, new_points, rewards, ends)
         return last_states
 
-    def reset(self, batch_size: int = 1, **kwargs) -> States:
+    def reset(self, batch_size: int = 1, **kwargs) -> StatesEnv:
         """
         Resets the environment to the start of a new episode and returns an
         States instance describing the state of the Environment.
@@ -247,7 +247,5 @@ class RandomLennard(LennardJones):
         ends = np.zeros(batch_size, dtype=np.bool_)
         new_points = self.sample_bounds(batch_size=batch_size)
         rewards = self.random_lennard(new_points).flatten()
-        new_states = self.states_from_data(
-            new_points, new_points, rewards, ends, batch_size=batch_size
-        )
+        new_states = self.states_from_data(batch_size, new_points, new_points, rewards, ends,)
         return new_states
