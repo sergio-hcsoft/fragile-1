@@ -1384,6 +1384,196 @@ correspond to a given walker.</p>
 
 </div>
 </div>
+<div class="section" id="bounds">
+<h2>Bounds<a class="headerlink" href="#bounds" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code><a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.bounds.Bounds">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.bounds.</code><code class="sig-name descname">Bounds</code><span class="sig-paren">(</span><em class="sig-param">high: Union[numpy.ndarray</em>, <em class="sig-param">int</em>, <em class="sig-param">float] = inf</em>, <em class="sig-param">low: Union[numpy.ndarray</em>, <em class="sig-param">int</em>, <em class="sig-param">float] = -inf</em>, <em class="sig-param">shape: Optional[tuple] = None</em>, <em class="sig-param">dtype: Optional[type] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> implements the logic for defining and managing closed intervals,     and checking if a numpy array’s values are inside a given interval.</p>
+<p>It is used on a numpy array of a target shape.</p>
+<dl class="method">
+<dt id="fragile.core.bounds.Bounds.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">high: Union[numpy.ndarray</em>, <em class="sig-param">int</em>, <em class="sig-param">float] = inf</em>, <em class="sig-param">low: Union[numpy.ndarray</em>, <em class="sig-param">int</em>, <em class="sig-param">float] = -inf</em>, <em class="sig-param">shape: Optional[tuple] = None</em>, <em class="sig-param">dtype: Optional[type] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>high</strong> – Higher value for the bound interval. If it is an scalar it will be applied to                   all the coordinates of a target vector. If it is a vector, the bounds will be                   checked coordinate-wise. It defines and open interval.</p></li>
+<li><p><strong>low</strong> – Lower value for the bound interval. If it is an scalar it will be applied to                   all the coordinates of a target vector. If it is a vector, the bounds will be                   checked coordinate-wise. It defines and open interval.</p></li>
+<li><p><strong>shape</strong> – Shape of the array that will be bounded. Only needed if <cite>high</cite> and <cite>low</cite> are                    and it is used to defined the dimensions that will be bounded.</p></li>
+<li><p><strong>dtype</strong> – Data type of the array that will be bounded. It can be inferred from <cite>high</cite>                     or <cite>low</cite> (the type of <cite>high</cite> takes priority).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Initializing <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> using  numpy arrays.
+&gt;&gt;&gt; import numpy
+&gt;&gt;&gt; high, low = numpy.ones(3, dtype=float), -1 * numpy.ones(3, dtype=int)
+&gt;&gt;&gt; bounds = Bounds(high=high, low=low)
+&gt;&gt;&gt; print(bounds)
+Bounds shape float64 dtype (3,) low [-1 -1 -1] high [1. 1. 1.]</p>
+<p>Initializing <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> using  scalars.
+&gt;&gt;&gt; import numpy
+&gt;&gt;&gt; high, low, shape = 4, 2.1, (5,)
+&gt;&gt;&gt; bounds = Bounds(high=high, low=low, shape=shape)
+&gt;&gt;&gt; print(bounds)
+Bounds shape float64 dtype (5,) low [2.1 2.1 2.1 2.1 2.1] high [4. 4. 4. 4. 4.]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.bounds.Bounds.clip">
+<code class="sig-name descname">clip</code><span class="sig-paren">(</span><em class="sig-param">x: numpy.ndarray</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.clip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clip the values of the target array to fall inside the bounds (closed interval).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> – Numpy array to be clipped.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Clipped numpy array with all its values inside the defined bounds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.bounds.Bounds.from_array">
+<em class="property">classmethod </em><code class="sig-name descname">from_array</code><span class="sig-paren">(</span><em class="sig-param">x: numpy.ndarray</em>, <em class="sig-param">scale: float = 1.0</em><span class="sig-paren">)</span> &#x2192; fragile.core.bounds.Bounds<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.from_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.from_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate a bounds compatible for bounding the given array. It also allows to set a         margin for the high and low values.</p>
+<p>The value of the high and low will be proportional to the maximum and minimum values of         the array. Scale defines the proportion to make the bounds bigger and smaller. For         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10%         smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.
+If scale is one, <cite>high</cite> and <cite>low</cite> will be equal to the maximum and minimum values of the          array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – Numpy array used to initialize the bounds.</p></li>
+<li><p><strong>scale</strong> – Value representing the tolerance in percentage from the current maximum and             minimum values of the array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> instance.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bounds</span> <span class="o">=</span> <span class="n">Bounds</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+<span class="go">Bounds shape float64 dtype (3,) low [ 0.5 -7.5  0.5] high [1.5 1.5 1.5]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.bounds.Bounds.from_tuples">
+<em class="property">classmethod </em><code class="sig-name descname">from_tuples</code><span class="sig-paren">(</span><em class="sig-param">bounds: Iterable[tuple]</em><span class="sig-paren">)</span> &#x2192; fragile.core.bounds.Bounds<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.from_tuples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.from_tuples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate a <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> from a collection of tuples containing         the higher and lower bounds for every dimension as a tuple.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bounds</strong> – Iterable that returns tuples containing the higher and lower                     bound for every dimension of the target bounds.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> instance.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bounds</span> <span class="o">=</span> <span class="n">Bounds</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+<span class="go">Bounds shape int64 dtype (3,) low [-1 -2  2] high [1 1 3]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.bounds.Bounds.get_scaled_intervals">
+<em class="property">static </em><code class="sig-name descname">get_scaled_intervals</code><span class="sig-paren">(</span><em class="sig-param">low: Union[numpy.ndarray, float, int], high: Union[numpy.ndarray, float, int], scale: float</em><span class="sig-paren">)</span> &#x2192; Tuple[Union[numpy.ndarray, float], Union[numpy.ndarray, float]]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.get_scaled_intervals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.get_scaled_intervals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale the high and low vectors by an scale factor.</p>
+<p>The value of the high and low will be proportional to the maximum and minimum values of         the array. Scale defines the proportion to make the bounds bigger and smaller. For         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10%         smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.
+If scale is one, <cite>high</cite> and <cite>low</cite> will be equal to the maximum and minimum values of the          array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>high</strong> – Higher bound to be scaled.</p></li>
+<li><p><strong>low</strong> – Lower bound to be scaled.</p></li>
+<li><p><strong>scale</strong> – Value representing the tolerance in percentage from the current maximum and             minimum values of the array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.bounds.Bounds.points_in_bounds">
+<code class="sig-name descname">points_in_bounds</code><span class="sig-paren">(</span><em class="sig-param">x: numpy.ndarray</em><span class="sig-paren">)</span> &#x2192; Union[numpy.ndarray, bool]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.points_in_bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.points_in_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the rows of the target array have all their coordinates inside         specified bounds.</p>
+<p>If the array is one dimensional it will return a boolean, otherwise a vector of booleans.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> – Array to be checked against the bounds.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Numpy array of booleans indicating if a row lies inside the bounds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.bounds.Bounds.safe_margin">
+<code class="sig-name descname">safe_margin</code><span class="sig-paren">(</span><em class="sig-param">low: Union[numpy.ndarray</em>, <em class="sig-param">float] = None</em>, <em class="sig-param">high: Union[numpy.ndarray</em>, <em class="sig-param">float</em>, <em class="sig-param">None] = None</em>, <em class="sig-param">scale: float = 1.0</em><span class="sig-paren">)</span> &#x2192; fragile.core.bounds.Bounds<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.safe_margin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.safe_margin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a new <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> with its bounds increased o decreased         by an scale factor.</p>
+<p>This is done multiplying both high and low for a given factor. The value of the new         high and low will be proportional to the maximum and minimum values of         the array. Scale defines the proportion to make the bounds bigger and smaller. For         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10%         smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.
+If scale is one, <cite>high</cite> and <cite>low</cite> will be equal to the maximum and minimum values of the          array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>high</strong> – Used to scale the <cite>high</cite> value of the current instance.</p></li>
+<li><p><strong>low</strong> – Used to scale the <cite>low</cite> value of the current instance.</p></li>
+<li><p><strong>scale</strong> – Value representing the tolerance in percentage from the current maximum and             minimum values of the array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> with scaled high and low values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.bounds.Bounds.shape">
+<em class="property">property </em><code class="sig-name descname">shape</code><a class="headerlink" href="#fragile.core.bounds.Bounds.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the shape of the current bounds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>tuple containing the shape of <cite>high</cite> and <cite>low</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.bounds.Bounds.to_tuples">
+<code class="sig-name descname">to_tuples</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Tuple[Tuple[Union[int, float], Union[int, float]], ...]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.to_tuples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.to_tuples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple of tuples containing the lower and higher bound for each         coordinate of the <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Tuple of the form ((x0_low, x0_high), (x1_low, x1_high), …,              (xn_low, xn_high))</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">array</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bounds</span> <span class="o">=</span> <span class="n">Bounds</span><span class="p">(</span><span class="n">high</span><span class="o">=</span><span class="n">array</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="n">array</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">bounds</span><span class="o">.</span><span class="n">to_tuples</span><span class="p">())</span>
+<span class="go">((-1, 1), (-2, 2), (-5, 5))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
 </div>
 
 
@@ -1451,9 +1641,14 @@ correspond to a given walker.</p>
 <li class="toctree-l3"><a class="reference internal" href="#historytree"><code class="xref py py-class docutils literal notranslate"><span class="pre">HistoryTree</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#bounds">Bounds</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimize.html">Function Optimization</a></li>
 </ul>
 
 <div class="relations">

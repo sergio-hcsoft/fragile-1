@@ -1,0 +1,364 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>fragile.core.bounds &#8212; Fragile 0.01a documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for fragile.core.bounds</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span> <span class="k">as</span> <span class="n">_Iterable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">Scalar</span>
+
+
+<div class="viewcode-block" id="Bounds"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.bounds.Bounds">[docs]</a><span class="k">class</span> <span class="nc">Bounds</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The :class:`Bounds` implements the logic for defining and managing closed intervals, \</span>
+<span class="sd">    and checking if a numpy array&#39;s values are inside a given interval.</span>
+
+<span class="sd">    It is used on a numpy array of a target shape.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Bounds.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.bounds.Bounds.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">high</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+        <span class="n">low</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`Bounds`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            high: Higher value for the bound interval. If it is an scalar it will be applied to \</span>
+<span class="sd">                  all the coordinates of a target vector. If it is a vector, the bounds will be \</span>
+<span class="sd">                  checked coordinate-wise. It defines and open interval.</span>
+<span class="sd">            low: Lower value for the bound interval. If it is an scalar it will be applied to \</span>
+<span class="sd">                  all the coordinates of a target vector. If it is a vector, the bounds will be \</span>
+<span class="sd">                  checked coordinate-wise. It defines and open interval.</span>
+<span class="sd">            shape: Shape of the array that will be bounded. Only needed if `high` and `low` are \</span>
+<span class="sd">                   and it is used to defined the dimensions that will be bounded.</span>
+<span class="sd">            dtype:  Data type of the array that will be bounded. It can be inferred from `high` \</span>
+<span class="sd">                    or `low` (the type of `high` takes priority).</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Initializing :class:`Bounds` using  numpy arrays.</span>
+<span class="sd">            &gt;&gt;&gt; import numpy</span>
+<span class="sd">            &gt;&gt;&gt; high, low = numpy.ones(3, dtype=float), -1 * numpy.ones(3, dtype=int)</span>
+<span class="sd">            &gt;&gt;&gt; bounds = Bounds(high=high, low=low)</span>
+<span class="sd">            &gt;&gt;&gt; print(bounds)</span>
+<span class="sd">            Bounds shape float64 dtype (3,) low [-1 -1 -1] high [1. 1. 1.]</span>
+
+<span class="sd">            Initializing :class:`Bounds` using  scalars.</span>
+<span class="sd">            &gt;&gt;&gt; import numpy</span>
+<span class="sd">            &gt;&gt;&gt; high, low, shape = 4, 2.1, (5,)</span>
+<span class="sd">            &gt;&gt;&gt; bounds = Bounds(high=high, low=low, shape=shape)</span>
+<span class="sd">            &gt;&gt;&gt; print(bounds)</span>
+<span class="sd">            Bounds shape float64 dtype (5,) low [2.1 2.1 2.1 2.1 2.1] high [4. 4. 4. 4. 4.]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Infer shape if not specified</span>
+        <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">high</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">):</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">high</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">elif</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">):</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">low</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">elif</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;If shape is None high or low need to have .shape attribute.&quot;</span><span class="p">)</span>
+        <span class="c1"># High and low will be arrays of target shape</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">high</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">high</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">high</span><span class="p">,</span> <span class="n">_Iterable</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">high</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">low</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">_Iterable</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">low</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">high</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="n">low</span>
+        <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">high</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">high</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">low</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">high</span><span class="p">)</span> <span class="k">if</span> <span class="n">high</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">type</span><span class="p">(</span><span class="n">low</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> shape </span><span class="si">{}</span><span class="s2"> dtype </span><span class="si">{}</span><span class="s2"> low </span><span class="si">{}</span><span class="s2"> high </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the shape of the current bounds.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple containing the shape of `high` and `low`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="o">.</span><span class="n">shape</span>
+
+<div class="viewcode-block" id="Bounds.from_tuples"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.bounds.Bounds.from_tuples">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_tuples</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">bounds</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Bounds&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Instantiate a :class:`Bounds` from a collection of tuples containing \</span>
+<span class="sd">        the higher and lower bounds for every dimension as a tuple.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bounds: Iterable that returns tuples containing the higher and lower \</span>
+<span class="sd">                    bound for every dimension of the target bounds.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">                :class:`Bounds` instance.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; intervals = ((-1, 1), (-2, 1), (2, 3))</span>
+<span class="sd">            &gt;&gt;&gt; bounds = Bounds.from_tuples(intervals)</span>
+<span class="sd">            &gt;&gt;&gt; print(bounds)</span>
+<span class="sd">            Bounds shape int64 dtype (3,) low [-1 -2  2] high [1 1 3]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">:</span>
+            <span class="n">low</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lo</span><span class="p">)</span>
+            <span class="n">high</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hi</span><span class="p">)</span>
+        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">low</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">high</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Bounds</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Bounds.get_scaled_intervals"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.bounds.Bounds.get_scaled_intervals">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_scaled_intervals</span><span class="p">(</span>
+        <span class="n">low</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">high</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Scale the high and low vectors by an scale factor.</span>
+
+<span class="sd">        The value of the high and low will be proportional to the maximum and minimum values of \</span>
+<span class="sd">        the array. Scale defines the proportion to make the bounds bigger and smaller. For \</span>
+<span class="sd">        example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \</span>
+<span class="sd">        smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.</span>
+<span class="sd">        If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \</span>
+<span class="sd">        array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            high: Higher bound to be scaled.</span>
+<span class="sd">            low: Lower bound to be scaled.</span>
+<span class="sd">            scale: Value representing the tolerance in percentage from the current maximum and \</span>
+<span class="sd">            minimum values of the array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`Bounds` instance.&quot;&quot;&quot;</span>
+        <span class="n">pct</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">big_scale</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pct</span><span class="p">)</span>
+        <span class="n">small_scale</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pct</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pct</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">xmin_scaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">low</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">low</span> <span class="o">*</span> <span class="n">big_scale</span><span class="p">,</span> <span class="n">low</span> <span class="o">*</span> <span class="n">small_scale</span><span class="p">)</span>
+            <span class="n">xmax_scaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">high</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">high</span> <span class="o">*</span> <span class="n">small_scale</span><span class="p">,</span> <span class="n">high</span> <span class="o">*</span> <span class="n">big_scale</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xmin_scaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">low</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">low</span> <span class="o">*</span> <span class="n">small_scale</span><span class="p">,</span> <span class="n">low</span> <span class="o">*</span> <span class="n">small_scale</span><span class="p">)</span>
+            <span class="n">xmax_scaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">high</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">high</span> <span class="o">*</span> <span class="n">big_scale</span><span class="p">,</span> <span class="n">high</span> <span class="o">*</span> <span class="n">small_scale</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xmin_scaled</span><span class="p">,</span> <span class="n">xmax_scaled</span></div>
+
+<div class="viewcode-block" id="Bounds.from_array"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.bounds.Bounds.from_array">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_array</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Bounds&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Instantiate a bounds compatible for bounding the given array. It also allows to set a \</span>
+<span class="sd">        margin for the high and low values.</span>
+
+<span class="sd">        The value of the high and low will be proportional to the maximum and minimum values of \</span>
+<span class="sd">        the array. Scale defines the proportion to make the bounds bigger and smaller. For \</span>
+<span class="sd">        example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \</span>
+<span class="sd">        smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.</span>
+<span class="sd">        If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \</span>
+<span class="sd">        array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x: Numpy array used to initialize the bounds.</span>
+<span class="sd">            scale: Value representing the tolerance in percentage from the current maximum and \</span>
+<span class="sd">            minimum values of the array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`Bounds` instance.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; import numpy</span>
+<span class="sd">            &gt;&gt;&gt; x = numpy.ones((3, 3))</span>
+<span class="sd">            &gt;&gt;&gt; x[1:-1, 1:-1] = -5</span>
+<span class="sd">            &gt;&gt;&gt; bounds = Bounds.from_array(x, scale=1.5)</span>
+<span class="sd">            &gt;&gt;&gt; print(bounds)</span>
+<span class="sd">            Bounds shape float64 dtype (3,) low [ 0.5 -7.5  0.5] high [1.5 1.5 1.5]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">xmin_scaled</span><span class="p">,</span> <span class="n">xmax_scaled</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_scaled_intervals</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Bounds</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">xmin_scaled</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">xmax_scaled</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Bounds.clip"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.bounds.Bounds.clip">[docs]</a>    <span class="k">def</span> <span class="nf">clip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clip the values of the target array to fall inside the bounds (closed interval).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x: Numpy array to be clipped.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Clipped numpy array with all its values inside the defined bounds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Bounds.points_in_bounds"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.bounds.Bounds.points_in_bounds">[docs]</a>    <span class="k">def</span> <span class="nf">points_in_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the rows of the target array have all their coordinates inside \</span>
+<span class="sd">        specified bounds.</span>
+
+<span class="sd">        If the array is one dimensional it will return a boolean, otherwise a vector of booleans.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x: Array to be checked against the bounds.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Numpy array of booleans indicating if a row lies inside the bounds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">match</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Bounds.safe_margin"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.bounds.Bounds.safe_margin">[docs]</a>    <span class="k">def</span> <span class="nf">safe_margin</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">low</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">high</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Bounds&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a new :class:`Bounds` with its bounds increased o decreased \</span>
+<span class="sd">        by an scale factor.</span>
+
+<span class="sd">        This is done multiplying both high and low for a given factor. The value of the new \</span>
+<span class="sd">        high and low will be proportional to the maximum and minimum values of \</span>
+<span class="sd">        the array. Scale defines the proportion to make the bounds bigger and smaller. For \</span>
+<span class="sd">        example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \</span>
+<span class="sd">        smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.</span>
+<span class="sd">        If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \</span>
+<span class="sd">        array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            high: Used to scale the `high` value of the current instance.</span>
+<span class="sd">            low: Used to scale the `low` value of the current instance.</span>
+<span class="sd">            scale: Value representing the tolerance in percentage from the current maximum and \</span>
+<span class="sd">            minimum values of the array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`Bounds` with scaled high and low values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="k">if</span> <span class="n">high</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">high</span>
+        <span class="n">xmin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="k">if</span> <span class="n">low</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">low</span>
+        <span class="n">xmin_scaled</span><span class="p">,</span> <span class="n">xmax_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_scaled_intervals</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Bounds</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">xmin_scaled</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">xmax_scaled</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Bounds.to_tuples"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.bounds.Bounds.to_tuples">[docs]</a>    <span class="k">def</span> <span class="nf">to_tuples</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a tuple of tuples containing the lower and higher bound for each \</span>
+<span class="sd">        coordinate of the :class:`Bounds` shape.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of the form ((x0_low, x0_high), (x1_low, x1_high), ...,\</span>
+<span class="sd">              (xn_low, xn_high))</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; import numpy</span>
+<span class="sd">            &gt;&gt;&gt; array = numpy.array([1, 2, 5])</span>
+<span class="sd">            &gt;&gt;&gt; bounds = Bounds(high=array, low=-array)</span>
+<span class="sd">            &gt;&gt;&gt; print(bounds.to_tuples())</span>
+<span class="sd">            ((-1, 1), (-2, 2), (-5, 5))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">dim</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)])</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
