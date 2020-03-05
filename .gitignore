@@ -117,3 +117,9 @@ ENV/
 
 # Notebooks by default are ignored
 .ipynb
+# Project specific ignores
+examples/*.pickle
+examples/*.gif
+examples/*.png
+examples/
+fragile/experimental/
