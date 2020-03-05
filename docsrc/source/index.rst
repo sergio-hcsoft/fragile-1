@@ -10,8 +10,8 @@ Welcome to Fragile's documentation!
    :maxdepth: 5
    :caption: Contents:
 
-   doc_resources/algorithm.rst
-   classes.rst
+   doc_resources/architecture.rst
+   core_module.rst
 
 
 Indices and tables

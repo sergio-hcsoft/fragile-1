@@ -7,7 +7,7 @@ Class descriptions
 ------------------
 
 The fragile framework is designed to quickly implement and test new FractalAI based algorithms.
-The different classes are combined using the inheritance mechanism to isolate the different aspects
+The different classes are combined using composition to isolate the different aspects
 of the algorithms:
 
 * :swarm:`Swarm`: It defines the main computation loop for the algorithm, and it coordinates all the other classes involved in the algorithm.
