@@ -1,4 +1,6 @@
 Cython>=0.28,<1.0; python_version == '3.7'
+git+https://github.com/Guillemdb/atari-py.git#egg=atari-py
+git+https://github.com/Guillemdb/plangym.git#egg=plangym
 networkx==2.4
 pillow-simd==7.0.0.post3
 numpy==1.18.1
