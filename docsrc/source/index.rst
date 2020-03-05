@@ -11,6 +11,7 @@ Welcome to Fragile's documentation!
    :caption: Contents:
 
    resources/architecture.rst
+   resources/getting_started.rst
    core_module.rst
 
 

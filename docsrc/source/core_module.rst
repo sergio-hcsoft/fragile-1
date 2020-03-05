@@ -1,13 +1,41 @@
 Core module
 ===========
 
-Swarm
------
+API abstract classes
+--------------------
 
 :class:`BaseSwarm`
 ^^^^^^^^^^^^^^^^^^
 .. autoclass:: fragile.core.base_classes.BaseSwarm
    :members:
+
+:class:`BaseWalkers`
+^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.base_classes.BaseWalkers
+   :members:
+
+:class:`BaseEnvironment`
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.base_classes.BaseEnvironment
+   :members:
+
+:class:`BaseModel`
+^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.base_classes.BaseModel
+   :members:
+
+:class:`BaseStateTree`
+^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.base_classes.BaseStateTree
+   :members:
+
+:class:`BaseWrapper`
+^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.base_classes.BaseWrapper
+   :members:
+
+Swarm
+-----
 
 :class:`Swarm`
 ^^^^^^^^^^^^^^
@@ -17,11 +45,6 @@ Swarm
 Walkers
 -------
 
-:class:`BaseWalkers`
-^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.core.base_classes.BaseWalkers
-   :members:
-
 :class:`Walkers`
 ^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: fragile.core.walkers.Walkers
@@ -30,13 +53,8 @@ Walkers
 Environment
 -----------
 
-:class:`BaseEnvironment`
-^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.core.base_classes.BaseEnvironment
-   :members:
-
-:class:`Environment`
-^^^^^^^^^^^^^^^^^^^^
+:class:`Environment` (Abstract)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: fragile.core.env.Environment
    :members:
 
@@ -48,10 +66,26 @@ Environment
 Model
 -----
 
-:class:`BaseModel`
-^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.core.base_classes.BaseModel
+:class:`Model` (Abstract)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.models.Model
    :members:
+
+:class:`_DtModel` (Abstract)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.models._DtModel
+   :members:
+
+:class:`ContinuousModel` (Abstract)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.models.ContinuousModel
+   :members:
+
+:class:`DiscreteModel` (Abstract)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.models.DiscreteModel
+   :members:
+
 
 :class:`DiscreteUniform`
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -61,11 +95,6 @@ Model
 :class:`BinarySwap`
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: fragile.core.models.BinarySwap
-   :members:
-
-:class:`ContinuousModel`
-^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.core.models.ContinuousModel
    :members:
 
 :class:`ContinuousUniform`
@@ -99,11 +128,6 @@ States
 
 StateTree
 ---------
-
-:class:`BaseStateTree`
-^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.core.base_classes.BaseStateTree
-   :members:
 
 :class:`HistoryTree`
 ^^^^^^^^^^^^^^^^^^^^
