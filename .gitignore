@@ -117,3 +117,7 @@ ENV/
 
 # Notebooks by default are ignored
 .ipynb
+# Project ignores
+fragile/experimental
+examples/
+data/
