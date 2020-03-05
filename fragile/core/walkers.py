@@ -46,8 +46,8 @@ class SimpleWalkers(BaseWalkers):
                           higher importance.
             max_iters: Maximum number of iterations that the walkers are allowed \
                        to perform.
-            accumulate_rewards: If True the rewards obtained after transitioning \
-                                to a new state will accumulate. If False only the last \
+            accumulate_rewards: If ``True`` the rewards obtained after transitioning \
+                                to a new state will accumulate. If ``False`` only the last \
                                 reward will be taken into account.
             distance_function: Function to compute the distances between two \
                                groups of walkers. It will be applied row-wise \
@@ -340,6 +340,8 @@ class Walkers(SimpleWalkers):
 
         Args:
             critic: critic that will be used to calculate custom rewards.
+            minimize: If ``True`` the algorithm will perform a minimization \
+                      process. If ``False`` it will be a maximization process.
             *args:
             **kwargs:
         """

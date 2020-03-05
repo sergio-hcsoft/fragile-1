@@ -10,7 +10,7 @@ from fragile.core.base_classes import (
     BaseSwarm,
     BaseCritic,
 )
-from fragile.core.states import States
+from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.utils import clear_output, Scalar
 from fragile.core.walkers import StatesWalkers, Walkers
 
@@ -127,18 +127,20 @@ class Swarm(BaseSwarm):
     def reset(
         self,
         walkers_states: StatesWalkers = None,
-        model_states: States = None,
-        env_states: States = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
     ):
         """
         Reset the :class:`fragile.Walkers`, the :class:`Environment`, the \
         :class:`Model` and clear the internal data to start a new search process.
 
         Args:
-            model_states: States that define the initial state of the environment.
-            env_states: States that define the initial state of the model.
-            walkers_states: States that define the internal states of the walkers.
-
+            model_states: :class:`StatesModel` that define the initial state of \
+                          the :class:`Model`.
+            env_states: :class:`StatesEnv` that define the initial state of \
+                        the :class:`Environment`.
+            walkers_states: :class:`StatesWalkers` that define the internal \
+                            states of the :class:`Walkers`.
         """
         env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
 
@@ -162,8 +164,8 @@ class Swarm(BaseSwarm):
     # @profile
     def run_swarm(
         self,
-        model_states: States = None,
-        env_states: States = None,
+        model_states: StatesModel = None,
+        env_states: StatesEnv = None,
         walkers_states: StatesWalkers = None,
         print_every: int = 1e100,
     ):
@@ -171,10 +173,14 @@ class Swarm(BaseSwarm):
         Run a new search process.
 
         Args:
-            model_states: States that define the initial state of the environment.
-            env_states: States that define the initial state of the model.
-            walkers_states: States that define the internal states of the walkers.
-            print_every: Display the algorithm progress every `print_every` epochs.
+            model_states: :class:`StatesModel` that define the initial state of \
+                          the :class:`Model`.
+            env_states: :class:`StatesEnv` that define the initial state of \
+                        the :class:`Function`.
+            walkers_states: :class:`StatesWalkers` that define the internal \
+                            states of the :class:`Walkers`.
+            print_every: Display the algorithm progress every ``print_every`` epochs.
+
         Returns:
             None.
 

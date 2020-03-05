@@ -546,8 +546,6 @@ class BaseSwarm:
         model_states: StatesModel = None,
         env_states: StatesEnv = None,
         walkers_states: StatesWalkers = None,
-        *args,
-        **kwargs
     ):
         """
         Reset a :class:`fragile.Swarm` and clear the internal data to start a \
@@ -557,8 +555,6 @@ class BaseSwarm:
             model_states: States that define the initial state of the environment.
             env_states: States that define the initial state of the model.
             walkers_states: States that define the internal states of the walkers.
-            args: Additional arguments not related to algorithm data.
-            kwargs: Additional keyword arguments not related to algorithm data.
         """
         raise NotImplementedError
 
