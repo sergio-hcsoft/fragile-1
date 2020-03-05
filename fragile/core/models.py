@@ -165,7 +165,7 @@ class _DtModel(Model):
     steps it incorporates the `dt` attribute, that will represent the number of \
     times that the calculated action should be applied.
 
-    This model is not mean to be instantiated directly but used for class inheritance.
+    This model is not meant to be instantiated directly but used for class inheritance.
     """
 
     def get_params_dict(self, override_params: bool = True) -> StateDict:

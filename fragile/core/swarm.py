@@ -93,11 +93,13 @@ class Swarm(BaseSwarm):
             n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.
             dist_scale: Virtual reward exponent for the distance score.
-            tree: class:`Tree` that keeps track of the visited states.
-            prune_tree: If `use_tree` is False it has no effect. If true, \
-                       store in the :class:`Tree` the past history of alive walkers.
-            args: Passed to `walkers_callable`.
-            kwargs: Passed to `walkers_callable`.
+            tree: class:`StatesTree` that keeps track of the visited states.
+            prune_tree: If `tree` is `None` it has no effect. If true, \
+                       store in the :class:`Tree` only the past history of alive \
+                        walkers, and discard the branches with leaves that have \
+                        no walkers.
+            args: Passed to ``walkers_callable``.
+            kwargs: Passed to ``walkers_callable``.
 
         Returns:
             None.
