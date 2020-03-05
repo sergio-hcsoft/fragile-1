@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 ENV BROWSER=/browser \
     LC_ALL=en_US.UTF-8 \
-    JUPYTER_PASSWORD=fragile_in_the_cloud
+    JUPYTER_PASSWORD=fragile
 COPY requirements.txt fragile/requirements.txt
 RUN apt-get update && \
     apt-get install -y --no-install-suggests --no-install-recommends \
