@@ -1,0 +1,565 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>fragile.core.models &#8212; Fragile 0.01a documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for fragile.core.models</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">fragile.core.base_classes</span> <span class="kn">import</span> <span class="n">BaseCritic</span><span class="p">,</span> <span class="n">BaseModel</span>
+<span class="kn">from</span> <span class="nn">fragile.core.bounds</span> <span class="kn">import</span> <span class="n">Bounds</span>
+<span class="kn">from</span> <span class="nn">fragile.core.env</span> <span class="kn">import</span> <span class="n">DiscreteEnv</span>
+<span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">StatesEnv</span><span class="p">,</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">StatesWalkers</span>
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">float_type</span>
+
+
+<span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class that incorporates a critic for adding arbitrary extra \</span>
+<span class="sd">    computation steps to any kind of Model.</span>
+
+<span class="sd">    It defines, resetting, handles parameter checking, error raising and inserts \</span>
+<span class="sd">    the calculated actions into its corresponding :class:`States`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">critic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseCritic</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`Model`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            critic: :class:`Critic` used to calculate an additional value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">:</span> <span class="n">BaseCritic</span> <span class="o">=</span> <span class="n">critic</span>
+
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the corresponding data to interact with the Environment and \</span>
+<span class="sd">        store it in the corresponding model_states.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled.</span>
+<span class="sd">            model_states: States corresponding to the environment data.</span>
+<span class="sd">            env_states: States corresponding to the model data.</span>
+<span class="sd">            walkers_states: States corresponding to the walkers data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple containing a tensor with the sampled actions and the new model states variable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return States containing the data to interact with the environment and \</span>
+<span class="sd">        a dt attribute containing clipped gaussian samples.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled. If None, env_states.n \</span>
+<span class="sd">                        will be used to determine the batch_size.</span>
+<span class="sd">            model_states: States corresponding to the environment data.</span>
+<span class="sd">            env_states: States corresponding to the model data. Required if \</span>
+<span class="sd">                        batch_size is None.</span>
+<span class="sd">            walkers_states: States corresponding to the walkers data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`States` variable containing the calculated actions.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">env_states</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;env_states and batch_size cannot be both None.&quot;</span><span class="p">)</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="ow">or</span> <span class="n">env_states</span><span class="o">.</span><span class="n">n</span>
+        <span class="n">model_states</span> <span class="o">=</span> <span class="n">model_states</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_new_states</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">model_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span>
+            <span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">,</span>
+            <span class="n">walkers_states</span><span class="o">=</span><span class="n">walkers_states</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">model_states</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a new blank State for a `DiscreteUniform` instance, and a valid \</span>
+<span class="sd">        prediction based on that new state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of walkers that the new model `State`.</span>
+<span class="sd">            model_states: States corresponding to the environment data.</span>
+<span class="sd">            *args: Passed to `predict`.</span>
+<span class="sd">            **kwargs: Passed to `predict`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New model states containing sampled data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">model_states</span>
+
+    <span class="k">def</span> <span class="nf">add_critic_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">override_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the model parameters dictionary with the :class:`Critic` parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            params: Dictionary containing the parameters of the current :class:`Model`.</span>
+<span class="sd">            override_params: The :class:`Critic` parameters will override the \</span>
+<span class="sd">            :class:`Model` parameters if they both have parameters with the same name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict containing the parameters of both the :class:`Model` and its :class:`Critic`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">critic_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">override_params</span><span class="p">:</span>
+                <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">critic_vals</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">critic_vals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">critic_vals</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="k">return</span> <span class="n">critic_vals</span>
+
+    <span class="k">def</span> <span class="nf">update_states_with_critic</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the time steps generated by the critic and add them to \</span>
+<span class="sd">        `model_states`. If there is no Critic the default value of dt will be a \</span>
+<span class="sd">        vector of 1.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actions: Numpy array representing the actions calculated by the model.</span>
+<span class="sd">            batch_size: Same batch size used when calling `sample`.</span>
+<span class="sd">            model_states: Same model_states used when calling `sample`.</span>
+<span class="sd">            **kwargs: Kwargs for `critic.calculate`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            model_states updated with the actions and the dt calculated by the Critic.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">critic_score</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">model_states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">critic</span><span class="o">=</span><span class="n">critic_score</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model_states</span>
+
+
+<span class="k">class</span> <span class="nc">_DtModel</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Model class that allows to sample actions meant to be applied a different \</span>
+<span class="sd">    number of time steps. In order to account for the target number of time \</span>
+<span class="sd">    steps it incorporates the `dt` attribute, that will represent the number of \</span>
+<span class="sd">    times that the calculated action should be applied.</span>
+
+<span class="sd">    This model is not mean to be instantiated directly but used for class inheritance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">override_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the dictionary with the parameters to create a new `DiscreteUniform` model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            override_params: The :class:`Critic` parameters will override the \</span>
+<span class="sd">            :class:`Model` parameters if they both have parameters with the same name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict containing the parameters of both the :class:`Model` and its :class:`Critic`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">},</span> <span class="s2">&quot;critic&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">}}</span>
+        <span class="n">all_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_critic_params</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">override_params</span><span class="o">=</span><span class="n">override_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_params</span>
+
+    <span class="k">def</span> <span class="nf">update_states_with_critic</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the time steps generated by the critic and add them to \</span>
+<span class="sd">        `model_states`. If there is no Critic the default value of dt will be a \</span>
+<span class="sd">        vector of 1.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actions: Numpy array representing the actions calculated by the model.</span>
+<span class="sd">            batch_size: Same batch size used when calling `sample`.</span>
+<span class="sd">            model_states: Same model_states used when calling `sample`.</span>
+<span class="sd">            **kwargs: Kwargs for `critic.calculate`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            model_states updated with the actions and the dt calculated by the Critic.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">critic_score</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">critic_score</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">critic_score</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="n">critic_score</span>
+        <span class="n">model_states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">critic</span><span class="o">=</span><span class="n">critic_score</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model_states</span>
+
+
+<span class="k">class</span> <span class="nc">DiscreteModel</span><span class="p">(</span><span class="n">_DtModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;It represents the base Model class that handles a discrete set of possible outcomes.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">n_actions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">critic</span><span class="p">:</span> <span class="n">BaseCritic</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">DiscreteEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`DiscreteModel`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_actions: Number of different discrete outcomes that the model can provide.</span>
+<span class="sd">            env: :class:`DiscreteEnvironment` that will be used to extract the \</span>
+<span class="sd">            number of different possible outcomes.</span>
+<span class="sd">            critic: Critic used to calculate the time step strategy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DiscreteModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">critic</span><span class="o">=</span><span class="n">critic</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_actions</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">env</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Env and n_actions cannot be both None.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_actions</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">n_actions</span> <span class="k">if</span> <span class="n">n_actions</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">n_actions</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of different possible discrete actions that the model can output.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_actions</span>
+
+    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">override_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Return the dictionary with the parameters to create a new `DiscreteUniform` model.&quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">DiscreteModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">(</span><span class="n">override_params</span><span class="o">=</span><span class="n">override_params</span><span class="p">)</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">}})</span>
+        <span class="k">return</span> <span class="n">params</span>
+
+
+<div class="viewcode-block" id="DiscreteUniform"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.DiscreteUniform">[docs]</a><span class="k">class</span> <span class="nc">DiscreteUniform</span><span class="p">(</span><span class="n">DiscreteModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Model that samples actions in a one dimensional discrete state space using \</span>
+<span class="sd">    a uniform prior. For each walker on the batch it will return an integer in \</span>
+<span class="sd">    the interval [0, n_actions].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DiscreteUniform.sample"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.DiscreteUniform.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sample a random discrete variable from a uniform prior.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled.</span>
+<span class="sd">            model_states: States corresponding to the environment data.</span>
+<span class="sd">            kwargs: passed to the :class:`Critic`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`States` variable containing the calculated actions and dt.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_actions</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_states_with_critic</span><span class="p">(</span>
+            <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="BinarySwap"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.BinarySwap">[docs]</a><span class="k">class</span> <span class="nc">BinarySwap</span><span class="p">(</span><span class="n">DiscreteModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This model acts on a vector of binary values and swaps the values of a \</span>
+<span class="sd">    given number of dimensions chosen at random.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BinarySwap.__init__"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.BinarySwap.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_swaps</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">n_actions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">critic</span><span class="p">:</span> <span class="n">BaseCritic</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">DiscreteEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`BinarySwap`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_swaps: Number of binary dimensions that will be swapped every time \</span>
+<span class="sd">             `sample` is called. If `n_swaps` is None it will be the same as n_actions.</span>
+<span class="sd">            n_actions: Number of different discrete outcomes that the model can provide.</span>
+<span class="sd">            env: :class:`DiscreteEnvironment` that will be used to extract the \</span>
+<span class="sd">            dimension of the target vector.</span>
+<span class="sd">            critic: dt_sampler used to calculate an additional time step strategy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BinarySwap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">critic</span><span class="o">=</span><span class="n">critic</span><span class="p">,</span> <span class="n">n_actions</span><span class="o">=</span><span class="n">n_actions</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_swaps</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_swaps must be greater than 0.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_swaps</span> <span class="o">=</span> <span class="n">n_swaps</span> <span class="k">if</span> <span class="n">n_swaps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_actions</span></div>
+
+<div class="viewcode-block" id="BinarySwap.get_params_dict"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.BinarySwap.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">override_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Return the dictionary with the parameters to create a new :class:`BinarySwap` model.&quot;&quot;&quot;</span>
+        <span class="n">all_params</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">BinarySwap</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">(</span><span class="n">override_params</span><span class="o">=</span><span class="n">override_params</span><span class="p">)</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_actions</span><span class="p">,)}}</span>
+        <span class="n">all_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_params</span></div>
+
+<div class="viewcode-block" id="BinarySwap.sample"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.BinarySwap.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Swaps the values of `n_swaps` dimensions chosen at random. It works on a \</span>
+<span class="sd">        matrix of binary values of size (batch_size, n_actions).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled.</span>
+<span class="sd">            model_states: :class:`StatesModel` corresponding to the :class:`Model` data.</span>
+<span class="sd">            env_states: :class:`StatesEnv` of the algorithm&#39;s :class:`Environment`.</span>
+<span class="sd">            kwargs: Passed to the :class:`Critic`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`States` variable containing the calculated actions and dt.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">flip_values</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="n">flips</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">flips</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">flips</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                    <span class="n">actions</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">flips</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">actions</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">flips</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]])</span>
+            <span class="k">return</span> <span class="n">actions</span>
+
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">env_states</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_actions</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="n">actions</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">flips</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_actions</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_swaps</span><span class="p">))</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="n">flip_values</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="n">flips</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_states_with_critic</span><span class="p">(</span>
+            <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ContinuousModel"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.ContinuousModel">[docs]</a><span class="k">class</span> <span class="nc">ContinuousModel</span><span class="p">(</span><span class="n">_DtModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    It represents the base Model class that handles a continuous interval of \</span>
+<span class="sd">    possible outcomes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ContinuousModel.__init__"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.ContinuousModel.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">bounds</span><span class="p">:</span> <span class="n">Bounds</span><span class="p">,</span> <span class="n">critic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseCritic</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`RandomContinuous`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bounds: :class:`Bounds` class defining the range of allowed output \</span>
+<span class="sd">            values of the model.</span>
+<span class="sd">            critic: :class:`Critic` that will be used to make additional computation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ContinuousModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">critic</span><span class="o">=</span><span class="n">critic</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the shape of the sampled random variable.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of dimensions of the sampled random variable.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ContinuousModel.get_params_dict"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.ContinuousModel.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">override_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Return the dictionary with the parameters to create a new `DiscreteUniform` model.&quot;&quot;&quot;</span>
+        <span class="n">all_params</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ContinuousModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">(</span><span class="n">override_params</span><span class="o">=</span><span class="n">override_params</span><span class="p">)</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">float_type</span><span class="p">}}</span>
+        <span class="n">all_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_params</span></div></div>
+
+
+<div class="viewcode-block" id="ContinousUniform"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.ContinousUniform">[docs]</a><span class="k">class</span> <span class="nc">ContinousUniform</span><span class="p">(</span><span class="n">ContinuousModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Model that samples continuous actions in a given interval using a uniform prior.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ContinousUniform.sample"><a class="viewcode-back" href="../../../classes.html#fragile.core.models.ContinousUniform.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sample a random continuous variable from a uniform prior.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled.</span>
+<span class="sd">            model_states: States corresponding to the model data.</span>
+<span class="sd">            kwargs: passed to the :class:`Critic`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            States containing the new sampled discrete random values inside \</span>
+<span class="sd">            `state.actions` attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+            <span class="n">low</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">high</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">tuple</span><span class="p">([</span><span class="n">batch_size</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_states_with_critic</span><span class="p">(</span>
+            <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">NormalContinuous</span><span class="p">(</span><span class="n">ContinuousModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate continuous actions inside the given :class:`Bounds` sampling from \</span>
+<span class="sd">    a normal distribution with the provided mean and standard deviation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="p">:</span> <span class="n">Bounds</span><span class="p">,</span>
+        <span class="n">loc</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">critic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseCritic</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`RandomContinuous`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bounds: :class:`Bounds` class defining the range of allowed values for the model.</span>
+<span class="sd">            loc: Mean of the gaussian distribution used for sampling actions.</span>
+<span class="sd">            scale: Standard deviation of the gaussian distribution used for sampling actions.</span>
+<span class="sd">            critic: :class:`Critic` that will be used to make additional computation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NormalContinuous</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">critic</span><span class="o">=</span><span class="n">critic</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loc</span> <span class="o">=</span> <span class="n">loc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
+
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="s2">&quot;StatesWalkers&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesModel</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the actions sampling from a Gaussian distribution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled.</span>
+<span class="sd">            model_states: States corresponding to the environment data.</span>
+<span class="sd">            env_states: States corresponding to the model data.</span>
+<span class="sd">            walkers_states: States corresponding to the walkers data.</span>
+<span class="sd">            kwargs: passed to the :class:`Critic`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`States` variable containing the calculated actions and dt.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
+            <span class="n">size</span><span class="o">=</span><span class="nb">tuple</span><span class="p">([</span><span class="n">batch_size</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+        <span class="p">)</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_states_with_critic</span><span class="p">(</span>
+            <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../doc_resources/algorithm.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../classes.html">Core</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

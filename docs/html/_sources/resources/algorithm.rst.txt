@@ -1,0 +1,38 @@
+Architecture and class dependency
+---------------------------------
+.. include:: ./resources/color_roles.rst
+
+.. image:: fragile_architecture.png
+   :alt: Inheritance relationships among the basic `fragile` classes.
+
+FractalAI Swarm algorithm
+-------------------------
+
+1.  :swarm:`reset`
+
+    * :env:`reset` -> :env-st:`StatesEnv (SE)`
+    * :model:`reset` -> :model-st:`StatesModel (SM)`
+    * :walkers:`reset` -> :walkers-st:`StatesWalkers (SW)`
+    * :tree:`reset`
+
+2. While not :walkers:`calculate_end_condition` then :swarm:`run_step`:
+
+    * :swarm:`step_and_update_best`
+        - :walkers:`update_best` (:env-st:`SE`) -> :walkers-st:`SW`
+        - :walkers:`fix_best` (:walkers-st:`SW`) -> :walkers-st:`SW`, :env-st:`SE`
+        - :swarm:`step_walkers`
+            * :model:`predict` (:env-st:`SE` , :model-st:`SM`, :walkers-st:`SW`) -> :model-st:`SM`
+            * :env:`step` (:env-st:`SE` , :model-st:`SM`, :walkers-st:`SW`) -> :env-st:`SE`
+            * :walkers:`update_states` (:env-st:`SE` , :model-st:`SM`) -> :env-st:`SE` , :model-st:`SM`, :walkers-st:`SW`
+            * :walkers:`update_id` (:walkers-st:`SW`) -> :walkers-st:`SW`
+            * :tree:`add_states` (:env-st:`SE` , :model-st:`SM`, :walkers-st:`SW`)
+
+    * :swarm:`balance_and_prune`
+        - :walkers:`balance`
+            * :walkers:`calculate_distances` (:env-st:`SE`) -> :walkers-st:`SW`
+            * :walkers:`calculate_virtual_reward` (:walkers-st:`SW`) -> :walkers-st:`SW`
+            * :walkers:`update_clone_probs` (:walkers-st:`SW`) -> :walkers-st:`SW`
+            * :walkers:`clone_walkers` (:walkers-st:`SW`) -> :walkers-st:`SW`, :env-st:`SE`, :model-st:`SM`
+            * :tree:`prune_tree`
+
+
