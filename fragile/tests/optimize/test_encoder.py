@@ -1,5 +1,5 @@
 """
-import numpy as np
+import numpy as numpy
 import pytest
 
 from fragile.optimize.encoder import Critic, Vector
@@ -12,7 +12,7 @@ def encoder():
 
 @pytest.fixture()
 def vector():
-    return Vector(origin=np.array([0, 0]), end=np.array([1, 0]), timeout=5)
+    return Vector(origin=numpy.array([0, 0]), end=numpy.array([1, 0]), timeout=5)
 
 
 class TestVector:
@@ -20,18 +20,18 @@ class TestVector:
         pass
 
     def test_scalar_product(self, vector):
-        other = np.array([1, 0])
+        other = numpy.array([1, 0])
         res = vector.scalar_product(other)
         assert res == 0
-        other = np.array([0, 1])
+        other = numpy.array([0, 1])
         res = vector.scalar_product(other)
         assert res == 1
 
     def test_assign_region(self, vector):
-        other = np.array([1, 0])
+        other = numpy.array([1, 0])
         res = vector.assign_region(other)
         assert res == 0
-        other = np.array([0, 1])
+        other = numpy.array([0, 1])
         res = vector.assign_region(other)
         assert res == 1
 
@@ -43,7 +43,7 @@ class TestEncoder:
 
     def test_append(self, critic):
         init_len = len(critic)
-        start, end = np.array([0, 3]), np.array([3, 3])
+        start, end = numpy.array([0, 3]), numpy.array([3, 3])
         critic.append(origin=start, end=end, timeout=3)
         assert len(critic) > 0
         assert len(critic) == init_len + 1
@@ -52,7 +52,7 @@ class TestEncoder:
     def test_len(self, critic):
         critic.reset()
         assert len(critic) == 0
-        start, end = np.array([0, 3]), np.array([3, 3])
+        start, end = numpy.array([0, 3]), numpy.array([3, 3])
         for _ in range(15):
             critic.append(origin=start, end=end, timeout=3)
 

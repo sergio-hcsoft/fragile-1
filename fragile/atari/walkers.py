@@ -47,6 +47,7 @@ class MontezumaWalkers(Walkers):
     Walkers class used to calculate distances on Uber's Montezuma environment\
      used in their Go-explore repository.
      """
+
     # @profile
     def calculate_distances(self) -> None:
         """Calculate the corresponding distance function for each state with \

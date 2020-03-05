@@ -58,7 +58,9 @@ class StreamingPlot(Plot):
 class Curve(StreamingPlot):
     name = "curve"
 
-    def __init__(self, buffer_length: int = 10000, index: bool = False, data=None,):
+    def __init__(
+        self, buffer_length: int = 10000, index: bool = False, data=None,
+    ):
         def get_stream(data):
             return Buffer(data, length=buffer_length, index=index)
 
@@ -110,7 +112,7 @@ class Histogram(StreamingPlot):
 
     def plot_histogram(self, data):
         plot_data, xlim = data
-        return holoviews.Histogram(plot_data).redim(x=holoviews.Dimension('x', range=xlim))
+        return holoviews.Histogram(plot_data).redim(x=holoviews.Dimension("x", range=xlim))
 
     def opts(
         self,
@@ -148,7 +150,7 @@ class Histogram(StreamingPlot):
         )
 
     def get_plot_data(self, data: numpy.ndarray):
-        data[numpy.isnan(data)] = 0.
+        data[numpy.isnan(data)] = 0.0
         return numpy.histogram(data, self.n_bins), self.xlim
 
 
@@ -224,8 +226,9 @@ class Landscape2D(StreamingPlot):
     def plot_landscape(data):
         x, y, xx, yy, z, xlim, ylim = data
         zz = griddata((x, y), z, (xx, yy), method="linear")
-        mesh = holoviews.QuadMesh((xx, yy, zz)).redim(x=holoviews.Dimension('x', range=xlim),
-                                                      y=holoviews.Dimension('y', range=ylim),)
+        mesh = holoviews.QuadMesh((xx, yy, zz)).redim(
+            x=holoviews.Dimension("x", range=xlim), y=holoviews.Dimension("y", range=ylim),
+        )
         contour = holoviews.operation.contours(mesh, levels=8)
         scatter = holoviews.Scatter((x, y))
         contour_mesh = mesh * contour * scatter

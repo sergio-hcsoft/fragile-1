@@ -74,7 +74,7 @@ class DistributedLennardJonnes(DistributedSwarm):
         ix = self.n_iters // self.n_swarms
         example = pd.DataFrame({"reward": [reward]}, index=[ix])
         self.stream.emit(example)
-        # msg_obs = "Best solution found:\n {}".format(np.round(observation, 2).tolist())
+        # msg_obs = "Best solution found:\n {}".format(numpy.round(observation, 2).tolist())
         msg_reward = "Best value found: {:.4f}".format(reward)
         data = [[ix * 0.5, self.init_reward - 3, msg_reward]]
         self.label_pipe.send(pd.DataFrame(data, columns=["x", "y", "label"]))

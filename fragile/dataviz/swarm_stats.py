@@ -49,7 +49,7 @@ class SwarmHistogram(Histogram):
 
     def _update_lims(self, X: numpy.ndarray):
 
-        #bounds = Bounds.from_array(X)
+        # bounds = Bounds.from_array(X)
         self.xlim = (X.min(), X.max())
 
     def get_plot_data(self, swarm: Swarm, attr: str):
@@ -131,7 +131,9 @@ def get_xy_coords(swarm, use_embedding: False) -> numpy.ndarray:
 class SwarmLandscape(Landscape2D):
     name = "swarm_landscape"
 
-    def __init__(self, use_embeddings: bool = True, margin_high=1.0, margin_low=1.0, *args, **kwargs):
+    def __init__(
+        self, use_embeddings: bool = True, margin_high=1.0, margin_low=1.0, *args, **kwargs
+    ):
         self.use_embeddings = use_embeddings
         self.high = margin_high
         self.low = margin_low
@@ -223,17 +225,17 @@ class WalkersDensity(SwarmLandscape):
         pass
 
     def opts(
-            self,
-            title="",
-            tools="default",
-            xlabel: str = "x",
-            ylabel: str = "y",
-            shared_axes: bool = False,
-            framewise: bool = True,
-            axiswise: bool = True,
-            normalize: bool = True,
-            *args,
-            **kwargs
+        self,
+        title="",
+        tools="default",
+        xlabel: str = "x",
+        ylabel: str = "y",
+        shared_axes: bool = False,
+        framewise: bool = True,
+        axiswise: bool = True,
+        normalize: bool = True,
+        *args,
+        **kwargs
     ):
         tools = tools if tools != "default" else ["hover"]
         self.plot = self.plot.opts(
@@ -273,6 +275,7 @@ class WalkersDensity(SwarmLandscape):
                 shared_axes=shared_axes,
             ),
         )
+
     def get_plot_data(self, swarm: Swarm) -> numpy.ndarray:
         X, z = self._get_plot_data_with_defaults(swarm)
         return X, X[:, 0], X[:, 1], self.xlim, self.ylim
@@ -283,8 +286,9 @@ class WalkersDensity(SwarmLandscape):
         mesh = holoviews.Bivariate(X)
         scatter = holoviews.Scatter((x, y))
         contour_mesh = mesh * scatter
-        return contour_mesh.redim(x=holoviews.Dimension('x', range=xlim),
-                                  y=holoviews.Dimension('y', range=ylim),)
+        return contour_mesh.redim(
+            x=holoviews.Dimension("x", range=xlim), y=holoviews.Dimension("y", range=ylim),
+        )
 
 
 class GridLandscape(SwarmLandscape):
@@ -296,7 +300,7 @@ class GridLandscape(SwarmLandscape):
     @staticmethod
     def plot_landscape(data):
         x, y, xx, yy, z, xlim, ylim = data
-        #xx, yy, memory_grid, _, xlim, ylim, x, y = data
+        # xx, yy, memory_grid, _, xlim, ylim, x, y = data
         try:
             memory_vals = z.reshape(xx.shape)
         except ValueError:
@@ -337,7 +341,7 @@ class KDELandscape(SwarmLandscape):
     @staticmethod
     def plot_landscape(data):
         x, y, xx, yy, z, xlim, ylim = data
-        #xx, yy, memory_grid, _, xlim, ylim, x, y = data
+        # xx, yy, memory_grid, _, xlim, ylim, x, y = data
         try:
             memory_vals = z.reshape(xx.shape)
         except ValueError:

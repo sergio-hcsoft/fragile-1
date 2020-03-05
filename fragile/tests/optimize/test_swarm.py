@@ -1,5 +1,5 @@
 """
-import numpy as np
+import numpy as numpy
 import pytest
 
 from fragile.optimize.mapper import FunctionMapper
@@ -9,13 +9,13 @@ from fragile.optimize.models import NormalContinuous
 @pytest.fixture()
 def mapper():
     def potential_well(x):
-        return -np.sum((x - 1) ** 2, 1) - 1
+        return -numpy.sum((x - 1) ** 2, 1) - 1
 
     bounds = [(-10, 10), (-5, 5)]
 
     def model(x):
         return NormalContinuous(
-            high=np.array([100, 100]), low=np.array([-100, -100]), env=x, shape=None
+            high=numpy.array([100, 100]), low=numpy.array([-100, -100]), env=x, shape=None
         )
 
     return FunctionMapper.from_function(

@@ -42,7 +42,7 @@ class Memory:
         if not isinstance(observs, (np.ndarray, list)):
             raise ValueError(
                 "observs must be of type torch.Tensor,"
-                " np.ndarray of list,but got {} instead".format(type(observs))
+                " numpy.ndarray of list,but got {} instead".format(type(observs))
             )
 
         observs = np.array(observs).copy()

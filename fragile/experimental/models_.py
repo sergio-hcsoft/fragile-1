@@ -3,10 +3,9 @@ from typing import Tuple
 import numpy as np
 
 from fragile.core.base_classes import BaseEnvironment
-from fragile.core.models import RandomContinous
 from fragile.core.utils import relativize
 from fragile.optimize.env import Function, States
-from fragile.optimize.encoder import Critic
+from fragile.experimental.encoder import Critic
 
 
 class EncoderSampler(RandomNormal):

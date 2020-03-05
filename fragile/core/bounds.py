@@ -37,14 +37,16 @@ class Bounds:
                     or `low` (the type of `high` takes priority).
 
         Examples:
-            Initializing :class:`Bounds` using  numpy arrays.
+            Initializing :class:`Bounds` using  numpy arrays:
+
             >>> import numpy
             >>> high, low = numpy.ones(3, dtype=float), -1 * numpy.ones(3, dtype=int)
             >>> bounds = Bounds(high=high, low=low)
             >>> print(bounds)
             Bounds shape float64 dtype (3,) low [-1 -1 -1] high [1. 1. 1.]
 
-            Initializing :class:`Bounds` using  scalars.
+            Initializing :class:`Bounds` using  scalars:
+
             >>> import numpy
             >>> high, low, shape = 4, 2.1, (5,)
             >>> bounds = Bounds(high=high, low=low, shape=shape)

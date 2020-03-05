@@ -26,7 +26,6 @@ ALL_SWARM_TYPES = (
     VirtualRewardHistogram,
     RewardHistogram,
     BestReward,
-
 )
 
 ALL_SWARM_NAMES = tuple([plot.name for plot in ALL_SWARM_TYPES])
@@ -36,28 +35,36 @@ ALL_SWARM_PLOTS = dict(zip(ALL_SWARM_NAMES, ALL_SWARM_TYPES))
 
 class SwarmViz:
     SWARM_TYPES = (
-    DistanceLandscape,
-    RewardLandscape,
-    VirtualRewardLandscape,
-    WalkersDensity,
-    DistanceHistogram,
-    VirtualRewardHistogram,
-    RewardHistogram,
-    BestReward,
-
-)
+        DistanceLandscape,
+        RewardLandscape,
+        VirtualRewardLandscape,
+        WalkersDensity,
+        DistanceHistogram,
+        VirtualRewardHistogram,
+        RewardHistogram,
+        BestReward,
+    )
     SWARM_NAMES = tuple([plot.name for plot in SWARM_TYPES])
     SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_TYPES))
 
     def __init__(
-        self, swarm: Swarm, display_plots="all", stream_interval: int = 100,
-            use_embeddings: bool = True, margin_high=1.0, margin_low=1.0, n_points:int=50,
+        self,
+        swarm: Swarm,
+        display_plots="all",
+        stream_interval: int = 100,
+        use_embeddings: bool = True,
+        margin_high=1.0,
+        margin_low=1.0,
+        n_points: int = 50,
     ):
         self.swarm: Swarm = swarm
         self.display_plots = self.SWARM_NAMES if display_plots == "all" else display_plots
-        self.plots = self._init_plots(use_embeddings=use_embeddings,
-                                      margin_low=margin_low, margin_high=margin_high,
-                                      n_points=n_points)
+        self.plots = self._init_plots(
+            use_embeddings=use_embeddings,
+            margin_low=margin_low,
+            margin_high=margin_high,
+            n_points=n_points,
+        )
         self.stream_interval = stream_interval
 
     def __getattr__(self, item):
@@ -70,10 +77,12 @@ class SwarmViz:
         plots = {}
         for name, plot in self.SWARM_PLOTS.items():
             if issubclass(plot, SwarmLandscape):
-                plots[name] = self.SWARM_PLOTS[name](margin_high=margin_high, n_points=n_points,
-                                                     margin_low=margin_low,
-                                                     use_embeddings=use_embeddings,
-                                                     )
+                plots[name] = self.SWARM_PLOTS[name](
+                    margin_high=margin_high,
+                    n_points=n_points,
+                    margin_low=margin_low,
+                    use_embeddings=use_embeddings,
+                )
             else:
                 plots[name] = self.SWARM_PLOTS[name]()
         return plots
@@ -129,51 +138,48 @@ class SwarmViz:
 
 class GridViz(SwarmViz):
     SWARM_TYPES = (
-    DistanceLandscape,
-    RewardLandscape,
-    GridLandscape,
-    VirtualRewardLandscape,
-    WalkersDensity,
-    DistanceHistogram,
-    VirtualRewardHistogram,
-    RewardHistogram,
-    BestReward,
-
-)
+        DistanceLandscape,
+        RewardLandscape,
+        GridLandscape,
+        VirtualRewardLandscape,
+        WalkersDensity,
+        DistanceHistogram,
+        VirtualRewardHistogram,
+        RewardHistogram,
+        BestReward,
+    )
     SWARM_NAMES = tuple([plot.name for plot in SWARM_TYPES])
     SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_TYPES))
 
 
 class KDEViz(SwarmViz):
     SWARM_TYPES = (
-    DistanceLandscape,
-    RewardLandscape,
-    KDELandscape,
-    VirtualRewardLandscape,
-    WalkersDensity,
-    DistanceHistogram,
-    VirtualRewardHistogram,
-    RewardHistogram,
-    BestReward,
-
-)
+        DistanceLandscape,
+        RewardLandscape,
+        KDELandscape,
+        VirtualRewardLandscape,
+        WalkersDensity,
+        DistanceHistogram,
+        VirtualRewardHistogram,
+        RewardHistogram,
+        BestReward,
+    )
     SWARM_NAMES = tuple([plot.name for plot in SWARM_TYPES])
     SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_TYPES))
 
 
 class InvDistanceViz(SwarmViz):
     SWARM_TYPES = (
-    InvDistanceLandscape,
-    RewardLandscape,
-    DistanceLandscape,
-    KDELandscape,
-    VirtualRewardLandscape,
-    WalkersDensity,
-    DistanceHistogram,
-    VirtualRewardHistogram,
-    RewardHistogram,
-    BestReward,
-
-)
+        InvDistanceLandscape,
+        RewardLandscape,
+        DistanceLandscape,
+        KDELandscape,
+        VirtualRewardLandscape,
+        WalkersDensity,
+        DistanceHistogram,
+        VirtualRewardHistogram,
+        RewardHistogram,
+        BestReward,
+    )
     SWARM_NAMES = tuple([plot.name for plot in SWARM_TYPES])
     SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_TYPES))
