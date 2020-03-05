@@ -48,7 +48,7 @@ class FunctionMapper(Swarm):
 
     @classmethod
     def from_function(
-        cls, function: Callable,  bounds: Bounds, *args, **kwargs
+        cls, function: Callable, bounds: Bounds, *args, **kwargs
     ) -> "FunctionMapper":
         """
         Initialize a :class:`FunctionMapper` using a python callable and a \
