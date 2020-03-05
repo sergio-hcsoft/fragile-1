@@ -8,7 +8,12 @@
 
 **This repository is under active development.**
 
-Fragile is a framework for developing algorithms inspired by the Fractal AI theory.
+Fragile is a framework for developing algorithms inspired by the Fractal AI theory and testing them at scale.
+
+## Getting started 
+
+Check out the [Getting started with Atari games](https://guillemdb.github.io/fragile/resources/getting_started.html) 
+section of the docs, or check out the examples folder.
 
 ## Installation
 ```bash
@@ -44,3 +49,15 @@ You can access the documentation on [GitHub Pages](https://guillemdb.github.io/f
       python3 -m http.server      
     ```
     - Visit [http://0.0.0.0:8000](http://0.0.0.0:8000) to display the documentation.
+    
+## Roadmap
+
+- Add example notebook for function optimization using the `optimize` module
+- Update CI and publish docs on ReadTheDocs.org
+- Document and test the `dataviz` module. Write example notebook
+- Document and test the `ray` module. Write example notebook
+- Improve the tests (currently 154 for the `core` and `optimize` modules)
+- Get rid of the `experimental` module
+- Add a module to generate data for training deep learning models
+- Add a benchmarking module
+- Add deep learning API
