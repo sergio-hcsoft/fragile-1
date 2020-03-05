@@ -126,11 +126,13 @@
 <span class="sd">            n_walkers: Number of walkers of the swarm.</span>
 <span class="sd">            reward_scale: Virtual reward exponent for the reward score.</span>
 <span class="sd">            dist_scale: Virtual reward exponent for the distance score.</span>
-<span class="sd">            tree: class:`Tree` that keeps track of the visited states.</span>
-<span class="sd">            prune_tree: If `use_tree` is False it has no effect. If true, \</span>
-<span class="sd">                       store in the :class:`Tree` the past history of alive walkers.</span>
-<span class="sd">            args: Passed to `walkers_callable`.</span>
-<span class="sd">            kwargs: Passed to `walkers_callable`.</span>
+<span class="sd">            tree: class:`StatesTree` that keeps track of the visited states.</span>
+<span class="sd">            prune_tree: If `tree` is `None` it has no effect. If true, \</span>
+<span class="sd">                       store in the :class:`Tree` only the past history of alive \</span>
+<span class="sd">                        walkers, and discard the branches with leaves that have \</span>
+<span class="sd">                        no walkers.</span>
+<span class="sd">            args: Passed to ``walkers_callable``.</span>
+<span class="sd">            kwargs: Passed to ``walkers_callable``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None.</span>
@@ -343,8 +345,9 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../doc_resources/architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../core_module.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../core_module.html">Core module</a></li>
 </ul>
 
 <div class="relations">

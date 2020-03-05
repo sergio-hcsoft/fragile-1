@@ -39,7 +39,7 @@
 
 <span class="kn">from</span> <span class="nn">fragile.core.base_classes</span> <span class="kn">import</span> <span class="n">BaseCritic</span><span class="p">,</span> <span class="n">BaseWalkers</span>
 <span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">StatesEnv</span><span class="p">,</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">StatesWalkers</span>
-<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">float_type</span><span class="p">,</span> <span class="n">relativize</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">StateDict</span><span class="p">,</span> <span class="n">statistics_from_array</span>
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">float_type</span><span class="p">,</span> <span class="n">relativize</span><span class="p">,</span> <span class="n">StateDict</span><span class="p">,</span> <span class="n">statistics_from_array</span>
 
 
 <span class="k">class</span> <span class="nc">SimpleWalkers</span><span class="p">(</span><span class="n">BaseWalkers</span><span class="p">):</span>
@@ -54,8 +54,8 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_walkers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">env_state_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-        <span class="n">model_state_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">env_state_params</span><span class="p">:</span> <span class="n">StateDict</span><span class="p">,</span>
+        <span class="n">model_state_params</span><span class="p">:</span> <span class="n">StateDict</span><span class="p">,</span>
         <span class="n">reward_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">dist_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">max_iters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -156,7 +156,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">env_states</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesEnv</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Return the `States` class that contains the data used by an environment.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return the `States` class that contains the data used by the :class:`Environment`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_states</span>
 
     <span class="nd">@property</span>
@@ -169,8 +169,8 @@
 <span class="sd">        Process data from the current state to decide if the iteration process should stop.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Boolean indicating if the iteration process should be finished. True means \</span>
-<span class="sd">            it should be stopped, and False means it should continue.</span>
+<span class="sd">            Boolean indicating if the iteration process should be finished. ``True`` means \</span>
+<span class="sd">            it should be stopped, and ``False`` means it should continue.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">all_dead</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">end_condition</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
@@ -179,10 +179,10 @@
 
     <span class="c1"># @profile</span>
     <span class="k">def</span> <span class="nf">calculate_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculate the corresponding distance function for each state with \</span>
-<span class="sd">        respect to another state chosen at random.</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the corresponding distance function for each observation with \</span>
+<span class="sd">        respect to another observation chosen at random.</span>
 
-<span class="sd">        The internal state is updated with the relativized distance values.</span>
+<span class="sd">        The internal :class:`StateWalkers` is updated with the relativized distance values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">compas_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>  <span class="c1"># self.get_alive_compas()</span>
         <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
@@ -409,12 +409,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">efficiency</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_entropy</span> <span class="o">/</span> <span class="n">total_entropy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_states</span><span class="p">(</span><span class="n">virtual_rewards</span><span class="o">=</span><span class="n">virt_rw</span><span class="p">,</span> <span class="n">processed_rewards</span><span class="o">=</span><span class="n">processed_rewards</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span>
+            <span class="n">critic_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span>
                 <span class="n">walkers_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">,</span>
                 <span class="n">model_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_states</span><span class="p">,</span>
                 <span class="n">env_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">virt_rew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">critic_score</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">other</span><span class="o">=</span><span class="n">critic_states</span><span class="p">)</span>
+            <span class="n">virt_rew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">critic</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">virt_rew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">virtual_rewards</span><span class="o">=</span><span class="n">virt_rew</span><span class="p">)</span></div>
@@ -424,11 +425,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">update_best</span><span class="p">()</span>
         <span class="n">returned</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Walkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">balance</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">critic_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
                 <span class="n">walkers_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">,</span>
                 <span class="n">model_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_states</span><span class="p">,</span>
                 <span class="n">env_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="p">,</span>
             <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">other</span><span class="o">=</span><span class="n">critic_states</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">returned</span></div>
 
     <span class="k">def</span> <span class="nf">_get_best_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -509,8 +511,9 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../doc_resources/architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../core_module.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../core_module.html">Core module</a></li>
 </ul>
 
 <div class="relations">

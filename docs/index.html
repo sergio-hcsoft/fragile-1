@@ -14,7 +14,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Architecture" href="doc_resources/architecture.html" />
+    <link rel="next" title="Architecture" href="resources/architecture.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -36,46 +36,63 @@
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="doc_resources/architecture.html">Architecture</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="doc_resources/architecture.html#class-descriptions">Class descriptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="doc_resources/architecture.html#class-dependency">Class dependency</a></li>
-<li class="toctree-l2"><a class="reference internal" href="doc_resources/architecture.html#swarm-algorithm-loop">Swarm algorithm loop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources/architecture.html">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resources/architecture.html#class-descriptions">Class descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resources/architecture.html#class-dependency">Class dependency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resources/architecture.html#swarm-algorithm-loop">Swarm algorithm loop</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="core_module.html">Core</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="core_module.html#swarm">Swarm</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="resources/getting_started.html">Getting started with Atari games</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resources/getting_started.html#structure-of-a-swarm">Structure of a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="resources/getting_started.html#defining-the-environment">Defining the <code class="docutils literal notranslate"><span class="pre">Environment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="resources/getting_started.html#defining-the-model">Defining the <code class="docutils literal notranslate"><span class="pre">Model</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="resources/getting_started.html#storing-the-sampled-data-inside-a-historytree">Storing the sampled data inside a <code class="docutils literal notranslate"><span class="pre">HistoryTree</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="resources/getting_started.html#initializing-a-swarm">Initializing a Swarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resources/getting_started.html#running-the-swarm">Running the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="resources/getting_started.html#visualizing-the-sampled-game">Visualizing the sampled game</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_module.html">Core module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_module.html#api-abstract-classes">API abstract classes</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#baseswarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSwarm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#basewalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWalkers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#baseenvironment"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEnvironment</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#basemodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#basestatetree"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStateTree</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#basewrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWrapper</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="core_module.html#swarm">Swarm</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#id1"><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="core_module.html#walkers">Walkers</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="core_module.html#basewalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWalkers</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#id2"><code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="core_module.html#environment">Environment</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="core_module.html#baseenvironment"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEnvironment</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="core_module.html#id3"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#environment-abstract"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> (Abstract)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#discreteenv"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteEnv</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="core_module.html#model">Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="core_module.html#basemodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#model-abstract"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> (Abstract)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#dtmodel-abstract"><code class="xref py py-class docutils literal notranslate"><span class="pre">_DtModel</span></code> (Abstract)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#continuousmodel-abstract"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousModel</span></code> (Abstract)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#discretemodel-abstract"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteModel</span></code> (Abstract)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#discreteuniform"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteUniform</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#binaryswap"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinarySwap</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="core_module.html#continuousmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousModel</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#continuousuniform"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousUniform</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="core_module.html#states">States</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="core_module.html#id4"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="core_module.html#id3"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#statesenv"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#statesmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#stateswalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="core_module.html#statetree">StateTree</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="core_module.html#basestatetree"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStateTree</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="core_module.html#historytree"><code class="xref py py-class docutils literal notranslate"><span class="pre">HistoryTree</span></code></a></li>
 </ul>
 </li>
@@ -112,15 +129,16 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="doc_resources/architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="core_module.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resources/getting_started.html">Getting started with Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_module.html">Core module</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
-      <li>Next: <a href="doc_resources/architecture.html" title="next chapter">Architecture</a></li>
+      <li>Next: <a href="resources/architecture.html" title="next chapter">Architecture</a></li>
   </ul></li>
 </ul>
 </div>
