@@ -79,7 +79,7 @@ class MetricWalkers(Walkers):
                 df.to_csv(name)
             else:
                 self_df.to_csv(name)
-        except:
+        except Exception as e:
             self_df.to_csv(name)
 
     def __repr__(self):

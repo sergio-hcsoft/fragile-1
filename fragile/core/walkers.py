@@ -104,7 +104,7 @@ class SimpleWalkers(BaseWalkers):
 
     def ids(self) -> List[int]:
         """
-        Returns a list of unique ids for each walker state.
+        Return a list of unique ids for each walker state.
 
         The returned ids are integers representing the hash of the different states.
         """
@@ -113,7 +113,7 @@ class SimpleWalkers(BaseWalkers):
         return self.env_states.hash_values("states")
 
     def update_ids(self):
-        """Update the unique id of each walker and store it in the :class:`StatesWalkers`"""
+        """Update the unique id of each walker and store it in the :class:`StatesWalkers`."""
         self.states.update(id_walkers=self.ids().copy())
 
     @property
@@ -220,6 +220,7 @@ class SimpleWalkers(BaseWalkers):
             A tuple containing two sets: The first one represent the unique ids \
             of the states for each walker at the start of the iteration. The second \
             one contains the ids of the states after the cloning process.
+
         """
         old_ids = set(self.states.id_walkers.copy())
         self.calculate_distances()

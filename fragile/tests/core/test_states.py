@@ -1,4 +1,4 @@
-import numpy as np
+import numpy
 import pytest  # noqa: F401
 
 from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
@@ -9,7 +9,7 @@ state_classes = [States, StatesEnv, StatesModel, StatesWalkers]
 class TestStates:
     @pytest.mark.parametrize("states_class", state_classes)
     def test_init_dict(self, states_class):
-        state_dict = {"name_1": {"size": tuple([1]), "dtype": np.float32}}
+        state_dict = {"name_1": {"size": tuple([1]), "dtype": numpy.float32}}
         new_states = states_class(state_dict=state_dict, batch_size=2)
         assert new_states.n == 2
 
@@ -32,7 +32,7 @@ class TestStates:
         name_1 = "miau"
         val_1 = name_1
         name_2 = "elephant"
-        val_2 = np.arange(10)
+        val_2 = numpy.arange(10)
         new_states = states_class(batch_size=2)
         new_states[name_1] = val_1
         new_states[name_2] = val_2
@@ -66,7 +66,7 @@ class TestStates:
 
     @pytest.mark.parametrize("states_class", state_classes)
     def test_get_params_dir(self, states_class):
-        state_dict = {"name_1": {"size": tuple([1]), "dtype": np.float32}}
+        state_dict = {"name_1": {"size": tuple([1]), "dtype": numpy.float32}}
         new_states = states_class(state_dict=state_dict, batch_size=2)
         params_dict = new_states.get_params_dict()
         assert isinstance(params_dict, dict)
@@ -80,14 +80,14 @@ class TestStates:
     def test_clone(self, states_class):
         batch_size = 10
         states = states_class(batch_size=batch_size)
-        states.miau = np.arange(states.n)
-        states.miau_2 = np.arange(states.n)
+        states.miau = numpy.arange(states.n)
+        states.miau_2 = numpy.arange(states.n)
 
-        will_clone = np.zeros(states.n, dtype=np.bool_)
+        will_clone = numpy.zeros(states.n, dtype=numpy.bool_)
         will_clone[3:6] = True
-        compas_ix = np.array(np.arange(states.n)[::-1])
+        compas_ix = numpy.array(numpy.arange(states.n)[::-1])
 
         states.clone(will_clone=will_clone, compas_ix=compas_ix)
-        target_1 = np.arange(10)
+        target_1 = numpy.arange(10)
 
-        assert np.all(target_1 == states.miau), (target_1 - states.miau, states_class)
+        assert numpy.all(target_1 == states.miau), (target_1 - states.miau, states_class)

@@ -1,12 +1,12 @@
 from typing import Callable, Tuple, Union
 
 import numpy
-from scipy.optimize import minimize
 from scipy.optimize import Bounds as ScipyBounds
+from scipy.optimize import minimize
 
 from fragile.core.env import Environment
-from fragile.core.states import StatesEnv, StatesModel
 from fragile.core.models import Bounds
+from fragile.core.states import StatesEnv, StatesModel
 from fragile.core.utils import Scalar
 
 

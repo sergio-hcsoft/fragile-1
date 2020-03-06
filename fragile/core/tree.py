@@ -1,9 +1,9 @@
 import copy
-from typing import List, Union
+from typing import List
 
 import networkx as nx
 
-from fragile.core.base_classes import States, BaseStateTree
+from fragile.core.base_classes import BaseStateTree, States
 from fragile.core.walkers import StatesWalkers
 
 

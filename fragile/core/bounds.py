@@ -1,5 +1,5 @@
 from collections.abc import Iterable as _Iterable
-from typing import Iterable, Tuple, Union, Optional
+from typing import Iterable, Optional, Tuple, Union
 
 import numpy as np
 
@@ -52,6 +52,7 @@ class Bounds:
             >>> bounds = Bounds(high=high, low=low, shape=shape)
             >>> print(bounds)
             Bounds shape float64 dtype (5,) low [2.1 2.1 2.1 2.1 2.1] high [4. 4. 4. 4. 4.]
+
         """
         # Infer shape if not specified
         if shape is None and hasattr(high, "shape"):
@@ -88,6 +89,7 @@ class Bounds:
 
         Returns:
             tuple containing the shape of `high` and `low`
+
         """
         return self.high.shape
 
@@ -109,6 +111,7 @@ class Bounds:
             >>> bounds = Bounds.from_tuples(intervals)
             >>> print(bounds)
             Bounds shape int64 dtype (3,) low [-1 -2  2] high [1 1 3]
+
         """
         low, high = [], []
         for lo, hi in bounds:
@@ -138,7 +141,9 @@ class Bounds:
             minimum values of the array.
 
         Returns:
-            :class:`Bounds` instance."""
+            :class:`Bounds` instance.
+
+        """
         pct = scale - 1
         big_scale = 1 + np.abs(pct)
         small_scale = 1 - np.abs(pct)
@@ -178,6 +183,7 @@ class Bounds:
             >>> bounds = Bounds.from_array(x, scale=1.5)
             >>> print(bounds)
             Bounds shape float64 dtype (3,) low [ 0.5 -7.5  0.5] high [1.5 1.5 1.5]
+
         """
         xmin, xmax = x.min(axis=0), x.max(axis=0)
         xmin_scaled, xmax_scaled = cls.get_scaled_intervals(xmin, xmax, scale)
@@ -192,12 +198,13 @@ class Bounds:
 
         Returns:
             Clipped numpy array with all its values inside the defined bounds.
+
         """
         return np.clip(x, self.low, self.high)
 
     def points_in_bounds(self, x: np.ndarray) -> Union[np.ndarray, bool]:
         """
-        Checks if the rows of the target array have all their coordinates inside \
+        Check if the rows of the target array have all their coordinates inside \
         specified bounds.
 
         If the array is one dimensional it will return a boolean, otherwise a vector of booleans.
@@ -207,6 +214,7 @@ class Bounds:
 
         Returns:
             Numpy array of booleans indicating if a row lies inside the bounds.
+
         """
         match = self.clip(x) == x
         return match.all(axis=1).flatten() if len(match.shape) > 1 else match.all()
@@ -237,6 +245,7 @@ class Bounds:
 
         Returns:
             :class:`Bounds` with scaled high and low values.
+
         """
         xmax = self.high if high is None else high
         xmin = self.low if low is None else low
@@ -257,5 +266,6 @@ class Bounds:
             >>> bounds = Bounds(high=array, low=-array)
             >>> print(bounds.to_tuples())
             ((-1, 1), (-2, 2), (-5, 5))
+
         """
         return tuple([dim for dim in zip(self.low, self.high)])

@@ -1,8 +1,8 @@
 from typing import Callable
 
 from fragile.core.models import Bounds, NormalContinuous
-from fragile.core.swarm import Swarm
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
+from fragile.core.swarm import Swarm
 from fragile.optimize.env import Function
 
 
@@ -56,7 +56,7 @@ class FunctionMapper(Swarm):
         Returns:
             Instance of :class:`FunctionMapper` that optimizes the target function.
         """
-        env = Function(function=function, bounds=bounds,)
+        env = Function(function=function, bounds=bounds)
         return FunctionMapper(env=lambda: env, *args, **kwargs)
 
     def __repr__(self):

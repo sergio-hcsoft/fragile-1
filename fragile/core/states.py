@@ -105,10 +105,12 @@ class States:
         return _hash
 
     def group_hash(self, name: str) -> int:
+        """Return a unique id for a given attribute."""
         val = getattr(self, name)
         return hash_numpy(val) if isinstance(val, np.ndarray) else hash(val)
 
     def hash_values(self, name: str) -> List[int]:
+        """Return a unique id for each walker attribute."""
         values = getattr(self, name)
         hashes = [hash_numpy(val) if isinstance(val, np.ndarray) else hash(val) for val in values]
         return hashes
@@ -211,7 +213,6 @@ class States:
                      where key is the name of the attribute to be updated, and value \
                       is the new value for the attribute.
         """
-
         def update_or_set_attributes(attrs: Union[dict, States]):
             for name, val in attrs.items():
                 try:
@@ -285,6 +286,15 @@ class StatesEnv(States):
     """Keeps track of the data structures used by the :class:`Env`."""
 
     def __init__(self, batch_size: int, state_dict: Optional[StateDict] = None, **kwargs):
+        """
+        Initialise a :class:`StatesEnv`.
+
+        Args:
+             batch_size: The number of items in the first dimension of the tensors.
+             state_dict: Dictionary defining the attributes of the tensors.
+             **kwargs: The name-tensor pairs can also be specified as kwargs.
+
+        """
         self.observs = None
         self.states = None
         self.rewards = None
@@ -310,6 +320,15 @@ class StatesModel(States):
     """Keeps track of the data structures used by the :class:`Model`."""
 
     def __init__(self, batch_size: int, state_dict: Optional[StateDict] = None, **kwargs):
+        """
+        Initialise a :class:`StatesModel`.
+
+        Args:
+             batch_size: The number of items in the first dimension of the tensors.
+             state_dict: Dictionary defining the attributes of the tensors.
+             **kwargs: The name-tensor pairs can also be specified as kwargs.
+
+        """
         self.actions = None
         updated_dict = self.get_params_dict()
         if state_dict is not None:
@@ -317,6 +336,7 @@ class StatesModel(States):
         super(StatesModel, self).__init__(state_dict=updated_dict, batch_size=batch_size, **kwargs)
 
     def get_params_dict(self) -> StateDict:
+        """Return the parameter dictionary with tre attributes common to all Models."""
         params = {
             "actions": {"dtype": np.float32},
         }
@@ -334,6 +354,7 @@ class StatesWalkers(States):
 
         Args:
             batch_size: Number of walkers that the class will be tracking.
+            state_dict: Dictionary defining the attributes of the tensors.
             kwargs: attributes that will not be set as numpy.ndarrays
         """
         self.will_clone = None
@@ -358,10 +379,12 @@ class StatesWalkers(States):
 
     @property
     def best_found(self) -> np.ndarray:
+        """Return the best observation found."""
         return self.best_obs
 
     @property
     def best_reward_found(self) -> Scalar:
+        """Return the value of the best observation found."""
         return self.best_reward
 
     def get_params_dict(self) -> StateDict:

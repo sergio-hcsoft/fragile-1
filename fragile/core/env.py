@@ -1,5 +1,4 @@
 import copy
-from typing import Any, Dict, Optional
 
 import numpy as np
 from plangym.env import Environment as PlangymEnv
@@ -9,16 +8,33 @@ from fragile.core.states import StateDict, StatesEnv, StatesModel
 
 
 class Environment(BaseEnvironment):
+    """
+    The Environment is in charge of stepping the walkers, acting as an state \
+    transition function.
+
+    For every different problem a new :class:`Environment` needs to be implemented \
+    following the :class:`BaseEnvironment` interface.
+    """
+
     def __init__(self, states_shape: tuple, observs_shape: tuple):
+        """
+        Initialize an :class:`Environment`.
+
+        Args:
+            states_shape: Shape of the internal state of the :class:`Environment`
+            observs_shape: Shape of the observations state of the :class:`Environment`.
+        """
         self._states_shape = states_shape
         self._observs_shape = observs_shape
 
     @property
     def states_shape(self) -> tuple:
+        """Return the shape of the internal state of the :class:`Environment`."""
         return self._states_shape
 
     @property
     def observs_shape(self) -> tuple:
+        """Return the shape of the observations state of the :class:`Environment`."""
         return self._observs_shape
 
     def get_params_dict(self) -> StateDict:

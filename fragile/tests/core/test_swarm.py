@@ -4,7 +4,7 @@ import pytest
 
 from fragile.core.dt_sampler import GaussianDt
 from fragile.core.env import BaseEnvironment, DiscreteEnv
-from fragile.core.models import BaseModel, Bounds, DiscreteUniform, NormalContinuous
+from fragile.core.models import BaseModel, DiscreteUniform, NormalContinuous
 from fragile.core.swarm import Swarm
 from fragile.core.walkers import BaseWalkers, Walkers
 from fragile.optimize.benchmarks import Rastrigin

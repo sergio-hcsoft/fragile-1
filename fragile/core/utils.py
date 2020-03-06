@@ -37,6 +37,7 @@ def resize_frame(frame: np.ndarray, height: int, width: int, mode: str = "RGB") 
 
     Returns:
         The resized frame that matches the provided width and height.
+
     """
     frame = Image.fromarray(frame)
     frame = frame.convert(mode).resize((height, width))

@@ -1,7 +1,7 @@
 import numpy as np
 
-from fragile.core.walkers import Walkers
 from fragile.core.utils import relativize
+from fragile.core.walkers import Walkers
 
 # import line_profiler
 
@@ -22,6 +22,7 @@ class AtariWalkers(Walkers):
                         reaches this values the algorithm will stop.
             *args: :class:`Walkers` parameters.
             **kwargs: :class:`Walkers` parameters.
+
         """
         super(AtariWalkers, self).__init__(*args, **kwargs)
         self.max_reward = max_reward
@@ -44,9 +45,9 @@ class AtariWalkers(Walkers):
 
 class MontezumaWalkers(Walkers):
     """
-    Walkers class used to calculate distances on Uber's Montezuma environment\
-     used in their Go-explore repository.
-     """
+    Walkers class used to calculate distances on Uber's Montezuma environment \
+    used in their Go-explore repository.
+    """
 
     # @profile
     def calculate_distances(self) -> None:

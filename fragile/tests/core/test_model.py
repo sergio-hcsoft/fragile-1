@@ -1,8 +1,8 @@
+import numpy
 import pytest  # noqa: F401
 
-import numpy
-
 from fragile.core.models import (
+    _DtModel,
     BaseCritic,
     BaseModel,
     BinarySwap,
@@ -12,7 +12,6 @@ from fragile.core.models import (
     DiscreteModel,
     DiscreteUniform,
     NormalContinuous,
-    _DtModel,
 )
 from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
 
@@ -48,7 +47,7 @@ class TestModel:
         for k, v in params_dict.items():
             assert isinstance(k, str)
             assert isinstance(v, dict)
-            for ki, vi in v.items():
+            for ki, _vi in v.items():
                 assert isinstance(ki, str)
 
     @pytest.mark.parametrize("model_fixture", model_fixture_params, indirect=True)

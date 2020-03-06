@@ -10,7 +10,7 @@ class StatesOwner:
     """
     Every class that stores its data in :class:`States` must inherit \
     from this class.
-     """
+    """
 
     random_state = random_state
     STATE_CLASS = States
@@ -55,6 +55,7 @@ class StatesOwner:
         Returns:
             A new :class:`States` created with the class ``params_dict`` updated \
             with the attributes passed as keyword arguments.
+
         """
         state = self.create_new_states(batch_size=batch_size)
         state.update(**kwargs)
@@ -187,6 +188,7 @@ class BaseCritic(StatesOwner):
         Returns:
             States containing the information of the current state of the \
             :class:`BaseCritic`.
+
         """
         pass
 
@@ -375,7 +377,7 @@ class BaseWalkers(StatesOwner):
         self.model_states_params = model_state_params
 
     def __len__(self) -> int:
-        """The length is the number of walkers."""
+        """Return length is the number of walkers."""
         return self.n
 
     @property

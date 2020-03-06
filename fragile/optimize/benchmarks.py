@@ -5,7 +5,7 @@ from numba import jit
 import numpy as np
 
 from fragile.core.states import StatesEnv, StatesModel
-from fragile.optimize.env import Function, Bounds
+from fragile.optimize.env import Bounds, Function
 
 """
 This file includes several test functions for optimization described here:
@@ -247,5 +247,5 @@ class RandomLennard(LennardJones):
         ends = np.zeros(batch_size, dtype=np.bool_)
         new_points = self.sample_bounds(batch_size=batch_size)
         rewards = self.random_lennard(new_points).flatten()
-        new_states = self.states_from_data(batch_size, new_points, new_points, rewards, ends,)
+        new_states = self.states_from_data(batch_size, new_points, new_points, rewards, ends)
         return new_states

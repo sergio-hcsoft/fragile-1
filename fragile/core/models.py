@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Optional, Union
 
 from numba import jit
 import numpy as np
@@ -120,6 +120,7 @@ class Model(BaseModel):
 
         Returns:
             dict containing the parameters of both the :class:`Model` and its :class:`Critic`.
+
         """
         if self.critic is not None:
             critic_vals = self.critic.get_params_dict()
@@ -147,6 +148,7 @@ class Model(BaseModel):
 
         Returns:
             model_states updated with the actions and the dt calculated by the Critic.
+
         """
         if self.critic is None:
             model_states.update(actions=actions)
@@ -178,6 +180,7 @@ class _DtModel(Model):
 
         Returns:
             dict containing the parameters of both the :class:`Model` and its :class:`Critic`.
+
         """
         dt = {"dt": {"dtype": np.int_}, "critic_score": {"dtype": np.int_}}
         all_params = self.add_critic_params(params=dt, override_params=override_params)
@@ -199,6 +202,7 @@ class _DtModel(Model):
 
         Returns:
             model_states updated with the actions and the dt calculated by the Critic.
+
         """
         if self.critic is not None:
             critic_states = self.critic.calculate(
@@ -231,6 +235,7 @@ class DiscreteModel(_DtModel):
             env: :class:`DiscreteEnvironment` that will be used to extract the \
             number of different possible outcomes.
             critic: Critic used to calculate the time step strategy.
+
         """
         super(DiscreteModel, self).__init__(critic=critic)
         if n_actions is None and env is None:
@@ -298,6 +303,7 @@ class BinarySwap(DiscreteModel):
             env: :class:`DiscreteEnvironment` that will be used to extract the \
             dimension of the target vector.
             critic: dt_sampler used to calculate an additional time step strategy.
+
         """
         super(BinarySwap, self).__init__(critic=critic, n_actions=n_actions, env=env)
         if n_swaps <= 0:
@@ -319,7 +325,7 @@ class BinarySwap(DiscreteModel):
         **kwargs,
     ) -> StatesModel:
         """
-        Swaps the values of `n_swaps` dimensions chosen at random. It works on a \
+        Swap the values of `n_swaps` dimensions chosen at random. It works on a \
         matrix of binary values of size (batch_size, n_actions).
 
         Args:
@@ -330,8 +336,8 @@ class BinarySwap(DiscreteModel):
 
         Returns:
             :class:`States` variable containing the calculated actions and dt.
-        """
 
+        """
         @jit(nopython=True)
         def flip_values(actions, flips):
             for i in range(flips.shape[0]):
@@ -368,6 +374,7 @@ class ContinuousModel(_DtModel):
             bounds: :class:`Bounds` class defining the range of allowed output \
             values of the model.
             critic: :class:`Critic` that will be used to make additional computation.
+
         """
         super(ContinuousModel, self).__init__(critic=critic)
         self.bounds = bounds
@@ -405,6 +412,7 @@ class ContinuousUniform(ContinuousModel):
         Returns:
             States containing the new sampled discrete random values inside \
             `state.actions` attribute.
+
         """
         actions = self.random_state.uniform(
             low=self.bounds.low, high=self.bounds.high, size=tuple([batch_size]) + self.shape
@@ -435,6 +443,7 @@ class NormalContinuous(ContinuousModel):
             loc: Mean of the gaussian distribution used for sampling actions.
             scale: Standard deviation of the gaussian distribution used for sampling actions.
             critic: :class:`Critic` that will be used to make additional computation.
+
         """
         super(NormalContinuous, self).__init__(critic=critic, bounds=bounds)
         self.loc = loc

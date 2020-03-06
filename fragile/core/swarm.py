@@ -4,13 +4,13 @@ from typing import Callable, List
 import numpy
 
 from fragile.core.base_classes import (
+    BaseCritic,
     BaseEnvironment,
     BaseModel,
     BaseStateTree,
     BaseSwarm,
-    BaseCritic,
 )
-from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
+from fragile.core.states import StatesEnv, StatesModel
 from fragile.core.utils import clear_output, Scalar
 from fragile.core.walkers import StatesWalkers, Walkers
 
@@ -24,6 +24,7 @@ class Swarm(BaseSwarm):
     """
 
     def __init__(self, walkers: Callable = Walkers, *args, **kwargs):
+        """Initialize a :class:`Swarm`."""
         self._use_tree = False
         self._prune_tree = False
         super(Swarm, self).__init__(walkers=walkers, *args, **kwargs)
@@ -292,7 +293,7 @@ class NoBalance(Swarm):
     """Swarm that does not perform the cloning process."""
 
     def balance_and_prune(self):
-        """Does noting."""
+        """Do noting."""
         pass
 
     def calculate_end_condition(self):
