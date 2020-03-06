@@ -14,6 +14,7 @@ stages:
 _install: &_install
   - pip install --upgrade pip cython codecov pytest
   - pip install -r requirements.txt --no-use-pep517
+  - pip install -r requirements-dev.txt --no-use-pep517
   - pip install -e . --no-use-pep517
   - cd fragile
   - find . -wholename "*/tests/*" -type d -exec chmod 555 {} \;

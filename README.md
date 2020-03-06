@@ -6,7 +6,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
 
-**This repository is under active development.**
+**This repository is under active development. I am actively working to make it easy to install and test.**
 
 Fragile is a framework for developing algorithms inspired by the Fractal AI theory and testing them at scale.
 
@@ -15,20 +15,29 @@ Fragile is a framework for developing algorithms inspired by the Fractal AI theo
 Check out the [Getting started with Atari games](https://guillemdb.github.io/fragile/resources/getting_started.html) 
 section of the docs, or check out the examples folder.
 
-## Installation
-```bash
-   git clone https://github.com/Guillemdb/fragile.git
-   cd fragile
-   sudo pip3 install -r requirements.txt
-   sudo pip3 install -e .
-```
-
 ## Running on docker
 The docker container will execute a Jupyter notebook accessible on port 8080 with password: `fragile`
 
 ```bash
-   docker build -t fragile .
+   make docker build
    docker run -d -p 8080:8080 -v PATH_TO_REPO/fragile fragile 
+```
+
+You can also run the tests inside the docker container
+```bash
+    make docker-test
+```
+
+## Installation
+
+Please take a look at the Dockerfile to find out about all the dependencies, and the detailed installation process.
+
+```bash
+   git clone https://github.com/Guillemdb/fragile.git
+   cd fragile
+   sudo pip3 install -r requirements.txt
+   sudo pip3 install -r requirements-dev.txt
+   sudo pip3 install -e .
 ```
 
 ## Documentation
