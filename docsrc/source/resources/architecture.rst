@@ -49,7 +49,7 @@ The :class:`States` contain functionality for storing, accessing and cloning all
 Class dependency
 ----------------
 
-.. figure:: /../source/resources/fragile_architecture.png
+.. figure:: /../source/resources/images/fragile_architecture.png
    :alt: Composition relationships among the different fragile classes.
 
    Composition relationship among the different classes
