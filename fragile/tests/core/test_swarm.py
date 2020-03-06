@@ -16,7 +16,7 @@ def create_cartpole_swarm():
         model=lambda x: DiscreteUniform(env=x),
         walkers=Walkers,
         env=lambda: DiscreteEnv(ClassicControl()),
-        n_walkers=15,
+        n_walkers=20,
         max_iters=200,
         prune_tree=True,
         reward_scale=2,
@@ -48,7 +48,6 @@ def create_atari_swarm():
 def create_function_swarm():
     shape = (2,)
     env = Rastrigin(shape=shape)
-    bs = Bounds(low=-5.12, high=5.12, shape=shape)
     swarm = FunctionMapper(
         model=lambda x: NormalContinuous(bounds=env.bounds),
         env=lambda: env,
@@ -115,7 +114,7 @@ class TestSwarm:
     def test_score_gets_higher(self, swarm, target):
         swarm.walkers.seed()
         swarm.reset()
-        swarm.walkers.max_iters = 150
+        swarm.walkers.max_iters = 175
         swarm.run_swarm()
         reward = swarm.walkers.states.cum_rewards.max()
         assert reward > target, "Iters: {}, rewards: {}".format(

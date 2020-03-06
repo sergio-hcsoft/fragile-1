@@ -1,9 +1,8 @@
 from typing import Callable
 
-from fragile.core.models import Bounds, ContinuousUniform
+from fragile.core.models import Bounds, NormalContinuous
 from fragile.core.swarm import Swarm
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
-from fragile.core.walkers import Walkers
 from fragile.optimize.env import Function
 
 
@@ -12,8 +11,7 @@ class FunctionMapper(Swarm):
 
     def __init__(
         self,
-        walkers: Callable = Walkers,
-        model: Callable = ContinuousUniform,
+        model: Callable = lambda x: NormalContinuous(bounds=x.bounds),
         accumulate_rewards: bool = False,
         minimize: bool = True,
         start_same_pos: bool = False,
@@ -37,12 +35,7 @@ class FunctionMapper(Swarm):
             **kwargs: Passed :class:`Walkers` __init__.
         """
         super(FunctionMapper, self).__init__(
-            walkers=walkers,
-            model=model,
-            accumulate_rewards=accumulate_rewards,
-            minimize=minimize,
-            *args,
-            **kwargs
+            model=model, accumulate_rewards=accumulate_rewards, minimize=minimize, *args, **kwargs
         )
         self.start_same_pos = start_same_pos
 
