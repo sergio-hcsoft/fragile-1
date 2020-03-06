@@ -33,6 +33,7 @@ def resize_frame(frame: np.ndarray, height: int, width: int, mode: str = "RGB") 
         frame: Target numpy array representing the image that will be resized.
         height: Height of the resized image.
         width: Width of the resized image.
+        mode: Passed to Image.convert.
 
     Returns:
         The resized frame that matches the provided width and height.
@@ -160,7 +161,8 @@ def to_numpy(x: [numpy.ndarray, torch.Tensor, list]) -> numpy.ndarray:
         return numpy.ndarray(x)
 
 
-def to_tensor(x: [torch.Tensor, numpy.ndarray, list], device=device, *args, **kwargs) -> torch.Tensor:
+def to_tensor(x: [torch.Tensor, numpy.ndarray, list],
+              device=device, *args, **kwargs) -> torch.Tensor:
     if isinstance(x, torch.Tensor):
         return x
     elif isinstance(x, list):

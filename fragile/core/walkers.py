@@ -357,6 +357,7 @@ class Walkers(SimpleWalkers):
         self.critic = critic
         self.minimize = minimize
         self.efficiency = 0
+        self._min_entropy = 0
 
     def __repr__(self):
         text = "\nBest reward found: {:.4f} , efficiency {:.3f}, Critic: {}\n".format(

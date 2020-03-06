@@ -36,7 +36,7 @@ that return instances of the following classes:
    new reward, or extra values for our policy.
 
 Choosing to pass Callables to the ``Swarm`` instead of instances is a
-desing decission that simplifies the deployment at scale in a cluster,
+design decision that simplifies the deployment at scale in a cluster,
 because it avoids writing tricky serialization code for all the classes.
 
 Defining the ``Environment``
@@ -44,7 +44,7 @@ Defining the ``Environment``
 
 For playing Atari games we will use the interface provided by the
 `plangym <https://github.com/Guillemdb/plangym>`__ package. It is a
-wraper of OpenAI ``gym`` that allows to easily set and recover the state
+wrapper of OpenAI ``gym`` that allows to easily set and recover the state
 of the environments, as well as stepping the environment with batches of
 states.
 
@@ -70,7 +70,7 @@ define the appropiate Callable object to pass as a parameter.
 
 ``fragile`` incorporates a wrapper to use a ``plangym.AtariEnvironment``
 that will take care of matching the ``fragile`` API and constructing the
-appropiate ``StatesEnv`` class to store its data.
+appropriate ``StatesEnv`` class to store its data.
 
 The environment callable does not take any parameters, and must return
 an instance of ``fragile.BaseEnvironment``.

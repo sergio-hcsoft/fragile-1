@@ -128,7 +128,7 @@ sampling process if we run a local minimization process after each
 random perturbation.
 
 This can be done using the ``MinimizerWrapper`` class, that takes in any
-instance of a ``Function`` environment, and performs a local minimzation
+instance of a ``Function`` environment, and performs a local minimization
 process after each environment step.
 
 The ``MinimizerWrapper`` uses ``scipy.optimize.minimize`` under the
@@ -189,7 +189,7 @@ supports.
     
 
 
-This signifficantly increases the performance of the algorithm at the
+This significantly increases the performance of the algorithm at the
 expense of using more computational resources.
 
 Defining a new problem using a ``Function``
@@ -342,8 +342,8 @@ it does not perform the cloning process.
     from fragile.core.swarm import NoBalance
     from fragile.optimize.models import ESModel
 
-In this example we will be solving a Lennard-Jonned cluster of 4
-particles, which is a 12-dimensinal function with a global minima at -6.
+In this example we will be solving a Lennard-Jonnes cluster of 4
+particles, which is a 12-dimensional function with a global minima at -6.
 
 .. code:: ipython3
 
