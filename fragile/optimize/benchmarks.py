@@ -139,7 +139,7 @@ class EggHolder(OptimBenchmark):
         super(EggHolder, self).__init__(shape=(2,), function=eggholder)
 
     @staticmethod
-    def get_bounds(shape):
+    def get_bounds(shape=None):
         bounds = [(-512, 512), (-512, 512)]
         return Bounds.from_tuples(bounds)
 
