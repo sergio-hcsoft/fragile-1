@@ -12,6 +12,7 @@ Welcome to Fragile's documentation!
 
    resources/architecture.rst
    resources/getting_started.rst
+   resources/function_minimization.rst
    module_docs/core.rst
    module_docs/atari.rst
    module_docs/optimize.rst

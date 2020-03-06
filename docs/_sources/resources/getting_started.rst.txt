@@ -17,7 +17,7 @@ The ``Swarm`` is the class that implements the algorithm’s evolution
 loop, and controls all the other classes involved in solving a given
 problem:
 
-.. figure:: fragile_architecture.png
+.. figure:: images/fragile_architecture.png
    :alt: swarm architecture
 
    swarm architecture
