@@ -136,7 +136,7 @@ sampling new points. It is possible to improve the performance of the
 sampling process if we run a local minimization process after each
 random perturbation.</p>
 <p>This can be done using the <code class="docutils literal notranslate"><span class="pre">MinimizerWrapper</span></code> class, that takes in any
-instance of a <code class="docutils literal notranslate"><span class="pre">Function</span></code> environment, and performs a local minimzation
+instance of a <code class="docutils literal notranslate"><span class="pre">Function</span></code> environment, and performs a local minimization
 process after each environment step.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">MinimizerWrapper</span></code> uses <code class="docutils literal notranslate"><span class="pre">scipy.optimize.minimize</span></code> under the
 hood, and it can take any parameter that <code class="docutils literal notranslate"><span class="pre">scipy.optimize.minimize</span></code>
@@ -188,7 +188,7 @@ supports.</p>
 <span class="n">critic_score</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
 </pre></div>
 </div>
-<p>This signifficantly increases the performance of the algorithm at the
+<p>This significantly increases the performance of the algorithm at the
 expense of using more computational resources.</p>
 </div>
 <div class="section" id="defining-a-new-problem-using-a-function">
@@ -292,10 +292,10 @@ optima of -156.66468</p>
 </div>
 </div>
 <div class="section" id="optimizing-a-function-with-evolutionary-strategies">
-<h2>Optimizing a function with evolutionary strategies<a class="headerlink" href="#optimizing-a-function-with-evolutionary-strategies" title="Permalink to this headline">¶</a></h2>
+<h2>Optimizing a function with Evolutionary Strategies<a class="headerlink" href="#optimizing-a-function-with-evolutionary-strategies" title="Permalink to this headline">¶</a></h2>
 <p>It is possible to use the <code class="docutils literal notranslate"><span class="pre">fragile</span></code> framework to implement
 optimization algorithms that do not rely on a cloning process, such as
-Evolutionary strategies.</p>
+Evolutionary Strategies.</p>
 <p>If the cloning process is not needed the <code class="docutils literal notranslate"><span class="pre">NoBalance</span></code> <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> is the
 recommended choice. It has the same features of a regular <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>, but
 it does not perform the cloning process.</p>
@@ -303,8 +303,8 @@ it does not perform the cloning process.</p>
 <span class="kn">from</span> <span class="nn">fragile.optimize.models</span> <span class="kn">import</span> <span class="n">ESModel</span>
 </pre></div>
 </div>
-<p>In this example we will be solving a Lennard-Jonned cluster of 4
-particles, which is a 12-dimensinal function with a global minima at -6.</p>
+<p>In this example we will be solving a Lennard-Jonnes cluster of 4
+particles, which is a 12-dimensional function with a global minima at -6.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize.benchmarks</span> <span class="kn">import</span> <span class="n">LennardJones</span>
 </pre></div>
 </div>
@@ -377,7 +377,7 @@ particles, which is a 12-dimensinal function with a global minima at -6.</p>
 <li class="toctree-l2"><a class="reference internal" href="#testing-a-functionmapper-on-a-benchmark-function">Testing a <code class="docutils literal notranslate"><span class="pre">FunctionMapper</span></code> on a benchmark function</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#sampling-a-function-with-a-local-optimizer">Sampling a function with a local optimizer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#defining-a-new-problem-using-a-function">Defining a new problem using a <code class="docutils literal notranslate"><span class="pre">Function</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optimizing-a-function-with-evolutionary-strategies">Optimizing a function with evolutionary strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimizing-a-function-with-evolutionary-strategies">Optimizing a function with Evolutionary Strategies</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../module_docs/core.html">Core module</a></li>
