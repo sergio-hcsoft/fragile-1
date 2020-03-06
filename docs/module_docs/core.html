@@ -181,7 +181,7 @@ of the environment.</p></li>
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.__len__">
 <code class="sig-name descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseWalkers.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.__len__" title="Permalink to this definition">¶</a></dt>
-<dd><p>The length is the number of walkers.</p>
+<dd><p>Return length is the number of walkers.</p>
 </dd></dl>
 
 <dl class="method">
@@ -453,6 +453,12 @@ kwargs: Additional keyword arguments not related to environment data.</p></li>
 <dd><p>The Swarm is in charge of performing a fractal evolution process.</p>
 <p>It contains the necessary logic to use an Environment, a Model, and a     Walkers instance to run the Swarm evolution algorithm.</p>
 <dl class="method">
+<dt id="fragile.core.swarm.Swarm.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">walkers: Callable = &lt;class 'fragile.core.walkers.Walkers'&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/swarm.html#Swarm.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.swarm.Swarm" title="fragile.core.swarm.Swarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.swarm.Swarm.balance_and_prune">
 <code class="sig-name descname">balance_and_prune</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/fragile/core/swarm.html#Swarm.balance_and_prune"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.balance_and_prune" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the virtual reward and perform the cloning process.</p>
@@ -654,16 +660,44 @@ kwargs: Additional keyword arguments not related to environment data.</p></li>
 <dl class="class">
 <dt id="fragile.core.env.Environment">
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.env.</code><code class="sig-name descname">Environment</code><span class="sig-paren">(</span><em class="sig-param">states_shape: tuple</em>, <em class="sig-param">observs_shape: tuple</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/env.html#Environment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>The Environment is in charge of stepping the walkers, acting as an state     transition function.</p>
+<p>For every different problem a new <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a> needs to be implemented     following the <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEnvironment</span></code> interface.</p>
+<dl class="method">
+<dt id="fragile.core.env.Environment.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">states_shape: tuple</em>, <em class="sig-param">observs_shape: tuple</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/env.html#Environment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize an <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>states_shape</strong> – Shape of the internal state of the <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p></li>
+<li><p><strong>observs_shape</strong> – Shape of the observations state of the <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.env.Environment.get_params_dict">
 <code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="../_modules/fragile/core/env.html#Environment.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.get_params_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dictionary containing the param_dict to build an instance         of <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> that can handle all the data generated by a         <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a>.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fragile.core.env.Environment.observs_shape">
+<em class="property">property </em><code class="sig-name descname">observs_shape</code><a class="headerlink" href="#fragile.core.env.Environment.observs_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the shape of the observations state of the <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.env.Environment.states_from_data">
 <code class="sig-name descname">states_from_data</code><span class="sig-paren">(</span><em class="sig-param">batch_size</em>, <em class="sig-param">states</em>, <em class="sig-param">observs</em>, <em class="sig-param">rewards</em>, <em class="sig-param">ends</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/core/env.html#Environment.states_from_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.states_from_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a new <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> object containing the data generated         by the environment.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.env.Environment.states_shape">
+<em class="property">property </em><code class="sig-name descname">states_shape</code><a class="headerlink" href="#fragile.core.env.Environment.states_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the shape of the internal state of the <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1025,7 +1059,7 @@ kwargs: Additional keyword arguments not related to environment data.</p></li>
 <dl class="method">
 <dt id="fragile.core.models.BinarySwap.sample">
 <code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="../_modules/fragile/core/models.html#BinarySwap.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.BinarySwap.sample" title="Permalink to this definition">¶</a></dt>
-<dd><p>Swaps the values of <cite>n_swaps</cite> dimensions chosen at random. It works on a         matrix of binary values of size (batch_size, n_actions).</p>
+<dd><p>Swap the values of <cite>n_swaps</cite> dimensions chosen at random. It works on a         matrix of binary values of size (batch_size, n_actions).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1206,6 +1240,18 @@ to make easier the process of cloning the along the walkers dimension. Each     
 </dd></dl>
 
 <dl class="method">
+<dt id="fragile.core.states.States.group_hash">
+<code class="sig-name descname">group_hash</code><span class="sig-paren">(</span><em class="sig-param">name: str</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="../_modules/fragile/core/states.html#States.group_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.group_hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a unique id for a given attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.states.States.hash_values">
+<code class="sig-name descname">hash_values</code><span class="sig-paren">(</span><em class="sig-param">name: str</em><span class="sig-paren">)</span> &#x2192; List[int]<a class="reference internal" href="../_modules/fragile/core/states.html#States.hash_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.hash_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a unique id for each walker attribute.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.states.States.items">
 <code class="sig-name descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Generator<a class="reference internal" href="../_modules/fragile/core/states.html#States.items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a generator for the attribute names and the values of the stored data.</p>
@@ -1301,6 +1347,21 @@ correspond to a given walker.</p>
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">StatesEnv</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesEnv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesEnv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keeps track of the data structures used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Env</span></code>.</p>
 <dl class="method">
+<dt id="fragile.core.states.StatesEnv.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesEnv.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesEnv.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise a <a class="reference internal" href="#fragile.core.states.StatesEnv" title="fragile.core.states.StatesEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – The number of items in the first dimension of the tensors.</p></li>
+<li><p><strong>state_dict</strong> – Dictionary defining the attributes of the tensors.</p></li>
+<li><p><strong>**kwargs</strong> – The name-tensor pairs can also be specified as kwargs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.states.StatesEnv.get_params_dict">
 <code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="../_modules/fragile/core/states.html#StatesEnv.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesEnv.get_params_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dictionary describing the data stored in the <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
@@ -1316,9 +1377,24 @@ correspond to a given walker.</p>
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">StatesModel</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keeps track of the data structures used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p>
 <dl class="method">
+<dt id="fragile.core.states.StatesModel.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesModel.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise a <a class="reference internal" href="#fragile.core.states.StatesModel" title="fragile.core.states.StatesModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – The number of items in the first dimension of the tensors.</p></li>
+<li><p><strong>state_dict</strong> – Dictionary defining the attributes of the tensors.</p></li>
+<li><p><strong>**kwargs</strong> – The name-tensor pairs can also be specified as kwargs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.states.StatesModel.get_params_dict">
 <code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="../_modules/fragile/core/states.html#StatesModel.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesModel.get_params_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a dictionary describing the data stored in the <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
+<dd><p>Return the parameter dictionary with tre attributes common to all Models.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1338,10 +1414,23 @@ correspond to a given walker.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>batch_size</strong> – Number of walkers that the class will be tracking.</p></li>
+<li><p><strong>state_dict</strong> – Dictionary defining the attributes of the tensors.</p></li>
 <li><p><strong>kwargs</strong> – attributes that will not be set as numpy.ndarrays</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.states.StatesWalkers.best_found">
+<em class="property">property </em><code class="sig-name descname">best_found</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.best_found" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the best observation found.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.states.StatesWalkers.best_reward_found">
+<em class="property">property </em><code class="sig-name descname">best_reward_found</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.best_reward_found" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the best observation found.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1511,7 +1600,7 @@ If scale is one, <cite>high</cite> and <cite>low</cite> will be equal to the max
 <dl class="method">
 <dt id="fragile.core.bounds.Bounds.points_in_bounds">
 <code class="sig-name descname">points_in_bounds</code><span class="sig-paren">(</span><em class="sig-param">x: numpy.ndarray</em><span class="sig-paren">)</span> &#x2192; Union[numpy.ndarray, bool]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.points_in_bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.points_in_bounds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks if the rows of the target array have all their coordinates inside         specified bounds.</p>
+<dd><p>Check if the rows of the target array have all their coordinates inside         specified bounds.</p>
 <p>If the array is one dimensional it will return a boolean, otherwise a vector of booleans.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

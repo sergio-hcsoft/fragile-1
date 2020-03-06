@@ -137,7 +137,7 @@
 
     <span class="k">def</span> <span class="nf">ids</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns a list of unique ids for each walker state.</span>
+<span class="sd">        Return a list of unique ids for each walker state.</span>
 
 <span class="sd">        The returned ids are integers representing the hash of the different states.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -146,7 +146,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">hash_values</span><span class="p">(</span><span class="s2">&quot;states&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Update the unique id of each walker and store it in the :class:`StatesWalkers`&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Update the unique id of each walker and store it in the :class:`StatesWalkers`.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">id_walkers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ids</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
 
     <span class="nd">@property</span>
@@ -253,6 +253,7 @@
 <span class="sd">            A tuple containing two sets: The first one represent the unique ids \</span>
 <span class="sd">            of the states for each walker at the start of the iteration. The second \</span>
 <span class="sd">            one contains the ids of the states after the cloning process.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">old_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">id_walkers</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calculate_distances</span><span class="p">()</span>

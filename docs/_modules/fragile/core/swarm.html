@@ -37,13 +37,13 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 
 <span class="kn">from</span> <span class="nn">fragile.core.base_classes</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseCritic</span><span class="p">,</span>
     <span class="n">BaseEnvironment</span><span class="p">,</span>
     <span class="n">BaseModel</span><span class="p">,</span>
     <span class="n">BaseStateTree</span><span class="p">,</span>
     <span class="n">BaseSwarm</span><span class="p">,</span>
-    <span class="n">BaseCritic</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">States</span><span class="p">,</span> <span class="n">StatesEnv</span><span class="p">,</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">StatesWalkers</span>
+<span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">StatesEnv</span><span class="p">,</span> <span class="n">StatesModel</span>
 <span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">clear_output</span><span class="p">,</span> <span class="n">Scalar</span>
 <span class="kn">from</span> <span class="nn">fragile.core.walkers</span> <span class="kn">import</span> <span class="n">StatesWalkers</span><span class="p">,</span> <span class="n">Walkers</span>
 
@@ -56,10 +56,11 @@
 <span class="sd">    Walkers instance to run the Swarm evolution algorithm.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">Walkers</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Swarm.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">Walkers</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize a :class:`Swarm`.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_tree</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prune_tree</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Swarm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">walkers</span><span class="o">=</span><span class="n">walkers</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Swarm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">walkers</span><span class="o">=</span><span class="n">walkers</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
@@ -325,7 +326,7 @@
     <span class="sd">&quot;&quot;&quot;Swarm that does not perform the cloning process.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">balance_and_prune</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Does noting.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Do noting.&quot;&quot;&quot;</span>
         <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">calculate_end_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

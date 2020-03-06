@@ -43,7 +43,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Every class that stores its data in :class:`States` must inherit \</span>
 <span class="sd">    from this class.</span>
-<span class="sd">     &quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
     <span class="n">STATE_CLASS</span> <span class="o">=</span> <span class="n">States</span>
@@ -88,6 +88,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            A new :class:`States` created with the class ``params_dict`` updated \</span>
 <span class="sd">            with the attributes passed as keyword arguments.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_new_states</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
         <span class="n">state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -220,6 +221,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            States containing the information of the current state of the \</span>
 <span class="sd">            :class:`BaseCritic`.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span>
 
@@ -408,7 +410,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model_states_params</span> <span class="o">=</span> <span class="n">model_state_params</span></div>
 
 <div class="viewcode-block" id="BaseWalkers.__len__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.__len__">[docs]</a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;The length is the number of walkers.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return length is the number of walkers.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span></div>
 
     <span class="nd">@property</span>

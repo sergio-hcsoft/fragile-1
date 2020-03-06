@@ -31,7 +31,8 @@
           <div class="body" role="main">
             
   <h1>Source code for fragile.optimize.models</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+
 <span class="kn">from</span> <span class="nn">fragile.core.models</span> <span class="kn">import</span> <span class="n">NormalContinuous</span>
 <span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">StatesEnv</span><span class="p">,</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">StatesWalkers</span>
 
@@ -64,6 +65,7 @@
 <span class="sd">            random_step_prob: Probability of applying a random normal perturbation.</span>
 <span class="sd">            *args: Passed to the parent :class:`NormalContinuous`.</span>
 <span class="sd">            **kwargs: Passed to the parent :class:`NormalContinuous`.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ESModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mutation</span> <span class="o">=</span> <span class="n">mutation</span>
@@ -93,26 +95,26 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># There is a chance of performing a gaussian perturbation</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_step_prob</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_step_prob</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ESModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="n">observs</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">env_states</span><span class="o">.</span><span class="n">observs</span>
             <span class="k">if</span> <span class="n">env_states</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">batch_size</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+            <span class="k">else</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">batch_size</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
         <span class="p">)</span>
         <span class="n">has_best</span> <span class="o">=</span> <span class="n">walkers_states</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">walkers_states</span><span class="o">.</span><span class="n">best_found</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">best</span> <span class="o">=</span> <span class="n">walkers_states</span><span class="o">.</span><span class="n">best_found</span> <span class="k">if</span> <span class="n">has_best</span> <span class="k">else</span> <span class="n">observs</span>
         <span class="c1"># Choose 2 random indices</span>
-        <span class="n">indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">observs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">indexes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">observs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">a_rand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">indexes</span><span class="p">)</span>
         <span class="n">b_rand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">indexes</span><span class="p">)</span>
         <span class="n">proposal</span> <span class="o">=</span> <span class="n">best</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">recombination</span> <span class="o">*</span> <span class="p">(</span><span class="n">observs</span><span class="p">[</span><span class="n">a_rand</span><span class="p">]</span> <span class="o">-</span> <span class="n">observs</span><span class="p">[</span><span class="n">b_rand</span><span class="p">])</span>
         <span class="c1"># Randomly mutate each coordinate of the original vector</span>
         <span class="k">assert</span> <span class="n">observs</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">proposal</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">rands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">observs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="n">perturbations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rands</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mutation</span><span class="p">,</span> <span class="n">observs</span><span class="p">,</span> <span class="n">proposal</span><span class="p">)</span>
+        <span class="n">rands</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">observs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">perturbations</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rands</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mutation</span><span class="p">,</span> <span class="n">observs</span><span class="p">,</span> <span class="n">proposal</span><span class="p">)</span>
         <span class="c1"># The Environment will sum the observations to perform the step</span>
         <span class="n">new_states</span> <span class="o">=</span> <span class="n">perturbations</span> <span class="o">-</span> <span class="n">observs</span>
         <span class="n">actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">new_states</span><span class="p">)</span>
