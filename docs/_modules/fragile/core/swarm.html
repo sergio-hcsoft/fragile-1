@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>fragile.core.swarm &#8212; Fragile 0.01a documentation</title>
+    <title>fragile.core.swarm &#8212; Fragile 0.0a documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -88,14 +88,17 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">best_found</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the best state found in the current algorithm run.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_obs</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">best_reward_found</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the best reward found in the current algorithm run.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_reward</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">critic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseCritic</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the :class:`Critic` of the walkers.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walkers</span><span class="o">.</span><span class="n">critic</span>
 
 <div class="viewcode-block" id="Swarm.init_swarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.init_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">init_swarm</span><span class="p">(</span>
@@ -228,7 +231,7 @@
                     <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
                     <span class="n">clear_output</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
                 <span class="k">break</span></div>
 
 <div class="viewcode-block" id="Swarm.calculate_end_condition"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.calculate_end_condition">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_end_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>

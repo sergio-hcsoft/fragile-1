@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Core module &#8212; Fragile 0.01a documentation</title>
+    <title>Core module &#8212; Fragile 0.0a documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -86,6 +86,8 @@
 <li><p><strong>n_walkers</strong> – Number of walkers of the swarm.</p></li>
 <li><p><strong>reward_scale</strong> – Virtual reward exponent for the reward score.</p></li>
 <li><p><strong>dist_scale</strong> – Virtual reward exponent for the distance score.</p></li>
+<li><p><strong>args</strong> – Additional arguments passed to reset.</p></li>
+<li><p><strong>kwargs</strong> – Additional keyword arguments passed to reset.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -246,15 +248,15 @@ of the environment.</p></li>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseWalkers.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseWalkers.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset a <code class="xref py py-class docutils literal notranslate"><span class="pre">fragile.Walkers</span></code> and clear the internal data to start a         new search process.</p>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseWalkers.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset a <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> and clear the internal data to start a         new search process.</p>
 <p>Restart all the variables needed to perform the fractal evolution process.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model_states</strong> – States that define the initial state of the environment.</p></li>
-<li><p><strong>env_states</strong> – States that define the initial state of the model.</p></li>
-<li><p><strong>walkers_states</strong> – States that define the internal states of the walkers.</p></li>
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> that define the initial state of the environment.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> that define the initial state of the model.</p></li>
+<li><p><strong>walkers_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> that define the internal states of the walkers.</p></li>
 </ul>
 </dd>
 </dl>
@@ -322,9 +324,9 @@ of the environment.</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>batch_size</strong> – Number of walkers that the resulting state will have.</p></li>
-<li><p><strong>env_states</strong> – States class used to set the environment to an arbitrary                         state.
-args: Additional arguments not related to environment data.
-kwargs: Additional keyword arguments not related to environment data.</p></li>
+<li><p><strong>env_states</strong> – States class used to set the environment to an arbitrary                         state.</p></li>
+<li><p><strong>args</strong> – Additional arguments not related to environment data.</p></li>
+<li><p><strong>kwargs</strong> – Additional keyword arguments not related to environment data.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -431,7 +433,51 @@ kwargs: Additional keyword arguments not related to environment data.</p></li>
 <dl class="class">
 <dt id="fragile.core.base_classes.BaseStateTree">
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseStateTree</code><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseStateTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseStateTree" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Data structure in charge of storing the history of visited states of an algorithm run.</p>
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseStateTree.add_states">
+<code class="sig-name descname">add_states</code><span class="sig-paren">(</span><em class="sig-param">parent_ids: List[int], env_states: fragile.core.states.States = None, model_states: fragile.core.states.States = None, walkers_states: fragile.core.states.States = None, n_iter: int = None</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseStateTree.add_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseStateTree.add_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the history of the tree adding the necessary data to recreate a         the trajectories sampled by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent_ids</strong> – List of states hashes representing the parent nodes of                         the current states.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> containing the data that will be                         saved as new leaves in the tree.</p></li>
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> containing the data that will be                         saved as new leaves in the tree.</p></li>
+<li><p><strong>walkers_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> containing the data that will be                         saved as new leaves in the tree.</p></li>
+<li><p><strong>n_iter</strong> – Number of iteration of the algorithm when the data was sampled.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseStateTree.prune_tree">
+<code class="sig-name descname">prune_tree</code><span class="sig-paren">(</span><em class="sig-param">alive_leafs: set</em>, <em class="sig-param">from_hash: bool = False</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseStateTree.prune_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseStateTree.prune_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the branches that do not have a walker in their leaves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alive_leafs</strong> – Contains the ids  of the leaf nodes that are being                          expanded by the walkers.</p></li>
+<li><p><strong>from_hash</strong> – from_hash: If <code class="docutils literal notranslate"><span class="pre">True</span></code> <code class="docutils literal notranslate"><span class="pre">alive_leafs</span></code> will be                       considered a set of hashes of states. If <code class="docutils literal notranslate"><span class="pre">False</span></code> it                       will be considered a set of node ids.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseStateTree.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">env_states: fragile.core.states.States = None</em>, <em class="sig-param">model_states: fragile.core.states.States = None</em>, <em class="sig-param">walkers_states: fragile.core.states.States = None</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseStateTree.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseStateTree.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all the data currently stored and reset the internal state of         the tree.</p>
+</dd></dl>
+
+</dd></dl>
 
 </div>
 <div class="section" id="basewrapper">
@@ -439,7 +485,25 @@ kwargs: Additional keyword arguments not related to environment data.</p></li>
 <dl class="class">
 <dt id="fragile.core.base_classes.BaseWrapper">
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseWrapper</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWrapper" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generic wrapper to wrap any of the other classes.</p>
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseWrapper.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseWrapper.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWrapper.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the wrapped class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseWrapper.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseWrapper.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWrapper.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.base_classes.BaseWrapper" title="fragile.core.base_classes.BaseWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWrapper</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – Object that will be wrapped.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
 
 </div>
 </div>
@@ -466,9 +530,27 @@ kwargs: Additional keyword arguments not related to environment data.</p></li>
 </dd></dl>
 
 <dl class="method">
+<dt id="fragile.core.swarm.Swarm.best_found">
+<em class="property">property </em><code class="sig-name descname">best_found</code><a class="headerlink" href="#fragile.core.swarm.Swarm.best_found" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the best state found in the current algorithm run.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.swarm.Swarm.best_reward_found">
+<em class="property">property </em><code class="sig-name descname">best_reward_found</code><a class="headerlink" href="#fragile.core.swarm.Swarm.best_reward_found" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the best reward found in the current algorithm run.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.swarm.Swarm.calculate_end_condition">
 <code class="sig-name descname">calculate_end_condition</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/fragile/core/swarm.html#Swarm.calculate_end_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.calculate_end_condition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implement the logic for deciding if the algorithm has finished.         The algorithm will stop if it returns True.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.swarm.Swarm.critic">
+<em class="property">property </em><code class="sig-name descname">critic</code><a class="headerlink" href="#fragile.core.swarm.Swarm.critic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code> of the walkers.</p>
 </dd></dl>
 
 <dl class="method">
@@ -603,18 +685,20 @@ kwargs: Additional keyword arguments not related to environment data.</p></li>
 <h3><code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.walkers.Walkers">
-<em class="property">class </em><code class="sig-prename descclassname">fragile.core.walkers.</code><code class="sig-name descname">Walkers</code><span class="sig-paren">(</span><em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">best_walker: Tuple = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.walkers.</code><code class="sig-name descname">Walkers</code><span class="sig-paren">(</span><em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">best_walker: Tuple[numpy.ndarray</em>, <em class="sig-param">Union[int</em>, <em class="sig-param">float]] = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Walkers is a data structure that takes care of all the data involved     in making a Swarm evolve.</p>
+<dl class="method">
 <dt id="fragile.core.walkers.Walkers.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">best_walker: Tuple = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize a <code class="xref py py-class docutils literal notranslate"><span class="pre">MapperWalkers</span></code>.</p>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">best_walker: Tuple[numpy.ndarray</em>, <em class="sig-param">Union[int</em>, <em class="sig-param">float]] = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.walkers.Walkers" title="fragile.core.walkers.Walkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>critic</strong> – critic that will be used to calculate custom rewards.</p></li>
 <li><p><strong>minimize</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the algorithm will perform a minimization                       process. If <code class="docutils literal notranslate"><span class="pre">False</span></code> it will be a maximization process.</p></li>
-<li><p><strong>*args</strong> – </p></li>
-<li><p><strong>**kwargs</strong> – </p></li>
+<li><p><strong>best_walker</strong> – Tuple containing the best state and reward that will                         be used as the initial best values found.</p></li>
+<li><p><strong>*args</strong> – Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleWalkers</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleWalkers</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -623,30 +707,41 @@ kwargs: Additional keyword arguments not related to environment data.</p></li>
 <dl class="method">
 <dt id="fragile.core.walkers.Walkers.balance">
 <code class="sig-name descname">balance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.balance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform an iteration of the FractalAI algorithm for balancing the         walkers distribution.</p>
-<p>It performs the necessary calculations to determine which walkers will clone,         and performs the cloning process.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The first one represent the unique ids             of the states for each walker at the start of the iteration. The second             one contains the ids of the states after the cloning process.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>A tuple containing two sets</p>
-</dd>
-</dl>
+<dd><p>Perform FAI iteration to clone the states.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.walkers.Walkers.calculate_virtual_reward">
 <code class="sig-name descname">calculate_virtual_reward</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.calculate_virtual_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.calculate_virtual_reward" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the virtual reward and update the internal state.</p>
-<p>The cumulative_reward is transformed with the relativize function.         The distances stored in the <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> are already transformed.</p>
+<dd><p>Apply the virtual reward formula to account for all the different goal scores.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.walkers.Walkers.fix_best">
+<code class="sig-name descname">fix_best</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.fix_best"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.fix_best" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure the best state found is assigned to the last walker fo the swarm.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fragile.core.walkers.Walkers.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">walker_states: fragile.core.states.StatesWalkers = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Restart all the internal states involved in the algorithm iteration.</p>
-<p>After reset a new run of the algorithm will be ready to be launched.</p>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset a <a class="reference internal" href="#fragile.core.walkers.Walkers" title="fragile.core.walkers.Walkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code></a> and clear the internal data to start a         new search process.</p>
+<p>Restart all the variables needed to perform the fractal evolution process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> that define the initial state of the environment.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> that define the initial state of the model.</p></li>
+<li><p><strong>walkers_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> that define the internal states of the walkers.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.walkers.Walkers.update_best">
+<code class="sig-name descname">update_best</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.update_best"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.update_best" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keep track of the best state found and its reward.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1364,7 +1459,7 @@ correspond to a given walker.</p>
 <dl class="method">
 <dt id="fragile.core.states.StatesEnv.get_params_dict">
 <code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="../_modules/fragile/core/states.html#StatesEnv.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesEnv.get_params_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a dictionary describing the data stored in the <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
+<dd><p>Return a dictionary describing the data stored in the <a class="reference internal" href="#fragile.core.states.StatesEnv" title="fragile.core.states.StatesEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1463,9 +1558,40 @@ correspond to a given walker.</p>
 <dt id="fragile.core.tree.HistoryTree">
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.tree.</code><code class="sig-name descname">HistoryTree</code><a class="reference internal" href="../_modules/fragile/core/tree.html#HistoryTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.tree.HistoryTree" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
+<dt id="fragile.core.tree.HistoryTree.add_states">
+<code class="sig-name descname">add_states</code><span class="sig-paren">(</span><em class="sig-param">parent_ids: List[int], env_states: fragile.core.states.StatesEnv = None, model_states: fragile.core.states.StatesModel = None, walkers_states: fragile.core.states.StatesWalkers = None, n_iter: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/tree.html#HistoryTree.add_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.tree.HistoryTree.add_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the history of the tree adding the necessary data to recreate a         the trajectories sampled by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent_ids</strong> – List of states hashes representing the parent nodes of                         the current states.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> containing the data that will be                         saved as new leaves in the tree.</p></li>
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> containing the data that will be                         saved as new leaves in the tree.</p></li>
+<li><p><strong>walkers_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> containing the data that will be                         saved as new leaves in the tree.</p></li>
+<li><p><strong>n_iter</strong> – Number of iteration of the algorithm when the data was sampled.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.tree.HistoryTree.prune_tree">
-<code class="sig-name descname">prune_tree</code><span class="sig-paren">(</span><em class="sig-param">alive_leafs: set</em>, <em class="sig-param">from_hash: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/tree.html#HistoryTree.prune_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.tree.HistoryTree.prune_tree" title="Permalink to this definition">¶</a></dt>
-<dd><p>This prunes the orphan leaves that will no longer be used to save memory.</p>
+<code class="sig-name descname">prune_tree</code><span class="sig-paren">(</span><em class="sig-param">alive_leafs: Set[int], from_hash: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/tree.html#HistoryTree.prune_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.tree.HistoryTree.prune_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the branches that do not have a walker in their leaves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alive_leafs</strong> – Contains the ids  of the leaf nodes that are being                          expanded by the walkers.</p></li>
+<li><p><strong>from_hash</strong> – from_hash: If <code class="docutils literal notranslate"><span class="pre">True</span></code> <code class="docutils literal notranslate"><span class="pre">alive_leafs</span></code> will be                       considered a set of hashes of states. If <code class="docutils literal notranslate"><span class="pre">False</span></code> it                       will be considered a set of node ids.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

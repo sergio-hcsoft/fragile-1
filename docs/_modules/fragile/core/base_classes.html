@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>fragile.core.base_classes &#8212; Fragile 0.01a documentation</title>
+    <title>fragile.core.base_classes &#8212; Fragile 0.0a documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -72,7 +72,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-    <span class="k">def</span> <span class="nf">create_new_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">STATE_CLASS</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">create_new_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StatesOwner.STATE_CLASS&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Create new states of given batch_size to store the data of the class.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATE_CLASS</span><span class="p">(</span><span class="n">state_dict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">(),</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
 
@@ -96,30 +96,72 @@
 
 
 <div class="viewcode-block" id="BaseStateTree"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseStateTree">[docs]</a><span class="k">class</span> <span class="nc">BaseStateTree</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">add_states</span><span class="p">(</span>
+    <span class="sd">&quot;&quot;&quot;Data structure in charge of storing the history of visited states of an algorithm run.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BaseStateTree.add_states"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseStateTree.add_states">[docs]</a>    <span class="k">def</span> <span class="nf">add_states</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">parent_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">walkers_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="k">pass</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the history of the tree adding the necessary data to recreate a \</span>
+<span class="sd">        the trajectories sampled by the :class:`Swarm`.</span>
 
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+<span class="sd">        Args:</span>
+<span class="sd">            parent_ids: List of states hashes representing the parent nodes of \</span>
+<span class="sd">                        the current states.</span>
+<span class="sd">            env_states: :class:`StatesEnv` containing the data that will be \</span>
+<span class="sd">                        saved as new leaves in the tree.</span>
+<span class="sd">            model_states: :class:`StatesModel` containing the data that will be \</span>
+<span class="sd">                        saved as new leaves in the tree.</span>
+<span class="sd">            walkers_states: :class:`StatesWalkers` containing the data that will be \</span>
+<span class="sd">                        saved as new leaves in the tree.</span>
+<span class="sd">            n_iter: Number of iteration of the algorithm when the data was sampled.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseStateTree.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseStateTree.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">parent_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">walkers_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">pass</span>
-
-    <span class="k">def</span> <span class="nf">prune_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete all the data currently stored and reset the internal state of \</span>
+<span class="sd">        the tree.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseStateTree.prune_tree"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseStateTree.prune_tree">[docs]</a>    <span class="k">def</span> <span class="nf">prune_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove the branches that do not have a walker in their leaves.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            alive_leafs: Contains the ids  of the leaf nodes that are being \</span>
+<span class="sd">                         expanded by the walkers.</span>
+<span class="sd">            from_hash: from_hash: If ``True`` ``alive_leafs`` will be \</span>
+<span class="sd">                      considered a set of hashes of states. If ``False`` it \</span>
+<span class="sd">                      will be considered a set of node ids.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
 
 
 <span class="k">class</span> <span class="nc">BaseCritic</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform additional computation. It can be used in a :class:`Walkers` \</span>
+<span class="sd">    or a :class:`Model`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
 
@@ -284,8 +326,8 @@
 <span class="sd">            batch_size: Number of walkers that the resulting state will have.</span>
 <span class="sd">            env_states: States class used to set the environment to an arbitrary \</span>
 <span class="sd">                        state.</span>
-<span class="sd">             args: Additional arguments not related to environment data.</span>
-<span class="sd">             kwargs: Additional keyword arguments not related to environment data.</span>
+<span class="sd">            args: Additional arguments not related to environment data.</span>
+<span class="sd">            kwargs: Additional keyword arguments not related to environment data.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            States class containing the information of the environment after the \</span>
@@ -458,20 +500,20 @@
 
 <div class="viewcode-block" id="BaseWalkers.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Reset a :class:`fragile.Walkers` and clear the internal data to start a \</span>
+<span class="sd">        Reset a :class:`Walkers` and clear the internal data to start a \</span>
 <span class="sd">        new search process.</span>
 
 <span class="sd">        Restart all the variables needed to perform the fractal evolution process.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            model_states: States that define the initial state of the environment.</span>
-<span class="sd">            env_states: States that define the initial state of the model.</span>
-<span class="sd">            walkers_states: States that define the internal states of the walkers.</span>
+<span class="sd">            model_states: :class:`StatesModel` that define the initial state of the environment.</span>
+<span class="sd">            env_states: :class:`StatesEnv` that define the initial state of the model.</span>
+<span class="sd">            walkers_states: :class:`StatesWalkers` that define the internal states of the walkers.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
@@ -649,6 +691,8 @@
 <span class="sd">            n_walkers: Number of walkers of the swarm.</span>
 <span class="sd">            reward_scale: Virtual reward exponent for the reward score.</span>
 <span class="sd">            dist_scale:Virtual reward exponent for the distance score.</span>
+<span class="sd">            args: Additional arguments passed to reset.</span>
+<span class="sd">            kwargs: Additional keyword arguments passed to reset.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None.</span>
@@ -658,14 +702,23 @@
 
 
 <div class="viewcode-block" id="BaseWrapper"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWrapper">[docs]</a><span class="k">class</span> <span class="nc">BaseWrapper</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">unwrapped</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="sd">&quot;&quot;&quot;Generic wrapper to wrap any of the other classes.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BaseWrapper.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWrapper.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`BaseWrapper`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Object that will be wrapped.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unwrapped</span> <span class="o">=</span> <span class="n">data</span></div>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="viewcode-block" id="BaseWrapper.__call__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWrapper.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Call the wrapped class.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>

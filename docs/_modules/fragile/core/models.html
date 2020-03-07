@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>fragile.core.models &#8212; Fragile 0.01a documentation</title>
+    <title>fragile.core.models &#8212; Fragile 0.0a documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -371,6 +371,7 @@
 <span class="sd">            :class:`States` variable containing the calculated actions and dt.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">flip_values</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="n">flips</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">flips</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>

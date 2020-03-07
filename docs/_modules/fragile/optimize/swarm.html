@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>fragile.optimize.swarm &#8212; Fragile 0.01a documentation</title>
+    <title>fragile.optimize.swarm &#8212; Fragile 0.0a documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -56,7 +56,6 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            model: A function that returns an instance of a :class:`Model`.</span>
-<span class="sd">            walkers: A function that returns an instance of :class:`Walkers`.</span>
 <span class="sd">            accumulate_rewards: If ``True`` the rewards obtained after transitioning \</span>
 <span class="sd">                                to a new state will accumulate. If ``False`` only the last \</span>
 <span class="sd">                                reward will be taken into account.</span>
@@ -64,8 +63,8 @@
 <span class="sd">                      process. If ``False`` it will be a maximization process.</span>
 <span class="sd">            start_same_pos: If ``True`` all the walkers will have the same \</span>
 <span class="sd">                            starting position.</span>
-<span class="sd">            *args: Passed :class:`Walkers` __init__.</span>
-<span class="sd">            **kwargs: Passed :class:`Walkers` __init__.</span>
+<span class="sd">            *args: Passed :class:`Swarm` __init__.</span>
+<span class="sd">            **kwargs: Passed :class:`Swarm` __init__.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">FunctionMapper</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">accumulate_rewards</span><span class="o">=</span><span class="n">accumulate_rewards</span><span class="p">,</span> <span class="n">minimize</span><span class="o">=</span><span class="n">minimize</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>fragile.core.tree &#8212; Fragile 0.01a documentation</title>
+    <title>fragile.core.tree &#8212; Fragile 0.0a documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -32,19 +32,19 @@
             
   <h1>Source code for fragile.core.tree</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span>
 
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 
-<span class="kn">from</span> <span class="nn">fragile.core.base_classes</span> <span class="kn">import</span> <span class="n">BaseStateTree</span><span class="p">,</span> <span class="n">States</span>
-<span class="kn">from</span> <span class="nn">fragile.core.walkers</span> <span class="kn">import</span> <span class="n">StatesWalkers</span>
+<span class="kn">from</span> <span class="nn">fragile.core.base_classes</span> <span class="kn">import</span> <span class="n">BaseStateTree</span>
+<span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">StatesEnv</span><span class="p">,</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">StatesWalkers</span>
 
 
 <span class="k">class</span> <span class="nc">_BaseNetworkxTree</span><span class="p">(</span><span class="n">BaseStateTree</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;This is a tree data structure that stores the paths followed by the walkers. It can be</span>
-<span class="sd">    pruned to delete paths that are longer be needed. It uses a networkx Graph. If someone</span>
-<span class="sd">    wants to spend time building a proper data structure, please make a PR, and I will be super</span>
-<span class="sd">    happy!</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is a tree data structure that stores the paths followed by the walkers. \</span>
+<span class="sd">    It can be pruned to delete paths that are longer be needed. It uses a \</span>
+<span class="sd">    networkx DiGraph to keep track of the states relationships.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">ROOT_ID</span> <span class="o">=</span> <span class="mi">0</span>
@@ -55,24 +55,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_HASH</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">names_to_hash</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_HASH</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ids_to_hash</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_HASH</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_HASH</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_node_count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">leafs</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">parent_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">env_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">model_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Delete all the data currently stored and reset the internal state of \</span>
 <span class="sd">        the tree .</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            parent_ids: Ignored. Only to implement interface.</span>
 <span class="sd">            env_states: Ignored. Only to implement interface.</span>
 <span class="sd">            model_states: Ignored. Only to implement interface.</span>
 <span class="sd">            walkers_states: Ignored. Only to implement interface.</span>
@@ -83,55 +81,73 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_HASH</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">names_to_hash</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_HASH</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ids_to_hash</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_HASH</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_HASH</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_node_count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">leafs</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">get_update_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_hash</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">add_new_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_hash</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            node_hash: Unique identifier of a Node.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            None.</span>
+<span class="sd">        Generate and assign a node id to a new node hash and return the node_id \</span>
+<span class="sd">        assigned to it.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">node_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_hash</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">node_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">node_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_hash</span><span class="p">(</span><span class="n">node_hash</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">node_name</span>
-
-    <span class="k">def</span> <span class="nf">update_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_hash</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">node_hash</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Hash is already present with id </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">ids_to_hash</span><span class="p">[</span><span class="n">node_hash</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_node_count</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">node_name</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_node_count</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">[</span><span class="n">node_hash</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">names_to_hash</span><span class="p">[</span><span class="n">node_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_hash</span>
-        <span class="k">return</span> <span class="n">node_name</span>
+        <span class="n">node_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_node_count</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ids_to_hash</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_hash</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span><span class="p">[</span><span class="n">node_hash</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_id</span>
+        <span class="k">return</span> <span class="n">node_id</span>
 
     <span class="k">def</span> <span class="nf">append_leaf</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">leaf_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">parent_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">state</span><span class="p">,</span>
-        <span class="n">action</span><span class="p">,</span>
-        <span class="n">dt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">action</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">dt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">cum_reward</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add a new state as a leaf node of the tree to keep track of the trajectories of the swarm.</span>
-<span class="sd">        :param leaf_id: Id that identifies the state that will be added to the tree.</span>
-<span class="sd">        :param parent_id: id that references the state of the system before taking the action.</span>
-<span class="sd">        :param state: observation assigned to leaf_id state.</span>
-<span class="sd">        :param action: action taken at leaf_id state.</span>
-<span class="sd">        :param dt: parameters taken into account when integrating the action.</span>
-<span class="sd">        :return:</span>
+<span class="sd">        Add a new state as a leaf node of the tree to keep track of the \</span>
+<span class="sd">        trajectories of the swarm.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            leaf_id: Id that identifies the state that will be added to the tree. \</span>
+<span class="sd">                     If the id is the hash of a walker state ``from_hash`` needs \</span>
+<span class="sd">                     to be ``True``. Otherwise it refers to a node_id the node \</span>
+<span class="sd">                     will be assigned.</span>
+<span class="sd">            parent_id: Id that identifies the state of the node parent that will \</span>
+<span class="sd">                       be added to the tree. If the id is the hash of a walker state \</span>
+<span class="sd">                       ``from_hash`` needs to be ``True``. Otherwise it refers to \</span>
+<span class="sd">                       the parent node_id.</span>
+<span class="sd">            state: observation assigned to ``leaf_id`` node.</span>
+<span class="sd">            action: action taken at ``leaf_id`` node.</span>
+<span class="sd">            dt: Number of steps taken from the parent node to ``leaf_id``.</span>
+<span class="sd">            n_iter: Swarm iteration when the current node was generated.</span>
+<span class="sd">            from_hash: If  ``True`` ``node_id`` and ``parent_id`` will be \</span>
+<span class="sd">                      considered hashes of states. If ``False`` they will be \</span>
+<span class="sd">                      considered node ids.</span>
+<span class="sd">            reward: Instantaneous reward assigned to the node that will be added.</span>
+<span class="sd">            cum_reward: Cumulative reward assigned to the node that will be added.</span>
+
+<span class="sd">        Returns:</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">leaf_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_hash</span><span class="p">(</span><span class="n">leaf_id</span><span class="p">)</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">leaf_id</span>
-        <span class="n">parent_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">[</span><span class="n">parent_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">parent_id</span>
+        <span class="n">leaf_name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_new_hash</span><span class="p">(</span><span class="n">leaf_id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">leaf_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span><span class="p">[</span><span class="n">leaf_id</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">from_hash</span>
+            <span class="k">else</span> <span class="n">leaf_id</span>
+        <span class="p">)</span>
+
+        <span class="n">parent_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span><span class="p">[</span><span class="n">parent_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">parent_id</span>
         <span class="k">if</span> <span class="n">leaf_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">nodes</span> <span class="ow">and</span> <span class="n">leaf_name</span> <span class="o">!=</span> <span class="n">parent_name</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span>
                 <span class="n">leaf_name</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="n">n_iter</span><span class="p">,</span> <span class="n">reward</span><span class="o">=</span><span class="n">reward</span><span class="p">,</span> <span class="n">cum_reward</span><span class="o">=</span><span class="n">cum_reward</span>
@@ -139,35 +155,79 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">parent_name</span><span class="p">,</span> <span class="n">leaf_name</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">leafs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">leaf_name</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">prune_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dead_leafs</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="p">,</span> <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;This prunes the orphan leaves that will no longer be used to save memory.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">prune_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dead_leafs</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">alive_leafs</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prune the orphan leaves that will no longer be used in order to save memory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dead_leafs: Leaves of the branches that will be removed.</span>
+<span class="sd">            alive_leafs: Leaves of the branches that will kept being expanded.</span>
+<span class="sd">            from_hash: If ``True`` ``dead_leafs`` and ``alive_leafs`` will be \</span>
+<span class="sd">                      considered hashes of states. If ``False`` they will be \</span>
+<span class="sd">                      considered node ids.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">dead_leafs</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">prune_branch</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="p">,</span> <span class="n">from_hash</span><span class="o">=</span><span class="n">from_hash</span><span class="p">)</span>
         <span class="k">return</span>
 
     <span class="k">def</span> <span class="nf">get_branch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leaf_id</span><span class="p">,</span> <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">ROOT_ID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the observation from the game ended at leaf_id</span>
-<span class="sd">        :param leaf_id: id of the leaf node belonging to the branch that will be recovered.</span>
-<span class="sd">        :return: Sequence of observations belonging to a given branch of the tree.</span>
+<span class="sd">        Get the data of the branch ended at leaf_id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            leaf_id: Id that identifies the leaf of the tree. \</span>
+<span class="sd">                     If ``leaf_id`` is the hash of a walker state ``from_hash`` \</span>
+<span class="sd">                     needs to be ``True``. Otherwise it refers to a node id of \</span>
+<span class="sd">                     the leaf node.</span>
+<span class="sd">            from_hash: If  ``True`` ``leaf_id`` is considered the hash of walker \</span>
+<span class="sd">                      state. If ``False`` it will be considered a node id.</span>
+<span class="sd">            root: Node id of the root node of the tree.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple containing (states, actions, dts) that represent the history \</span>
+<span class="sd">            of a given branch of the tree.</span>
+
+<span class="sd">            ``states`` represent the :class:`StatesEnv`.states assigned to each node.</span>
+<span class="sd">            ``actions`` represent the :class:`StatesModel`.actions taken at each state.</span>
+<span class="sd">            ``dts`` the :class:`StatesModel`.dt of each state.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">leaf_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">[</span><span class="n">leaf_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">leaf_id</span>
+        <span class="n">leaf_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span><span class="p">[</span><span class="n">leaf_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">leaf_id</span>
         <span class="n">nodes</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">shortest_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">leaf_name</span><span class="p">)</span>
         <span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">]</span>
         <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">edges</span><span class="p">[(</span><span class="n">n</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])][</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nodes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])]</span>
         <span class="n">dts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">edges</span><span class="p">[(</span><span class="n">n</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])][</span><span class="s2">&quot;dt&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nodes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])]</span>
         <span class="k">return</span> <span class="n">states</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">dts</span>
 
-    <span class="k">def</span> <span class="nf">prune_branch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leaf_id</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="p">,</span> <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;This recursively prunes a branch that only leads to an orphan leaf.&quot;&quot;&quot;</span>
-        <span class="n">leaf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">[</span><span class="n">leaf_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">leaf_id</span>
+    <span class="k">def</span> <span class="nf">prune_branch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leaf_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recursively prunes a branch that ends in an orphan leaf.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            leaf_id: Id that identifies the leaf of the tree. \</span>
+<span class="sd">                     If ``leaf_id`` is the hash of a walker state ``from_hash`` \</span>
+<span class="sd">                     needs to be ``True``. Otherwise it refers to a node id of \</span>
+<span class="sd">                     the leaf node.</span>
+<span class="sd">            alive_leafs: Leaves of the branches that will kept being expanded.</span>
+<span class="sd">            from_hash: If ``True`` ``leaf_id`` and ``alive_leafs`` will be \</span>
+<span class="sd">                      considered hashes of states. If ``False`` they will be \</span>
+<span class="sd">                      considered node ids.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">leaf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span><span class="p">[</span><span class="n">leaf_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">leaf_id</span>
         <span class="n">is_not_a_leaf</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">out_edges</span><span class="p">([</span><span class="n">leaf</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">is_not_a_leaf</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_not_a_leaf</span> <span class="ow">and</span> <span class="n">leaf</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">leafs</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">leaf</span><span class="p">)</span>
             <span class="k">return</span>
         <span class="k">elif</span> <span class="n">leaf</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROOT_ID</span> <span class="ow">or</span> <span class="n">leaf</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="n">alive_leafs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">[</span><span class="n">le</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">le</span> <span class="k">for</span> <span class="n">le</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">alive_leafs</span><span class="p">)])</span>
+        <span class="n">alive_leafs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span><span class="p">[</span><span class="n">le</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">le</span> <span class="k">for</span> <span class="n">le</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">alive_leafs</span><span class="p">)])</span>
         <span class="k">if</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">alive_leafs</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">parents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">in_edges</span><span class="p">([</span><span class="n">leaf</span><span class="p">]))</span>
@@ -176,10 +236,12 @@
         <span class="k">for</span> <span class="n">parent</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prune_branch</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the node id of the parent of the target node.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">in_edges</span><span class="p">(</span><span class="n">node_id</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">get_leaf_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_leaf_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Return a list containing all the node ids of the leaves of the tree.&quot;&quot;&quot;</span>
         <span class="n">leafs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">out_edges</span><span class="p">([</span><span class="n">node</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -188,14 +250,33 @@
 
 
 <div class="viewcode-block" id="HistoryTree"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.tree.HistoryTree">[docs]</a><span class="k">class</span> <span class="nc">HistoryTree</span><span class="p">(</span><span class="n">_BaseNetworkxTree</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">add_states</span><span class="p">(</span>
+<div class="viewcode-block" id="HistoryTree.add_states"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.tree.HistoryTree.add_states">[docs]</a>    <span class="k">def</span> <span class="nf">add_states</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">parent_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-        <span class="n">env_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">model_states</span><span class="p">:</span> <span class="n">States</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the history of the tree adding the necessary data to recreate a \</span>
+<span class="sd">        the trajectories sampled by the :class:`Swarm`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent_ids: List of states hashes representing the parent nodes of \</span>
+<span class="sd">                        the current states.</span>
+<span class="sd">            env_states: :class:`StatesEnv` containing the data that will be \</span>
+<span class="sd">                        saved as new leaves in the tree.</span>
+<span class="sd">            model_states: :class:`StatesModel` containing the data that will be \</span>
+<span class="sd">                        saved as new leaves in the tree.</span>
+<span class="sd">            walkers_states: :class:`StatesWalkers` containing the data that will be \</span>
+<span class="sd">                        saved as new leaves in the tree.</span>
+<span class="sd">            n_iter: Number of iteration of the algorithm when the data was sampled.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">leaf_ids</span> <span class="o">=</span> <span class="n">walkers_states</span><span class="o">.</span><span class="n">id_walkers</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">leaf_ids</span><span class="p">,</span> <span class="n">parent_ids</span><span class="p">)):</span>
             <span class="n">state</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">env_states</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -213,10 +294,23 @@
                 <span class="n">from_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">reward</span><span class="o">=</span><span class="n">reward</span><span class="p">,</span>
                 <span class="n">cum_reward</span><span class="o">=</span><span class="n">cum_reward</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="p">)</span></div>
 
-<div class="viewcode-block" id="HistoryTree.prune_tree"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.tree.HistoryTree.prune_tree">[docs]</a>    <span class="k">def</span> <span class="nf">prune_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="n">alive_leafs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">[</span><span class="n">le</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">le</span> <span class="k">for</span> <span class="n">le</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">alive_leafs</span><span class="p">)])</span>
+<div class="viewcode-block" id="HistoryTree.prune_tree"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.tree.HistoryTree.prune_tree">[docs]</a>    <span class="k">def</span> <span class="nf">prune_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">from_hash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove the branches that do not have a walker in their leaves.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            alive_leafs: Contains the ids  of the leaf nodes that are being \</span>
+<span class="sd">                         expanded by the walkers.</span>
+<span class="sd">            from_hash: from_hash: If ``True`` ``alive_leafs`` will be \</span>
+<span class="sd">                      considered a set of hashes of states. If ``False`` it \</span>
+<span class="sd">                      will be considered a set of node ids.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">alive_leafs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">hash_to_ids</span><span class="p">[</span><span class="n">le</span><span class="p">]</span> <span class="k">if</span> <span class="n">from_hash</span> <span class="k">else</span> <span class="n">le</span> <span class="k">for</span> <span class="n">le</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">alive_leafs</span><span class="p">)])</span>
         <span class="n">dead_leafs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">leafs</span> <span class="o">-</span> <span class="n">alive_leafs</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">HistoryTree</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">prune_tree</span><span class="p">(</span>
             <span class="n">dead_leafs</span><span class="o">=</span><span class="n">dead_leafs</span><span class="p">,</span> <span class="n">alive_leafs</span><span class="o">=</span><span class="n">alive_leafs</span><span class="p">,</span> <span class="n">from_hash</span><span class="o">=</span><span class="kc">False</span>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>fragile.core.walkers &#8212; Fragile 0.01a documentation</title>
+    <title>fragile.core.walkers &#8212; Fragile 0.0a documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -35,11 +35,11 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="c1"># import line_profiler</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
 
 <span class="kn">from</span> <span class="nn">fragile.core.base_classes</span> <span class="kn">import</span> <span class="n">BaseCritic</span><span class="p">,</span> <span class="n">BaseWalkers</span>
 <span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">StatesEnv</span><span class="p">,</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">StatesWalkers</span>
-<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">float_type</span><span class="p">,</span> <span class="n">relativize</span><span class="p">,</span> <span class="n">StateDict</span><span class="p">,</span> <span class="n">statistics_from_array</span>
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">float_type</span><span class="p">,</span> <span class="n">relativize</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">StateDict</span><span class="p">,</span> <span class="n">statistics_from_array</span>
 
 
 <span class="k">class</span> <span class="nc">SimpleWalkers</span><span class="p">(</span><span class="n">BaseWalkers</span><span class="p">):</span>
@@ -60,7 +60,9 @@
         <span class="n">dist_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">max_iters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">accumulate_rewards</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">distance_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">distance_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ignore_clone</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
@@ -91,6 +93,7 @@
 <span class="sd">                          &quot;model&quot;, to reference the `env_states` and the \</span>
 <span class="sd">                          `model_states`. Its values are a set of string with \</span>
 <span class="sd">                          the names of the attributes that will not be cloned.</span>
+<span class="sd">            kwargs: Additional attributes stored in the :class:`StatesWalkers`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SimpleWalkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -100,8 +103,8 @@
             <span class="n">accumulate_rewards</span><span class="o">=</span><span class="n">accumulate_rewards</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">l2_norm</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">l2_norm</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_model_states</span> <span class="o">=</span> <span class="n">StatesModel</span><span class="p">(</span><span class="n">state_dict</span><span class="o">=</span><span class="n">model_state_params</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">n_walkers</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_env_states</span> <span class="o">=</span> <span class="n">StatesEnv</span><span class="p">(</span><span class="n">state_dict</span><span class="o">=</span><span class="n">env_state_params</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">n_walkers</span><span class="p">)</span>
@@ -122,7 +125,7 @@
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Env States: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_repr_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env_states</span><span class="p">))</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;Model States: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_repr_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_states</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">text</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SimpleWalkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_print_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -184,7 +187,7 @@
 
 <span class="sd">        The internal :class:`StateWalkers` is updated with the relativized distance values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">compas_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>  <span class="c1"># self.get_alive_compas()</span>
+        <span class="n">compas_ix</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>  <span class="c1"># self.get_alive_compas()</span>
         <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">distances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_function</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">obs</span><span class="p">[</span><span class="n">compas_ix</span><span class="p">])</span>
         <span class="n">distances</span> <span class="o">=</span> <span class="n">relativize</span><span class="p">(</span><span class="n">distances</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
@@ -201,7 +204,7 @@
         <span class="n">virt_rw</span> <span class="o">=</span> <span class="n">processed_rewards</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">distances</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_states</span><span class="p">(</span><span class="n">virtual_rewards</span><span class="o">=</span><span class="n">virt_rw</span><span class="p">,</span> <span class="n">processed_rewards</span><span class="o">=</span><span class="n">processed_rewards</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_alive_compas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_alive_compas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the indexes of alive companions chosen at random.</span>
 
@@ -210,10 +213,10 @@
 <span class="sd">            random with replacement. Its length is equal to the number of walkers.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">alive_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">end_condition</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">alive_mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">end_condition</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">alive_mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>  <span class="c1"># No need to sample if all walkers are dead.</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
-        <span class="n">compas_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">alive_mask</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">compas_ix</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">alive_mask</span><span class="p">]</span>
         <span class="n">compas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">compas_ix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">compas</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">compas_ix</span><span class="p">)]</span> <span class="o">=</span> <span class="n">compas_ix</span>
         <span class="k">return</span> <span class="n">compas</span>
@@ -230,8 +233,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">all_virtual_rewards_are_equal</span><span class="p">:</span>
-            <span class="n">clone_probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">)</span>
-            <span class="n">compas_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">clone_probs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">)</span>
+            <span class="n">compas_ix</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">compas_ix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_alive_compas</span><span class="p">()</span>
             <span class="n">companions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span><span class="p">[</span><span class="n">compas_ix</span><span class="p">]</span>
@@ -286,15 +289,15 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">walker_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Restart all the internal states involved in the algorithm iteration.</span>
 
 <span class="sd">        After reset a new run of the algorithm will be ready to be launched.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">walker_states</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">walker_states</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">walkers_states</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">walkers_states</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_states</span><span class="p">(</span><span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">)</span>
@@ -325,7 +328,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_states</span><span class="p">,</span> <span class="n">StatesModel</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_model_states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">model_states</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_accumulate_and_update_rewards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rewards</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_accumulate_and_update_rewards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rewards</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Use as reward either the sum of all the rewards received during the \</span>
 <span class="sd">        current run, or use the last reward value received as reward.</span>
@@ -334,8 +337,8 @@
 <span class="sd">            rewards: Array containing the last rewards received by every walker.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accumulate_rewards</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cum_rewards&quot;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-                <span class="n">cum_rewards</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cum_rewards&quot;</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">cum_rewards</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">cum_rewards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span>
             <span class="n">cum_rewards</span> <span class="o">=</span> <span class="n">cum_rewards</span> <span class="o">+</span> <span class="n">rewards</span>
@@ -357,33 +360,41 @@
         <span class="k">return</span> <span class="n">string</span>
 
     <span class="k">def</span> <span class="nf">fix_best</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure the best state found is assigned to the last walker fo the swarm.&quot;&quot;&quot;</span>
         <span class="k">pass</span>
 
 
 <div class="viewcode-block" id="Walkers"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers">[docs]</a><span class="k">class</span> <span class="nc">Walkers</span><span class="p">(</span><span class="n">SimpleWalkers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The Walkers is a data structure that takes care of all the data involved \</span>
+<span class="sd">    in making a Swarm evolve.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Walkers.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">critic</span><span class="p">:</span> <span class="n">BaseCritic</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">best_walker</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">best_walker</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize a :class:`MapperWalkers`.</span>
+<span class="sd">        Initialize a :class:`Walkers`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            critic: critic that will be used to calculate custom rewards.</span>
 <span class="sd">            minimize: If ``True`` the algorithm will perform a minimization \</span>
 <span class="sd">                      process. If ``False`` it will be a maximization process.</span>
-<span class="sd">            *args:</span>
-<span class="sd">            **kwargs:</span>
+<span class="sd">            best_walker: Tuple containing the best state and reward that will \</span>
+<span class="sd">                        be used as the initial best values found.</span>
+<span class="sd">            *args: Passed to :class:`SimpleWalkers`.</span>
+<span class="sd">            **kwargs: Passed to :class:`SimpleWalkers`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Add data specific to the child class in the StatesWalkers class as new attributes.</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;critic_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;critic_score&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;n_walkers&quot;</span><span class="p">]))</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;critic_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;critic_score&quot;</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;n_walkers&quot;</span><span class="p">]))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">float_type</span>
         <span class="n">best_state</span><span class="p">,</span> <span class="n">best_obs</span><span class="p">,</span> <span class="n">best_reward</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">best_walker</span> <span class="k">if</span> <span class="n">best_walker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+            <span class="n">best_walker</span> <span class="k">if</span> <span class="n">best_walker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Walkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">best_reward</span><span class="o">=</span><span class="n">best_reward</span><span class="p">,</span> <span class="n">best_obs</span><span class="o">=</span><span class="n">best_obs</span><span class="p">,</span> <span class="n">best_state</span><span class="o">=</span><span class="n">best_state</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
@@ -401,6 +412,7 @@
 
     <span class="c1"># @profile</span>
 <div class="viewcode-block" id="Walkers.calculate_virtual_reward"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.calculate_virtual_reward">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_virtual_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply the virtual reward formula to account for all the different goal scores.&quot;&quot;&quot;</span>
         <span class="n">rewards</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span>
         <span class="n">processed_rewards</span> <span class="o">=</span> <span class="n">relativize</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
         <span class="n">score_reward</span> <span class="o">=</span> <span class="n">processed_rewards</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_scale</span>
@@ -408,8 +420,8 @@
         <span class="n">virt_rw</span> <span class="o">=</span> <span class="n">score_reward</span> <span class="o">*</span> <span class="n">score_dist</span>
         <span class="n">dist_prob</span> <span class="o">=</span> <span class="n">score_dist</span> <span class="o">/</span> <span class="n">score_dist</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">reward_prob</span> <span class="o">=</span> <span class="n">score_reward</span> <span class="o">/</span> <span class="n">score_reward</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="n">total_entropy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="n">dist_prob</span> <span class="o">**</span> <span class="n">reward_prob</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_min_entropy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="n">reward_prob</span> <span class="o">**</span> <span class="n">reward_prob</span><span class="p">)</span>
+        <span class="n">total_entropy</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="n">dist_prob</span> <span class="o">**</span> <span class="n">reward_prob</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_entropy</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="n">reward_prob</span> <span class="o">**</span> <span class="n">reward_prob</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">efficiency</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_entropy</span> <span class="o">/</span> <span class="n">total_entropy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_states</span><span class="p">(</span><span class="n">virtual_rewards</span><span class="o">=</span><span class="n">virt_rw</span><span class="p">,</span> <span class="n">processed_rewards</span><span class="o">=</span><span class="n">processed_rewards</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -426,6 +438,7 @@
 
     <span class="c1"># @profile</span>
 <div class="viewcode-block" id="Walkers.balance"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.balance">[docs]</a>    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform FAI iteration to clone the states.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_best</span><span class="p">()</span>
         <span class="n">returned</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Walkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">balance</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -438,7 +451,7 @@
         <span class="k">return</span> <span class="n">returned</span></div>
 
     <span class="k">def</span> <span class="nf">_get_best_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">rewards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">end_condition</span><span class="p">)]</span>
+        <span class="n">rewards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">end_condition</span><span class="p">)]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">0</span>
         <span class="n">best</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span> <span class="k">else</span> <span class="n">rewards</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
@@ -446,7 +459,8 @@
         <span class="n">ix</span> <span class="o">=</span> <span class="n">idx</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>  <span class="c1"># if self.minimize else idx.argmax()</span>
         <span class="k">return</span> <span class="n">ix</span>
 
-    <span class="k">def</span> <span class="nf">update_best</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Walkers.update_best"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.update_best">[docs]</a>    <span class="k">def</span> <span class="nf">update_best</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Keep track of the best state found and its reward.&quot;&quot;&quot;</span>
         <span class="n">ix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_best_index</span><span class="p">()</span>
         <span class="n">best_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">best_reward</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">[</span><span class="n">ix</span><span class="p">])</span>
@@ -464,35 +478,48 @@
                 <span class="n">best_obs</span><span class="o">=</span><span class="n">best_obs</span><span class="p">,</span>
                 <span class="n">best_id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">[</span><span class="n">ix</span><span class="p">]),</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">fix_best</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Walkers.fix_best"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.fix_best">[docs]</a>    <span class="k">def</span> <span class="nf">fix_best</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure the best state found is assigned to the last walker fo the swarm.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_reward</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_obs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_reward</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_id</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Walkers.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.walkers.Walkers.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">walker_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset a :class:`Walkers` and clear the internal data to start a \</span>
+<span class="sd">        new search process.</span>
+
+<span class="sd">        Restart all the variables needed to perform the fractal evolution process.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_states: :class:`StatesModel` that define the initial state of the environment.</span>
+<span class="sd">            env_states: :class:`StatesEnv` that define the initial state of the model.</span>
+<span class="sd">            walkers_states: :class:`StatesWalkers` that define the internal states of the walkers.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Walkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span>
-            <span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="n">walker_states</span><span class="o">=</span><span class="n">walker_states</span>
+            <span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="n">walkers_states</span><span class="o">=</span><span class="n">walkers_states</span>
         <span class="p">)</span>
         <span class="n">rewards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">rewards</span>
         <span class="n">ix</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span> <span class="k">else</span> <span class="n">rewards</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="n">best_reward</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span> <span class="k">else</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+            <span class="n">best_reward</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span> <span class="k">else</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
             <span class="n">best_obs</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">ix</span><span class="p">]),</span>
             <span class="n">best_state</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">ix</span><span class="p">]),</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">critic_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span>
-                <span class="n">env_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="n">walker_states</span><span class="o">=</span><span class="n">walker_states</span>
+                <span class="n">env_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="n">walker_states</span><span class="o">=</span><span class="n">walkers_states</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">critic_score</span><span class="o">=</span><span class="n">critic_score</span><span class="p">)</span></div></div>
 </pre></div>

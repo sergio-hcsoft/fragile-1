@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Function Optimization &#8212; Fragile 0.01a documentation</title>
+    <title>Function Optimization &#8212; Fragile 0.0a documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -288,6 +288,7 @@ the observations will have shape (5, 2)</p></li>
 <li><p><strong>model_states</strong> – States corresponding to the environment data.</p></li>
 <li><p><strong>env_states</strong> – States corresponding to the model data.</p></li>
 <li><p><strong>walkers_states</strong> – States corresponding to the walkers data.</p></li>
+<li><p><strong>kwargs</strong> – Passed to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code> if any.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -316,12 +317,11 @@ the observations will have shape (5, 2)</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> – A function that returns an instance of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p></li>
-<li><p><strong>walkers</strong> – A function that returns an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p></li>
 <li><p><strong>accumulate_rewards</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the rewards obtained after transitioning                                 to a new state will accumulate. If <code class="docutils literal notranslate"><span class="pre">False</span></code> only the last                                 reward will be taken into account.</p></li>
 <li><p><strong>minimize</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the algorithm will perform a minimization                       process. If <code class="docutils literal notranslate"><span class="pre">False</span></code> it will be a maximization process.</p></li>
 <li><p><strong>start_same_pos</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> all the walkers will have the same                             starting position.</p></li>
-<li><p><strong>*args</strong> – Passed <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> __init__.</p></li>
-<li><p><strong>**kwargs</strong> – Passed <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> __init__.</p></li>
+<li><p><strong>*args</strong> – Passed <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> __init__.</p></li>
+<li><p><strong>**kwargs</strong> – Passed <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> __init__.</p></li>
 </ul>
 </dd>
 </dl>

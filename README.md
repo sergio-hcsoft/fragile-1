@@ -93,7 +93,7 @@ If you use this framework in your research please cite us as:
     
 ## Roadmap
 
-- Update CI and publish docs on ReadTheDocs.org
+- Publish docs on ReadTheDocs.org
 - Document and test the `dataviz` module. Write example notebook
 - Document and test the `ray` module. Write example notebook
 - Document and refactor Montezuma solver
