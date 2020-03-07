@@ -10,6 +10,19 @@
 
 Fragile is a framework for developing algorithms inspired by the Fractal AI theory and testing them at scale.
 
+## About FractalAI
+
+FractalAI is a theory of Artificial Intelligence derived from first principles, and based on the 
+framework of non-equilibrium thermodynamics. It allows to derive new mathematical tools for efficiently
+ exploring state spaces.
+ 
+ The fundamental principles of our work are accessible online:
+
+- [Arxiv](https://arxiv.org/abs/1803.05049) manuscript describing the fundamental principles of our work.
+- [Blog](http://entropicai.blogspot.com) that describes our early research process.
+- [Youtube channel](https://www.youtube.com/user/finaysergio/videos) with videos showing how different prototypes work.
+- [GitHub repository](https://github.com/FragileTech/FractalAI) containing a prototype that solves most Atari games.
+
 ## Getting started 
 
 Check out the [Getting started with Atari games](https://guillemdb.github.io/fragile/resources/getting_started.html) 
@@ -29,15 +42,17 @@ You can also run the tests inside the docker container
 ```
 
 ## Installation
+This framework has been tested in Ubuntu 18.04 and supports Python 3.6 and 3.7. 
+If you find any problems running it in a different OS or Python version please open an issue.
 
 Please take a look at the Dockerfile to find out about all the dependencies, and the detailed installation process.
 
 ```bash
    git clone https://github.com/Guillemdb/fragile.git
    cd fragile
-   sudo pip3 install -r requirements.txt
-   sudo pip3 install -r requirements-dev.txt
-   sudo pip3 install -e .
+   pip3 install -r requirements.txt
+   pip3 install -r requirements-dev.txt
+   pip3 install -e .
 ```
 
 ## Documentation
@@ -59,9 +74,25 @@ You can access the documentation on [GitHub Pages](https://guillemdb.github.io/f
     ```
     - Visit [http://0.0.0.0:8000](http://0.0.0.0:8000) to display the documentation.
     
+## License
+
+This project is currently licensed under AGPLv3.0. 
+
+However, if you are considering using it for applications that require a more permissive license, 
+please let me know in this [Issue](https://github.com/Guillemdb/fragile/issues/5)
+    
+## Cite us
+If you use this framework in your research please cite us as:
+
+    @misc{1803.05049,
+        Author = {Sergio Hernández Cerezo and Guillem Duran Ballester},
+        Title = {Fractal AI: A fragile theory of intelligence},
+        Year = {2018},
+        Eprint = {arXiv:1803.05049},
+      }
+    
 ## Roadmap
 
-- Add example notebook for function optimization using the `optimize` module
 - Update CI and publish docs on ReadTheDocs.org
 - Document and test the `dataviz` module. Write example notebook
 - Document and test the `ray` module. Write example notebook

@@ -75,7 +75,6 @@ class BaseStateTree:
 
     def reset(
         self,
-        parent_ids: List[int] = None,
         env_states: States = None,
         model_states: States = None,
         walkers_states: States = None,
@@ -430,7 +429,7 @@ class BaseWalkers(StatesOwner):
         walkers_states: StatesWalkers = None,
     ):
         """
-        Reset a :class:`fragile.Walkers` and clear the internal data to start a \
+        Reset a :class:`Walkers` and clear the internal data to start a \
         new search process.
 
         Restart all the variables needed to perform the fractal evolution process.

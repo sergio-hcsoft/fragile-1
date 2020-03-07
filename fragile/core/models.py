@@ -338,6 +338,7 @@ class BinarySwap(DiscreteModel):
             :class:`States` variable containing the calculated actions and dt.
 
         """
+
         @jit(nopython=True)
         def flip_values(actions, flips):
             for i in range(flips.shape[0]):
