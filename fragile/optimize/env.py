@@ -205,7 +205,7 @@ class Minimizer:
             try:
                 _x = _x.reshape((1,) + _x.shape)
                 y = self.function(_x)
-            except (ZeroDivisionError, RuntimeError) as e:
+            except (ZeroDivisionError, RuntimeError):
                 y = numpy.inf
             return y
 

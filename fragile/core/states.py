@@ -69,7 +69,7 @@ class States:
         if isinstance(item, str):
             try:
                 return getattr(self, item)
-            except AttributeError as e:
+            except AttributeError:
                 raise TypeError("Tried to get a non existing attribute with key {}".format(item))
         else:
             raise TypeError("item must be an instance of str, got {} instead".format(item))
@@ -218,7 +218,7 @@ class States:
             for name, val in attrs.items():
                 try:
                     getattr(self, name)[:] = copy.deepcopy(val)
-                except (AttributeError, TypeError, KeyError, ValueError) as e:
+                except (AttributeError, TypeError, KeyError, ValueError):
                     setattr(self, name, copy.deepcopy(val))
 
         if other is not None:

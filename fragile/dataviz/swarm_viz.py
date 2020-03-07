@@ -115,7 +115,7 @@ class SwarmViz:
                     print(self)
                     clear_output(True)
                 self.swarm.epoch += 1
-            except KeyboardInterrupt as e:
+            except KeyboardInterrupt:
                 break
 
     def run_step(self):

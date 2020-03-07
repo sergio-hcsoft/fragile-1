@@ -39,7 +39,7 @@ class StatesOwner:
         """
         raise NotImplementedError
 
-    def create_new_states(self, batch_size: int) -> STATE_CLASS:
+    def create_new_states(self, batch_size: int) -> "StatesOwner.STATE_CLASS":
         """Create new states of given batch_size to store the data of the class."""
         return self.STATE_CLASS(state_dict=self.get_params_dict(), batch_size=batch_size)
 

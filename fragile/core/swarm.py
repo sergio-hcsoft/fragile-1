@@ -198,7 +198,7 @@ class Swarm(BaseSwarm):
                     print(self)
                     clear_output(True)
                 self.epoch += 1
-            except KeyboardInterrupt as e:
+            except KeyboardInterrupt:
                 break
 
     def calculate_end_condition(self) -> bool:

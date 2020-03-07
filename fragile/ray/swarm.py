@@ -63,7 +63,7 @@ class RemoteSwarm:
             return
         try:
             best_state, best_obs, best_rew = walkers[0]
-        except Exception as e:
+        except Exception:
             print("WALKERS", walkers)
             raise Exception(str(walkers))
 
