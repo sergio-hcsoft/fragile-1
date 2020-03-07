@@ -56,6 +56,7 @@ class ESModel(NormalContinuous):
             model_states: States corresponding to the environment data.
             env_states: States corresponding to the model data.
             walkers_states: States corresponding to the walkers data.
+            kwargs: Passed to the :class:`Critic` if any.
 
         Returns:
             Tuple containing a tensor with the sampled actions and the new model states variable.

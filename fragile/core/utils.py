@@ -22,6 +22,7 @@ StateDict = Dict[str, Dict[str, Any]]
 
 
 def hash_numpy(x: np.ndarray) -> int:
+    """Return a value that uniquely identifies a numpy array."""
     return hash(x.tostring())
 
 

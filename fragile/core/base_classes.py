@@ -63,6 +63,8 @@ class StatesOwner:
 
 
 class BaseStateTree:
+    """Data structure in charge of storing the history of visited states of an algorithm run."""
+
     def add_states(
         self,
         parent_ids: List[int],
@@ -70,7 +72,26 @@ class BaseStateTree:
         model_states: States = None,
         walkers_states: States = None,
         n_iter: int = None,
-    ) -> np.ndarray:
+    ) -> None:
+        """
+        Update the history of the tree adding the necessary data to recreate a \
+        the trajectories sampled by the :class:`Swarm`.
+
+        Args:
+            parent_ids: List of states hashes representing the parent nodes of \
+                        the current states.
+            env_states: :class:`StatesEnv` containing the data that will be \
+                        saved as new leaves in the tree.
+            model_states: :class:`StatesModel` containing the data that will be \
+                        saved as new leaves in the tree.
+            walkers_states: :class:`StatesWalkers` containing the data that will be \
+                        saved as new leaves in the tree.
+            n_iter: Number of iteration of the algorithm when the data was sampled.
+
+        Returns:
+            None
+
+        """
         pass
 
     def reset(
@@ -79,13 +100,35 @@ class BaseStateTree:
         model_states: States = None,
         walkers_states: States = None,
     ) -> None:
+        """
+        Delete all the data currently stored and reset the internal state of \
+        the tree.
+        """
         pass
 
     def prune_tree(self, alive_leafs: set, from_hash: bool = False) -> None:
+        """
+        Remove the branches that do not have a walker in their leaves.
+
+        Args:
+            alive_leafs: Contains the ids  of the leaf nodes that are being \
+                         expanded by the walkers.
+            from_hash: from_hash: If ``True`` ``alive_leafs`` will be \
+                      considered a set of hashes of states. If ``False`` it \
+                      will be considered a set of node ids.
+
+        Returns:
+            None.
+
+        """
         pass
 
 
 class BaseCritic(StatesOwner):
+    """
+    Perform additional computation. It can be used in a :class:`Walkers` \
+    or a :class:`Model`.
+    """
 
     random_state = random_state
 
@@ -250,8 +293,8 @@ class BaseEnvironment(StatesOwner):
             batch_size: Number of walkers that the resulting state will have.
             env_states: States class used to set the environment to an arbitrary \
                         state.
-             args: Additional arguments not related to environment data.
-             kwargs: Additional keyword arguments not related to environment data.
+            args: Additional arguments not related to environment data.
+            kwargs: Additional keyword arguments not related to environment data.
 
         Returns:
             States class containing the information of the environment after the \
@@ -424,8 +467,8 @@ class BaseWalkers(StatesOwner):
 
     def reset(
         self,
-        model_states: StatesModel = None,
         env_states: StatesEnv = None,
+        model_states: StatesModel = None,
         walkers_states: StatesWalkers = None,
     ):
         """
@@ -435,9 +478,9 @@ class BaseWalkers(StatesOwner):
         Restart all the variables needed to perform the fractal evolution process.
 
         Args:
-            model_states: States that define the initial state of the environment.
-            env_states: States that define the initial state of the model.
-            walkers_states: States that define the internal states of the walkers.
+            model_states: :class:`StatesModel` that define the initial state of the environment.
+            env_states: :class:`StatesEnv` that define the initial state of the model.
+            walkers_states: :class:`StatesWalkers` that define the internal states of the walkers.
 
         """
         raise NotImplementedError
@@ -615,6 +658,8 @@ class BaseSwarm:
             n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.
             dist_scale:Virtual reward exponent for the distance score.
+            args: Additional arguments passed to reset.
+            kwargs: Additional keyword arguments passed to reset.
 
         Returns:
             None.
@@ -624,13 +669,22 @@ class BaseSwarm:
 
 
 class BaseWrapper:
+    """Generic wrapper to wrap any of the other classes."""
+
     def __init__(self, data):
+        """
+        Initialize a :class:`BaseWrapper`.
+
+        Args:
+            data: Object that will be wrapped.
+        """
         self.unwrapped = data
 
     def __repr__(self):
         return self.unwrapped.__repr__()
 
     def __call__(self, *args, **kwargs):
+        """Call the wrapped class."""
         return self.unwrapped.__call__(*args, **kwargs)
 
     def __str__(self):

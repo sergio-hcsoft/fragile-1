@@ -23,7 +23,6 @@ class FunctionMapper(Swarm):
 
         Args:
             model: A function that returns an instance of a :class:`Model`.
-            walkers: A function that returns an instance of :class:`Walkers`.
             accumulate_rewards: If ``True`` the rewards obtained after transitioning \
                                 to a new state will accumulate. If ``False`` only the last \
                                 reward will be taken into account.
@@ -31,8 +30,8 @@ class FunctionMapper(Swarm):
                       process. If ``False`` it will be a maximization process.
             start_same_pos: If ``True`` all the walkers will have the same \
                             starting position.
-            *args: Passed :class:`Walkers` __init__.
-            **kwargs: Passed :class:`Walkers` __init__.
+            *args: Passed :class:`Swarm` __init__.
+            **kwargs: Passed :class:`Swarm` __init__.
         """
         super(FunctionMapper, self).__init__(
             model=model, accumulate_rewards=accumulate_rewards, minimize=minimize, *args, **kwargs

@@ -306,6 +306,7 @@ class StatesEnv(States):
         super(StatesEnv, self).__init__(state_dict=updated_dict, batch_size=batch_size, **kwargs)
 
     def get_params_dict(self) -> StateDict:
+        """Return a dictionary describing the data stored in the :class:`StatesEnv`."""
         params = {
             "states": {"dtype": np.int64},
             "observs": {"dtype": np.float32},

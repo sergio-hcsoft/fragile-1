@@ -55,14 +55,17 @@ class Swarm(BaseSwarm):
 
     @property
     def best_found(self) -> numpy.ndarray:
+        """Return the best state found in the current algorithm run."""
         return self.walkers.states.best_obs
 
     @property
     def best_reward_found(self) -> Scalar:
+        """Return the best reward found in the current algorithm run."""
         return self.walkers.states.best_reward
 
     @property
     def critic(self) -> BaseCritic:
+        """Return the :class:`Critic` of the walkers."""
         return self._walkers.critic
 
     def init_swarm(
