@@ -1,12 +1,21 @@
+import os
 from setuptools import find_packages, setup
 
 from fragile.version import __version__
 
+import os
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+if on_rtd:
+    install_requires = []
+    packages = [],
+else:
+    install_requires = ["numpy", "scipy", "networkx", "atari-py==0.1.1"]
+    packages = find_packages()
 
 setup(
     name="fragile",
     description="Framework for developing FractalAI based algorithms.",
-    packages=find_packages(),
+    packages=packages,
     version=__version__,
     license="AGPLv3.0",
     author="Guillem Duran Ballester",
@@ -15,7 +24,7 @@ setup(
     download_url="https://github.com/Guillemdb/fragile",
     keywords=["reinforcement learning", "artificial intelligence", "monte carlo", "planning"],
     test_requires=["pytest", "hypothesis"],
-    install_requires=["numpy", "scipy", "networkx", "atari-py==0.1.1"],
+    install_requires=install_requires,
     package_data={"": ["README.md"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
