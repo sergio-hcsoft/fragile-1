@@ -1,17 +1,16 @@
 Cython>=0.28,<1.0; python_version == '3.7'
 git+https://github.com/Guillemdb/atari-py.git#egg=atari-py
 git+https://github.com/Guillemdb/plangym.git#egg=plangym
+pytest >= 5.3.5
+hypothesis==5.6.0
 networkx==2.4
 pillow-simd==7.0.0.post3
 numpy==1.18.1
 scipy==1.4.1
 param==1.9.3
-jupyter==1.0.0
 psycopg2-binary==2.8.4
 pyarrow==0.16.0
-xlrd
 opencv-python==4.2.0.32
-streamz==0.5.2
 setproctitle==1.1.10
 scikit-learn==0.22.2.post1
 numba==0.48.0

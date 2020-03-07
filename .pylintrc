@@ -1,6 +1,6 @@
 [MASTER]
 jobs=0
-ignore=physics
+ignore=ray
 load-plugins=pylint.extensions.docparams
 
 [MESSAGES CONTROL]

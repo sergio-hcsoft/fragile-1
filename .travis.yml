@@ -14,14 +14,13 @@ stages:
 _install: &_install
   - pip install --upgrade pip cython codecov pytest
   - pip install -r requirements.txt --no-use-pep517
-  - pip install -r requirements-dev.txt --no-use-pep517
+  - pip install -r requirements-viz.txt --no-use-pep517
   - pip install -e . --no-use-pep517
   - cd fragile
   - find . -wholename "*/tests/*" -type d -exec chmod 555 {} \;
-_pytest: &_pytest
-  - python3 -m pytest
+
 _coverage: &_coverage
-  - coverage run --concurrency=multiprocessing -m pytest
+  - coverage run --concurrency=multiprocessing -m pytest tests
   - travis_retry coverage combine
 matrix:
   fast_finish: true
@@ -37,15 +36,22 @@ matrix:
     - stage: test
       name: "Test python 3.6"
       python: 3.6
-      script: *_pytest
+      script: *_coverage
       install: *_install
     - stage: test
       name: "Test python 3.7"
       python: 3.7
-      script: *_pytest
+      script: *_coverage
       install: *_install
       after_success:
         - codecov
+    - stage: test
+        name: "Test python 3.8"
+        python: 3.8
+        script: *_coverage
+        install: *_install
+        after_success:
+          - codecov
     - stage: test
       name: "Tests inside docker"
       script:
