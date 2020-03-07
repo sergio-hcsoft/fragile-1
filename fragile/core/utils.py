@@ -8,7 +8,7 @@ try:
     from IPython.core.display import clear_output
 except ImportError:
 
-    def clear_output(**kwargs):
+    def clear_output(*args, **kwargs):
         """If not using jupyter notebook do nothing."""
         pass
 

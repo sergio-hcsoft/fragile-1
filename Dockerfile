@@ -3,7 +3,7 @@ ENV BROWSER=/browser \
     LC_ALL=en_US.UTF-8 \
     JUPYTER_PASSWORD=fragile
 COPY requirements.txt fragile/requirements.txt
-COPY requirements-dev.txt fragile/requirements-dev.txt
+COPY requirements-viz.txt fragile/requirements-viz.txt
 RUN apt-get update && \
     apt-get install -y --no-install-suggests --no-install-recommends \
       ca-certificates locales pkg-config apt-utils gcc g++ wget make git cmake libffi-dev \
@@ -37,7 +37,7 @@ RUN pip3 install --no-cache-dir cython && \
     cd plangym && pip3 install -e . && cd .. && \
     cd fragile && \
     pip3 install -U --no-cache-dir -r requirements.txt --no-use-pep517&& \
-    pip3 install -U --no-cache-dir -r requirements-dev.txt --no-use-pep517&& \
+    pip3 install -U --no-cache-dir -r requirements-viz.txt --no-use-pep517&& \
     python3 -c "import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot"
 
 # Install holoviews image save

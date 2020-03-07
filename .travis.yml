@@ -15,9 +15,8 @@ _install: &_install
   - pip install --upgrade pip cython codecov pytest
   - pip install -r requirements.txt --no-use-pep517
   - pip install -r requirements-viz.txt --no-use-pep517
-  - pip install -e . --no-use-pep517
-  - cd fragile
-  - find . -wholename "*/tests/*" -type d -exec chmod 555 {} \;
+  - pip install . --no-use-pep517
+  - find . -wholename "./tests/*" -type d -exec chmod 555 {} \;
 
 _coverage: &_coverage
   - coverage run --concurrency=multiprocessing -m pytest tests
@@ -29,8 +28,7 @@ matrix:
       name: "Check code style"
       python: 3.7
       script:
-        # - make check
-        - echo "Skipping coz linter dependencies are broken"
+        - make check
       install:
         - pip install -r requirements-lint.txt
     - stage: test
@@ -46,12 +44,12 @@ matrix:
       after_success:
         - codecov
     - stage: test
-        name: "Test python 3.8"
-        python: 3.8
-        script: *_coverage
-        install: *_install
-        after_success:
-          - codecov
+      name: "Test python 3.8"
+      python: 3.8
+      script: *_coverage
+      install: *_install
+      after_success:
+        - codecov
     - stage: test
       name: "Tests inside docker"
       script:

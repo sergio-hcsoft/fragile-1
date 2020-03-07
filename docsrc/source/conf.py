@@ -16,11 +16,8 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(""))
-sys.path.insert(0, os.path.abspath("../../fragile"))
-sys.setrecursionlimit(15000)
-sys.path.append("/home/guillem/github/Fragile")
-
+sys.path.insert(0, os.path.abspath("../.."))
+sys.setrecursionlimit(1500)
 # -- Project information -----------------------------------------------------
 
 project = "Fragile"
@@ -30,7 +27,7 @@ author = "Guillem Duran, Sergio Hernandez"
 # The short X.Y version
 version = "0.0"
 # The full version, including alpha/beta/rc tags
-release = "0.01a"
+release = "0.0a"
 
 
 # -- General configuration ---------------------------------------------------
@@ -67,6 +64,8 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
+
+autodoc_mock_imports = ["atari-py", "plangym"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
