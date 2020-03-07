@@ -84,7 +84,7 @@ Defining the ``Model``
 ----------------------
 
 The ``Model`` defines the policy that will be used to sample the
-``Environment``. In this tutorial we will be using a random sapling
+``Environment``. In this tutorial we will be using a random sampling
 strategy over a discrete uniform distribution. This means that every
 time we sample an action, the ``Model`` will return an integer in the
 range [0, N_actions] for each state.

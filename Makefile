@@ -2,17 +2,16 @@ current_dir = $(shell pwd)
 
 PROJECT = fragile
 
-.PHONY: check
+.POSIX:
 check:
 	!(grep -R /tmp fragile/tests)
-	flake8 --count
+	flake8 --count fragile
 	pylint fragile
-	black --check .
+	black --check fragile
 
 .PHONY: test
 test:
 	python3 -m pytest
-
 
 .PHONY: docker-test
 docker-test:

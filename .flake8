@@ -1,10 +1,14 @@
 [flake8]
-ignore=B008,B301,E121,E123,E126,E203,E226,E24,E704,W503,W504,D100,D105,D200,D301,D402
+ignore=B008,B301,C815,C816,C812,E121,E123,E126,E203,E226,E24,E704,W503,W504,D100,D105,D200,D301,D402
 max-line-length=99
 exclude=
     .git
     docs
     fragile/physics/*
+    fragile/ray/*
+    fragile/experimental/*
+    fragile/earth/*
+    fragile/dataviz/*
 inline-quotes="
 import-order-style=appnexus
 application-package-names=fragile
