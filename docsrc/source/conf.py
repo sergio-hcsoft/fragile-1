@@ -15,13 +15,23 @@
 #
 import os
 import sys
+from unittest.mock import MagicMock
+
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+
 
 sys.path.insert(0, os.path.abspath("../.."))
 sys.setrecursionlimit(1500)
+MOCK_MODULES = ["plangym", "numpy", "atari-py", "scipy", "numba"]
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # -- Project information -----------------------------------------------------
 
 project = "Fragile"
-copyright = "2019, Guillem Duran, Sergio Hernandez"
+copyright = "2020, Guillem Duran, Sergio Hernandez"
 author = "Guillem Duran, Sergio Hernandez"
 
 # The short X.Y version
@@ -65,7 +75,7 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
 
-autodoc_mock_imports = ["atari-py", "plangym"]
+autodoc_mock_imports = ["plangym", "numpy", "atari-py", "scipy", "numba"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
