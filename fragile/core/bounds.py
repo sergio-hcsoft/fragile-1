@@ -27,12 +27,12 @@ class Bounds:
         Args:
             high: Higher value for the bound interval. If it is an scalar it will be applied to \
                   all the coordinates of a target vector. If it is a vector, the bounds will be \
-                  checked coordinate-wise. It defines and open interval.
+                  checked coordinate-wise. It defines and closed interval.
             low: Lower value for the bound interval. If it is an scalar it will be applied to \
                   all the coordinates of a target vector. If it is a vector, the bounds will be \
-                  checked coordinate-wise. It defines and open interval.
+                  checked coordinate-wise. It defines and closed interval.
             shape: Shape of the array that will be bounded. Only needed if `high` and `low` are \
-                   and it is used to defined the dimensions that will be bounded.
+                   vectors and it is used to define the dimensions that will be bounded.
             dtype:  Data type of the array that will be bounded. It can be inferred from `high` \
                     or `low` (the type of `high` takes priority).
 
@@ -130,7 +130,7 @@ class Bounds:
         The value of the high and low will be proportional to the maximum and minimum values of \
         the array. Scale defines the proportion to make the bounds bigger and smaller. For \
         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \
-        smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.
+        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% higher.
         If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \
         array.
 
@@ -164,7 +164,7 @@ class Bounds:
         The value of the high and low will be proportional to the maximum and minimum values of \
         the array. Scale defines the proportion to make the bounds bigger and smaller. For \
         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \
-        smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.
+        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% higher.
         If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \
         array.
 
@@ -233,7 +233,7 @@ class Bounds:
         high and low will be proportional to the maximum and minimum values of \
         the array. Scale defines the proportion to make the bounds bigger and smaller. For \
         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \
-        smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.
+        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% higher.
         If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \
         array.
 

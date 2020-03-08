@@ -12,8 +12,8 @@ class States:
     walkers of a Swarm. Each tensor will be associated to a class attribute.
 
     This class behaves as a dictionary of tensors with some extra functionality
-    to make easier the process of cloning the along the walkers dimension. Each \
-    tensor will have an extra dimension equal to the number of walkers.
+    to make easier the process of cloning the walkers' states by adding an \
+    extra dimension equal to the number of walkers to each tensor.
 
     In order to define the tensors, a `state_dict` dictionary needs to be \
     specified using the following structure::
@@ -196,7 +196,7 @@ class States:
     def split_states(self) -> "States":
         """
         Return a generator for n_walkers different states, where each one \
-        contain only the  data corresponding to one walker.
+        contain only the data corresponding to one walker.
         """
         for k, v in self.iteritems():
             yield self.__class__(batch_size=1, **dict(zip(k, v)))
