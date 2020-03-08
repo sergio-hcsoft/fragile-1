@@ -28,7 +28,7 @@ framework of non-equilibrium thermodynamics. It allows to derive new mathematica
 Check out the [Getting started with Atari games](https://guillemdb.github.io/fragile/resources/getting_started.html) 
 section of the docs, or check out the examples folder.
 
-## Running on docker
+## Running in docker
 The docker container will execute a Jupyter notebook accessible on port 8080 with password: `fragile`
 
 ```bash
@@ -42,7 +42,7 @@ You can also run the tests inside the docker container
 ```
 
 ## Installation
-This framework has been tested in Ubuntu 18.04 and supports Python 3.6 and 3.7. 
+This framework has been tested in Ubuntu 18.04 and supports Python 3.6, 3.7 and 3.8. 
 If you find any problems running it in a different OS or Python version please open an issue.
 
 Please take a look at the Dockerfile to find out about all the dependencies, and the detailed installation process.
@@ -51,7 +51,7 @@ Please take a look at the Dockerfile to find out about all the dependencies, and
    git clone https://github.com/Guillemdb/fragile.git
    cd fragile
    pip3 install -r requirements.txt
-   pip3 install -r requirements-dev.txt
+   pip3 install -r requirements-viz.txt
    pip3 install -e .
 ```
 
@@ -74,12 +74,21 @@ You can access the documentation on [GitHub Pages](https://guillemdb.github.io/f
     ```
     - Visit [http://0.0.0.0:8000](http://0.0.0.0:8000) to display the documentation.
     
-## License
+## Roadmap
 
-This project is currently licensed under AGPLv3.0. 
+- Publish docs on ReadTheDocs.org
+- Document and test the `dataviz` module. Write example notebook
+- Document and test the `ray` module. Write example notebook
+- Document and refactor Montezuma solver
+- Improve tests coverage (currently 153 for the `core` and `optimize` modules)
+- Add a module to generate data for training deep learning models
+- Add a benchmarking module
+- Add deep learning API
 
-However, if you are considering using it for applications that require a more permissive license, 
-please let me know in this [Issue](https://github.com/Guillemdb/fragile/issues/5)
+## Contributing
+
+Contribution are welcome. Please take a look at [contributining](docsrc/markdown/CONTRIBUTING.md) 
+and respect the [code of conduct](docsrc/markdown/CODE_OF_CONDUCT.md).
     
 ## Cite us
 If you use this framework in your research please cite us as:
@@ -90,15 +99,10 @@ If you use this framework in your research please cite us as:
         Year = {2018},
         Eprint = {arXiv:1803.05049},
       }
-    
-## Roadmap
+      
+## License
 
-- Publish docs on ReadTheDocs.org
-- Document and test the `dataviz` module. Write example notebook
-- Document and test the `ray` module. Write example notebook
-- Document and refactor Montezuma solver
-- Improve the tests (currently 154 for the `core` and `optimize` modules)
-- Get rid of the `experimental` module
-- Add a module to generate data for training deep learning models
-- Add a benchmarking module
-- Add deep learning API
+This project is currently licensed under AGPLv3.0. 
+
+However, if you are considering using it for applications that require a more permissive license, 
+please let me know in this [Issue](https://github.com/Guillemdb/fragile/issues/5)
