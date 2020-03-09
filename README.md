@@ -25,7 +25,7 @@ framework of non-equilibrium thermodynamics. It allows to derive new mathematica
 
 ## Getting started 
 
-Check out the [Getting started with Atari games](https://guillemdb.github.io/fragile/resources/getting_started.html) 
+Check out the [Getting started with Atari games](https://fragiletech.github.io/fragile/resources/getting_started.html) 
 section of the docs, or check out the examples folder.
 
 ## Running in docker
@@ -57,7 +57,7 @@ Please take a look at the Dockerfile to find out about all the dependencies, and
 
 ## Documentation
 
-You can access the documentation on [GitHub Pages](https://guillemdb.github.io/fragile/).
+You can access the documentation on [GitHub Pages](https://fragiletech.github.io/fragile/).
 
 * Building the documentation:
     
