@@ -165,7 +165,6 @@ class Swarm(BaseSwarm):
             )
             self.update_tree([0] * self.walkers.n)
 
-    # @profile
     def run_swarm(
         self,
         model_states: StatesModel = None,
@@ -194,7 +193,7 @@ class Swarm(BaseSwarm):
         while not self.calculate_end_condition():
             try:
                 self.run_step()
-                if self.epoch % print_every == 0:
+                if self.epoch % print_every == 0 and self.epoch > 0:
                     print(self)
                     clear_output(True)
                 self.epoch += 1
@@ -223,12 +222,10 @@ class Swarm(BaseSwarm):
         It also updates the :class:`Tree` data structure that takes care of \
         storing the visited states.
         """
-        # old_ids = set(self.walkers.states.id_walkers.copy())
         self.walkers.balance()
         new_ids = set(self.walkers.states.id_walkers)
         self.prune_tree(leaf_nodes=set(new_ids))
 
-    # @profile
     def run_step(self) -> None:
         """
         Compute one iteration of the :class:`Swarm` evolution process and \
@@ -238,7 +235,6 @@ class Swarm(BaseSwarm):
         self.balance_and_prune()
         self.walkers.fix_best()
 
-    # @profile
     def step_walkers(self) -> None:
         """
         Make the walkers evolve to their next state sampling an action from the \

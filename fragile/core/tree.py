@@ -44,6 +44,7 @@ class _BaseNetworkxTree(BaseStateTree):
 
         Returns:
             None.
+
         """
         self.data: nx.DiGraph = nx.DiGraph()
         self.data.add_node(self.ROOT_ID, state=None, n_iter=-1)
@@ -102,6 +103,7 @@ class _BaseNetworkxTree(BaseStateTree):
             cum_reward: Cumulative reward assigned to the node that will be added.
 
         Returns:
+            None.
 
         """
         leaf_name = (
@@ -135,6 +137,7 @@ class _BaseNetworkxTree(BaseStateTree):
 
         Returns:
             None
+
         """
         for leaf in dead_leafs:
             self.prune_branch(leaf, alive_leafs, from_hash=from_hash)
@@ -217,6 +220,8 @@ class _BaseNetworkxTree(BaseStateTree):
 
 
 class HistoryTree(_BaseNetworkxTree):
+    """Keep track of the history of trajectories generated bu the :class:`Swarm`."""
+
     def add_states(
         self,
         parent_ids: List[int],
@@ -276,6 +281,7 @@ class HistoryTree(_BaseNetworkxTree):
 
         Returns:
             None.
+
         """
         alive_leafs = set([self.hash_to_ids[le] if from_hash else le for le in set(alive_leafs)])
         dead_leafs = self.leafs - alive_leafs

@@ -28,6 +28,7 @@ class Function(Environment):
                       scalar. This function is applied to a batch of walker \
                       observations.
             bounds: :class:`Bounds` that defines the domain of the function.
+
         """
         if not isinstance(bounds, Bounds):
             raise TypeError("Bounds needs to be an instance of Bounds, found {}".format(bounds))
@@ -65,6 +66,7 @@ class Function(Environment):
 
         Returns:
             :class:`Function` with its :class:`Bounds` created from the provided arguments.
+
         """
         if (
             not isinstance(high, numpy.ndarray)
@@ -83,7 +85,7 @@ class Function(Environment):
 
     def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
-        Sets the :class:`Function` to the target states and sums the actions \
+        Set the :class:`Function` to the target states and sums the actions \
         provided by the :class:`StatesEnv`.
 
         Args:
@@ -94,6 +96,7 @@ class Function(Environment):
         Returns:
             :class:`StatesEnv` containing the information that describes the \
             new states sampled.
+
         """
         new_points = model_states.actions + env_states.observs
         ends = self.calculate_end(points=new_points)
@@ -110,8 +113,8 @@ class Function(Environment):
 
     def reset(self, batch_size: int = 1, **kwargs) -> StatesEnv:
         """
-        Resets the :class:`Function` to the start of a new episode and returns an
-        :class:`StatesEnv` instance describing its internal state.
+        Reset the :class:`Function` to the start of a new episode and returns \
+        an :class:`StatesEnv` instance describing its internal state.
 
         Args:
             batch_size: Number of walkers that the returned state will have.
@@ -121,6 +124,7 @@ class Function(Environment):
             :class:`EnvStates` instance describing the state of the :class:`Function`. \
             The first dimension of the data tensors (number of walkers) will be \
             equal to batch_size.
+
         """
         ends = numpy.zeros(batch_size, dtype=numpy.bool_)
         new_points = self.sample_bounds(batch_size=batch_size)
@@ -146,6 +150,7 @@ class Function(Environment):
             Array of booleans of length batch_size (points.shape[0]) that will \
             be ``True`` if a given point of the batch lies outside the bounds, \
             and ``False`` otherwise.
+
         """
         return numpy.logical_not(self.bounds.points_in_bounds(points)).flatten()
 
@@ -160,6 +165,7 @@ class Function(Environment):
         Returns:
             Array containing ``batch_size`` points that lie inside the \
             :class:`Function` domain, stacked across the first dimension.
+
         """
         new_points = numpy.zeros(tuple([batch_size]) + self.shape, dtype=numpy.float32)
         for i in range(batch_size):
@@ -181,8 +187,9 @@ class Minimizer:
             bounds: :class:`Bounds` defining the domain of the minimization \
                     process. If it is ``None`` the :class:`Function` :class:`Bounds` \
                     will be used.
-            *args: Passed to ``scipy.optimize.minimize``
-            **kwargs: Passed to ``scipy.optimize.minimize``
+            *args: Passed to ``scipy.optimize.minimize``.
+            **kwargs: Passed to ``scipy.optimize.minimize``.
+
         """
         self.env = function
         self.function = function.function
@@ -199,6 +206,7 @@ class Minimizer:
 
         Returns:
             Optimization result object returned by ``scipy.optimize.minimize``.
+
         """
 
         def _optimize(_x):
@@ -225,6 +233,7 @@ class Minimizer:
         Returns:
             Tuple containing a numpy array representing the best solution found, \
             and the numerical value of the function at that point.
+
         """
         optim_result = self.minimize(x)
         point = optim_result["x"]
@@ -242,6 +251,7 @@ class Minimizer:
         Returns:
             Tuple of arrays containing the local optimum found for each point, \
             and an array with the values assigned to each of the points found.
+
         """
         result = numpy.zeros_like(x)
         rewards = numpy.zeros((x.shape[0], 1))
@@ -266,6 +276,7 @@ class MinimizerWrapper(Function):
             function: :class:`Function` to be minimized after each step.
             *args: Passed to the internal :class:`Optimizer`.
             **kwargs: Passed to the internal :class:`Optimizer`.
+
         """
         self.env = function
         self.minimizer = Minimizer(function=self.env, *args, **kwargs)
@@ -289,6 +300,7 @@ class MinimizerWrapper(Function):
         Returns:
             States containing the information that describes the new state of \
             the :class:`Function`.
+
         """
         env_states = super(MinimizerWrapper, self).step(
             model_states=model_states, env_states=env_states
