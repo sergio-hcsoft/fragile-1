@@ -4,11 +4,8 @@ max-line-length=99
 exclude=
     .git
     docs
-    fragile/physics/*
     fragile/ray/*
-    fragile/experimental/*
-    fragile/earth/*
-    fragile/dataviz/*
+
 inline-quotes="
 import-order-style=appnexus
 application-package-names=fragile
@@ -16,7 +13,4 @@ per-file-ignores=
     **/__init__.py: F401
     **/tests/**:D
     **/tests/**:F811
-    # Should be resolved one by one
-    ./fragile/experimental/**:D
-    ./fragile/optimize/**:D
-    ./fragile/core/tree.py:D
+    ./fragile/optimize/benchmarks.py:D
