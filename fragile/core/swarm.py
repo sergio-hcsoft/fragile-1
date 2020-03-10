@@ -150,23 +150,22 @@ class Swarm(BaseSwarm):
                             states of the :class:`Walkers`.
         """
         env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
-
         model_states = (
             self.model.reset(batch_size=self.walkers.n, env_states=env_states)
             if model_states is None
             else model_states
         )
-
         model_states.update(init_actions=model_states.actions)
         self.walkers.reset(env_states=env_sates, model_states=model_states)
-        self.walkers.update_ids()
         if self._use_tree:
+            root_ids = numpy.array([self.tree.ROOT_HASH] * self.walkers.n)
+            self.walkers.states.id_walkers = root_ids
             self.tree.reset(
                 env_states=self.walkers.env_states,
                 model_states=self.walkers.model_states,
                 walkers_states=walkers_states,
             )
-            self.update_tree([0] * self.walkers.n)
+            self.update_tree(root_ids.tolist())
 
     def run_swarm(
         self,
@@ -226,8 +225,8 @@ class Swarm(BaseSwarm):
         storing the visited states.
         """
         self.walkers.balance()
-        new_ids = set(self.walkers.states.id_walkers)
-        self.prune_tree(leaf_nodes=set(new_ids))
+        new_ids = set(self.walkers.states.id_walkers.tolist())
+        self.prune_tree(leaf_nodes=new_ids)
 
     def run_step(self) -> None:
         """

@@ -26,6 +26,7 @@ class _BaseNetworkxTree(BaseStateTree):
         self.hash_to_ids = {self.ROOT_HASH: self.ROOT_ID}
         self._node_count = 0
         self.leafs = {self.ROOT_ID}
+        self.parents = {self.ROOT_ID}
 
     def reset(
         self,
@@ -53,6 +54,7 @@ class _BaseNetworkxTree(BaseStateTree):
         self.hash_to_ids = {self.ROOT_HASH: self.ROOT_ID}
         self._node_count = 0
         self.leafs = {self.ROOT_ID}
+        self.parents = {self.ROOT_ID}
 
     def add_new_hash(self, node_hash: int) -> int:
         """
@@ -123,6 +125,8 @@ class _BaseNetworkxTree(BaseStateTree):
             )
             self.data.add_edge(parent_name, leaf_name, action=action, dt=dt)
             self.leafs.add(leaf_name)
+            if parent_name in self.leafs:
+                self.leafs.remove(parent_name)
 
     def prune_tree(self, dead_leafs: Set[int], alive_leafs: Set[int], from_hash: bool = False):
         """
@@ -192,22 +196,35 @@ class _BaseNetworkxTree(BaseStateTree):
         """
         leaf = self.hash_to_ids[leaf_id] if from_hash else leaf_id
         is_not_a_leaf = len(self.data.out_edges([leaf])) > 0
-        if is_not_a_leaf and leaf != self.ROOT_ID:
-            self.leafs.discard(leaf)
+
+        if (
+            is_not_a_leaf
+            or leaf == self.ROOT_ID
+            or leaf not in self.data.nodes
+            or leaf in self.parents
+        ):
             return
-        elif leaf == self.ROOT_ID or leaf not in self.data.nodes:
-            return
-        alive_leafs = set([self.hash_to_ids[le] if from_hash else le for le in set(alive_leafs)])
+        alive_leafs = (
+            set([self.hash_to_ids[le] for le in alive_leafs]) if from_hash else set(alive_leafs)
+        )
         if leaf in alive_leafs:
             return
-        parents = set(self.data.in_edges([leaf]))
+        # Remove the node if it is a leaf and is not alive
+        parents = list(self.data.in_edges([leaf]))
+        parent = parents[0][0]
+        if parent == self.ROOT_ID or parent in alive_leafs or parent in self.parents:
+            return
         self.data.remove_node(leaf)
         self.leafs.discard(leaf)
-        for parent, _ in parents:
-            return self.prune_branch(parent, alive_leafs)
+        self.leafs.add(parent)
+        leaf_hash = self.ids_to_hash[leaf]
+        del self.ids_to_hash[leaf]
+        del self.hash_to_ids[leaf_hash]
+        return self.prune_branch(parent, alive_leafs)
 
-    def get_parent(self, node_id) -> int:
+    def get_parent(self, node_id, from_hash: bool = False) -> int:
         """Get the node id of the parent of the target node."""
+        node_id = self.hash_to_ids[node_id] if from_hash else node_id
         return list(self.data.in_edges(node_id))[0][0]
 
     def get_leaf_nodes(self) -> List[int]:
@@ -250,6 +267,7 @@ class HistoryTree(_BaseNetworkxTree):
 
         """
         leaf_ids = walkers_states.id_walkers.tolist()
+        self.parents = set(self.hash_to_ids[pa] for pa in parent_ids)
         for i, (leaf, parent) in enumerate(zip(leaf_ids, parent_ids)):
             state = copy.deepcopy(env_states.states[i])
             reward = copy.deepcopy(env_states.rewards[i])
@@ -284,7 +302,7 @@ class HistoryTree(_BaseNetworkxTree):
 
         """
         alive_leafs = set([self.hash_to_ids[le] if from_hash else le for le in set(alive_leafs)])
-        dead_leafs = self.leafs - alive_leafs
+        dead_leafs = set([le for le in self.get_leaf_nodes() if le not in alive_leafs])
         super(HistoryTree, self).prune_tree(
             dead_leafs=dead_leafs, alive_leafs=alive_leafs, from_hash=False
         )
