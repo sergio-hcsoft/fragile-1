@@ -671,14 +671,22 @@ class BaseSwarm:
 class BaseWrapper:
     """Generic wrapper to wrap any of the other classes."""
 
-    def __init__(self, data):
+    def __init__(self, data, name: str = "_unwrapped"):
         """
         Initialize a :class:`BaseWrapper`.
 
         Args:
             data: Object that will be wrapped.
+            name: Assign a custom attribute name to the wrapped object.
+
         """
-        self.unwrapped = data
+        setattr(self, name, data)
+        self.__name = name
+
+    @property
+    def unwrapped(self):
+        """Access the wrapped object."""
+        return getattr(self, self.__name)
 
     def __repr__(self):
         return self.unwrapped.__repr__()

@@ -1,7 +1,7 @@
 # Fragile
-[![Travis build status](https://travis-ci.org/guillemdb/fragile.svg)](https://travis-ci.org/guillemdb/fragile)
-[![Code coverage](https://codecov.io/github/guillemdb/fragile/coverage.svg)](https://codecov.io/github/guillemdb/fragile)
-[![Docker build status](https://img.shields.io/docker/build/guillemdb/fragile.svg)](https://hub.docker.com/r/guillemdb/fragile)
+[![Travis build status](https://travis-ci.com/FragileTech/fragile.svg)](https://travis-ci.com/guillemdb/fragile)
+[![Code coverage](https://codecov.io/github/FragileTech/fragile/coverage.svg)](https://codecov.io/github/FragileTech/fragile)
+[![Docker build status](https://img.shields.io/docker/build/FragileTech/fragile.svg)](https://hub.docker.com/r/FragileTech/fragile)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
@@ -25,7 +25,7 @@ framework of non-equilibrium thermodynamics. It allows to derive new mathematica
 
 ## Getting started 
 
-Check out the [Getting started with Atari games](https://guillemdb.github.io/fragile/resources/getting_started.html) 
+Check out the [Getting started with Atari games](https://fragiletech.github.io/fragile/resources/getting_started.html) 
 section of the docs, or check out the examples folder.
 
 ## Running in docker
@@ -57,7 +57,7 @@ Please take a look at the Dockerfile to find out about all the dependencies, and
 
 ## Documentation
 
-You can access the documentation on [GitHub Pages](https://guillemdb.github.io/fragile/).
+You can access the documentation on [GitHub Pages](https://fragiletech.github.io/fragile/).
 
 * Building the documentation:
     
