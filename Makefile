@@ -1,6 +1,7 @@
 current_dir = $(shell pwd)
 
 PROJECT = fragile
+VERSION ?= latest
 
 .POSIX:
 check:
@@ -11,14 +12,19 @@ check:
 
 .PHONY: test
 test:
-	python3 -m pytest
+	pytest -s
 
 .PHONY: docker-test
 docker-test:
 	find -name "*.pyc" -delete
-	docker run --rm -it --network host -w /fragile --entrypoint python3 fragile -m pytest
+	docker run --rm -it --network host -w /fragile --entrypoint python3 fragiletech/fragile:$VERSION -m pytest
 
 
 .PHONY: docker-build
 docker-build:
-	docker build -t fragile .
+	docker build --pull -t fragiletech/fragile:$VERSION .
+
+.PHONY: docker-push
+docker-push:
+    docker push fragiletech/fragile:$VERSION
+
