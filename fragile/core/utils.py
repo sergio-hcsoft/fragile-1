@@ -21,6 +21,20 @@ Scalar = Union[int, np.int, float, np.float]
 StateDict = Dict[str, Dict[str, Any]]
 
 
+def remove_notebook_margin():
+    """Make the notebook output wider."""
+    from IPython.core.display import HTML
+
+    html = """<style>
+    .container { width:70% !important; }
+    .input{ width:70% !important; }
+    .text_cell{ width:70% !important;
+                font-size: 16px;}
+    .title {align:center !important;}
+    </style>"""
+    return HTML(html)
+
+
 def hash_numpy(x: np.ndarray) -> int:
     """Return a value that uniquely identifies a numpy array."""
     return hash(x.tostring())

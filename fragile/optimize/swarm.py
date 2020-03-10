@@ -54,6 +54,7 @@ class FunctionMapper(Swarm):
 
         Returns:
             Instance of :class:`FunctionMapper` that optimizes the target function.
+
         """
         env = Function(function=function, bounds=bounds)
         return FunctionMapper(env=lambda: env, *args, **kwargs)
