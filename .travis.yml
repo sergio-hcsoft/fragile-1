@@ -63,10 +63,11 @@ matrix:
       name: Bump the version
       install:
         - git config --global user.name "Fragile Bot"
-        - git config --global user.email "bot@fragile.com"
+        - git config --global user.email "bot@fragile.tech"
         - pip install bump2version
       script:
         - set -e
+        - git pull --no-edit origin master
         - version_file=fragile/version.py
         - current_version=$(grep __version__ $version_file | cut -d\" -f2)
         - bumpversion --tag --current-version $current_version --commit patch $version_file
