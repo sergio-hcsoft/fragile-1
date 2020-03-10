@@ -1,5 +1,5 @@
 # Fragile
-[![Travis build status](https://travis-ci.com/FragileTech/fragile.svg)](https://travis-ci.com/guillemdb/fragile)
+[![Travis build status](https://travis-ci.com/FragileTech/fragile.svg)](https://travis-ci.com/FragileTech/fragile)
 [![Code coverage](https://codecov.io/github/FragileTech/fragile/coverage.svg)](https://codecov.io/github/FragileTech/fragile)
 [![Docker build status](https://img.shields.io/docker/build/FragileTech/fragile.svg)](https://hub.docker.com/r/FragileTech/fragile)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
@@ -48,7 +48,7 @@ If you find any problems running it in a different OS or Python version please o
 Please take a look at the Dockerfile to find out about all the dependencies, and the detailed installation process.
 
 ```bash
-   git clone https://github.com/Guillemdb/fragile.git
+   git clone https://github.com/FragileTech/fragile.git
    cd fragile
    pip3 install -r requirements.txt
    pip3 install -r requirements-viz.txt
