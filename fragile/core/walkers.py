@@ -343,6 +343,7 @@ class Walkers(SimpleWalkers):
         critic: BaseCritic = None,
         minimize: bool = False,
         best_walker: Tuple[numpy.ndarray, Scalar] = None,
+        reward_limit: float = None,
         *args,
         **kwargs
     ):
@@ -355,6 +356,11 @@ class Walkers(SimpleWalkers):
                       process. If ``False`` it will be a maximization process.
             best_walker: Tuple containing the best state and reward that will \
                         be used as the initial best values found.
+            reward_limit: The iteration process will stop after reaching this \
+                          reward value. If you are running a minimization process \
+                          it will be considered the minimum reward possible, and \
+                          if you are maximizing a reward it will be the maximum \
+                          value.
             *args: Passed to :class:`SimpleWalkers`.
             **kwargs: Passed to :class:`SimpleWalkers`.
         """
@@ -371,12 +377,32 @@ class Walkers(SimpleWalkers):
         self.minimize = minimize
         self.efficiency = 0
         self._min_entropy = 0
+        if reward_limit is None:
+            reward_limit = -numpy.inf if self.minimize else numpy.inf
+        self.reward_limit = reward_limit
 
     def __repr__(self):
         text = "\nBest reward found: {:.4f} , efficiency {:.3f}, Critic: {}\n".format(
             float(self.states.best_reward), self.efficiency, self.critic
         )
         return text + super(Walkers, self).__repr__()
+
+    def calculate_end_condition(self) -> bool:
+        """
+        Process data from the current state to decide if the iteration process should stop.
+
+        Returns:
+            Boolean indicating if the iteration process should be finished. ``True`` means \
+            it should be stopped, and ``False`` means it should continue.
+
+        """
+        end_condition = super(Walkers, self).calculate_end_condition()
+        reward_limit_reached = (
+            self.states.best_reward_found < self.reward_limit
+            if self.minimize
+            else self.states.best_reward_found > self.reward_limit
+        )
+        return end_condition or reward_limit_reached
 
     # @profile
     def calculate_virtual_reward(self):
