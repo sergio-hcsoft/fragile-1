@@ -1,8 +1,10 @@
 """Wrappers to visualize the internal data of the :class:`Swarm`."""
+from fragile.core.base_classes import BaseWrapper
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
 from fragile.core.swarm import Swarm
 from fragile.core.utils import clear_output
 from fragile.dataviz.swarm_stats import (
+    AtariBestFrame,
     BestReward,
     DistanceHistogram,
     DistanceLandscape,
@@ -11,6 +13,7 @@ from fragile.dataviz.swarm_stats import (
     KDELandscape,
     RewardHistogram,
     RewardLandscape,
+    SummaryTable,
     SwarmLandscape,
     VirtualRewardHistogram,
     VirtualRewardLandscape,
@@ -27,6 +30,8 @@ ALL_SWARM_TYPES = (
     VirtualRewardHistogram,
     RewardHistogram,
     BestReward,
+    SummaryTable,
+    AtariBestFrame,
 )
 
 ALL_SWARM_NAMES = tuple([plot.name for plot in ALL_SWARM_TYPES])
@@ -34,7 +39,7 @@ ALL_SWARM_NAMES = tuple([plot.name for plot in ALL_SWARM_TYPES])
 ALL_SWARM_PLOTS = dict(zip(ALL_SWARM_NAMES, ALL_SWARM_TYPES))
 
 
-class SwarmViz:
+class SwarmViz(BaseWrapper):
     """Wrap a :class:`Swarm` to incorporate visualizations."""
 
     SWARM_STATS_TYPES = (
@@ -46,15 +51,17 @@ class SwarmViz:
         VirtualRewardHistogram,
         RewardHistogram,
         BestReward,
+        SummaryTable,
     )
     DEFAULT_COLUMNS = 3
+    DEFAULT_PLOTS = "all"
     SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
     SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
 
     def __init__(
         self,
         swarm: Swarm,
-        display_plots="all",
+        display_plots="default",
         stream_interval: int = 100,
         use_embeddings: bool = True,
         margin_high=1.0,
@@ -81,7 +88,8 @@ class SwarmViz:
             columns: Number of columns of the generated grid of visualizations.
 
         """
-        self.swarm: Swarm = swarm
+        super(SwarmViz, self).__init__(data=swarm, name="swarm")
+        display_plots = self.DEFAULT_PLOTS if display_plots == "default" else display_plots
         self.display_plots = self.SWARM_NAMES if display_plots == "all" else display_plots
         self.plots = self._init_plots(
             use_embeddings=use_embeddings,
@@ -101,6 +109,8 @@ class SwarmViz:
     def _init_plots(self, use_embeddings, margin_low, margin_high, n_points):
         plots = {}
         for name, plot in self.SWARM_PLOTS.items():
+            if name not in self.display_plots:
+                continue
             if issubclass(plot, SwarmLandscape):
                 plots[name] = self.SWARM_PLOTS[name](
                     margin_high=margin_high,
@@ -170,6 +180,47 @@ class SwarmViz:
         return plot.cols(self.columns)
 
 
+class Summary(SwarmViz):
+    """
+    :class:`Summary` that plots a table containing information of the epoch, \
+    best reward found and percentage of deaths and clones.
+
+    It also plots the evolution of the best reward found. It can work with any \
+    kind of :class:`Environment`.
+    """
+
+    SWARM_STATS_TYPES = (
+        SummaryTable,
+        BestReward,
+    )
+    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
+    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
+    DEFAULT_COLUMNS = 2
+
+
+class AtariViz(SwarmViz):
+    """
+    :class:`Summary` that plots the RGB frame corresponding to the best state \
+    found, in addition to the summary table and best reward plot.
+
+    It also plots the evolution of the best reward found. It can work only with \
+    an :class:`AtariEnv`.
+    """
+
+    SWARM_STATS_TYPES = (
+        SummaryTable,
+        AtariBestFrame,
+        BestReward,
+        DistanceHistogram,
+        VirtualRewardHistogram,
+        RewardHistogram,
+    )
+    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
+    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
+    DEFAULT_COLUMNS = 2
+    DEFAULT_PLOTS = ("summary_table", "best_frame", "best_reward")
+
+
 class SwarmViz1D(SwarmViz):
     """
     :class:`SwarmViz` that plots all the one-dimensional plots: Histograms and \
@@ -177,10 +228,11 @@ class SwarmViz1D(SwarmViz):
     """
 
     SWARM_STATS_TYPES = (
-        BestReward,
         DistanceHistogram,
         VirtualRewardHistogram,
         RewardHistogram,
+        BestReward,
+        SummaryTable,
     )
     SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
     SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
@@ -199,6 +251,7 @@ class LandscapeViz(SwarmViz):
         VirtualRewardLandscape,
         WalkersDensity,
         BestReward,
+        SummaryTable,
     )
     SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
     SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))

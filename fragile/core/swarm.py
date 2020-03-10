@@ -29,7 +29,10 @@ class Swarm(BaseSwarm):
         self._prune_tree = False
         super(Swarm, self).__init__(walkers=walkers, *args, **kwargs)
 
-    def __repr__(self):
+    def __len__(self) -> int:
+        return self.walkers.n
+
+    def __repr__(self) -> str:
         return self.walkers.__repr__()
 
     @property

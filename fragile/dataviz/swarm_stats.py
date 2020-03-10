@@ -5,12 +5,106 @@ import holoviews
 import numpy
 import pandas
 
+from fragile.atari.env import get_plangym_env
 from fragile.core.bounds import Bounds
 from fragile.core.swarm import Swarm
 from fragile.core.utils import relativize
-from fragile.dataviz.streaming import Curve, Histogram, Landscape2D
+from fragile.dataviz.streaming import Curve, Histogram, Landscape2D, RGB, Table
 
 PLOT_NAMES = ()
+
+
+class SummaryTable(Table):
+    """
+    Display a table containing information about the current algorithm run.
+
+    The displayed information contains:
+        - Epoch: Number of the current epoch of the :class:`Swarm`.
+        - Best Reward: Value of the best reward found in the current run.
+        - Deaths: Percentage of walkers that fell out of the domain's boundary \
+                  condition during the last iteration.
+        - Clones: Percentage of walkers that cloned during the last iteration.
+    """
+
+    name = "summary_table"
+
+    def opts(self, title="Run summary", width=350, *args, **kwargs):
+        """
+        Update the plot parameters. Same as ``holoviews`` ``opts``.
+
+        The default values updates the plot axes independently when being \
+        displayed in a :class:`Holomap`.
+        """
+        super(SummaryTable, self).opts(title=title, width=width, *args, **kwargs)
+
+    def get_plot_data(self, swarm: Swarm = None):
+        """Extract the best reward found by the swarm and create a \
+        :class:`pandas.DataFrame` to keep track of it."""
+        columns = ["Epoch", "Best Reward", "Deaths", "Clones"]
+        if swarm is None:
+            data = pandas.DataFrame(
+                {"Epoch": [], "Best Reward": [], "Deaths": [], "Clones": []}, columns=columns
+            )
+        else:
+            deaths = float(swarm.walkers.states.end_condition.sum()) / len(swarm)
+            clones = float(swarm.walkers.states.will_clone.sum()) / len(swarm)
+            data = pandas.DataFrame(
+                {
+                    "Epoch": [int(swarm.walkers.n_iters)],
+                    "Best Reward": ["{:.4f}%".format(float(swarm.best_reward_found))],
+                    "Deaths": ["{:.2f}%".format(100 * deaths)],
+                    "Clones": ["{:.2f}%".format(100 * clones)],
+                },
+                columns=columns,
+            )
+        return data
+
+
+class AtariBestFrame(RGB):
+    """
+    Display the Atari frame that corresponds to the best state sampled.
+
+    It only works for environments of class :class:`AtariEnv`.
+    """
+
+    name = "best_frame"
+
+    @staticmethod
+    def image_from_state(swarm: Swarm, state: numpy.ndarray) -> numpy.ndarray:
+        """
+        Return the frame corresponding to a given :class:`AtariEnv` state.
+
+        Args:
+            swarm: Swarm containing the target environment.
+            state: States that will be used to extract the frame.
+
+        Returns:
+            Array of size (210, 160, 3) containing the RGB frame representing \
+            the target state.
+
+        """
+        env = get_plangym_env(swarm)
+        env.set_state(state.astype(numpy.uint8).copy())
+        env.step(0)
+        return numpy.asarray(env.ale.getScreenRGB(), dtype=numpy.uint8)
+
+    def get_plot_data(self, swarm: Swarm = None) -> numpy.ndarray:
+        """Extract the frame from the :class:`AtariEnv` that the target \
+        :class:`Swarm` contains."""
+        if swarm is None:
+            return numpy.zeros((210, 160, 3))
+        best_ix = swarm.walkers.states.cum_rewards.argmax()
+        state = swarm.walkers.env_states.states[best_ix]
+        return self.image_from_state(swarm=swarm, state=state)
+
+    def opts(self, title="Best state sampled", width=160, height=210, *args, **kwargs):
+        """
+        Update the plot parameters. Same as ``holoviews`` ``opts``.
+
+        The default values updates the plot axes independently when being \
+        displayed in a :class:`Holomap`.
+        """
+        super(AtariBestFrame, self).opts(title=title, width=width, height=height, *args, **kwargs)
 
 
 class BestReward(Curve):
@@ -90,7 +184,7 @@ class SwarmHistogram(Histogram):
             states: States class that contains the data to be plotted. Accepts \
                     {"states", "env_states", "model_states"}
         Returns:
-            histogram containing the target data.
+            Histogram containing the target data.
 
         """
         if swarm is None:
@@ -372,7 +466,7 @@ class WalkersDensity(SwarmLandscape):
 
     def opts(
         self,
-        title="",
+        title="Walkers density distribution",
         tools="default",
         xlabel: str = "x",
         ylabel: str = "y",

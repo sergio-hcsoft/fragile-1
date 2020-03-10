@@ -109,6 +109,57 @@ class StreamingPlot(Plot):
         self.data_stream = stream(data=data)
 
 
+class Table(StreamingPlot):
+    """``holoviews.Table`` with data streaming capabilities."""
+
+    name = "table"
+
+    def __init__(self, data=None, stream=Pipe, *args, **kwargs):
+        """
+        Initialize a :class:`Table`.
+
+        Args:
+            data: Data to initialize the stream.
+            stream: :class:`holoviews.stream` type. Defaults to :class:`Pipe`.
+            *args: Passed to :class:`StreamingPlot`.
+            **kwargs: Passed to :class:`StreamingPlot`.
+
+        """
+        super(Table, self).__init__(
+            stream=stream, plot=holoviews.Table, data=data, *args, **kwargs
+        )
+
+    def opts(self, *args, **kwargs):
+        """
+        Update the plot parameters. Same as ``holoviews`` ``opts``.
+
+        The default values updates the plot axes independently when being \
+        displayed in a :class:`Holomap`.
+        """
+        self.plot = self.plot.opts(holoviews.opts.Table(*args, **kwargs))
+
+
+class RGB(StreamingPlot):
+    """``holoviews.RGB`` with data streaming capabilities."""
+
+    name = "rgb"
+
+    def __init__(self, data=None, *args, **kwargs):
+        """Initialize a :class:`RGB`."""
+        super(RGB, self).__init__(stream=Pipe, plot=holoviews.RGB, data=data, *args, **kwargs)
+
+    def opts(
+        self, xaxis=None, yaxis=None, *args, **kwargs,
+    ):
+        """
+        Update the plot parameters. Same as ``holoviews`` ``opts``.
+
+        The default values updates the plot axes independently when being \
+        displayed in a :class:`Holomap`.
+        """
+        self.plot = self.plot.opts(holoviews.opts.RGB(xaxis=xaxis, yaxis=yaxis, *args, **kwargs))
+
+
 class Curve(StreamingPlot):
     """
     Create a ``holoviews.Curve`` plot that plots steaming data.
@@ -314,6 +365,8 @@ class Bivariate(StreamingPlot):
         framewise: bool = True,
         axiswise: bool = True,
         normalize: bool = True,
+        height: int = 350,
+        width: int = 400,
         *args,
         **kwargs
     ):
@@ -335,6 +388,8 @@ class Bivariate(StreamingPlot):
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
+                height=height,
+                width=width,
                 *args,
                 **kwargs
             ),
@@ -349,6 +404,8 @@ class Bivariate(StreamingPlot):
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
+                height=height,
+                width=width,
                 *args,
                 **kwargs
             ),
