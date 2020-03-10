@@ -130,9 +130,9 @@ class Bounds:
         The value of the high and low will be proportional to the maximum and minimum values of \
         the array. Scale defines the proportion to make the bounds bigger and smaller. For \
         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \
-        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% higher.
-        If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \
-        array.
+        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% \
+        higher. If scale is one, `high` and `low` will be equal to the maximum and minimum values \
+        of the array.
 
         Args:
             high: Higher bound to be scaled.
@@ -164,9 +164,9 @@ class Bounds:
         The value of the high and low will be proportional to the maximum and minimum values of \
         the array. Scale defines the proportion to make the bounds bigger and smaller. For \
         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \
-        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% higher.
-        If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \
-        array.
+        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% \
+        higher. If scale is one, `high` and `low` will be equal to the maximum and minimum values \
+        of the array.
 
         Args:
             x: Numpy array used to initialize the bounds.
@@ -233,9 +233,9 @@ class Bounds:
         high and low will be proportional to the maximum and minimum values of \
         the array. Scale defines the proportion to make the bounds bigger and smaller. For \
         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \
-        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% higher.
-        If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \
-        array.
+        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% \
+        higher. If scale is one, `high` and `low` will be equal to the maximum and minimum values \
+        of the array.
 
         Args:
             high: Used to scale the `high` value of the current instance.
