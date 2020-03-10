@@ -15,7 +15,7 @@ class Model(BaseModel):
     Base class that incorporates a critic for adding arbitrary extra \
     computation steps to any kind of Model.
 
-    It defines, resetting, handles parameter checking, error raising and inserts \
+    It defines, resets, handles parameter checking, raises errors and inserts \
     the calculated actions into its corresponding :class:`States`.
     """
 
@@ -164,7 +164,7 @@ class _DtModel(Model):
     """
     Model class that allows to sample actions meant to be applied a different \
     number of time steps. In order to account for the target number of time \
-    steps it incorporates the `dt` attribute, that will represent the number of \
+    steps it incorporates in the `dt` attribute, that will represent the number of \
     times that the calculated action should be applied.
 
     This model is not meant to be instantiated directly but used for class inheritance.

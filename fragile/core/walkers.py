@@ -327,7 +327,8 @@ class SimpleWalkers(BaseWalkers):
         return string
 
     def fix_best(self):
-        """Ensure the best state found is assigned to the last walker fo the swarm."""
+        """Ensure the best state found is assigned to the last walker of the \
+        swarm, so walkers can always choose to clone to the best state."""
         pass
 
 
@@ -448,7 +449,8 @@ class Walkers(SimpleWalkers):
             self.states.update()
 
     def fix_best(self):
-        """Ensure the best state found is assigned to the last walker fo the swarm."""
+        """Ensure the best state found is assigned to the last walker of the \
+        swarm, so walkers can always choose to clone to the best state."""
         if self.states.best_reward is not None:
             self.env_states.observs[-1] = self.states.best_obs.copy()
             self.states.cum_rewards[-1] = float(self.states.best_reward)

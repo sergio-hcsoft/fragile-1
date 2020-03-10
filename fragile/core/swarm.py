@@ -91,11 +91,11 @@ class Swarm(BaseSwarm):
         model.
 
         Args:
-            env_callable: A function that returns an instance of an
+            env_callable: A callable that returns an instance of an
                 :class:`fragile.Environment`.
-            model_callable: A function that returns an instance of a
+            model_callable: A callable that returns an instance of a
                 :class:`fragile.Model`.
-            walkers_callable: A function that returns an instance of
+            walkers_callable: A callable that returns an instance of
                 :class:`fragile.Walkers`.
             n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.

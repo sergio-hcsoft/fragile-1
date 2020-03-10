@@ -1,6 +1,9 @@
 .. raw:: html
 
     <style>
+      .states {color: black; font-weight:bold; font-size:16px;
+              border-width: 2px; border-style: solid;
+              border-color: #555555; background-color: #CCCCCC;}
       .swarm {color: black; font-weight:bold; font-size:16px;
               border-width: 2px; border-style: solid;
               border-color: #B85450; background-color: #F8CECC;}
@@ -27,6 +30,7 @@
                  border-color: #D79B00; background-color: #E0CAB4;}
     </style>
 
+.. role:: states
 .. role:: swarm
 .. role:: env
 .. role:: model
