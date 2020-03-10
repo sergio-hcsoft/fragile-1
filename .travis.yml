@@ -1,8 +1,6 @@
 language: python
 sudo: true
-dist: xenial
-git:
-  depth: 9999999
+dist: bionic
 services:
   - docker
 cache: pip
@@ -11,6 +9,8 @@ before_cache:
 stages:
   - style
   - test
+  - bump-version
+  - deploy
 _install: &_install
   - pip install --upgrade pip cython codecov pytest
   - pip install -r requirements.txt --no-use-pep517
@@ -25,6 +25,7 @@ matrix:
   fast_finish: true
   include:
     - stage: style
+      if: commit_message !~ /^Bump version/
       name: "Check code style"
       python: 3.7
       script:
@@ -32,18 +33,19 @@ matrix:
       install:
         - pip install -r requirements-lint.txt
     - stage: test
+      if: commit_message !~ /^Bump version/
       name: "Test python 3.6"
       python: 3.6
       script: *_coverage
       install: *_install
     - stage: test
+      if: commit_message !~ /^Bump version/
       name: "Test python 3.7"
       python: 3.7
       script: *_coverage
       install: *_install
-      after_success:
-        - codecov
     - stage: test
+      if: commit_message !~ /^Bump version/
       name: "Test python 3.8"
       python: 3.8
       script: *_coverage
@@ -51,10 +53,31 @@ matrix:
       after_success:
         - codecov
     - stage: test
+      if: commit_message !~ /^Bump version/
       name: "Tests inside docker"
       script:
         - make docker-build VERSION=test
         - make docker-test VERSION=test
+    - stage: bump-version
+      if: branch == master AND type != pull_request AND commit_message !~ /^Bump version/
+      name: Bump the version
+      install:
+        - git config --global user.name "Fragile Bot"
+        - git config --global user.email "bot@fragile.com"
+        - pip install bump2version
+      script:
+        - set -e
+        - version_file=fragile/version.py
+        - current_version=$(grep __version__ $version_file | cut -d\" -f2)
+        - bumpversion --tag --current-version $current_version --commit patch $version_file
+        - git remote add fragile-bot-remote https://fragile-bot:${FRAGILE_GITHUB_TOKEN}@github.com/$TRAVIS_REPO_SLUG
+        - git push --tags fragile-bot-remote HEAD:master
+        - set +e
+    - stage: deploy
+      if: branch == master AND type != pull_request AND commit_message =~ /^Bump version/
+      name: Push package to PyPI
+      script: skip
+      # deploy: TODO
 
 notifications:
   email: false
