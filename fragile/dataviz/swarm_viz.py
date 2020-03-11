@@ -33,9 +33,9 @@ ALL_SWARM_TYPES = (
     AtariBestFrame,
 )
 
-ALL_SWARM_NAMES = tuple([plot.name for plot in ALL_SWARM_TYPES])
+ALL_PLOT_NAMES = tuple([plot.name for plot in ALL_SWARM_TYPES])
 
-ALL_SWARM_PLOTS = dict(zip(ALL_SWARM_NAMES, ALL_SWARM_TYPES))
+ALL_SWARM_PLOTS = dict(zip(ALL_PLOT_NAMES, ALL_SWARM_TYPES))
 
 
 class SwarmViz(BaseWrapper):
@@ -54,8 +54,8 @@ class SwarmViz(BaseWrapper):
     )
     DEFAULT_COLUMNS = 3
     DEFAULT_PLOTS = "all"
-    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
-    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
+    PLOT_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
+    SWARM_PLOTS = dict(zip(PLOT_NAMES, SWARM_STATS_TYPES))
 
     def __init__(
         self,
@@ -89,7 +89,7 @@ class SwarmViz(BaseWrapper):
         """
         super(SwarmViz, self).__init__(data=swarm, name="swarm")
         display_plots = self.DEFAULT_PLOTS if display_plots == "default" else display_plots
-        self.display_plots = self.SWARM_NAMES if display_plots == "all" else display_plots
+        self.display_plots = self.PLOT_NAMES if display_plots == "all" else display_plots
         self.plots = self._init_plots(
             use_embeddings=use_embeddings,
             margin_low=margin_low,
@@ -193,8 +193,8 @@ class Summary(SwarmViz):
         SummaryTable,
         BestReward,
     )
-    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
-    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
+    PLOT_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
+    SWARM_PLOTS = dict(zip(PLOT_NAMES, SWARM_STATS_TYPES))
     DEFAULT_COLUMNS = 2
 
 
@@ -215,8 +215,8 @@ class AtariViz(SwarmViz):
         VirtualRewardHistogram,
         RewardHistogram,
     )
-    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
-    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
+    PLOT_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
+    SWARM_PLOTS = dict(zip(PLOT_NAMES, SWARM_STATS_TYPES))
     DEFAULT_COLUMNS = 2
     DEFAULT_PLOTS = ("summary_table", "best_frame", "best_reward")
 
@@ -234,8 +234,8 @@ class SwarmViz1D(SwarmViz):
         BestReward,
         SummaryTable,
     )
-    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
-    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
+    PLOT_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
+    SWARM_PLOTS = dict(zip(PLOT_NAMES, SWARM_STATS_TYPES))
     DEFAULT_COLUMNS = 2
 
 
@@ -253,8 +253,8 @@ class LandscapeViz(SwarmViz):
         BestReward,
         SummaryTable,
     )
-    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
-    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
+    PLOT_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
+    SWARM_PLOTS = dict(zip(PLOT_NAMES, SWARM_STATS_TYPES))
 
 
 class GridViz(SwarmViz):
@@ -272,8 +272,8 @@ class GridViz(SwarmViz):
         RewardHistogram,
         BestReward,
     )
-    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
-    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
+    PLOT_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
+    SWARM_PLOTS = dict(zip(PLOT_NAMES, SWARM_STATS_TYPES))
 
 
 class KDEViz(SwarmViz):
@@ -290,5 +290,5 @@ class KDEViz(SwarmViz):
         RewardHistogram,
         BestReward,
     )
-    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
-    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
+    PLOT_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
+    SWARM_PLOTS = dict(zip(PLOT_NAMES, SWARM_STATS_TYPES))

@@ -1,5 +1,7 @@
 Getting started
 ---------------
+.. note::
+    The notebook version of this example is available in the `examples` as  ``01_getting_started.ipynb``
 
 This is a tutorial that explains how to crate a ``Swarm`` to sample
 Atari games from the OpenAI ``gym`` library. It covers how to

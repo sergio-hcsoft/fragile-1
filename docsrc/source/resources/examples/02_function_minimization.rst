@@ -1,8 +1,7 @@
 Function minimization example
 -----------------------------
 .. note::
-    You can find this documentation as a Jupyter notebook inside the **examples** folder as
-    ``02_function_minimization.ipynb``.
+    The notebook version of this example is available in the `examples` as ``02_function_minimization.ipynb``.
 
 There are many problems where we only need to sample a single point
 instead of a trajectory. The ``optimize`` module is designed for this
@@ -23,7 +22,7 @@ represents the
 `Eggholder <https://en.wikipedia.org/wiki/Test_functions_for_optimization>`__
 function:
 
-.. figure:: ../images/eggholder.png
+.. figure:: ../images/02_eggholder.png
    :alt: eggholder
 
    eggholder
@@ -213,7 +212,7 @@ domain.
 In this example we will optimize a four dimensional *styblinski_tang*
 function, which all its coordinates defined in the [-5, 5] interval:
 
-.. figure:: ../images/styblinski_tang.png
+.. figure:: ../images/02_styblinski_tang.png
    :alt: styblinski_tang
 
    styblinski_tang

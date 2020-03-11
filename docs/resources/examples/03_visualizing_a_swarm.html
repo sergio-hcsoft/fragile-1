@@ -1,0 +1,297 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Visualizing a Swarm &#8212; Fragile 0.0a documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="visualizing-a-swarm">
+<h1>Visualizing a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code><a class="headerlink" href="#visualizing-a-swarm" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The notebook version of this example is available in the <cite>examples</cite> as  <code class="docutils literal notranslate"><span class="pre">03_visualizing_a_swarm.ipynb</span></code></p>
+</div>
+<p>It is possible to visualize the evolution of an algorithm run using the
+<code class="docutils literal notranslate"><span class="pre">dataviz</span></code> module. This module allows to stream data to <code class="docutils literal notranslate"><span class="pre">holoviews</span></code>
+plots during a run of the algorithm.</p>
+<p>This example will cover several classes that allow to plot different
+kinds of visualizations. In order to visualize a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> in the
+<code class="docutils literal notranslate"><span class="pre">jupyter</span> <span class="pre">notebook</span></code> the first thing we need to do is loading the
+<code class="docutils literal notranslate"><span class="pre">holoviews</span></code> extension for <code class="docutils literal notranslate"><span class="pre">bokeh</span></code>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holoviews</span>
+<span class="kn">from</span> <span class="nn">fragile.dataviz</span> <span class="kn">import</span> <span class="n">AtariViz</span><span class="p">,</span> <span class="n">LandscapeViz</span><span class="p">,</span> <span class="n">Summary</span><span class="p">,</span> <span class="n">SwarmViz</span><span class="p">,</span> <span class="n">SwarmViz1D</span>
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">remove_notebook_margin</span>
+<span class="n">holoviews</span><span class="o">.</span><span class="n">extension</span><span class="p">(</span><span class="s2">&quot;bokeh&quot;</span><span class="p">)</span>
+<span class="n">remove_notebook_margin</span><span class="p">()</span>  <span class="c1"># Make the output cell wider</span>
+</pre></div>
+</div>
+<p>All the visualization classes wrap a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> to handle all the data
+streaming and visualization logic for plotting the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>’s data.</p>
+<p>We will start initializing a Swarm like we did in the last tutorial. We
+are not focusing on the performance of the sampling, but using the swarm
+just to create the visualizations.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize.swarm</span> <span class="kn">import</span> <span class="n">FunctionMapper</span>
+<span class="kn">from</span> <span class="nn">fragile.optimize.benchmarks</span> <span class="kn">import</span> <span class="n">EggHolder</span>
+<span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">NormalContinuous</span>
+<span class="k">def</span> <span class="nf">gaussian_model</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
+    <span class="c1"># Gaussian of mean 0 and std of 10, adapted to the environment bounds</span>
+    <span class="k">return</span> <span class="n">NormalContinuous</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+<span class="n">swarm</span> <span class="o">=</span> <span class="n">FunctionMapper</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">EggHolder</span><span class="p">,</span>
+                       <span class="n">model</span><span class="o">=</span><span class="n">gaussian_model</span><span class="p">,</span>
+                       <span class="n">n_walkers</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+                       <span class="n">max_iters</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span>
+                       <span class="n">start_same_pos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="summary-visualization">
+<h2>Summary visualization<a class="headerlink" href="#summary-visualization" title="Permalink to this headline">¶</a></h2>
+<p>This is the simplest and fastest visualization, and it includes a table
+with information about the current iteration of the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>, the best
+score achieved, and the percentages of deaths and clones.</p>
+<p>To initialize it you only have to wrap the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> you want to
+visualize.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">summary</span> <span class="o">=</span> <span class="n">Summary</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once the class is initialized, you need to call the <code class="docutils literal notranslate"><span class="pre">plot_dmap</span></code>
+function to initialize the plots and create the <code class="docutils literal notranslate"><span class="pre">holoviews.DynamicMap</span></code>
+that will plot the data streamed during the algorithm run. The data streaming
+will start when <code class="docutils literal notranslate"><span class="pre">run</span></code> is called.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">summary</span><span class="o">.</span><span class="n">plot_dmap</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../../_images/03_summary.gif" src="../../_images/03_summary.gif" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">summary</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="histogram-visualizations">
+<h2>Histogram visualizations<a class="headerlink" href="#histogram-visualizations" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">SwarmViz1d</span></code> can be used in any kind of <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>, and it allows
+to display no only the summary table and the reward evolution curve, but
+also histograms for the reward, distance, and virtual reward
+distributions of the walkers.</p>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">stream_interval</span></code> parameter you can choose the number of
+iterations that will pass before the data is streamed to the plot. Data
+is streamed every 100 iterations by default.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm_viz_1d</span> <span class="o">=</span> <span class="n">SwarmViz1D</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="n">stream_interval</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm_viz_1d</span><span class="o">.</span><span class="n">plot_dmap</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../../_images/03_1dviz.gif" src="../../_images/03_1dviz.gif" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm_viz_1d</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="d-visualizations">
+<h2>2D Visualizations<a class="headerlink" href="#d-visualizations" title="Permalink to this headline">¶</a></h2>
+<p>It is also possible to visualize the walkers’ properties using two
+dimensional plots. These plots come specially in handy if you are using
+two dimensional embeddings of your state space, but the can also be
+applied to visualize the first two dimensions of the sampled state space.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">LandscapeViz</span></code> incorporates visualizations of the walkers
+distribution, the rewards, the virtual reward and the distance function.
+This is done by interpolating the values of the walkers to create a grid,
+where the target value will be displayed using a colormap.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">landscape_viz</span> <span class="o">=</span> <span class="n">LandscapeViz</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="n">stream_interval</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">opts</span> QuadMesh {+framewise} Bivariate {+framewise}
+# Opts is necessary to avoid erratic behaviour when creating big DynamicMaps
+landscape_viz.plot_dmap()
+</pre></div>
+</div>
+<img alt="../../_images/03_landscape.gif" src="../../_images/03_landscape.gif" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">landscape_viz</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="plotting-2d-distributions-and-histograms">
+<h2>Plotting 2D distributions and histograms<a class="headerlink" href="#plotting-2d-distributions-and-histograms" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">SwarmViz</span></code> class incorporated all the distributions presented
+above. All the <code class="docutils literal notranslate"><span class="pre">dataviz</span></code> classes allow you to select the
+visualizations you want to display by passing a list of their names to
+the <code class="docutils literal notranslate"><span class="pre">display_plots</span></code> parameter.</p>
+<p>Passing <strong>“all”</strong> as a parameter will display all the available
+visualizations. If you want to find out what are the available
+visualizations for a given class you can call the <code class="docutils literal notranslate"><span class="pre">PLOT_NAMES</span></code>
+attribute of the class.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SwarmViz</span><span class="o">.</span><span class="n">PLOT_NAMES</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm_viz</span> <span class="o">=</span> <span class="n">SwarmViz</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="n">stream_interval</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">display_plots</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">opts</span> QuadMesh {+framewise} Bivariate {+framewise}
+swarm_viz.plot_dmap()
+</pre></div>
+</div>
+<img alt="../../_images/03_swarmviz.gif" src="../../_images/03_swarmviz.gif" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm_viz</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="visualizing-atari-games">
+<h2>Visualizing Atari games<a class="headerlink" href="#visualizing-atari-games" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">AtariViz</span></code> class includes all the plots that can help visualize
+the sampling process of an Atari game. On top of the visualizations
+available on the <code class="docutils literal notranslate"><span class="pre">SwarmViz1d</span></code> class, it allows to display the frame of
+the best state sampled.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.dataviz.swarm_viz</span> <span class="kn">import</span> <span class="n">AtariViz</span>
+</pre></div>
+</div>
+<p>We will use the game <strong>Qbert</strong> to show how the <code class="docutils literal notranslate"><span class="pre">AtariViz</span></code> works.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.atari.env</span> <span class="kn">import</span> <span class="n">AtariEnv</span>
+<span class="kn">from</span> <span class="nn">fragile.core.dt_sampler</span> <span class="kn">import</span> <span class="n">GaussianDt</span>
+<span class="kn">from</span> <span class="nn">fragile.core.models</span> <span class="kn">import</span> <span class="n">DiscreteUniform</span>
+<span class="kn">from</span> <span class="nn">fragile.core.swarm</span> <span class="kn">import</span> <span class="n">Swarm</span>
+<span class="kn">from</span> <span class="nn">plangym</span> <span class="kn">import</span> <span class="n">AtariEnvironment</span><span class="p">,</span> <span class="n">ParallelEnvironment</span>
+<span class="n">game_name</span> <span class="o">=</span> <span class="s2">&quot;Qbert-ram-v0&quot;</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">ParallelEnvironment</span><span class="p">(</span>
+        <span class="n">env_class</span><span class="o">=</span><span class="n">AtariEnvironment</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">game_name</span><span class="p">,</span>
+        <span class="n">clone_seeds</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">autoreset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="n">GaussianDt</span><span class="p">(</span><span class="n">min_dt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_dt</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">loc_dt</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">scale_dt</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">swarm</span> <span class="o">=</span> <span class="n">Swarm</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="k">lambda</span> <span class="n">env</span><span class="p">:</span> <span class="n">DiscreteUniform</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">critic</span><span class="o">=</span><span class="n">dt</span><span class="p">),</span>
+    <span class="n">env</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">AtariEnv</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">),</span>
+    <span class="n">tree</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">n_walkers</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">max_iters</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+    <span class="n">reward_scale</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">distance_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">minimize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>By default it will display the summary table, the evolution of the best
+reward sampled and the best frame sampled.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atviz</span> <span class="o">=</span> <span class="n">AtariViz</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="n">stream_interval</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atviz</span><span class="o">.</span><span class="n">plot_dmap</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../../_images/03_qbert.gif" src="../../_images/03_qbert.gif" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atviz</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can display the histograms of the swarm values by passing <strong>“all”</strong>
+to <code class="docutils literal notranslate"><span class="pre">display_plots</span></code>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atviz</span> <span class="o">=</span> <span class="n">AtariViz</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="n">stream_interval</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">display_plots</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atviz</span><span class="o">.</span><span class="n">plot_dmap</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../../_images/03_atariviz.gif" src="../../_images/03_atariviz.gif" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atviz</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples_index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/optimize.html">Function Optimization</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/resources/examples/03_visualizing_a_swarm.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

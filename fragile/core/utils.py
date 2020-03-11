@@ -21,17 +21,19 @@ Scalar = Union[int, np.int, float, np.float]
 StateDict = Dict[str, Dict[str, Any]]
 
 
-def remove_notebook_margin():
+def remove_notebook_margin(output_width_pct: int = 80):
     """Make the notebook output wider."""
     from IPython.core.display import HTML
 
-    html = """<style>
-    .container { width:70% !important; }
-    .input{ width:70% !important; }
-    .text_cell{ width:70% !important;
-                font-size: 16px;}
-    .title {align:center !important;}
-    </style>"""
+    html = (
+        "<style>"
+        ".container { width:" + str(output_width_pct) + "% !important; }"
+        ".input{ width:70% !important; }"
+        ".text_cell{ width:70% !important;"
+        " font-size: 16px;}"
+        ".title {align:center !important;}"
+        "</style>"
+    )
     return HTML(html)
 
 
