@@ -60,12 +60,12 @@
 <span class="sd">        Args:</span>
 <span class="sd">            high: Higher value for the bound interval. If it is an scalar it will be applied to \</span>
 <span class="sd">                  all the coordinates of a target vector. If it is a vector, the bounds will be \</span>
-<span class="sd">                  checked coordinate-wise. It defines and open interval.</span>
+<span class="sd">                  checked coordinate-wise. It defines and closed interval.</span>
 <span class="sd">            low: Lower value for the bound interval. If it is an scalar it will be applied to \</span>
 <span class="sd">                  all the coordinates of a target vector. If it is a vector, the bounds will be \</span>
-<span class="sd">                  checked coordinate-wise. It defines and open interval.</span>
+<span class="sd">                  checked coordinate-wise. It defines and closed interval.</span>
 <span class="sd">            shape: Shape of the array that will be bounded. Only needed if `high` and `low` are \</span>
-<span class="sd">                   and it is used to defined the dimensions that will be bounded.</span>
+<span class="sd">                   vectors and it is used to define the dimensions that will be bounded.</span>
 <span class="sd">            dtype:  Data type of the array that will be bounded. It can be inferred from `high` \</span>
 <span class="sd">                    or `low` (the type of `high` takes priority).</span>
 
@@ -163,9 +163,9 @@
 <span class="sd">        The value of the high and low will be proportional to the maximum and minimum values of \</span>
 <span class="sd">        the array. Scale defines the proportion to make the bounds bigger and smaller. For \</span>
 <span class="sd">        example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \</span>
-<span class="sd">        smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.</span>
-<span class="sd">        If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \</span>
-<span class="sd">        array.</span>
+<span class="sd">        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% \</span>
+<span class="sd">        higher. If scale is one, `high` and `low` will be equal to the maximum and minimum values \</span>
+<span class="sd">        of the array.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            high: Higher bound to be scaled.</span>
@@ -197,9 +197,9 @@
 <span class="sd">        The value of the high and low will be proportional to the maximum and minimum values of \</span>
 <span class="sd">        the array. Scale defines the proportion to make the bounds bigger and smaller. For \</span>
 <span class="sd">        example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \</span>
-<span class="sd">        smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.</span>
-<span class="sd">        If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \</span>
-<span class="sd">        array.</span>
+<span class="sd">        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% \</span>
+<span class="sd">        higher. If scale is one, `high` and `low` will be equal to the maximum and minimum values \</span>
+<span class="sd">        of the array.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            x: Numpy array used to initialize the bounds.</span>
@@ -266,9 +266,9 @@
 <span class="sd">        high and low will be proportional to the maximum and minimum values of \</span>
 <span class="sd">        the array. Scale defines the proportion to make the bounds bigger and smaller. For \</span>
 <span class="sd">        example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10% \</span>
-<span class="sd">        smaller. If scale is 0.9 the higher bound will be 10% lowe, and the lower bound 10% higher.</span>
-<span class="sd">        If scale is one, `high` and `low` will be equal to the maximum and minimum values of the  \</span>
-<span class="sd">        array.</span>
+<span class="sd">        smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10% \</span>
+<span class="sd">        higher. If scale is one, `high` and `low` will be equal to the maximum and minimum values \</span>
+<span class="sd">        of the array.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            high: Used to scale the `high` value of the current instance.</span>
@@ -323,8 +323,7 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../resources/function_minimization.html">Function minimization example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/examples/examples_index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
@@ -362,7 +361,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019, Guillem Duran, Sergio Hernandez.
+      &copy;2020, Guillem Duran, Sergio Hernandez.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>

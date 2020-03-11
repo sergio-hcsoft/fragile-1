@@ -11,8 +11,7 @@ Welcome to Fragile's documentation!
    :caption: Contents:
 
    resources/architecture.rst
-   resources/getting_started.rst
-   resources/function_minimization.rst
+   resources/examples/examples_index.rst
    module_docs/core.rst
    module_docs/atari.rst
    module_docs/optimize.rst

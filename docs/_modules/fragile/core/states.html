@@ -45,8 +45,8 @@
 <span class="sd">    walkers of a Swarm. Each tensor will be associated to a class attribute.</span>
 
 <span class="sd">    This class behaves as a dictionary of tensors with some extra functionality</span>
-<span class="sd">    to make easier the process of cloning the along the walkers dimension. Each \</span>
-<span class="sd">    tensor will have an extra dimension equal to the number of walkers.</span>
+<span class="sd">    to make easier the process of cloning the walkers&#39; states by adding an \</span>
+<span class="sd">    extra dimension equal to the number of walkers to each tensor.</span>
 
 <span class="sd">    In order to define the tensors, a `state_dict` dictionary needs to be \</span>
 <span class="sd">    specified using the following structure::</span>
@@ -229,7 +229,7 @@
 <div class="viewcode-block" id="States.split_states"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.split_states">[docs]</a>    <span class="k">def</span> <span class="nf">split_states</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;States&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a generator for n_walkers different states, where each one \</span>
-<span class="sd">        contain only the  data corresponding to one walker.</span>
+<span class="sd">        contain only the data corresponding to one walker.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)))</span></div>
@@ -488,8 +488,7 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../resources/function_minimization.html">Function minimization example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/examples/examples_index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
@@ -527,7 +526,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019, Guillem Duran, Sergio Hernandez.
+      &copy;2020, Guillem Duran, Sergio Hernandez.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
