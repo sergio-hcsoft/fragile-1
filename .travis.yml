@@ -58,8 +58,8 @@ matrix:
       if: commit_message !~ /^Bump version/
       name: "Tests inside docker"
       script:
-        - make docker-build VERSION=test
-        - make docker-test VERSION=test
+        - make docker-build
+        - make docker-test
     - stage: bump-version
       if: branch == master AND type != pull_request AND commit_message !~ /^Bump version/
       name: Bump the version
