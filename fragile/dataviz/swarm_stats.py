@@ -51,7 +51,7 @@ class SummaryTable(Table):
             data = pandas.DataFrame(
                 {
                     "Epoch": [int(swarm.walkers.n_iters)],
-                    "Best Reward": ["{:.4f}%".format(float(swarm.best_reward_found))],
+                    "Best Reward": ["{:.4f}".format(float(swarm.best_reward_found))],
                     "Deaths": ["{:.2f}%".format(100 * deaths)],
                     "Clones": ["{:.2f}%".format(100 * clones)],
                 },
