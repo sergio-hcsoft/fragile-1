@@ -1,5 +1,5 @@
 Function minimization example
-=============================
+-----------------------------
 .. note::
     You can find this documentation as a Jupyter notebook inside the **examples** folder as
     ``02_function_minimization.ipynb``.
@@ -11,7 +11,7 @@ landscapes in order to find points that meet a desired Min/Max
 condition.
 
 Testing a ``FunctionMapper`` on a benchmark function
-----------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``FunctionMapper`` is a ``Swarm`` with updated default parameters
 for solving minimization problems. It should be used with a
@@ -23,7 +23,7 @@ represents the
 `Eggholder <https://en.wikipedia.org/wiki/Test_functions_for_optimization>`__
 function:
 
-.. figure:: images/eggholder.png
+.. figure:: ../images/eggholder.png
    :alt: eggholder
 
    eggholder
@@ -81,7 +81,7 @@ parameters to the ``FunctionMapper``.
 
 .. code:: ipython3
 
-    swarm.run_swarm(print_every=50)
+    swarm.run(print_every=50)
 
 
 .. parsed-literal::
@@ -120,7 +120,7 @@ parameters to the ``FunctionMapper``.
 
 
 Sampling a function with a local optimizer
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A simple gaussian perturbation is a very sub-optimal strategy for
 sampling new points. It is possible to improve the performance of the
@@ -151,7 +151,7 @@ supports.
 
 .. code:: ipython3
 
-    swarm.run_swarm(print_every=25)
+    swarm.run(print_every=25)
 
 
 .. parsed-literal::
@@ -193,7 +193,7 @@ This significantly increases the performance of the algorithm at the
 expense of using more computational resources.
 
 Defining a new problem using a ``Function``
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is possible to optimize any python function that returns an scalar
 using a ``Function``, as long as two requirements are met:
@@ -213,7 +213,7 @@ domain.
 In this example we will optimize a four dimensional *styblinski_tang*
 function, which all its coordinates defined in the [-5, 5] interval:
 
-.. figure:: images/styblinski_tang.png
+.. figure:: ../images/styblinski_tang.png
    :alt: styblinski_tang
 
    styblinski_tang
@@ -259,7 +259,7 @@ to a ``Function``
 
 .. code:: ipython3
 
-    swarm.run_swarm(print_every=25)
+    swarm.run(print_every=25)
 
 
 .. parsed-literal::
@@ -327,7 +327,7 @@ optima of -156.66468
 
 
 Optimizing a function with Evolutionary Strategies
---------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is possible to use the ``fragile`` framework to implement
 optimization algorithms that do not rely on a cloning process, such as
@@ -361,7 +361,7 @@ particles, which is a 12-dimensional function with a global minima at -6.
 
 .. code:: ipython3
 
-    swarm.run_swarm(print_every=25)
+    swarm.run(print_every=25)
 
 
 .. parsed-literal::
