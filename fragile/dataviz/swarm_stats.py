@@ -422,27 +422,6 @@ class DistanceLandscape(SwarmLandscape):
         return distances
 
 
-class InvDistanceLandscape(SwarmLandscape):
-    """Plot an interpolate landscape of the inverse distance distribution of \
-    the :class:`Walkers`."""
-
-    name = "inv_distance_landscape"
-
-    def opts(self, title="Inverse distance landscape", *args, **kwargs):
-        """
-        Update the plot parameters. Same as ``holoviews`` ``opts``.
-
-        The default values updates the plot axes independently when being \
-        displayed in a :class:`Holomap`.
-        """
-        super(InvDistanceLandscape, self).opts(title=title, *args, **kwargs)
-
-    def get_z_coords(self, swarm: Swarm, X: numpy.ndarray = None):
-        """Return the inverse of the normalized ``distances`` of the walkers."""
-        distances: numpy.ndarray = 1 / swarm.walkers.states.distances
-        return distances
-
-
 class WalkersDensity(SwarmLandscape):
     """Plot the density distribution of the walkers."""
 

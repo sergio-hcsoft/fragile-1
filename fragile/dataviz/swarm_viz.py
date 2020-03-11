@@ -9,7 +9,6 @@ from fragile.dataviz.swarm_stats import (
     DistanceHistogram,
     DistanceLandscape,
     GridLandscape,
-    InvDistanceLandscape,
     KDELandscape,
     RewardHistogram,
     RewardLandscape,
@@ -112,12 +111,13 @@ class SwarmViz(BaseWrapper):
             if name not in self.display_plots:
                 continue
             if issubclass(plot, SwarmLandscape):
+                invert_cmap = self.swarm.walkers.minimize if name == "reward_landscape" else False
                 plots[name] = self.SWARM_PLOTS[name](
                     margin_high=margin_high,
                     n_points=n_points,
                     margin_low=margin_low,
                     use_embeddings=use_embeddings,
-                    invert_cmap=self.swarm.walkers.minimize,
+                    invert_cmap=invert_cmap,
                 )
             else:
                 plots[name] = self.SWARM_PLOTS[name]()
@@ -282,25 +282,6 @@ class KDEViz(SwarmViz):
     SWARM_STATS_TYPES = (
         DistanceLandscape,
         RewardLandscape,
-        KDELandscape,
-        VirtualRewardLandscape,
-        WalkersDensity,
-        DistanceHistogram,
-        VirtualRewardHistogram,
-        RewardHistogram,
-        BestReward,
-    )
-    SWARM_NAMES = tuple([plot.name for plot in SWARM_STATS_TYPES])
-    SWARM_PLOTS = dict(zip(SWARM_NAMES, SWARM_STATS_TYPES))
-
-
-class InvDistanceViz(SwarmViz):
-    """:class:`SwarmViz` that plots the inverse of the distance distribution."""
-
-    SWARM_STATS_TYPES = (
-        InvDistanceLandscape,
-        RewardLandscape,
-        DistanceLandscape,
         KDELandscape,
         VirtualRewardLandscape,
         WalkersDensity,
