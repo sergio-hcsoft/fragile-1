@@ -17,8 +17,8 @@ def create_cartpole_swarm():
         walkers=Walkers,
         env=lambda: DiscreteEnv(ClassicControl()),
         reward_limit=150,
-        n_walkers=20,
-        max_iters=200,
+        n_walkers=50,
+        max_iters=300,
         prune_tree=True,
         reward_scale=2,
     )
@@ -107,17 +107,17 @@ class TestSwarm:
         swarm.step_walkers()
 
     @pytest.mark.parametrize("swarm", swarm_names, indirect=True)
-    def test_run_swarm(self, swarm):
+    def test_run(self, swarm):
         swarm.reset()
         swarm.walkers.max_iters = 5
-        swarm.run_swarm()
+        swarm.run()
 
     @pytest.mark.parametrize("swarm, target", test_scores, indirect=["swarm"])
     def test_score_gets_higher(self, swarm, target):
         swarm.walkers.seed()
         swarm.reset()
-        swarm.walkers.max_iters = 300
-        swarm.run_swarm()
+        swarm.walkers.max_iters = 500
+        swarm.run()
         reward = swarm.walkers.states.cum_rewards.max()
         assert reward > target, "Iters: {}, rewards: {}".format(
             swarm.walkers.n_iters, swarm.walkers.states.cum_rewards

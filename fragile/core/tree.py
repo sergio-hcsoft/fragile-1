@@ -14,9 +14,6 @@ class _BaseNetworkxTree(BaseStateTree):
     networkx DiGraph to keep track of the states relationships.
     """
 
-    ROOT_ID = 0
-    ROOT_HASH = 0
-
     def __init__(self):
         """Initialize a :class:`_BaseNetworkxTree`."""
         self.data: nx.DiGraph = nx.DiGraph()
@@ -147,7 +144,7 @@ class _BaseNetworkxTree(BaseStateTree):
             self.prune_branch(leaf, alive_leafs, from_hash=from_hash)
         return
 
-    def get_branch(self, leaf_id, from_hash: bool = False, root=ROOT_ID) -> tuple:
+    def get_branch(self, leaf_id, from_hash: bool = False, root=BaseStateTree.ROOT_ID) -> tuple:
         """
         Get the data of the branch ended at leaf_id.
 
