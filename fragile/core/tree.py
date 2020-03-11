@@ -302,7 +302,7 @@ class HistoryTree(_BaseNetworkxTree):
 
         """
         alive_leafs = set([self.hash_to_ids[le] if from_hash else le for le in set(alive_leafs)])
-        dead_leafs = set([le for le in self.get_leaf_nodes() if le not in alive_leafs])
+        dead_leafs = self.leafs - alive_leafs
         super(HistoryTree, self).prune_tree(
             dead_leafs=dead_leafs, alive_leafs=alive_leafs, from_hash=False
         )
