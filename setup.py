@@ -5,10 +5,29 @@ from setuptools import find_packages, setup
 
 
 version = SourceFileLoader(
-    "fragile.version",
-    str(Path(__file__).parent / "fragile" / "version.py"),
+    "fragile.version", str(Path(__file__).parent / "fragile" / "version.py"),
 ).load_module()
 
+# Module-specific dependencies.
+extras = {
+    "atari": ["atari-py==0.1.1", "Pillow", "opencv-python", "gym"],
+    "dataviz": [
+        "matplotlib",
+        "bokeh<2.0.0",
+        "pandas",
+        "panel",
+        "holoviews",
+        "hvplot",
+        "plotly",
+        "streamz",
+        "param",
+    ],
+    "test": ["pytest>=5.3.5", "hypothesis==5.6.0"],
+    # TODO: Update when ray support is ready "ray": ["ray", "setproctitle"],
+}
+
+# Meta dependency groups.
+extras["all"] = [item for group in extras.values() for item in group]
 
 setup(
     name="fragile",
@@ -22,7 +41,18 @@ setup(
     download_url="https://github.com/Guillemdb/fragile",
     keywords=["reinforcement learning", "artificial intelligence", "monte carlo", "planning"],
     tests_require=["pytest", "hypothesis"],
-    install_requires=["numpy", "scipy", "networkx", "atari-py==0.1.1"],
+    extras_require=extras,
+    install_requires=[
+        "attrs",
+        "numpy",
+        "scipy",
+        "networkx",
+        "pillow-simd",
+        "psycopg2-binary",
+        "pyarrow",
+        "scikit-learn",
+        "numba",
+    ],
     package_data={"": ["README.md"]},
     classifiers=[
         "Development Status :: 3 - Alpha",

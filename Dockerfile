@@ -29,16 +29,13 @@ echo\n\' > /browser && \
 ENV NPY_NUM_BUILD_JOBS 8
 RUN pip3 install --no-cache-dir cython && \
     pip3 install --no-cache-dir \
-        git+https://github.com/openai/gym \
-        networkx jupyter h5py Pillow-simd PyOpenGL matplotlib && \
-    git clone https://github.com/ray-project/ray.git && \
-    pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.8.0.dev6-cp36-cp36m-manylinux1_x86_64.whl && \
-    pip3 install git+https://github.com/FragileTech/atari-py && \
-    git clone https://github.com/FragileTech/plangym.git && \
-    cd plangym && pip3 install -e . && cd .. && \
+         h5py Pillow-simd PyOpenGL && \
+    pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.9.0.dev0-cp36-cp36m-manylinux1_x86_64.whl && \
+    pip3 install git+https://github.com/FragileTech/atari-py#egg=atari-py && \
+    pip3 install git+https://github.com/FragileTech/plangym#egg=plangym && \
     cd fragile && \
-    pip3 install -U --no-cache-dir -r requirements.txt --no-use-pep517&& \
-    pip3 install -U --no-cache-dir -r requirements-viz.txt --no-use-pep517&& \
+    pip3 install --no-cache-dir -r requirements.txt --no-use-pep517&& \
+    pip3 install --no-cache-dir -r requirements-viz.txt --no-use-pep517&& \
     python3 -c "import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot"
 
 # Install holoviews image save

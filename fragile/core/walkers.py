@@ -317,7 +317,7 @@ class SimpleWalkers(BaseWalkers):
     def _repr_state(state):
         string = "\n"
         for k, v in state.items():
-            if k in ["observs", "states"]:
+            if k in ["observs", "states" "id_walkers"]:
                 continue
             shape = v.shape if hasattr(v, "shape") else None
             new_str = "{} shape {} Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(
