@@ -245,7 +245,7 @@ class DistributedSwarm:
         obs = observation.reshape((210, 160, 3)).astype(np.uint8)
         self.frame_pipe.send(obs)
 
-    def run_swarm(self):
+    def run(self):
         self.n_iters = 0
         best_ids = [s.reset.remote() for s in self.swarms]
         steps = {}

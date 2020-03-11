@@ -123,7 +123,7 @@ class SwarmViz(BaseWrapper):
                 plots[name] = self.SWARM_PLOTS[name]()
         return plots
 
-    def run_swarm(
+    def run(
         self,
         env_states: StatesEnv = None,
         model_states: StatesModel = None,

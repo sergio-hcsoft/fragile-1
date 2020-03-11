@@ -167,7 +167,7 @@ class Swarm(BaseSwarm):
             )
             self.update_tree(root_ids.tolist())
 
-    def run_swarm(
+    def run(
         self,
         model_states: StatesModel = None,
         env_states: StatesEnv = None,
