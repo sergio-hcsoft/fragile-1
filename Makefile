@@ -17,14 +17,14 @@ test:
 .PHONY: docker-test
 docker-test:
 	find -name "*.pyc" -delete
-	docker run --rm -it --network host -w /fragile --entrypoint python3 fragiletech/fragile:$VERSION -m pytest
+	docker run --rm -it --network host -w /fragile --entrypoint python3 fragiletech/fragile:${VERSION} -m pytest
 
 
 .PHONY: docker-build
 docker-build:
-	docker build --pull -t fragiletech/fragile:$VERSION .
+	docker build --pull -t fragiletech/fragile:${VERSION} .
 
 .PHONY: docker-push
 docker-push:
-    docker push fragiletech/fragile:$VERSION
+	docker push fragiletech/fragile:${VERSION}
 
