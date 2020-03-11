@@ -98,6 +98,9 @@
 <div class="viewcode-block" id="BaseStateTree"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseStateTree">[docs]</a><span class="k">class</span> <span class="nc">BaseStateTree</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Data structure in charge of storing the history of visited states of an algorithm run.&quot;&quot;&quot;</span>
 
+    <span class="n">ROOT_ID</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ROOT_HASH</span> <span class="o">=</span> <span class="mi">0</span>
+
 <div class="viewcode-block" id="BaseStateTree.add_states"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseStateTree.add_states">[docs]</a>    <span class="k">def</span> <span class="nf">add_states</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">parent_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
@@ -570,8 +573,8 @@
 <span class="sd">        Initialize a :class:`BaseSwarm`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            env: A function that returns an instance of an Environment.</span>
-<span class="sd">            model: A function that returns an instance of a Model.</span>
+<span class="sd">            env: A callable that returns an instance of an Environment.</span>
+<span class="sd">            model: A callable that returns an instance of a Model.</span>
 <span class="sd">            walkers: A callable that returns an instance of BaseWalkers.</span>
 <span class="sd">            n_walkers: Number of walkers of the swarm.</span>
 <span class="sd">            reward_scale: Virtual reward exponent for the reward score.</span>
@@ -635,7 +638,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseSwarm.run_swarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseSwarm.run_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">run_swarm</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseSwarm.run"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseSwarm.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -682,11 +685,11 @@
 <span class="sd">        model.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            env_callable: A function that returns an instance of an</span>
+<span class="sd">            env_callable: A callable that returns an instance of an</span>
 <span class="sd">                :class:`fragile.Environment`.</span>
-<span class="sd">            model_callable: A function that returns an instance of a</span>
+<span class="sd">            model_callable: A callable that returns an instance of a</span>
 <span class="sd">                :class:`fragile.Model`.</span>
-<span class="sd">            walkers_callable: A function that returns an instance of</span>
+<span class="sd">            walkers_callable: A callable that returns an instance of</span>
 <span class="sd">                :class:`fragile.Walkers`.</span>
 <span class="sd">            n_walkers: Number of walkers of the swarm.</span>
 <span class="sd">            reward_scale: Virtual reward exponent for the reward score.</span>
@@ -704,14 +707,22 @@
 <div class="viewcode-block" id="BaseWrapper"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWrapper">[docs]</a><span class="k">class</span> <span class="nc">BaseWrapper</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Generic wrapper to wrap any of the other classes.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="BaseWrapper.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWrapper.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseWrapper.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWrapper.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_unwrapped&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize a :class:`BaseWrapper`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data: Object that will be wrapped.</span>
+<span class="sd">            name: Assign a custom attribute name to the wrapped object.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">unwrapped</span> <span class="o">=</span> <span class="n">data</span></div>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">name</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unwrapped</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Access the wrapped object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
@@ -758,8 +769,7 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../resources/function_minimization.html">Function minimization example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/examples/examples_index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
@@ -797,7 +807,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019, Guillem Duran, Sergio Hernandez.
+      &copy;2020, Guillem Duran, Sergio Hernandez.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>

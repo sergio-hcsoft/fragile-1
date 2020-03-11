@@ -62,7 +62,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_prune_tree</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Swarm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">walkers</span><span class="o">=</span><span class="n">walkers</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
 
     <span class="nd">@property</span>
@@ -121,11 +124,11 @@
 <span class="sd">        model.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            env_callable: A function that returns an instance of an</span>
+<span class="sd">            env_callable: A callable that returns an instance of an</span>
 <span class="sd">                :class:`fragile.Environment`.</span>
-<span class="sd">            model_callable: A function that returns an instance of a</span>
+<span class="sd">            model_callable: A callable that returns an instance of a</span>
 <span class="sd">                :class:`fragile.Model`.</span>
-<span class="sd">            walkers_callable: A function that returns an instance of</span>
+<span class="sd">            walkers_callable: A callable that returns an instance of</span>
 <span class="sd">                :class:`fragile.Walkers`.</span>
 <span class="sd">            n_walkers: Number of walkers of the swarm.</span>
 <span class="sd">            reward_scale: Virtual reward exponent for the reward score.</span>
@@ -180,26 +183,24 @@
 <span class="sd">                            states of the :class:`Walkers`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">env_sates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">env_states</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">env_states</span>
-
         <span class="n">model_states</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">model_states</span> <span class="ow">is</span> <span class="kc">None</span>
             <span class="k">else</span> <span class="n">model_states</span>
         <span class="p">)</span>
-
         <span class="n">model_states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">init_actions</span><span class="o">=</span><span class="n">model_states</span><span class="o">.</span><span class="n">actions</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">env_states</span><span class="o">=</span><span class="n">env_sates</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">update_ids</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_tree</span><span class="p">:</span>
+            <span class="n">root_ids</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">ROOT_HASH</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">id_walkers</span> <span class="o">=</span> <span class="n">root_ids</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span>
                 <span class="n">env_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="p">,</span>
                 <span class="n">model_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">model_states</span><span class="p">,</span>
                 <span class="n">walkers_states</span><span class="o">=</span><span class="n">walkers_states</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">update_tree</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_tree</span><span class="p">(</span><span class="n">root_ids</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span></div>
 
-    <span class="c1"># @profile</span>
-<div class="viewcode-block" id="Swarm.run_swarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.run_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">run_swarm</span><span class="p">(</span>
+<div class="viewcode-block" id="Swarm.run"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -227,7 +228,7 @@
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_end_condition</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">run_step</span><span class="p">()</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
                     <span class="n">clear_output</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -256,12 +257,10 @@
 <span class="sd">        It also updates the :class:`Tree` data structure that takes care of \</span>
 <span class="sd">        storing the visited states.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># old_ids = set(self.walkers.states.id_walkers.copy())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">balance</span><span class="p">()</span>
-        <span class="n">new_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prune_tree</span><span class="p">(</span><span class="n">leaf_nodes</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">new_ids</span><span class="p">))</span></div>
+        <span class="n">new_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">id_walkers</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prune_tree</span><span class="p">(</span><span class="n">leaf_nodes</span><span class="o">=</span><span class="n">new_ids</span><span class="p">)</span></div>
 
-    <span class="c1"># @profile</span>
 <div class="viewcode-block" id="Swarm.run_step"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.run_step">[docs]</a>    <span class="k">def</span> <span class="nf">run_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute one iteration of the :class:`Swarm` evolution process and \</span>
@@ -271,7 +270,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">balance_and_prune</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">fix_best</span><span class="p">()</span></div>
 
-    <span class="c1"># @profile</span>
 <div class="viewcode-block" id="Swarm.step_walkers"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.step_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">step_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make the walkers evolve to their next state sampling an action from the \</span>
@@ -356,8 +354,7 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../resources/getting_started.html">Getting started with Atari games</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../resources/function_minimization.html">Function minimization example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/examples/examples_index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
@@ -395,7 +392,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019, Guillem Duran, Sergio Hernandez.
+      &copy;2020, Guillem Duran, Sergio Hernandez.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
