@@ -11,6 +11,8 @@ stages:
   - test
   - bump-version
   - deploy
+before_install:
+  - env
 _install: &_install
   - pip install --upgrade pip cython codecov pytest
   - pip install -r requirements.txt --no-use-pep517
@@ -56,17 +58,18 @@ matrix:
       if: commit_message !~ /^Bump version/
       name: "Tests inside docker"
       script:
-        - make docker-build VERSION=test
-        - make docker-test VERSION=test
+        - make docker-build
+        - make docker-test
     - stage: bump-version
       if: branch == master AND type != pull_request AND commit_message !~ /^Bump version/
       name: Bump the version
       install:
         - git config --global user.name "Fragile Bot"
-        - git config --global user.email "bot@fragile.com"
+        - git config --global user.email "bot@fragile.tech"
         - pip install bump2version
       script:
         - set -e
+        - git pull --no-edit origin master
         - version_file=fragile/version.py
         - current_version=$(grep __version__ $version_file | cut -d\" -f2)
         - bumpversion --tag --current-version $current_version --commit patch $version_file
@@ -74,10 +77,35 @@ matrix:
         - git push --tags fragile-bot-remote HEAD:master
         - set +e
     - stage: deploy
-      if: branch == master AND type != pull_request AND commit_message =~ /^Bump version/
+      if: tag =~ .*
       name: Push package to PyPI
-      script: skip
-      # deploy: TODO
+      install:
+        - pip install --upgrade pip
+        - pip install twine pyopenssl
+      script:
+        - set -e
+        - test "v$(python3 setup.py --version)" == "$TRAVIS_TAG"
+        - python3 setup.py bdist_wheel
+        - set +e
+      deploy:
+        provider: script
+        script: twine upload dist/*.whl -u $PYPI_LOGIN -p $PYPI_PASS
+        skip_cleanup: true
+        on:
+          tags: true
+    - stage: deploy
+      if: tag =~ .*
+      name: Push docker image to DockerHub
+      install:
+        - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" docker.io
+      script:
+        - make docker-build VERSION=$TRAVIS_TAG
+      deploy:
+        provider: script
+        script: make docker-push
+        skip_cleanup: true
+        on:
+          tags: true
 
 notifications:
   email: false

@@ -55,7 +55,7 @@ class AtariEnv(DiscreteEnv):
         new_states, observs, rewards, ends, infos = self._env.step_batch(
             actions=actions, states=env_states.states, n_repeat_action=n_repeat_actions
         )
-        game_ends = [inf["game_end"] for inf in infos]
+        game_ends = [inf.get("game_end", False) for inf in infos]
 
         new_state = self.states_from_data(
             states=new_states,
