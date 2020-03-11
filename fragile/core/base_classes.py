@@ -65,6 +65,9 @@ class StatesOwner:
 class BaseStateTree:
     """Data structure in charge of storing the history of visited states of an algorithm run."""
 
+    ROOT_ID = 0
+    ROOT_HASH = 0
+
     def add_states(
         self,
         parent_ids: List[int],
@@ -602,7 +605,7 @@ class BaseSwarm:
         """
         raise NotImplementedError
 
-    def run_swarm(
+    def run(
         self,
         model_states: StatesModel = None,
         env_states: StatesEnv = None,
