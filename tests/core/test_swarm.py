@@ -16,6 +16,7 @@ def create_cartpole_swarm():
         model=lambda x: DiscreteUniform(env=x),
         walkers=Walkers,
         env=lambda: DiscreteEnv(ClassicControl()),
+        reward_limit=150,
         n_walkers=20,
         max_iters=200,
         prune_tree=True,
@@ -41,6 +42,7 @@ def create_atari_swarm():
         max_iters=20,
         prune_tree=True,
         reward_scale=2,
+        reward_limit=751,
     )
     return swarm
 
@@ -114,7 +116,7 @@ class TestSwarm:
     def test_score_gets_higher(self, swarm, target):
         swarm.walkers.seed()
         swarm.reset()
-        swarm.walkers.max_iters = 175
+        swarm.walkers.max_iters = 300
         swarm.run_swarm()
         reward = swarm.walkers.states.cum_rewards.max()
         assert reward > target, "Iters: {}, rewards: {}".format(
