@@ -16,7 +16,7 @@ def create_cartpole_swarm():
         model=lambda x: DiscreteUniform(env=x),
         walkers=Walkers,
         env=lambda: DiscreteEnv(ClassicControl()),
-        reward_limit=150,
+        reward_limit=131,
         n_walkers=50,
         max_iters=300,
         prune_tree=True,
@@ -81,7 +81,7 @@ class TestSwarm:
         "function": create_function_swarm,
     }
     swarm_names = list(swarm_dict.keys())
-    test_scores = list(zip(swarm_names, [149, 750, 10]))
+    test_scores = list(zip(swarm_names, [130, 750, 10]))
 
     @pytest.mark.parametrize("swarm", swarm_names, indirect=True)
     def test_init_not_crashes(self, swarm):

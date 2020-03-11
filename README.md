@@ -6,17 +6,16 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
 
-**This repository is under active development. I am actively working to make it easy to install and test.**
+**This repository is under active development.**
 
 Fragile is a framework for developing algorithms inspired by the Fractal AI theory and testing them at scale.
 
 ## About FractalAI
 
-FractalAI is a theory of Artificial Intelligence derived from first principles, and based on the 
-framework of non-equilibrium thermodynamics. It allows to derive new mathematical tools for efficiently
- exploring state spaces.
+FractalAI is based on the framework of non-equilibrium thermodynamics, and It allows to derive new 
+mathematical tools for efficiently exploring state spaces.
  
- The fundamental principles of our work are accessible online:
+ The principles of our work are accessible online:
 
 - [Arxiv](https://arxiv.org/abs/1803.05049) manuscript describing the fundamental principles of our work.
 - [Blog](http://entropicai.blogspot.com) that describes our early research process.
@@ -25,7 +24,7 @@ framework of non-equilibrium thermodynamics. It allows to derive new mathematica
 
 ## Getting started 
 
-Check out the [Getting started with Atari games](https://fragiletech.github.io/fragile/resources/getting_started.html) 
+Check out the [Getting started with Atari games](https://fragiletech.github.io/fragile/resources/examples/examples_index.html#getting-started) 
 section of the docs, or check out the examples folder.
 
 ## Running in docker
@@ -45,7 +44,12 @@ You can also run the tests inside the docker container
 This framework has been tested in Ubuntu 18.04 and supports Python 3.6, 3.7 and 3.8. 
 If you find any problems running it in a different OS or Python version please open an issue.
 
-Please take a look at the Dockerfile to find out about all the dependencies, and the detailed installation process.
+It can be install with `pip install fragile`.
+
+### Building from source
+
+Please take a look at the Dockerfile to find out about all the dependencies, and the detailed 
+installation process.
 
 ```bash
    git clone https://github.com/FragileTech/fragile.git
@@ -76,11 +80,10 @@ You can access the documentation on [GitHub Pages](https://fragiletech.github.io
     
 ## Roadmap
 
-- Publish docs on ReadTheDocs.org
-- Document and test the `dataviz` module. Write example notebook
 - Document and test the `ray` module. Write example notebook
 - Document and refactor Montezuma solver
 - Improve tests coverage (currently 153 for the `core` and `optimize` modules)
+- Add new algorithms to sample different state spaces.
 - Add a module to generate data for training deep learning models
 - Add a benchmarking module
 - Add deep learning API
