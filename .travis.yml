@@ -84,7 +84,7 @@ matrix:
         - pip install twine pyopenssl
       script:
         - set -e
-        - test $(python3 setup.py --version) == $TRAVIS_TAG
+        - test "v$(python3 setup.py --version)" == "$TRAVIS_TAG"
         - python3 setup.py bdist_wheel
         - set +e
       deploy:
