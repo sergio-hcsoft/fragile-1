@@ -5,7 +5,7 @@ Getting started
 
 This is a tutorial that explains how to crate a ``Swarm`` to sample
 Atari games from the OpenAI ``gym`` library. It covers how to
-instantiate a ``Swarm``\ and the most important parameters needed to
+instantiate a ``Swarm`` and the most important parameters needed to
 control the sampling process.
 
 Structure of a ``Swarm``
