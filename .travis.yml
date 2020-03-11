@@ -102,7 +102,7 @@ matrix:
         - make docker-build VERSION=$TRAVIS_TAG
       deploy:
         provider: script
-        script: make docker-push
+        script: make docker-push VERSION=$TRAVIS_TAG
         skip_cleanup: true
         on:
           tags: true
