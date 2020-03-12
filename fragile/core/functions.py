@@ -2,6 +2,12 @@ from typing import Callable
 
 import numpy
 
+from fragile.core.utils import random_state
+
+
+def l2_norm(x: numpy.ndarray, y: numpy.ndarray) -> numpy.ndarray:
+    return numpy.linalg.norm(x - y, axis=1)
+
 
 def relativize(x: numpy.ndarray) -> numpy.ndarray:
     """Normalize the data using a custom smoothing technique."""
@@ -30,14 +36,9 @@ def calculate_virtual_reward(
     reward_coef: float = 1.0,
     other_reward: numpy.ndarray = 1.0,
     return_compas: bool = False,
-    distance_function: Callable = None,
+    distance_function: Callable = l2_norm,
 ):
     """Calculate the virtual rewards given the required data."""
-
-    def l2_norm(x: numpy.ndarray, y: numpy.ndarray) -> numpy.ndarray:
-        return numpy.linalg.norm(x - y, axis=1)
-
-    distance_function = distance_function if distance_function is not None else l2_norm
 
     compas = get_alives_indexes(ends) if ends is not None else numpy.arange(len(rewards))
     flattened_observs = observs.reshape(len(ends), -1)
@@ -80,4 +81,79 @@ def fai_iteration(
         other_reward=other_reward,
     )
     compas_ix, will_clone = calculate_clone(virtual_rewards=virtual_reward, ends=ends, eps=eps)
+    return compas_ix, will_clone
+
+
+def cross_virtual_reward(
+    host_observs: numpy.ndarray,
+    host_rewards: numpy.ndarray,
+    ext_observs: numpy.ndarray,
+    ext_rewards: numpy.ndarray,
+    dist_coef: float = 1.0,
+    reward_coef: float = 1.0,
+    return_compas: bool = False,
+    distance_function: Callable = l2_norm,
+):
+    host_observs = host_observs.reshape(len(host_rewards), -1)
+    ext_observs = ext_observs.reshape(len(ext_rewards), -1)
+    compas_host = random_state.permutation(numpy.arange(len(host_rewards)))
+    compas_ext = random_state.permutation(numpy.arange(len(ext_rewards)))
+
+    # TODO: check if it's better for the distances to be the same for host and ext
+    h_dist = distance_function(host_observs, ext_observs[compas_host])
+    e_dist = distance_function(ext_observs, host_observs[compas_ext])
+    host_distance = relativize(h_dist.flatten())
+    ext_distance = relativize(e_dist.flatten())
+
+    host_rewards = relativize(host_rewards)
+    ext_rewards = relativize(ext_rewards)
+
+    host_vr = host_distance ** dist_coef * host_rewards ** reward_coef
+    ext_vr = ext_distance ** dist_coef * ext_rewards ** reward_coef
+    if return_compas:
+        return (host_vr, compas_host), (ext_vr, compas_ext)
+    return host_vr, ext_vr
+
+
+def cross_clone(
+    host_virtual_rewards: numpy.ndarray,
+    ext_virtual_rewards: numpy.ndarray,
+    host_ends: numpy.ndarray = None,
+    eps=1e-3,
+):
+    compas_ix = random_state.permutation(numpy.arange(len(ext_virtual_rewards)))
+    host_vr = host_virtual_rewards.flatten()
+    ext_vr = ext_virtual_rewards.flatten()
+    clone_probs = (ext_vr[compas_ix] - host_vr) / numpy.maximum(ext_vr, eps)
+    will_clone = clone_probs.flatten() > numpy.random.random(len(clone_probs))
+    if host_ends is not None:
+        will_clone[host_ends] = True
+    return compas_ix, will_clone
+
+
+def cross_fai_iteration(
+    host_observs: numpy.ndarray,
+    host_rewards: numpy.ndarray,
+    ext_observs: numpy.ndarray,
+    ext_rewards: numpy.ndarray,
+    host_ends: numpy.ndarray = None,
+    dist_coef: float = 1.0,
+    reward_coef: float = 1.0,
+    distance_function: Callable = l2_norm,
+    eps: float = 1e-8,
+):
+    host_vr, ext_vr = cross_virtual_reward(
+        host_observs=host_observs,
+        host_rewards=host_rewards,
+        ext_observs=ext_observs,
+        ext_rewards=ext_rewards,
+        dist_coef=dist_coef,
+        reward_coef=reward_coef,
+        distance_function=distance_function,
+        return_compas=False,
+    )
+
+    compas_ix, will_clone = cross_clone(
+        host_virtual_rewards=host_vr, ext_virtual_rewards=ext_vr, host_ends=host_ends, eps=eps
+    )
     return compas_ix, will_clone

@@ -1,7 +1,6 @@
 import copy
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
-# import line_profiler
 import numpy
 
 from fragile.core.base_classes import BaseCritic, BaseWalkers
@@ -112,8 +111,6 @@ class SimpleWalkers(BaseWalkers):
 
         The returned ids are integers representing the hash of the different states.
         """
-        # ids = numpy.arange(self.n) + self._id_counter
-        # self._id_counter += self.n
         return self.env_states.hash_values("states")
 
     def update_ids(self):
@@ -148,7 +145,6 @@ class SimpleWalkers(BaseWalkers):
         max_iters = self.n_iters >= self.max_iters
         return all_dead or max_iters
 
-    # @profile
     def calculate_distances(self) -> None:
         """Calculate the corresponding distance function for each observation with \
         respect to another observation chosen at random.
@@ -209,10 +205,8 @@ class SimpleWalkers(BaseWalkers):
             companions = self.states.virtual_rewards[compas_ix]
             # This value can be negative!!
             clone_probs = (companions - self.states.virtual_rewards) / self.states.virtual_rewards
-            # clone_probs = numpy.sqrt(numpy.clip(clone_probs, 0, 1.1))
         self.update_states(clone_probs=clone_probs, compas_clone=compas_ix)
 
-    # @profile
     def balance(self) -> Tuple[set, set]:
         """
         Perform an iteration of the FractalAI algorithm for balancing the \
@@ -235,7 +229,6 @@ class SimpleWalkers(BaseWalkers):
         new_ids = set(self.states.id_walkers.copy())
         return old_ids, new_ids
 
-    # @profile
     def clone_walkers(self) -> None:
         """
         Sample the clone probability distribution and clone the walkers accordingly.
@@ -406,7 +399,6 @@ class Walkers(SimpleWalkers):
         )
         return end_condition or reward_limit_reached
 
-    # @profile
     def calculate_virtual_reward(self):
         """Apply the virtual reward formula to account for all the different goal scores."""
         rewards = -1 * self.states.cum_rewards if self.minimize else self.states.cum_rewards
@@ -432,7 +424,6 @@ class Walkers(SimpleWalkers):
             virt_rew = self.states.virtual_rewards
         self.states.update(virtual_rewards=virt_rew)
 
-    # @profile
     def balance(self):
         """Perform FAI iteration to clone the states."""
         self.update_best()
@@ -513,7 +504,6 @@ class Walkers(SimpleWalkers):
         )
         rewards = self.env_states.rewards
         ix = rewards.argmin() if self.minimize else rewards.argmax()
-        self.states.update()
         self.states.update(
             best_reward=numpy.inf if self.minimize else -numpy.inf,
             best_obs=copy.deepcopy(self.env_states.observs[ix]),
