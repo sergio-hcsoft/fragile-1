@@ -4,7 +4,7 @@ import hypothesis.strategies as st
 import numpy as np
 
 
-from fragile.core.utils import calculate_clone, calculate_virtual_reward, fai_iteration
+from fragile.core.functions import calculate_clone, calculate_virtual_reward, fai_iteration
 
 
 @given(st.integers(), st.integers())

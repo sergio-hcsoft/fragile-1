@@ -1,7 +1,7 @@
 import copy
 from typing import Any, Dict, Union
 
-import numpy as np
+import numpy
 from PIL import Image
 
 try:
@@ -14,10 +14,10 @@ except ImportError:
 
 
 RANDOM_SEED = 160290
-random_state = np.random.RandomState(seed=RANDOM_SEED)
+random_state = numpy.random.RandomState(seed=RANDOM_SEED)
 
-float_type = np.float32
-Scalar = Union[int, np.int, float, np.float]
+float_type = numpy.float32
+Scalar = Union[int, numpy.int, float, numpy.float]
 StateDict = Dict[str, Dict[str, Any]]
 
 
@@ -37,12 +37,14 @@ def remove_notebook_margin(output_width_pct: int = 80):
     return HTML(html)
 
 
-def hash_numpy(x: np.ndarray) -> int:
+def hash_numpy(x: numpy.ndarray) -> int:
     """Return a value that uniquely identifies a numpy array."""
     return hash(x.tostring())
 
 
-def resize_frame(frame: np.ndarray, height: int, width: int, mode: str = "RGB") -> np.ndarray:
+def resize_frame(
+    frame: numpy.ndarray, height: int, width: int, mode: str = "RGB"
+) -> numpy.ndarray:
     """
     Use PIL to resize an RGB frame to an specified height and width.
 
@@ -58,18 +60,7 @@ def resize_frame(frame: np.ndarray, height: int, width: int, mode: str = "RGB") 
     """
     frame = Image.fromarray(frame)
     frame = frame.convert(mode).resize((height, width))
-    return np.array(frame)
-
-
-def relativize(x: np.ndarray) -> np.ndarray:
-    """Normalize the data using a custom smoothing technique."""
-    std = x.std()
-    if float(std) == 0:
-        return np.ones(len(x), dtype=type(std))
-    standard = (x - x.mean()) / std
-    standard[standard > 0] = np.log(1.0 + standard[standard > 0]) + 1.0
-    standard[standard <= 0] = np.exp(standard[standard <= 0])
-    return standard
+    return numpy.array(frame)
 
 
 def update_defaults(target: dict, **kwargs) -> dict:
@@ -86,77 +77,16 @@ def params_to_tensors(param_dict, n_walkers: int):
     for key, val in copy_dict.items():
         sizes = tuple([n_walkers]) + val["size"]
         del val["size"]
-        tensor_dict[key] = np.empty(sizes, **val)
+        tensor_dict[key] = numpy.empty(sizes, **val)
     return tensor_dict
 
 
-def statistics_from_array(x: np.ndarray):
+def statistics_from_array(x: numpy.ndarray):
     """Return the (mean, std, max, min) of an array."""
     try:
         return x.mean(), x.std(), x.max(), x.min()
     except AttributeError:
-        return np.nan, np.nan, np.nan, np.nan
-
-
-def get_alives_indexes_np(ends: np.ndarray):
-    """Get indexes representing random alive walkers given a vector of death conditions."""
-    if np.all(ends):
-        return np.arange(len(ends))
-    ix = np.logical_not(ends).flatten()
-    return np.random.choice(np.arange(len(ix))[ix], size=len(ix), replace=ix.sum() < len(ix))
-
-
-def calculate_virtual_reward(
-    observs: np.ndarray,
-    rewards: np.ndarray,
-    ends: np.ndarray = None,
-    dist_coef: float = 1.0,
-    reward_coef: float = 1.0,
-    other_reward: np.ndarray = 1.0,
-    return_compas: bool = False,
-):
-    """Calculate the virtual rewards given the required data."""
-    compas = get_alives_indexes_np(ends) if ends is not None else np.arange(len(rewards))
-    flattened_observs = observs.reshape(len(ends), -1)
-    other_reward = other_reward.flatten() if isinstance(other_reward, np.ndarray) else other_reward
-
-    distance = np.linalg.norm(flattened_observs - flattened_observs[compas], axis=1)
-    distance_norm = relativize(distance.flatten())
-    rewards_norm = relativize(rewards)
-
-    virtual_reward = distance_norm ** dist_coef * rewards_norm ** reward_coef * other_reward
-    return virtual_reward.flatten() if not return_compas else virtual_reward.flatten(), compas
-
-
-def calculate_clone(virtual_rewards: np.ndarray, ends: np.ndarray, eps=1e-3):
-    """Calculate the clone indexes and masks from the virtual rewards."""
-    compas_ix = get_alives_indexes_np(ends)
-    vir_rew = virtual_rewards.flatten()
-    clone_probs = (vir_rew[compas_ix] - vir_rew) / np.maximum(vir_rew, eps)
-    will_clone = clone_probs.flatten() > np.random.random(len(clone_probs))
-    return compas_ix, will_clone
-
-
-def fai_iteration(
-    observs: np.ndarray,
-    rewards: np.ndarray,
-    ends: np.ndarray,
-    dist_coef: float = 1.0,
-    reward_coef: float = 1.0,
-    eps=1e-8,
-    other_reward: np.ndarray = 1.0,
-):
-    """Perform a FAI iteration."""
-    virtual_reward, vr_compas = calculate_virtual_reward(
-        observs,
-        rewards,
-        ends,
-        dist_coef=dist_coef,
-        reward_coef=reward_coef,
-        other_reward=other_reward,
-    )
-    compas_ix, will_clone = calculate_clone(virtual_rewards=virtual_reward, ends=ends, eps=eps)
-    return compas_ix, will_clone
+        return numpy.nan, numpy.nan, numpy.nan, numpy.nan
 
 
 """

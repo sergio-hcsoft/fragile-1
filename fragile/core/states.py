@@ -377,6 +377,8 @@ class StatesWalkers(States):
         )
         self.best_id = 0
         self.best_obs = None
+        self.best_state = None
+        # This is only to allow __repr__. Should be overriden after reset
         self.best_reward = -np.inf
 
     @property
