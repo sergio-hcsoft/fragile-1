@@ -8,6 +8,9 @@ version = SourceFileLoader(
     "fragile.version", str(Path(__file__).parent / "fragile" / "version.py"),
 ).load_module()
 
+with open(Path(__file__).with_name("README.md"), encoding="utf-8") as f:
+    long_description = f.read()
+
 # Module-specific dependencies.
 extras = {
     "atari": ["atari-py==0.1.1", "Pillow", "opencv-python", "gym"],
@@ -32,6 +35,8 @@ extras["all"] = [item for group in extras.values() for item in group]
 setup(
     name="fragile",
     description="Framework for developing FractalAI based algorithms.",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     version=version.__version__,
     license="AGPLv3.0",
