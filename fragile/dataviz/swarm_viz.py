@@ -170,7 +170,7 @@ class SwarmViz(BaseWrapper):
         for viz in self.plots.values():
             viz.stream_data(self)
 
-    def plot_dmap(self, ignore: list = None):
+    def plot(self, ignore: list = None):
         """Plot a DynamicMap that will contained the streaming plots of the selected data."""
         ignore = ignore if ignore is not None else []
         plots = [p.plot for k, p in self.plots.items() if k not in ignore]
