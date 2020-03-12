@@ -57,14 +57,14 @@ visualize.
 
     summary = Summary(swarm)
 
-Once the class is initialized, you need to call the ``plot_dmap``
+Once the class is initialized, you need to call the ``plot``
 function to initialize the plots and create the ``holoviews.DynamicMap``
 that will plot the data streamed during the algorithm run. The data streaming
 will start when ``run`` is called.
 
 .. code:: ipython3
 
-    summary.plot_dmap()
+    summary.plot()
 
 .. image::
     ../images/03_summary.gif
@@ -91,7 +91,7 @@ is streamed every 100 iterations by default.
 
 .. code:: ipython3
 
-    swarm_viz_1d.plot_dmap()
+    swarm_viz_1d.plot()
 
 .. image::
     ../images/03_1dviz.gif
@@ -121,7 +121,7 @@ where the target value will be displayed using a colormap.
 
     %%opts QuadMesh {+framewise} Bivariate {+framewise}
     # Opts is necessary to avoid erratic behaviour when creating big DynamicMaps
-    landscape_viz.plot_dmap()
+    landscape_viz.plot()
 
 .. image::
     ../images/03_landscape.gif
@@ -154,7 +154,7 @@ attribute of the class.
 .. code:: ipython3
 
     %%opts QuadMesh {+framewise} Bivariate {+framewise}
-    swarm_viz.plot_dmap()
+    swarm_viz.plot()
 
 .. image::
     ../images/03_swarmviz.gif
@@ -214,7 +214,7 @@ reward sampled and the best frame sampled.
 
 .. code:: ipython3
 
-    atviz.plot_dmap()
+    atviz.plot()
 
 .. image::
     ../images/03_qbert.gif
@@ -232,7 +232,7 @@ to ``display_plots``.
 
 .. code:: ipython3
 
-    atviz.plot_dmap()
+    atviz.plot()
 
 .. image::
     ../images/03_atariviz.gif
