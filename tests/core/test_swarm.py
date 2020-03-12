@@ -10,6 +10,8 @@ from fragile.core.walkers import BaseWalkers, Walkers
 from fragile.optimize.benchmarks import Rastrigin
 from fragile.optimize.swarm import FunctionMapper
 
+from tests.distributed.test_export_swarm import ExportDummy
+
 
 def create_cartpole_swarm():
     swarm = Swarm(
@@ -17,12 +19,17 @@ def create_cartpole_swarm():
         walkers=Walkers,
         env=lambda: DiscreteEnv(ClassicControl()),
         reward_limit=131,
-        n_walkers=50,
+        n_walkers=150,
         max_iters=300,
         prune_tree=True,
         reward_scale=2,
     )
     return swarm
+
+
+def create_export_swarm():
+    swarm = create_cartpole_swarm()
+    return ExportDummy(swarm)
 
 
 def create_atari_swarm():
@@ -66,6 +73,7 @@ swarm_dict = {
     "cartpole": create_cartpole_swarm,
     "atari": create_atari_swarm,
     "function": create_function_swarm,
+    "export": create_export_swarm,
 }
 
 
@@ -79,9 +87,10 @@ class TestSwarm:
         "cartpole": create_cartpole_swarm,
         "atari": create_atari_swarm,
         "function": create_function_swarm,
+        "export": create_export_swarm,
     }
     swarm_names = list(swarm_dict.keys())
-    test_scores = list(zip(swarm_names, [130, 750, 10]))
+    test_scores = list(zip(swarm_names, [130, 750, 10, 130]))
 
     @pytest.mark.parametrize("swarm", swarm_names, indirect=True)
     def test_init_not_crashes(self, swarm):
