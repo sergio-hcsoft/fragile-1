@@ -231,7 +231,7 @@ refer to the ``dataviz`` module tutorial.
     import holoviews
     holoviews.extension("bokeh")
     swarm_viz = AtariViz(swarm, stream_interval=10)
-    swarm_viz.plot_dmap()
+    swarm_viz.plot()
 
 
 
