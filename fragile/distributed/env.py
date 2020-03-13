@@ -233,12 +233,10 @@ class BatchEnv(object):
         rewards = [result if self._blocking else result() for result in results]
         return rewards
 
-    def step_batch(self, points):
+    def step_batch(self, points: np.ndarray):
         """Forward a batch of actions to the wrapped environments.
         Args:
-          actions: Batched action to apply to the environment.
-          states: States to be stepped. If None, act on current state.
-          n_repeat_action: Number of consecutive times the action will be applied.
+          points: Batch of points that will be stepped.
 
         Raises:
           ValueError: Invalid actions.
@@ -282,9 +280,7 @@ class ParallelFunction:
         but taking a list of states, actions and n_repeat_actions as input.
 
         Args:
-            actions: Iterable containing the different actions to be applied.
-            states: Iterable containing the different states to be set.
-            n_repeat_action: int or array containing the frameskips that will be applied.
+            points: Batch of points that will be stepped.
 
         Returns:
             if states is None returns (observs, rewards, ends, infos) else (new_states,

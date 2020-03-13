@@ -1,8 +1,7 @@
 import copy
-from typing import Callable, Tuple
+from typing import Tuple
 
 import numpy
-import ray
 
 from fragile.core.base_classes import BaseWrapper
 from fragile.core.functions import cross_fai_iteration
@@ -12,14 +11,29 @@ from fragile.core.utils import float_type, random_state, Scalar, StateDict
 
 
 class ExportedWalkers(States):
-    def __init__(self, batch_size: int):
+    """Represents the walkers that are being passed across different instances \
+    of :class:`ExportSwarm`."""
+
+    def __init__(self, batch_size: int, state_dict: StateDict = None):
+        """
+        Initialize a :class:`ExportWalkers`.
+
+        Args:
+            batch_size: Number of walkers that will be exported.
+            state_dict: External :class:`StateDict` that overrides the default values.
+
+        """
         self.id_walkers = None
         self.rewards = None
         self.observs = None
         self.states = None
-        super(ExportedWalkers, self).__init__(
-            batch_size=batch_size, state_dict=self.get_params_dict()
-        )
+        # Accept external definition of ExportedWalkers param_dict values
+        walkers_dict = self.get_params_dict()
+        if state_dict is not None:
+            for k, v in state_dict.items():
+                if k in walkers_dict:
+                    walkers_dict[k] = v
+        super(ExportedWalkers, self).__init__(batch_size=batch_size, state_dict=walkers_dict)
 
     def get_params_dict(self) -> StateDict:
         """Return a dictionary containing the param_dict to build an instance \
@@ -34,13 +48,39 @@ class ExportedWalkers(States):
         return params
 
     def get_best_index(self, minimize: bool) -> int:
+        """
+        Return the index of the best walker present in the :class:`ExportedWalkers`.
+
+        Args:
+            minimize: If ``True`` return the index of the walker with the lowest \
+                      reward. If ``False`` return the index of the walker with \
+                      the highest reward.
+
+        Returns:
+            Index of the best walker.
+
+        """
         return self.rewards.argmin() if minimize else self.rewards.argmax()
 
     def get_best_reward(self, minimize: bool) -> Scalar:
+        """
+        Return the reward value of the best walker present in the \
+        :class:`ExportedWalkers`.
+
+        Args:
+            minimize: If ``True`` return the lowest reward. If ``False`` return \
+            the  highest reward.
+
+        Returns:
+            Reward value of the best walker.
+
+        """
         return self.rewards.min() if minimize else self.rewards.max()
 
 
 class ExportSwarm(BaseWrapper):
+    """Wrapper that allows to import and export data from :class:`ExportedWalkers`."""
+
     def __init__(
         self,
         swarm: Swarm,
@@ -49,6 +89,21 @@ class ExportSwarm(BaseWrapper):
         export_best: bool = True,
         import_best: bool = True,
     ):
+        """
+        Initialize a :class:`ExportSwarm`.
+
+        Args:
+            swarm: :class:`Swarm` that will be wrapped.
+            n_import: Number of walkers that will be imported from an external \
+                      :class:`ExportedWalkers`.
+            n_export: Number of walkers that will be exported as :class:`ExportedWalkers`.
+            export_best: The best walkers of the :class:`Swarm` will always be exported.
+            import_best: The best walker of the imported :class:`ExportedWalkers` \
+                         will be compared to the best walkers of the \
+                         :class:`Swarm`. If it improves the current best value \
+                         found, the best walker of the :class:`Swarm` will be updated.
+
+        """
         self.n_import = n_import
         self.n_export = n_export
         self._export_best = export_best
@@ -56,11 +111,29 @@ class ExportSwarm(BaseWrapper):
         super(ExportSwarm, self).__init__(data=swarm, name="swarm")
 
     def run_exchange_step(self, walkers: ExportedWalkers) -> ExportedWalkers:
+        """
+        Import the target :class:`ExportedWalkers` before iterating the wrapped \
+        :class:`Swarm`, and export the target number of walkers as a \
+        :class:`ExportedWalkers` class.
+
+        Args:
+            walkers: Walkers that will be imported after running an iteration \
+            of the :class:`Swarm`.
+
+        Returns:
+            walkers exported after running an iteration of the :class:`Swarm`.
+
+        """
         self.import_walkers(walkers)
         self.run_step()
         return self.export_walkers()
 
     def export_walkers(self) -> ExportedWalkers:
+        """
+        Export the number of walkers defined by ``self.n_export`` chosen at \
+        random from the :class:`Swarm` walkers. If ``self.export_best`` is true \
+        the best walker of the :class:`Swarm` will always be included.
+        """
         if self.swarm.walkers.states.end_condition.all():  # Do not export dead walkers
             return ExportedWalkers(batch_size=0)
         indexes = self._get_export_index()
@@ -68,6 +141,25 @@ class ExportSwarm(BaseWrapper):
         return walkers
 
     def import_walkers(self, walkers: ExportedWalkers) -> None:
+        """
+        Import the target :class:`ExportedWalkers` into the walkers of the :class:`Swarm`.
+
+        The importing process will be done cloning ``self.n_import`` walkers \
+        chosen at random after comparing them to the imported walkers. This will \
+        be done running the FractalAI cloning operation.
+
+        If ``self.import_best`` is ``True``, the best walker of the imported \
+        walkers will be compared against the current best walker and update if \
+        it improves the current best value found.
+
+        Args:
+            walkers: :class:`ExportedWalkers` that will be imported into the \
+                    :class:`Swarm` pool of walkers.
+
+        Returns:
+            None.
+
+        """
         if len(walkers) == 0:  # Do not import dead walkers
             return
         self.merge_walkers(walkers)
@@ -75,11 +167,35 @@ class ExportSwarm(BaseWrapper):
             self.import_best(walkers)
 
     def merge_walkers(self, walkers: ExportedWalkers):
+        """
+        Perform a FractalAI clone operation between a random sample of the \
+        :class:`Swarm` walkers and the imported walkers.
+
+        Args:
+            walkers: Walkers that will be imported. The :class:`Swarm` walkers \
+                    can clone to them.
+
+        Returns:
+            None.
+
+        """
         local_ix, import_ix = self._get_merge_indexes(walkers)
         compas_ix, will_clone = self._cross_fai_iteration(local_ix, import_ix, walkers)
         self._clone_to_imported(compas_ix, will_clone, local_ix, import_ix, walkers)
 
     def import_best(self, walkers: ExportedWalkers):
+        """
+        Import the best walker from the target :class:`ExportedWalkers` if it \
+        improves the best value present in the :class:`Swarm`' walkers.
+
+        Args:
+            walkers: Walkers containing the best walker that will be imported \
+                    if it improves the current best value found.
+
+        Returns:
+            None.
+
+        """
         if self._imported_best_is_better(walkers):
             best_ix = walkers.get_best_index(self.swarm.walkers.minimize)
             # TODO (guillemdb): Check if deepcopy is really necessary
@@ -93,6 +209,7 @@ class ExportSwarm(BaseWrapper):
             self.swarm.walkers.fix_best()
 
     def _get_export_index(self) -> numpy.ndarray:
+        """Get an index of the walkers that will be exported."""
         index = self.swarm.walkers.get_alive_compas()[: self.n_export]
         if self._export_best:  # Force the best to be present if needed.
             best_ix = self.swarm.walkers.get_best_index()
@@ -101,15 +218,19 @@ class ExportSwarm(BaseWrapper):
         return index
 
     def _create_export_walkers(self, indexes: numpy.ndarray) -> ExportedWalkers:
+        """Create the :class:`ExportedWalkers` containing the walkers that will be exported."""
         states = self.swarm.walkers.env_states.states[indexes]
         observs = self.swarm.walkers.env_states.observs[indexes]
         rewards = self.swarm.walkers.states.cum_rewards[indexes]
         id_walkers = self.swarm.walkers.states.id_walkers[indexes]
-        walkers = ExportedWalkers(batch_size=len(indexes))
+        state_dict = self.swarm.env.get_params_dict()
+        state_dict.update(self.swarm.walkers.states.get_params_dict())
+        walkers = ExportedWalkers(batch_size=len(indexes), state_dict=state_dict)
         walkers.update(states=states, observs=observs, rewards=rewards, id_walkers=id_walkers)
         return walkers
 
     def _imported_best_is_better(self, walkers: ExportedWalkers) -> bool:
+        """Check if the imported walkers improves the current best value of the :class:`Swarm`."""
         minim = self.swarm.walkers.minimize
         improves = (
             self.swarm.best_reward_found > walkers.get_best_reward(minim)
@@ -126,7 +247,7 @@ class ExportSwarm(BaseWrapper):
         import_ix: numpy.ndarray,
         walkers: ExportedWalkers,
     ) -> None:
-
+        """Clone the :class:`Swarm` selected walkers to the target imported walkers."""
         clone_ids = copy.deepcopy(walkers.id_walkers[import_ix][compas_ix][will_clone])
         clone_rewards = copy.deepcopy(walkers.rewards[import_ix][compas_ix][will_clone])
         clone_states = copy.deepcopy(walkers.states[import_ix][compas_ix][will_clone])
@@ -142,6 +263,8 @@ class ExportSwarm(BaseWrapper):
                 i += 1
 
     def _get_merge_indexes(self, walkers: ExportedWalkers) -> Tuple[numpy.ndarray, numpy.ndarray]:
+        """Get the indexes for selecting the walkers that will be compared in \
+        the clone operation."""
         local_ix = random_state.choice(
             numpy.arange(len(self.swarm.walkers)), size=self.n_import, replace=False
         )
@@ -158,6 +281,8 @@ class ExportSwarm(BaseWrapper):
     def _cross_fai_iteration(
         self, local_ix: numpy.ndarray, import_ix: numpy.ndarray, walkers: ExportedWalkers
     ) -> Tuple[numpy.ndarray, numpy.ndarray]:
+        """Perform a cloning process of the walkers of the :class:`Swarm` \
+        to the imported walkers."""
         local_obs = self.swarm.walkers.env_states.observs[local_ix]
         local_rewards = self.swarm.walkers.states.cum_rewards[local_ix]
         local_ends = self.swarm.walkers.states.end_condition[local_ix]

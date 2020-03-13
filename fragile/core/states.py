@@ -275,11 +275,13 @@ class States:
         """
         tensor_dict = {}
         for key, val in param_dict.items():
-            val_size = val.get("size")
+            val_size = val.get("size", val.get("shape"))
             sizes = n_walkers if val_size is None else tuple([n_walkers]) + val_size
             if "size" in val:
                 del val["size"]
-            tensor_dict[key] = np.zeros(sizes, **val)
+            if "shape" in val:
+                del val["shape"]
+            tensor_dict[key] = np.zeros(shape=sizes, **val)
         return tensor_dict
 
 

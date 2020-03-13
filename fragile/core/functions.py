@@ -6,6 +6,7 @@ from fragile.core.utils import random_state
 
 
 def l2_norm(x: numpy.ndarray, y: numpy.ndarray) -> numpy.ndarray:
+    """Euclidean distance between two batches of points stacked across the first dimension."""
     return numpy.linalg.norm(x - y, axis=1)
 
 
@@ -94,6 +95,7 @@ def cross_virtual_reward(
     return_compas: bool = False,
     distance_function: Callable = l2_norm,
 ):
+    """Calculate the virtual rewards between two cloud of points."""
     host_observs = host_observs.reshape(len(host_rewards), -1)
     ext_observs = ext_observs.reshape(len(ext_rewards), -1)
     compas_host = random_state.permutation(numpy.arange(len(host_rewards)))
@@ -121,6 +123,7 @@ def cross_clone(
     host_ends: numpy.ndarray = None,
     eps=1e-3,
 ):
+    """Perform a clone operation between two different groups of points."""
     compas_ix = random_state.permutation(numpy.arange(len(ext_virtual_rewards)))
     host_vr = host_virtual_rewards.flatten()
     ext_vr = ext_virtual_rewards.flatten()
@@ -142,6 +145,7 @@ def cross_fai_iteration(
     distance_function: Callable = l2_norm,
     eps: float = 1e-8,
 ):
+    """Perform a FractalAI cloning process between two clouds of points."""
     host_vr, ext_vr = cross_virtual_reward(
         host_observs=host_observs,
         host_rewards=host_rewards,
