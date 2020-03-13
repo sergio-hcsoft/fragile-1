@@ -275,7 +275,15 @@ class States:
         """
         tensor_dict = {}
         for key, val in param_dict.items():
-            val_size = val.get("size", val.get("shape"))
+            # Shape already includes the number of walkers. Remove walkers axis to create size.
+            shape = val.get("shape")
+            if shape is None:
+                val_size = val.get("size")
+            elif len(shape) > 1:
+                val_size = shape[1:]
+            else:
+                val_size = val.get("size")
+            # Create appropriate shapes with current state's number of walkers.
             sizes = n_walkers if val_size is None else tuple([n_walkers]) + val_size
             if "size" in val:
                 del val["size"]
