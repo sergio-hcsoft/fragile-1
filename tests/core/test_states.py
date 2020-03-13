@@ -3,6 +3,8 @@ import pytest  # noqa: F401
 
 from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
 
+from tests.core.test_swarm import create_atari_swarm
+
 state_classes = [States, StatesEnv, StatesModel, StatesWalkers]
 
 
@@ -59,10 +61,38 @@ class TestStates:
 
     @pytest.mark.parametrize("states_class", state_classes)
     def test_split_states(self, states_class):
-        new_states = states_class(batch_size=10, test="test")
-        for s in new_states.split_states():
+        batch_size = 20
+        new_states = states_class(batch_size=batch_size, test="test")
+        for s in new_states.split_states(batch_size):
             assert len(s) == 1
             assert s.test == "test"
+        data = numpy.tile(numpy.arange(5), (batch_size, 1))
+        new_states = states_class(batch_size=batch_size, test="test", data=data)
+        for s in new_states.split_states(batch_size):
+            assert len(s) == 1
+            assert s.test == "test"
+            assert (s.data == numpy.arange(5)).all(), s.data
+        chunk_len = 4
+        test_data = numpy.tile(numpy.arange(5), (chunk_len, 1))
+        for s in new_states.split_states(5):
+            assert len(s) == chunk_len
+            assert s.test == "test"
+            assert (s.data == test_data).all(), (s.data.shape, test_data.shape)
+
+        batch_size = 21
+        data = numpy.tile(numpy.arange(5), (batch_size, 1))
+        new_states = states_class(batch_size=batch_size, test="test", data=data)
+        chunk_len = 5
+        test_data = numpy.tile(numpy.arange(5), (chunk_len, 1))
+        split_states = list(new_states.split_states(5))
+        for s in split_states[:-1]:
+            assert len(s) == chunk_len
+            assert s.test == "test"
+            assert (s.data == test_data).all(), (s.data.shape, test_data.shape)
+
+        assert len(split_states[-1]) == 1
+        assert split_states[-1].test == "test"
+        assert (split_states[-1].data == numpy.arange(5)).all(), (s.data.shape, test_data.shape)
 
     @pytest.mark.parametrize("states_class", state_classes)
     def test_get_params_dir(self, states_class):
@@ -91,3 +121,28 @@ class TestStates:
         target_1 = numpy.arange(10)
 
         assert numpy.all(target_1 == states.miau), (target_1 - states.miau, states_class)
+
+    @pytest.mark.parametrize("states_class", state_classes)
+    def test_merge_states(self, states_class):
+        batch_size = 21
+        data = numpy.tile(numpy.arange(5), (batch_size, 1))
+        new_states = states_class(batch_size=batch_size, test="test", data=data)
+        split_states = tuple(new_states.split_states(batch_size))
+        merged = new_states.merge_states(split_states)
+        assert len(merged) == batch_size
+        assert merged.test == "test"
+        assert (merged.data == data).all()
+
+        split_states = tuple(new_states.split_states(5))
+        merged = new_states.merge_states(split_states)
+        assert len(merged) == batch_size
+        assert merged.test == "test"
+        assert (merged.data == data).all()
+
+    def test_merge_states_with_atari(self):
+        swarm = create_atari_swarm()
+        for states in (swarm.walkers.states, swarm.walkers.env_states, swarm.walkers.model_states):
+            split_states = tuple(states.split_states(states.n))
+            merged = states.merge_states(split_states)
+            assert len(merged) == states.n
+            assert hash(merged) == hash(states)

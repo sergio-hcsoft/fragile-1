@@ -1,5 +1,5 @@
 import copy
-from typing import Any, Dict, Union
+from typing import Any, Dict, Generator, Tuple, Union
 
 import numpy
 from PIL import Image
@@ -87,6 +87,41 @@ def statistics_from_array(x: numpy.ndarray):
         return x.mean(), x.std(), x.max(), x.min()
     except AttributeError:
         return numpy.nan, numpy.nan, numpy.nan, numpy.nan
+
+
+def similiar_chunks_indexes(n_values, n_chunks) -> Generator[Tuple[int, int], None, None]:
+    """
+    Return the indexes for splitting an array in similar chunks.
+
+    Args:
+        n_values: Length of the array that will be split.
+        n_chunks: Number of similar chunks.
+
+    Returns:
+        Generator containing the indexes of every new chunk.
+
+    """
+    chunk_size = int(numpy.ceil(n_values / n_chunks))
+    for i in range(0, n_values, chunk_size):
+        yield i, i + chunk_size
+
+
+def split_similar_chunks(
+    vector: Union[list, numpy.ndarray], n_chunks: int
+) -> Generator[Union[list, numpy.ndarray], None, None]:
+    """
+    Split an indexable object into similar chunks.
+
+    Args:
+        vector: Target object to be split.
+        n_chunks: Number of similar chunks.
+
+    Returns:
+        Generator that returns the chunks created after splitting the target object.
+
+    """
+    for start, end in similiar_chunks_indexes(len(vector), n_chunks):
+        yield vector[start:end]
 
 
 """
