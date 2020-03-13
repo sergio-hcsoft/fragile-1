@@ -1,12 +1,12 @@
 import copy
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
-# import line_profiler
 import numpy
 
 from fragile.core.base_classes import BaseCritic, BaseWalkers
+from fragile.core.functions import relativize
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
-from fragile.core.utils import float_type, relativize, Scalar, StateDict, statistics_from_array
+from fragile.core.utils import float_type, Scalar, StateDict, statistics_from_array
 
 
 class SimpleWalkers(BaseWalkers):
@@ -111,8 +111,6 @@ class SimpleWalkers(BaseWalkers):
 
         The returned ids are integers representing the hash of the different states.
         """
-        # ids = numpy.arange(self.n) + self._id_counter
-        # self._id_counter += self.n
         return self.env_states.hash_values("states")
 
     def update_ids(self):
@@ -147,7 +145,6 @@ class SimpleWalkers(BaseWalkers):
         max_iters = self.n_iters >= self.max_iters
         return all_dead or max_iters
 
-    # @profile
     def calculate_distances(self) -> None:
         """Calculate the corresponding distance function for each observation with \
         respect to another observation chosen at random.
@@ -183,7 +180,8 @@ class SimpleWalkers(BaseWalkers):
         self.states.alive_mask = numpy.logical_not(self.states.end_condition)
         if not self.states.alive_mask.any():  # No need to sample if all walkers are dead.
             return numpy.arange(self.n)
-        compas_ix = numpy.arange(self.n)[self.states.alive_mask]
+        alive_indexes = numpy.arange(self.n, dtype=int)[self.states.alive_mask]
+        compas_ix = self.random_state.permutation(alive_indexes)
         compas = self.random_state.choice(compas_ix, self.n, replace=True)
         compas[: len(compas_ix)] = compas_ix
         return compas
@@ -207,10 +205,8 @@ class SimpleWalkers(BaseWalkers):
             companions = self.states.virtual_rewards[compas_ix]
             # This value can be negative!!
             clone_probs = (companions - self.states.virtual_rewards) / self.states.virtual_rewards
-            # clone_probs = numpy.sqrt(numpy.clip(clone_probs, 0, 1.1))
         self.update_states(clone_probs=clone_probs, compas_clone=compas_ix)
 
-    # @profile
     def balance(self) -> Tuple[set, set]:
         """
         Perform an iteration of the FractalAI algorithm for balancing the \
@@ -233,7 +229,6 @@ class SimpleWalkers(BaseWalkers):
         new_ids = set(self.states.id_walkers.copy())
         return old_ids, new_ids
 
-    # @profile
     def clone_walkers(self) -> None:
         """
         Sample the clone probability distribution and clone the walkers accordingly.
@@ -404,7 +399,6 @@ class Walkers(SimpleWalkers):
         )
         return end_condition or reward_limit_reached
 
-    # @profile
     def calculate_virtual_reward(self):
         """Apply the virtual reward formula to account for all the different goal scores."""
         rewards = -1 * self.states.cum_rewards if self.minimize else self.states.cum_rewards
@@ -430,7 +424,6 @@ class Walkers(SimpleWalkers):
             virt_rew = self.states.virtual_rewards
         self.states.update(virtual_rewards=virt_rew)
 
-    # @profile
     def balance(self):
         """Perform FAI iteration to clone the states."""
         self.update_best()
@@ -444,18 +437,24 @@ class Walkers(SimpleWalkers):
             self.states.update(other=critic_states)
         return returned
 
-    def _get_best_index(self):
+    def get_best_index(self) -> int:
+        """
+        Return the index of the best state present in the :class:`Walkers` \
+        that is considered alive (inside the boundary conditions of the problem). \
+        If no walker is alive it will return the index of the last walker, which \
+        corresponds with the best state found.
+        """
         rewards = self.states.cum_rewards[numpy.logical_not(self.states.end_condition)]
         if len(rewards) == 0:
-            return 0
-        best = rewards.min() if self.minimize else rewards.max()
+            return self.n - 1
+        best = rewards.argmin() if self.minimize else rewards.argmax()
         idx = (self.states.cum_rewards == best).astype(int)
-        ix = idx.argmax()  # if self.minimize else idx.argmax()
+        ix = idx.argmax()
         return ix
 
     def update_best(self):
         """Keep track of the best state found and its reward."""
-        ix = self._get_best_index()
+        ix = self.get_best_index()
         best_obs = self.env_states.observs[ix].copy()
         best_reward = float(self.states.cum_rewards[ix])
         best_state = self.env_states.states[ix].copy()
@@ -472,7 +471,6 @@ class Walkers(SimpleWalkers):
                 best_obs=best_obs,
                 best_id=int(self.states.id_walkers[ix]),
             )
-            self.states.update()
 
     def fix_best(self):
         """Ensure the best state found is assigned to the last walker of the \
@@ -506,7 +504,6 @@ class Walkers(SimpleWalkers):
         )
         rewards = self.env_states.rewards
         ix = rewards.argmin() if self.minimize else rewards.argmax()
-        self.states.update()
         self.states.update(
             best_reward=numpy.inf if self.minimize else -numpy.inf,
             best_obs=copy.deepcopy(self.env_states.observs[ix]),

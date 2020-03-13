@@ -275,11 +275,21 @@ class States:
         """
         tensor_dict = {}
         for key, val in param_dict.items():
-            val_size = val.get("size")
+            # Shape already includes the number of walkers. Remove walkers axis to create size.
+            shape = val.get("shape")
+            if shape is None:
+                val_size = val.get("size")
+            elif len(shape) > 1:
+                val_size = shape[1:]
+            else:
+                val_size = val.get("size")
+            # Create appropriate shapes with current state's number of walkers.
             sizes = n_walkers if val_size is None else tuple([n_walkers]) + val_size
             if "size" in val:
                 del val["size"]
-            tensor_dict[key] = np.zeros(sizes, **val)
+            if "shape" in val:
+                del val["shape"]
+            tensor_dict[key] = np.zeros(shape=sizes, **val)
         return tensor_dict
 
 
@@ -377,6 +387,8 @@ class StatesWalkers(States):
         )
         self.best_id = 0
         self.best_obs = None
+        self.best_state = None
+        # This is only to allow __repr__. Should be overriden after reset
         self.best_reward = -np.inf
 
     @property

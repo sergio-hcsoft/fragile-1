@@ -3,8 +3,8 @@ from hypothesis.extra.numpy import arrays
 import numpy as np
 import pytest
 
+from fragile.core.functions import relativize
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
-from fragile.core.utils import relativize
 from fragile.core.walkers import Walkers
 
 

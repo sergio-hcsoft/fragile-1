@@ -1,6 +1,6 @@
 import numpy as np
 
-from fragile.core.utils import relativize
+from fragile.core.functions import relativize
 from fragile.core.walkers import Walkers
 
 # import line_profiler
