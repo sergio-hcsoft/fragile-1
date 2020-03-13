@@ -26,7 +26,7 @@ extras = {
         "param",
     ],
     "test": ["pytest>=5.3.5", "hypothesis==5.6.0"],
-    # TODO: Update when ray support is ready "ray": ["ray", "setproctitle"],
+    "ray": ["ray", "setproctitle"],
 }
 
 # Meta dependency groups.

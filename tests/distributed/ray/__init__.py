@@ -1,3 +1,6 @@
-import ray
+try:
+    import ray
 
-ray.init()
+    ray.init()
+except ImportError:
+    pass
