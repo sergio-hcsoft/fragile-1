@@ -30,7 +30,7 @@ swarm_types = [create_cartpole_swarm]
 
 
 def create_distributed_export():
-    return DistributedExport(create_cartpole_swarm, n_swarms=1)
+    return DistributedExport(create_cartpole_swarm, n_swarms=2)
 
 
 swarm_dict = {"export": create_distributed_export}

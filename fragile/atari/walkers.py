@@ -40,7 +40,7 @@ class AtariWalkers(Walkers):
 
         """
         end = super(AtariWalkers, self).calculate_end_condition()
-        return self.env_states.game_ends.all() and end
+        return self.env_states.game_ends.all() or end
 
 
 class MontezumaWalkers(Walkers):

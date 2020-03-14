@@ -7,4 +7,6 @@ try:
 
 
 except ImportError:
-    pass
+
+    def init_ray():
+        pass
