@@ -144,7 +144,7 @@ class Function(Environment):
 
         Args:
             points: Array of batched vectors that will be checked to lie inside \
-            the :class:`Function` bounds.
+                    the :class:`Function` bounds.
 
         Returns:
             Array of booleans of length batch_size (points.shape[0]) that will \
