@@ -58,7 +58,7 @@ def create_env_and_model_states(name="classic") -> Callable:
 
 
 env_fixture_params = (
-    ["parallel_function", "parallel_environment"]
+    ["parallel_function", "parallel_environment", "ray"]
     if sys.version_info < (3, 8)
     else ["parallel_function", "parallel_environment"]
 )
@@ -69,14 +69,6 @@ class TestDistributedEnvironment(TestEnvironment):
     def env_data(self, request) -> Tuple[Environment, StatesModel]:
         if request.param in env_fixture_params:
             env, model_states = create_env_and_model_states(request.param)()
-            if "ray" in request.param:
-
-                def kill_envs():
-                    print("killing envs")
-                    for e in env.envs:
-                        e.__ray_terminate__.remote()
-
-                # request.addfinalizer(kill_envs)
         else:
             raise ValueError("Environment not well defined: %s" % request.param)
         return env, model_states

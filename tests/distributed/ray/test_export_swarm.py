@@ -50,13 +50,6 @@ class TestExportInterface(TestSwarm):
     @pytest.fixture(params=swarm_names)
     def swarm(self, request):
         swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
-
-        def kill_swarm():
-            for e in swarm.swarms:
-                e.__ray_terminate__.remote()
-            swarm.param_server.__ray_terminate__.remote()
-
-        # request.addfinalizer(kill_swarm)
         return swarm
 
     @pytest.fixture(params=swarm_names)
