@@ -1,22 +1,20 @@
-"""
-import numpy as numpy
+import numpy
 import pytest
 
-from fragile.optimize.mapper import FunctionMapper
+from fragile.core import Bounds
+from fragile.optimize import FunctionMapper
 from fragile.optimize.models import NormalContinuous
 
 
 @pytest.fixture()
 def mapper():
     def potential_well(x):
-        return -numpy.sum((x - 1) ** 2, 1) - 1
+        return numpy.sum((x - 1) ** 2, 1) - 1
 
-    bounds = [(-10, 10), (-5, 5)]
+    bounds = Bounds.from_tuples([(-10, 10), (-5, 5)])
 
     def model(x):
-        return NormalContinuous(
-            high=numpy.array([100, 100]), low=numpy.array([-100, -100]), env=x, shape=None
-        )
+        return NormalContinuous(bounds=bounds, env=x)
 
     return FunctionMapper.from_function(
         n_vectors=5,
@@ -35,31 +33,21 @@ def finished_swarm(mapper):
     mapper.walkers.reset()
     mapper.reset()
     mapper.walkers.max_iters = 500
-    mapper.run_swarm()
+    mapper.run()
     return mapper
 
 
 class TestFunctionMapper:
-    def test_init(self, mapper):
+    def test_from_function(self, mapper):
         pass
 
-    def test_init_walkers_no_params(self, mapper):
-        mapper.reset()
-
-    def test_step(self, mapper):
-        mapper.step_walkers()
-
-    def test_run_swarm(self, mapper):
-        mapper.run_swarm()
-
     def test_score_gets_higher(self, finished_swarm):
-        reward = finished_swarm.walkers.cum_rewards.max().item()
-        assert reward >= -60, "Iters: {}, rewards: {}".format(
+        reward = finished_swarm.walkers.states.cum_rewards.max().item()
+        assert reward <= 60, "Iters: {}, rewards: {}".format(
             finished_swarm.walkers.n_iters, finished_swarm.walkers.cum_rewards
         )
 
-    def test_has_vector(self, finished_swarm):
-        pass
-        # assert isinstance(finished_swarm.walkers.critic.vectors[0], Vector)
-
-"""
+    def test_start_same_pos(self, mapper):
+        mapper.start_same_pos = True
+        mapper.reset()
+        assert (mapper.walkers.env_states.observs == mapper.walkers.env_states.observs[0]).all()

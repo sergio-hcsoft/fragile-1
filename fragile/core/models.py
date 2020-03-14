@@ -365,9 +365,7 @@ class ContinuousModel(_DtModel):
     possible outcomes.
     """
 
-    def __init__(
-        self, bounds: Bounds, critic: Optional[BaseCritic] = None,
-    ):
+    def __init__(self, bounds: Bounds, critic: Optional[BaseCritic] = None, **kwargs):
         """
         Initialize a :class:`RandomContinuous`.
 
@@ -375,6 +373,7 @@ class ContinuousModel(_DtModel):
             bounds: :class:`Bounds` class defining the range of allowed output \
             values of the model.
             critic: :class:`Critic` that will be used to make additional computation.
+            **kwargs: Ignored. Only defined to march :class:`Model` interface.
 
         """
         super(ContinuousModel, self).__init__(critic=critic)
@@ -435,6 +434,7 @@ class NormalContinuous(ContinuousModel):
         loc: Union[int, float, np.ndarray] = 0.0,
         scale: Optional[Union[int, float, np.ndarray]] = 1.0,
         critic: Optional[BaseCritic] = None,
+        **kwargs,
     ):
         """
         Initialize a :class:`RandomContinuous`.
@@ -444,6 +444,7 @@ class NormalContinuous(ContinuousModel):
             loc: Mean of the gaussian distribution used for sampling actions.
             scale: Standard deviation of the gaussian distribution used for sampling actions.
             critic: :class:`Critic` that will be used to make additional computation.
+            **kwargs: Ignored. Only defined to march :class:`Model` interface.
 
         """
         super(NormalContinuous, self).__init__(critic=critic, bounds=bounds)

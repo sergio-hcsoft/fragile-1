@@ -285,9 +285,7 @@ class BaseEnvironment(StatesOwner):
         """
         raise NotImplementedError
 
-    def reset(
-        self, batch_size: int = 1, env_states: StatesEnv = None, *args, **kwargs
-    ) -> StatesEnv:
+    def reset(self, batch_size: int = 1, env_states: StatesEnv = None, **kwargs) -> StatesEnv:
         """
         Reset the environment and return an States class with batch_size copies \
         of the initial state.
@@ -296,7 +294,6 @@ class BaseEnvironment(StatesOwner):
             batch_size: Number of walkers that the resulting state will have.
             env_states: States class used to set the environment to an arbitrary \
                         state.
-            args: Additional arguments not related to environment data.
             kwargs: Additional keyword arguments not related to environment data.
 
         Returns:

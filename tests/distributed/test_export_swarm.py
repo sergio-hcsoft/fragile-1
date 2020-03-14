@@ -1,8 +1,9 @@
 import pytest
 import numpy
 
-from fragile.distributed.export_swarm import ExportSwarm, ExportedWalkers
-from fragile.distributed.param_server import ParamServer
+from fragile.distributed.export_swarm import ExportSwarm, ExportedWalkers, ParamServer
+
+from tests.core.test_swarm import create_cartpole_swarm, TestSwarm
 
 
 class ExportDummy(ExportSwarm):
@@ -161,3 +162,29 @@ class TestExportedSwarm:
         exported = export_swarm.run_exchange_step(walkers)
         assert len(exported) == export_swarm.n_export
         assert export_swarm.best_reward_found == 999
+
+
+def create_export_swarm():
+    swarm = create_cartpole_swarm()
+    return ExportDummy(swarm)
+
+
+swarm_dict = {
+    "export": create_export_swarm,
+}
+swarm_names = list(swarm_dict.keys())
+test_scores = {
+    "export": 130,
+}
+
+
+class TestExportInterface(TestSwarm):
+    @pytest.fixture(params=swarm_names)
+    def swarm(self, request):
+        return swarm_dict.get(request.param, create_cartpole_swarm)()
+
+    @pytest.fixture(params=swarm_names)
+    def swarm_with_score(self, request):
+        swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
+        score = test_scores[request.param]
+        return swarm, score

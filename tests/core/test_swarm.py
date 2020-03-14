@@ -10,8 +10,6 @@ from fragile.core.walkers import BaseWalkers, Walkers
 from fragile.optimize.benchmarks import Rastrigin
 from fragile.optimize.swarm import FunctionMapper
 
-from tests.distributed.test_export_swarm import ExportDummy
-
 
 def create_cartpole_swarm():
     swarm = Swarm(
@@ -25,11 +23,6 @@ def create_cartpole_swarm():
         reward_scale=2,
     )
     return swarm
-
-
-def create_export_swarm():
-    swarm = create_cartpole_swarm()
-    return ExportDummy(swarm)
 
 
 def create_atari_swarm():
@@ -73,61 +66,56 @@ swarm_dict = {
     "cartpole": create_cartpole_swarm,
     "atari": create_atari_swarm,
     "function": create_function_swarm,
-    "export": create_export_swarm,
+}
+swarm_names = list(swarm_dict.keys())
+test_scores = {
+    "cartpole": 130,
+    "atari": 750,
+    "function": 10,
 }
 
 
-@pytest.fixture()
-def swarm(request):
-    return TestSwarm.swarm_dict.get(request.param, create_cartpole_swarm)()
-
-
 class TestSwarm:
-    swarm_dict = {
-        "cartpole": create_cartpole_swarm,
-        "atari": create_atari_swarm,
-        "function": create_function_swarm,
-        "export": create_export_swarm,
-    }
-    swarm_names = list(swarm_dict.keys())
-    test_scores = list(zip(swarm_names, [130, 750, 10, 130]))
+    @pytest.fixture(params=swarm_names)
+    def swarm(self, request):
+        return swarm_dict.get(request.param, create_cartpole_swarm)()
 
-    @pytest.mark.parametrize("swarm", swarm_names, indirect=True)
+    @pytest.fixture(params=swarm_names)
+    def swarm_with_score(self, request):
+        swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
+        score = test_scores[request.param]
+        return swarm, score
+
     def test_init_not_crashes(self, swarm):
         assert swarm is not None
 
-    @pytest.mark.parametrize("swarm", swarm_names, indirect=True)
     def test_env_init(self, swarm):
         assert hasattr(swarm.walkers.states, "will_clone")
 
-    @pytest.mark.parametrize("swarm", swarm_names, indirect=True)
     def test_attributes(self, swarm):
         assert isinstance(swarm.env, BaseEnvironment)
         assert isinstance(swarm.model, BaseModel)
         assert isinstance(swarm.walkers, BaseWalkers)
 
-    @pytest.mark.parametrize("swarm", swarm_names, indirect=True)
     def test_reset_no_params(self, swarm):
         swarm.reset()
 
-    @pytest.mark.parametrize("swarm", swarm_names, indirect=True)
     def test_step_does_not_crashes(self, swarm):
         swarm.reset()
         swarm.step_walkers()
 
-    @pytest.mark.parametrize("swarm", swarm_names, indirect=True)
     def test_run(self, swarm):
         swarm.reset()
         swarm.walkers.max_iters = 5
         swarm.run()
 
-    @pytest.mark.parametrize("swarm, target", test_scores, indirect=["swarm"])
-    def test_score_gets_higher(self, swarm, target):
+    def test_score_gets_higher(self, swarm_with_score):
+        swarm, target_score = swarm_with_score
         swarm.walkers.seed()
         swarm.reset()
         swarm.walkers.max_iters = 500
         swarm.run()
         reward = swarm.walkers.states.cum_rewards.max()
-        assert reward > target, "Iters: {}, rewards: {}".format(
+        assert reward > target_score, "Iters: {}, rewards: {}".format(
             swarm.walkers.n_iters, swarm.walkers.states.cum_rewards
         )
