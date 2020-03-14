@@ -1,35 +1,69 @@
 import atexit
-import warnings
-
-warnings.filterwarnings("ignore")
 import multiprocessing
 import sys
 import traceback
-from typing import Callable
+from typing import Callable, List
 
-import numpy as np
-import ray
+import numpy
 
-from fragile.core.states import States
-from fragile.optimize.env import Function as SequentialFunction
-
-
-def split_similar_chunks(vector: list, n_chunks: int):
-    chunk_size = int(np.ceil(len(vector) / n_chunks))
-    for i in range(0, len(vector), chunk_size):
-        yield vector[i : i + chunk_size]
+from fragile.distributed.ray import ray
+from fragile.distributed.ray.env import Environment as RemoteEnvironment
+from fragile.core.env import Environment
+from fragile.core.states import StatesEnv, StatesModel
+from fragile.core.utils import split_similar_chunks, StateDict
+from fragile.optimize import Function
 
 
-@ray.remote
-class RemoteFunction:
-    def __init__(self, env_callable: Callable):
-        self.function = env_callable().function
+class RayEnv(Environment):
+    def __init__(
+        self, env_callable: Callable[[dict], Environment], n_workers: int, env_kwargs: dict = None,
+    ):
+        self.n_workers = n_workers
+        self.envs: List[RemoteEnvironment] = [
+            RemoteEnvironment.remote(env_callable=env_callable, env_kwargs=env_kwargs)
+            for _ in range(n_workers)
+        ]
 
-    def function(self, points: np.ndarray):
-        return self.function(points)
+    @property
+    def states_shape(self) -> tuple:
+        """Return the shape of the internal state of the :class:`Environment`."""
+        shape = self.envs[0].get_data.remote("states_shape")
+        return ray.get(shape)
+
+    @property
+    def observs_shape(self) -> tuple:
+        """Return the shape of the observations state of the :class:`Environment`."""
+        shape = self.envs[0].get_data.remote("observs_shape")
+        return ray.get(shape)
+
+    def get_params_dict(self) -> StateDict:
+        params = self.envs[0].get_params_dict.remote()
+        return ray.get(params)
+
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
+        split_env_states = [
+            env.step.remote(model_states=ms, env_states=es)
+            for env, ms, es in zip(
+                self.envs,
+                model_states.split_states(self.n_workers),
+                env_states.split_states(self.n_workers),
+            )
+        ]
+        env_states = ray.get(split_env_states)
+        new_env_states: StatesEnv = StatesEnv.merge_states(env_states)
+        return new_env_states
+
+    def reset(
+        self, batch_size: int = 1, env_states: StatesEnv = None, *args, **kwargs
+    ) -> StatesEnv:
+        reset = [
+            env.reset.remote(batch_size=batch_size, env_states=env_states, *args, **kwargs)
+            for env in self.envs
+        ]
+        return ray.get(reset)[0]
 
 
-class ExternalProcess(object):
+class _ExternalProcess:
     """
     Step environment in a separate process for lock free paralellism.
     The environment will be created in the external process by calling the
@@ -41,8 +75,7 @@ class ExternalProcess(object):
       constructor: Callable that creates and returns an OpenAI gym environment.
 
     Attributes:
-      observation_space: The cached observation space of the environment.
-      action_space: The cached action space of the environment.
+        TARGET: Name of the function that will be applied.
 
     ..notes:
         This is mostly a copy paste from
@@ -57,6 +90,7 @@ class ExternalProcess(object):
     _RESULT = 3
     _EXCEPTION = 4
     _CLOSE = 5
+    TARGET = "step"
 
     def __init__(self, constructor):
 
@@ -64,8 +98,8 @@ class ExternalProcess(object):
         self._process = multiprocessing.Process(target=self._worker, args=(constructor, conn))
         atexit.register(self.close)
         self._process.start()
-        self._observ_space = None
-        self._action_space = None
+        self._states_shape = None
+        self._observs_shape = None
 
     def __getattr__(self, name):
         """Request an attribute from the environment.
@@ -106,21 +140,43 @@ class ExternalProcess(object):
             pass
         self._process.join()
 
-    def step_batch(self, points: np.ndarray, blocking: bool = False):
+    def step(self, blocking: bool = False, *args, **kwargs):
         """
         Vectorized version of the `step` method. It allows to step a vector of
         states and actions. The signature and behaviour is the same as `step`, but taking
         a list of states, actions and n_repeat_actions as input.
 
         Args:
-           points: Numpy array containing the input of the function. \
-                   It expects shape = (batch_size, 1).
            blocking: If True, execute sequentially.
+           args: Passed tot he target function.
+           kwargs: passed to the target function.
+
         Returns:
-          if states is None returns (observs, rewards, ends, infos)
-          else returns(new_states, observs, rewards, ends, infos)
+            Return values of the target function.
+
         """
-        promise = self.call("function", points)
+        promise = self.call(self.TARGET, *args, **kwargs)
+        if blocking:
+            return promise()
+        else:
+            return promise
+
+    def reset(self, blocking: bool = False, *args, **kwargs):
+        """
+        Vectorized version of the `step` method. It allows to step a vector of
+        states and actions. The signature and behaviour is the same as `step`, but taking
+        a list of states, actions and n_repeat_actions as input.
+
+        Args:
+           blocking: If True, execute sequentially.
+           args: Passed tot he target function.
+           kwargs: passed to the target function.
+
+        Returns:
+            Return values of the target function.
+
+        """
+        promise = self.call("reset", *args, **kwargs)
         if blocking:
             return promise()
         else:
@@ -183,7 +239,7 @@ class ExternalProcess(object):
             conn.close()
 
 
-class BatchEnv(object):
+class _BatchEnv:
     """Combine multiple environments to step them in batch.
     It is mostly a copy paste from
     https://github.com/tensorflow/agents/blob/master/agents/tools/wrappers.py
@@ -224,16 +280,150 @@ class BatchEnv(object):
         """
         return getattr(self._envs[0], name)
 
-    def _make_transitions(self, points):
-        chunks = len(self._envs)
-        states_chunk = split_similar_chunks(points, n_chunks=chunks)
-        results = [
-            env.step_batch(states_batch) for env, states_batch in zip(self._envs, states_chunk)
-        ]
-        rewards = [result if self._blocking else result() for result in results]
-        return rewards
+    def close(self):
+        """Send close messages to the external process and join them."""
+        for env in self._envs:
+            if hasattr(env, "close"):
+                env.close()
 
-    def step_batch(self, points: np.ndarray):
+    def reset(self, batch_size: int = 1, env_states: StatesEnv = None, **kwargs) -> StatesEnv:
+        results = [
+            env.reset(self._blocking, batch_size=batch_size, env_states=env_states, **kwargs)
+            for env in self._envs
+        ]
+        states = [result if self._blocking else result() for result in results]
+        return states[0]
+
+
+class _BatchEnvironment(_BatchEnv):
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
+        """Forward a batch of actions to the wrapped environments.
+        Args:
+          model_states: States representing the data to be used to act on the environment.
+          env_states: States representing the data to be set in the environment.
+
+        Returns:
+          Batch of observations, rewards, and done flags.
+        """
+        split_states = self._make_transitions(model_states=model_states, env_states=env_states)
+        states: StatesEnv = StatesEnv.merge_states(split_states)
+        return states
+
+    def _make_transitions(
+        self, model_states: StatesModel, env_states: StatesEnv
+    ) -> List[StatesEnv]:
+        n_chunks = len(self._envs)
+        results = [
+            env.step(self._blocking, env_states=es, model_states=ms)
+            for env, es, ms in zip(
+                self._envs, env_states.split_states(n_chunks), model_states.split_states(n_chunks)
+            )
+        ]
+        states = [result if self._blocking else result() for result in results]
+        return states
+
+
+class _ParallelEnvironment:
+    """
+    Wrap any environment to be stepped in parallel when step is called.
+
+    """
+
+    def __init__(self, env_callable, n_workers: int = 8, blocking: bool = False):
+        self._env = env_callable()
+        envs = [_ExternalProcess(constructor=env_callable) for _ in range(n_workers)]
+        self._batch_env = _BatchEnvironment(envs, blocking)
+
+    def __getattr__(self, item):
+        return getattr(self._env, item)
+
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
+        """
+        Vectorized version of the `step` method. It allows to step a vector of
+        states and actions. The signature and behaviour is the same as `step`,
+        but taking a list of states, actions and n_repeat_actions as input.
+
+        Args:
+            model_states: States representing the data to be used to act on the environment.
+            env_states: States representing the data to be set in the environment.
+
+        Returns:
+            :class:`StatesEnv` defining the new state of the :class:`Environment`.
+
+        """
+        return self._batch_env.step(env_states=env_states, model_states=model_states)
+
+    def reset(self, batch_size: int = 1, **kwargs) -> StatesEnv:
+        """
+        Reset the :class:`Environment` to the start of a new episode and returns \
+        an :class:`StatesEnv` instance describing its internal state.
+
+        Args:
+            batch_size: Number of walkers that the returned state will have.
+            **kwargs: Ignored. This environment resets without using any external data.
+
+        Returns:
+            :class:`EnvStates` instance describing the state of the :class:`Environment`. \
+            The first dimension of the data tensors (number of walkers) will be \
+            equal to batch_size.
+
+        """
+        return self._batch_env.reset(batch_size=batch_size, **kwargs)
+
+
+class ParallelEnvironment(Environment):
+    def __init__(
+        self, env_callable: Callable[..., Environment], n_workers: int = 1, blocking: bool = False
+    ):
+        self.n_workers = n_workers
+        self.blocking = blocking
+        self.parallel_env = _ParallelEnvironment(
+            env_callable=env_callable, n_workers=n_workers, blocking=blocking
+        )
+        self._local_env = env_callable()
+
+    def __getattr__(self, item):
+        return getattr(self._local_env, item)
+
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
+        """
+        Sets the environment to the target states by applying the specified actions an arbitrary
+        number of time steps.
+
+        Args:
+            model_states: States corresponding to the model data.
+            env_states: States class containing the state data to be set on the Environment.
+
+        Returns:
+            States containing the information that describes the new state of the Environment.
+        """
+        return self.parallel_env.step(model_states=model_states, env_states=env_states)
+
+    def reset(self, batch_size: int = 1, env_states: StatesEnv = None, **kwargs) -> StatesEnv:
+        """
+        Reset the environment and return an States class with batch_size copies \
+        of the initial state.
+
+        Args:
+            batch_size: Number of walkers that the resulting state will have.
+            env_states: States class used to set the environment to an arbitrary \
+                        state.
+            kwargs: Additional keyword arguments not related to environment data.
+
+        Returns:
+            States class containing the information of the environment after the \
+             reset.
+
+        """
+        return self.parallel_env.reset(batch_size=batch_size, env_states=env_states, **kwargs)
+
+
+class _ExternalFunction(_ExternalProcess):
+    TARGET = "function"
+
+
+class _BatchFunction(_BatchEnv):
+    def step(self, points: numpy.ndarray):
         """Forward a batch of actions to the wrapped environments.
         Args:
           points: Batch of points that will be stepped.
@@ -246,20 +436,24 @@ class BatchEnv(object):
         """
         rewards = self._make_transitions(points)
         try:
-            rewards = np.stack(rewards)
+            rewards = numpy.stack(rewards)
         except BaseException as e:  # Lets be overconfident for once TODO: remove this.
             for obs in rewards:
                 print(obs.shape)
-        return np.concatenate([r.flatten() for r in rewards])
+        return numpy.concatenate([r.flatten() for r in rewards])
 
-    def close(self):
-        """Send close messages to the external process and join them."""
-        for env in self._envs:
-            if hasattr(env, "close"):
-                env.close()
+    def _make_transitions(self, points):
+        chunks = len(self._envs)
+        states_chunk = split_similar_chunks(points, n_chunks=chunks)
+        results = [
+            env.step(self._blocking, states_batch)
+            for env, states_batch in zip(self._envs, states_chunk)
+        ]
+        rewards = [result if self._blocking else result() for result in results]
+        return rewards
 
 
-class ParallelFunction:
+class _ParallelFunction:
     """
     Wrap any environment to be stepped in parallel when step_batch is called.
 
@@ -267,13 +461,13 @@ class ParallelFunction:
 
     def __init__(self, env_callable, n_workers: int = 8, blocking: bool = False):
         self._env = env_callable()
-        envs = [ExternalProcess(constructor=env_callable) for _ in range(n_workers)]
-        self._batch_env = BatchEnv(envs, blocking)
+        envs = [_ExternalFunction(constructor=env_callable) for _ in range(n_workers)]
+        self._batch_env = _BatchFunction(envs, blocking)
 
     def __getattr__(self, item):
         return getattr(self._env, item)
 
-    def step_batch(self, points: np.ndarray):
+    def step(self, points: numpy.ndarray) -> numpy.ndarray:
         """
         Vectorized version of the `step` method. It allows to step a vector of
         states and actions. The signature and behaviour is the same as `step`,
@@ -287,14 +481,33 @@ class ParallelFunction:
             observs, rewards, ends, infos)
 
         """
-        return self._batch_env.step_batch(points=points.copy())
+        return self._batch_env.step(points=points)
+
+    def reset(self, batch_size: int = 1, **kwargs) -> StatesEnv:
+        """
+        Reset the :class:`Function` to the start of a new episode and returns \
+        an :class:`StatesEnv` instance describing its internal state.
+
+        Args:
+            batch_size: Number of walkers that the returned state will have.
+            **kwargs: Ignored. This environment resets without using any external data.
+
+        Returns:
+            :class:`EnvStates` instance describing the state of the :class:`Function`. \
+            The first dimension of the data tensors (number of walkers) will be \
+            equal to batch_size.
+
+        """
+        return self._batch_env.reset(batch_size=batch_size, **kwargs)
 
 
-class Function(SequentialFunction):
-    def __init__(self, env_callable: Callable, n_workers: int = 1, blocking: bool = False):
+class ParallelFunction(Function):
+    def __init__(
+        self, env_callable: Callable[..., Function], n_workers: int = 1, blocking: bool = False
+    ):
         self.n_workers = n_workers
         self.blocking = blocking
-        self.parallel_function = ParallelFunction(
+        self.parallel_function = _ParallelFunction(
             env_callable=env_callable, n_workers=n_workers, blocking=blocking
         )
         self.local_function = env_callable()
@@ -302,7 +515,7 @@ class Function(SequentialFunction):
     def __getattr__(self, item):
         return getattr(self.local_function, item)
 
-    def step(self, model_states: States, env_states: States) -> States:
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
         Sets the environment to the target states by applying the specified actions an arbitrary
         number of time steps.
@@ -314,23 +527,32 @@ class Function(SequentialFunction):
         Returns:
             States containing the information that describes the new state of the Environment.
         """
-        new_points = (
-            # model_states.actions * model_states.dt.reshape(env_states.n, -1) + env_states.observs
-            model_states.actions
-            + env_states.observs
-        )
+        new_points = model_states.actions + env_states.observs
         ends = self.calculate_end(points=new_points)
-        rewards = self.parallel_function.step_batch(new_points)
+        rewards = self.parallel_function.step(new_points)
 
-        last_states = self._get_new_states(new_points, rewards, ends, model_states.n)
-        return last_states
+        updated_states = self.states_from_data(
+            states=new_points,
+            observs=new_points,
+            rewards=rewards,
+            ends=ends,
+            batch_size=model_states.n,
+        )
+        return updated_states
 
-    def __parallel_function(self, points):
-        reward_ids = [
-            env.function.remote(p)
-            for env, p in zip(self.workers, split_similar_chunks(points, self.n_workers))
-        ]
-        rewards = ray.get(reward_ids)
-        # rewards = self.pool.map(self.local_function.function,
-        #                        split_similar_chunks(points, self.n_workers))
-        return np.concatenate([r.flatten() for r in rewards])
+    def reset(self, batch_size: int = 1, **kwargs) -> StatesEnv:
+        """
+        Reset the :class:`Function` to the start of a new episode and returns \
+        an :class:`StatesEnv` instance describing its internal state.
+
+        Args:
+            batch_size: Number of walkers that the returned state will have.
+            **kwargs: Ignored. This environment resets without using any external data.
+
+        Returns:
+            :class:`EnvStates` instance describing the state of the :class:`Function`. \
+            The first dimension of the data tensors (number of walkers) will be \
+            equal to batch_size.
+
+        """
+        return self.parallel_function.reset(batch_size=batch_size, **kwargs)
