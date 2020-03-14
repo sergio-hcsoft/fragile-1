@@ -6,15 +6,16 @@ import pytest
 
 from fragile.core.env import Environment
 from fragile.core.states import StatesModel
-from tests.core.test_env import atari_env, TestEnvironment
 from fragile.distributed.env import ParallelEnvironment, ParallelFunction, RayEnv
 from fragile.optimize.benchmarks import Rastrigin
+from tests.core.test_env import atari_env, classic_control_env, TestEnvironment
+from tests.distributed.ray import init_ray, ray
 
 N_WALKERS = 10
 
 
 def ray_env():
-    env = RayEnv(atari_env, n_workers=2)
+    env = RayEnv(classic_control_env, n_workers=1)
     return env
 
 
@@ -65,10 +66,23 @@ env_fixture_params = (
 
 
 class TestDistributedEnvironment(TestEnvironment):
-    @pytest.fixture(params=env_fixture_params)
+    @pytest.fixture(params=env_fixture_params, scope="class")
     def env_data(self, request) -> Tuple[Environment, StatesModel]:
         if request.param in env_fixture_params:
             env, model_states = create_env_and_model_states(request.param)()
+            if request.param == "ray":
+                init_ray()
+
+                def kill_env():
+                    try:
+                        for e in env.envs:
+                            e.__ray_terminate__.remote()
+                    except AttributeError:
+                        pass
+                    ray.shutdown()
+
+                request.addfinalizer(kill_env)
+
         else:
             raise ValueError("Environment not well defined: %s" % request.param)
         return env, model_states
