@@ -28,21 +28,30 @@ def create_model(name="discrete"):
     raise ValueError("Invalid param `name`.")
 
 
-@pytest.fixture(scope="module")
-def model_fixture(request):
-    return create_model(request.param)()
-
-
 def create_model_states(model: BaseModel, batch_size: int = 10):
     return StatesModel(batch_size=batch_size, state_dict=model.get_params_dict())
 
 
-class TestModel:
-    model_fixture_params = ["discrete", "continuous", "random_normal"]
+model_fixture_params = ["discrete", "continuous", "random_normal"]
 
-    @pytest.mark.parametrize("model_fixture", model_fixture_params, indirect=True)
-    def test_get_params_dict(self, model_fixture):
-        params_dict = model_fixture.get_params_dict()
+
+class TestModel:
+    BATCH_SIZE = 7
+
+    @pytest.fixture(scope="class", params=model_fixture_params)
+    def model(self, request):
+        return create_model(request.param)()
+
+    def create_model_states(self, model: BaseModel, batch_size: int = None):
+        batch_size = self.BATCH_SIZE if batch_size is None else batch_size
+        return StatesModel(batch_size=batch_size, state_dict=model.get_params_dict())
+
+    def create_env_states(self, model: BaseModel, batch_size: int = None):
+        batch_size = self.BATCH_SIZE if batch_size is None else batch_size
+        return StatesEnv(batch_size=batch_size, state_dict=model.get_params_dict())
+
+    def test_get_params_dict(self, model):
+        params_dict = model.get_params_dict()
         assert isinstance(params_dict, dict)
         for k, v in params_dict.items():
             assert isinstance(k, str)
@@ -50,35 +59,35 @@ class TestModel:
             for ki, _vi in v.items():
                 assert isinstance(ki, str)
 
-    @pytest.mark.parametrize("model_fixture", model_fixture_params, indirect=True)
-    def test_reset(self, model_fixture):
-        batch_size = 7
-        states = model_fixture.reset(batch_size=batch_size)
-        assert isinstance(states, model_fixture.STATE_CLASS)
-        model_states = create_model_states(model=model_fixture, batch_size=batch_size)
-        states = model_fixture.reset(batch_size=batch_size, model_states=model_states)
-        assert isinstance(states, model_fixture.STATE_CLASS), (
+    def test_reset(self, model):
+        states = model.reset(batch_size=self.BATCH_SIZE)
+        assert isinstance(states, model.STATE_CLASS)
+        model_states = self.create_model_states(model=model, batch_size=self.BATCH_SIZE)
+        env_states = self.create_env_states(model, batch_size=self.BATCH_SIZE)
+        states = model.reset(
+            batch_size=self.BATCH_SIZE, model_states=model_states, env_states=env_states
+        )
+        assert isinstance(states, model.STATE_CLASS), (
             type(states),
-            model_fixture.STATE_CLASS,
+            model.STATE_CLASS,
         )
-        assert len(model_states.actions) == batch_size
+        assert len(model_states.actions) == self.BATCH_SIZE
 
-    @pytest.mark.parametrize("model_fixture", model_fixture_params, indirect=True)
-    def test_predict(self, model_fixture):
-        batch_size = 7
-        states = create_model_states(model=model_fixture, batch_size=batch_size)
-        updated_states = model_fixture.predict(model_states=states, env_states=states)
-        assert isinstance(updated_states, model_fixture.STATE_CLASS)
-        assert len(updated_states) == batch_size
-        updated_states = model_fixture.predict(
-            model_states=states, env_states=states, batch_size=batch_size
+    def test_predict(self, model):
+        states = self.create_model_states(model=model, batch_size=self.BATCH_SIZE)
+        env_states = self.create_env_states(model, batch_size=self.BATCH_SIZE)
+        updated_states = model.predict(model_states=states, env_states=env_states)
+        assert isinstance(updated_states, model.STATE_CLASS)
+        assert len(updated_states) == self.BATCH_SIZE
+        updated_states = model.predict(
+            model_states=states, env_states=env_states, batch_size=self.BATCH_SIZE
         )
-        assert isinstance(updated_states, model_fixture.STATE_CLASS)
-        assert len(updated_states) == batch_size
-        if hasattr(model_fixture, "bounds"):
-            assert model_fixture.bounds.points_in_bounds(updated_states.actions).all()
+        assert isinstance(updated_states, model.STATE_CLASS)
+        assert len(updated_states) == self.BATCH_SIZE
+        if hasattr(model, "bounds"):
+            assert model.bounds.points_in_bounds(updated_states.actions).all()
         with pytest.raises(ValueError):
-            model_fixture.predict()
+            model.predict()
 
 
 class DummyCritic(BaseCritic):
