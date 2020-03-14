@@ -8,7 +8,7 @@ from fragile.core.env import Environment
 from fragile.core.states import StatesModel
 from fragile.distributed.env import ParallelEnvironment, ParallelFunction, RayEnv
 from fragile.optimize.benchmarks import Rastrigin
-from tests.core.test_env import atari_env, classic_control_env, TestEnvironment
+from tests.core.test_env import discrete_atari_env, classic_control_env, TestEnvironment
 from tests.distributed.ray import init_ray, ray
 
 N_WALKERS = 10
@@ -20,7 +20,7 @@ def ray_env():
 
 
 def parallel_environment():
-    return ParallelEnvironment(atari_env, n_workers=2)
+    return ParallelEnvironment(discrete_atari_env, n_workers=2)
 
 
 def parallel_function():
@@ -29,6 +29,7 @@ def parallel_function():
 
 def create_env_and_model_states(name="classic") -> Callable:
     def _ray_env():
+        init_ray()
         env = ray_env()
         params = {"actions": {"dtype": numpy.int64}, "critic": {"dtype": numpy.float32}}
         states = StatesModel(state_dict=params, batch_size=N_WALKERS)
@@ -71,7 +72,6 @@ class TestDistributedEnvironment(TestEnvironment):
         if request.param in env_fixture_params:
             env, model_states = create_env_and_model_states(request.param)()
             if request.param == "ray":
-                init_ray()
 
                 def kill_env():
                     try:

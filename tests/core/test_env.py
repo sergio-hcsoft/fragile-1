@@ -1,6 +1,6 @@
 from typing import Callable, Tuple
 
-import numpy as np
+import numpy
 from plangym import AtariEnvironment, ClassicControl
 import pytest
 
@@ -12,7 +12,7 @@ from fragile.optimize.env import Function
 N_WALKERS = 10
 
 
-def atari_env():
+def discrete_atari_env():
     env = AtariEnvironment(name="MsPacman-v0", clone_seeds=True, autoreset=True)
     env.reset()
     env = DiscreteEnv(env)
@@ -28,28 +28,28 @@ def classic_control_env():
 
 def function_env():
     bounds = Bounds(shape=(2,), high=1, low=1, dtype=int)
-    env = Function(function=lambda x: np.ones(N_WALKERS), bounds=bounds)
+    env = Function(function=lambda x: numpy.ones(N_WALKERS), bounds=bounds)
     return env
 
 
 def create_env_and_model_states(name="classic") -> Callable:
     def _atari_env():
-        env = atari_env()
-        params = {"actions": {"dtype": np.int64}, "critic": {"dtype": np.float32}}
+        env = discrete_atari_env()
+        params = {"actions": {"dtype": numpy.int64}, "critic": {"dtype": numpy.float32}}
         states = StatesModel(state_dict=params, batch_size=N_WALKERS)
-        states.update(actions=np.ones(N_WALKERS), critic=np.ones(N_WALKERS))
+        states.update(actions=numpy.ones(N_WALKERS), critic=numpy.ones(N_WALKERS))
         return env, states
 
     def _classic_control_env():
         env = classic_control_env()
-        params = {"actions": {"dtype": np.int64}, "dt": {"dtype": np.float32}}
+        params = {"actions": {"dtype": numpy.int64}, "dt": {"dtype": numpy.float32}}
         states = StatesModel(state_dict=params, batch_size=N_WALKERS)
-        states.update(actions=np.ones(N_WALKERS), dt=np.ones(N_WALKERS))
+        states.update(actions=numpy.ones(N_WALKERS), dt=numpy.ones(N_WALKERS))
         return env, states
 
     def _function_env():
         env = function_env()
-        params = {"actions": {"dtype": np.int64, "size": (2,)}, "dt": {"dtype": np.float32}}
+        params = {"actions": {"dtype": numpy.int64, "size": (2,)}, "dt": {"dtype": numpy.float32}}
         states = StatesModel(state_dict=params, batch_size=N_WALKERS)
         return env, states
 
@@ -115,14 +115,14 @@ class TestEnvironment:
     def test_states_from_data(self, env_data):
         env, model_states = env_data
         batch_size = 10
-        states = np.zeros((batch_size, 5)).tolist()
-        observs = np.ones((batch_size, 5)).tolist()
-        rewards = np.arange(batch_size).tolist()
-        ends = np.zeros(batch_size, dtype=bool).tolist()
+        states = numpy.zeros((batch_size, 5)).tolist()
+        observs = numpy.ones((batch_size, 5)).tolist()
+        rewards = numpy.arange(batch_size).tolist()
+        ends = numpy.zeros(batch_size, dtype=bool).tolist()
         state = env.states_from_data(
             batch_size=batch_size, states=states, observs=observs, rewards=rewards, ends=ends
         )
         assert isinstance(state, StatesEnv)
         for val in state.vals():
-            assert isinstance(val, np.ndarray)
+            assert isinstance(val, numpy.ndarray)
             assert len(val) == batch_size
