@@ -417,7 +417,8 @@ class ParamServer:
 
         """
         self._track_best_walker(walkers)
-        self.buffer.append(walkers)
+        new_walkers = copy.deepcopy(walkers)
+        self.buffer.append(new_walkers)
 
     def export_walkers(self) -> ExportedWalkers:
         """

@@ -1,13 +1,10 @@
 import sys
 
+import numpy
 import pytest
 
-from fragile.distributed.distributed_export import DistributedExport
+from fragile.distributed.ray.export_swarm import ExportedWalkers, ExportSwarm
 from tests.distributed.ray import init_ray, ray
-
-using_py38 = sys.version_info >= (3, 8)
-using_py36 = sys.version_info < (3, 7)
-only_py37 = pytest.mark.skipif(using_py38 or using_py36, reason="requires python3.7")
 
 
 def create_cartpole_swarm():
@@ -29,42 +26,66 @@ swarm_types = [create_cartpole_swarm]
 
 
 def create_distributed_export():
-    return DistributedExport(create_cartpole_swarm, n_swarms=2)
+    return ExportSwarm.remote(create_cartpole_swarm)
 
 
 swarm_dict = {"export": create_distributed_export}
 swarm_names = list(swarm_dict.keys())
-test_scores = {
-    "export": 50,
-}
 
 
 def kill_swarm(swarm):
     try:
-        for e in swarm.swarms:
-            e.__ray_terminate__.remote()
-        swarm.param_server.__ray_terminate__.remote()
+        swarm.__ray_terminate__.remote()
     except AttributeError:
         pass
     ray.shutdown()
 
 
-@only_py37
+@pytest.mark.skipif(sys.version_info >= (3, 8), reason="Requires python3.7 or lower")
 class TestExportInterface:
     @pytest.fixture(params=swarm_names, scope="class")
-    def swarm_with_score(self, request):
+    def export_swarm(self, request):
         init_ray()
         swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
-        score = test_scores[request.param]
         request.addfinalizer(lambda: kill_swarm(swarm))
-        return swarm, score
+        return swarm
 
-    @pytest.mark.skipif(True, reason="Still need to fix this")
-    def test_score_gets_higher(self, swarm_with_score):
-        swarm, target_score = swarm_with_score
-        swarm.reset()
-        swarm.run()
-        reward = swarm.get_best().rewards
-        assert reward > target_score, "Iters: {}, rewards: {}".format(
-            swarm.walkers.n_iters, swarm.walkers.states.cum_rewards
+    def test_reset(self, export_swarm):
+        reset = ray.get(export_swarm.reset.remote())
+        assert reset is None
+
+    def test_get_data(self, export_swarm):
+        states_attr = ray.get(export_swarm.get_data.remote("cum_rewards"))
+        assert isinstance(states_attr, numpy.ndarray)
+        env_attr = ray.get(export_swarm.get_data.remote("observs"))
+        assert isinstance(env_attr, numpy.ndarray)
+        model_attr = ray.get(export_swarm.get_data.remote("actions"))
+        assert isinstance(model_attr, numpy.ndarray)
+        walkers_attr = ray.get(export_swarm.get_data.remote("minimize"))
+        assert isinstance(walkers_attr, bool)
+        swarm_attr = ray.get(export_swarm.get_data.remote("n_import"))
+        assert isinstance(swarm_attr, int)
+
+    def test_get_empty_walkers(self, export_swarm):
+        walkers = ray.get(export_swarm.get_empty_export_walkers.remote())
+        assert isinstance(walkers, ExportedWalkers)
+        assert len(walkers) == 0
+
+    def test_run_exchange_step(self, export_swarm):
+        empty_walkers = ray.get(export_swarm.get_empty_export_walkers.remote())
+        ray.get(export_swarm.run_exchange_step.remote(empty_walkers))
+
+        walkers = ExportedWalkers(3)
+        walkers.rewards = numpy.array([999, 777, 333])
+        walkers.states = numpy.array(
+            [[999, 999, 999, 999], [777, 777, 777, 777], [333, 333, 333, 333]]
         )
+        walkers.id_walkers = numpy.array([999, 777, 333])
+        walkers.observs = numpy.array(
+            [[999, 999, 999, 999], [777, 777, 777, 777], [333, 333, 333, 333]]
+        )
+        ray.get(export_swarm.reset.remote())
+        exported = ray.get(export_swarm.run_exchange_step.remote(walkers))
+        best_found = ray.get(export_swarm.get_data.remote("best_reward_found"))
+        assert len(exported) == ray.get(export_swarm.get_data.remote("n_export"))
+        assert best_found == 999

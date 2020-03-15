@@ -1,15 +1,15 @@
-FROM ubuntu:18.04
+FROM ubuntu:19.04
+ARG JUPYTER_PASSWORD=fragile
 ENV BROWSER=/browser \
-    LC_ALL=en_US.UTF-8 \
-    JUPYTER_PASSWORD=fragile
+    LC_ALL=en_US.UTF-8
 COPY requirements.txt fragile/requirements.txt
 COPY requirements-viz.txt fragile/requirements-viz.txt
 RUN apt-get update && \
     apt-get install -y --no-install-suggests --no-install-recommends \
       ca-certificates locales pkg-config apt-utils gcc g++ wget make git cmake libffi-dev \
-      libjpeg-turbo-progs libglib2.0-0 python3 python3-dev python3-distutils python3-setuptools \
+      libjpeg-turbo-progs libglib2.0-0 python3.7 python3.7-dev python3-distutils python3-setuptools \
       libjpeg8-dev zlib1g zlib1g-dev libsm6 libxext6 libxrender1 libfontconfig1 pkg-config flex \
-      bison curl libpng16-16 libpng-dev libjpeg-turbo8 libjpeg-turbo8-dev zlib1g-dev libhdf5-100 \
+      bison curl libpng16-16 libpng-dev libjpeg-turbo8 libjpeg-turbo8-dev zlib1g-dev libhdf5-103 \
       libhdf5-dev libopenblas-base libopenblas-dev gfortran libfreetype6 libfreetype6-dev && \
     ln -s /usr/lib/x86_64-linux-gnu/libz.so /lib/ && \
     ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /lib/ && \
@@ -30,7 +30,7 @@ ENV NPY_NUM_BUILD_JOBS 8
 RUN pip3 install --no-cache-dir cython && \
     pip3 install --no-cache-dir \
          h5py Pillow-simd PyOpenGL && \
-    pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.9.0.dev0-cp36-cp36m-manylinux1_x86_64.whl && \
+    pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.9.0.dev0-cp37-cp37m-manylinux1_x86_64.whl && \
     pip3 install git+https://github.com/FragileTech/atari-py#egg=atari-py && \
     pip3 install git+https://github.com/FragileTech/plangym#egg=plangym && \
     cd fragile && \

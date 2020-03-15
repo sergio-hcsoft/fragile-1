@@ -1,11 +1,18 @@
+import warnings
+
 from hypothesis import given
+from hypothesis.errors import HypothesisDeprecationWarning
 from hypothesis.extra.numpy import arrays
 import numpy
 import pytest
 
 from fragile.core.functions import relativize
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
+from fragile.core.utils import NUMPY_IGNORE_WARNINGS_PARAMS
 from fragile.core.walkers import Walkers
+
+
+warnings.filterwarnings("ignore", category=HypothesisDeprecationWarning)
 
 
 @pytest.fixture()
@@ -156,8 +163,9 @@ class TestWalkers:
 
     @given(observs=arrays(numpy.float32, shape=(N_WALKERS, 64, 64, 3)))
     def test_distances_not_crashes(self, walkers, observs):
-        walkers.env_states.update(observs=observs)
-        walkers.calculate_distances()
-        assert isinstance(walkers.states.distances[0], numpy.float32)
-        assert len(walkers.states.distances.shape) == 1
-        assert walkers.states.distances.shape[0] == walkers.n
+        with numpy.errstate(**NUMPY_IGNORE_WARNINGS_PARAMS):
+            walkers.env_states.update(observs=observs)
+            walkers.calculate_distances()
+            assert isinstance(walkers.states.distances[0], numpy.float32)
+            assert len(walkers.states.distances.shape) == 1
+            assert walkers.states.distances.shape[0] == walkers.n

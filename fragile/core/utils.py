@@ -20,6 +20,13 @@ float_type = numpy.float32
 Scalar = Union[int, numpy.int, float, numpy.float]
 StateDict = Dict[str, Dict[str, Any]]
 
+NUMPY_IGNORE_WARNINGS_PARAMS = {
+    "divide": "ignore",
+    "over": "ignore",
+    "under": "ignore",
+    "invalid": "ignore",
+}
+
 
 def remove_notebook_margin(output_width_pct: int = 80):
     """Make the notebook output wider."""
@@ -61,13 +68,6 @@ def resize_frame(
     frame = Image.fromarray(frame)
     frame = frame.convert(mode).resize((height, width))
     return numpy.array(frame)
-
-
-def update_defaults(target: dict, **kwargs) -> dict:
-    """Set the provided data in the target dictionary in case it didn't exist previously."""
-    for k, v in kwargs.items():
-        target[k] = target.get(k, v)
-    return target
 
 
 def params_to_tensors(param_dict, n_walkers: int):
@@ -122,36 +122,3 @@ def split_similar_chunks(
     """
     for start, end in similiar_chunks_indexes(len(vector), n_chunks):
         yield vector[start:end]
-
-
-"""
-def relativize_torch(x, device=device):
-    x = x.float()
-    std = x.std()
-    if float(std) == 0:
-        return torch.ones(len(x), device=device, dtype=torch.float32)
-    standard = (x - x.mean()) / std
-    standard[standard > 0] = torch.log(1.0 + standard[standard > 0]) + 1.0
-    standard[standard <= 0] = torch.exp(standard[standard <= 0])
-    return standard
-
-def to_numpy(x: [numpy.ndarray, torch.Tensor, list]) -> numpy.ndarray:
-    if isinstance(x, numpy.ndarray):
-        return x
-    elif isinstance(x, torch.Tensor):
-        return x.cpu().numpy()
-    else:
-        return numpy.ndarray(x)
-
-
-def to_tensor(x: [torch.Tensor, numpy.ndarray, list],
-              device=device, *args, **kwargs) -> torch.Tensor:
-    if isinstance(x, torch.Tensor):
-        return x
-    elif isinstance(x, list):
-        return torch.from_numpy(numpy.array(x)).to(device)
-    elif isinstance(x, numpy.ndarray):
-        return torch.from_numpy(x).to(device)
-    else:
-        return torch.Tensor(x, device=device, *args, **kwargs)
-"""
