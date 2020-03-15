@@ -17,7 +17,10 @@ class Function(Environment):
     """
 
     def __init__(
-        self, function: Callable[[numpy.ndarray], numpy.ndarray], bounds: Bounds,
+        self,
+        function: Callable[[numpy.ndarray], numpy.ndarray],
+        bounds: Bounds,
+        custom_domain_check: Callable[[numpy.ndarray], numpy.ndarray] = None,
     ):
         """
         Initialize a :class:`Function`.
@@ -28,6 +31,9 @@ class Function(Environment):
                       scalar. This function is applied to a batch of walker \
                       observations.
             bounds: :class:`Bounds` that defines the domain of the function.
+            custom_domain_check: Callable that checks points inside the bounds \
+                    to know if they are in a custom domain when it is not just \
+                    a set of rectangular bounds.
 
         """
         if not isinstance(bounds, Bounds):
@@ -35,6 +41,7 @@ class Function(Environment):
         self.function = function
         self.bounds = bounds
         self.shape = self.bounds.shape
+        self.custom_domain_check = custom_domain_check
         super(Function, self).__init__(observs_shape=self.shape, states_shape=self.shape)
 
     @classmethod
@@ -152,7 +159,11 @@ class Function(Environment):
             and ``False`` otherwise.
 
         """
-        return numpy.logical_not(self.bounds.points_in_bounds(points)).flatten()
+        end = numpy.logical_not(self.bounds.points_in_bounds(points)).flatten()
+        if self.custom_domain_check is not None:
+            alive_mask = numpy.logical_not(end)
+            end[alive_mask] = self.custom_domain_check(points[alive_mask], end[alive_mask])
+        return end
 
     def sample_bounds(self, batch_size: int) -> numpy.ndarray:
         """
