@@ -1,11 +1,18 @@
-import pytest
+import warnings
 
 from hypothesis import given
+from hypothesis.errors import HypothesisDeprecationWarning
 from hypothesis.extra.numpy import arrays
 import numpy
+import pytest
 
 from fragile.atari.walkers import AtariWalkers
 from tests.core.test_walkers import TestWalkers
+from fragile.core.utils import NUMPY_IGNORE_WARNINGS_PARAMS
+
+
+warnings.filterwarnings("ignore", category=HypothesisDeprecationWarning)
+
 
 N_WALKERS = 21
 
@@ -45,8 +52,9 @@ class TestAtariWalkers(TestWalkers):
 
     @given(observs=arrays(numpy.float32, shape=(N_WALKERS, 160, 210, 3)))
     def test_distances_not_crashes(self, walkers, observs):
-        walkers.env_states.update(observs=observs)
-        walkers.calculate_distances()
-        assert isinstance(walkers.states.distances[0], numpy.float32)
-        assert len(walkers.states.distances.shape) == 1
-        assert walkers.states.distances.shape[0] == walkers.n
+        with numpy.errstate(**NUMPY_IGNORE_WARNINGS_PARAMS):
+            walkers.env_states.update(observs=observs)
+            walkers.calculate_distances()
+            assert isinstance(walkers.states.distances[0], numpy.float32)
+            assert len(walkers.states.distances.shape) == 1
+            assert walkers.states.distances.shape[0] == walkers.n

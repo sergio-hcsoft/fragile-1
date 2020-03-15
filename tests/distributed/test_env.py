@@ -51,7 +51,7 @@ def create_env_and_model_states(name="classic") -> Callable:
         states.update(actions=numpy.ones(N_WALKERS), critic=numpy.ones(N_WALKERS))
         return env, states
 
-    if name.lower() == "ray":
+    if name.lower() == "ray_env":
         return _ray_env
     elif name.lower() == "parallel_function":
         return _parallel_function
@@ -60,7 +60,7 @@ def create_env_and_model_states(name="classic") -> Callable:
 
 
 env_fixture_params = (
-    ["parallel_function", "parallel_environment", "ray"]
+    ["parallel_function", "parallel_environment", "ray_env"]
     if sys.version_info < (3, 8)
     else ["parallel_function", "parallel_environment"]
 )
