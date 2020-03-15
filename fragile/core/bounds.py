@@ -82,6 +82,10 @@ class Bounds:
             self.__class__.__name__, self.dtype, self.shape, self.low, self.high
         )
 
+    def __len__(self) -> int:
+        """Return the number of dimensions of the bounds."""
+        return len(self.high)
+
     @property
     def shape(self) -> Tuple:
         """

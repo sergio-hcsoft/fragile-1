@@ -26,12 +26,6 @@ def classic_control_env():
     return env
 
 
-def function_env():
-    bounds = Bounds(shape=(2,), high=1, low=1, dtype=int)
-    env = Function(function=lambda x: numpy.ones(N_WALKERS), bounds=bounds)
-    return env
-
-
 def create_env_and_model_states(name="classic") -> Callable:
     def _atari_env():
         env = discrete_atari_env()
@@ -47,25 +41,17 @@ def create_env_and_model_states(name="classic") -> Callable:
         states.update(actions=numpy.ones(N_WALKERS), dt=numpy.ones(N_WALKERS))
         return env, states
 
-    def _function_env():
-        env = function_env()
-        params = {"actions": {"dtype": numpy.int64, "size": (2,)}, "dt": {"dtype": numpy.float32}}
-        states = StatesModel(state_dict=params, batch_size=N_WALKERS)
-        return env, states
-
     if name.lower() == "pacman":
         return _atari_env
-    elif name.lower() == "function":
-        return _function_env
     else:
         return _classic_control_env
 
 
-env_fixture_params = ["classic", "pacman", "function"]
+env_fixture_params = ["classic", "pacman"]
 
 
 class TestEnvironment:
-    @pytest.fixture(params=env_fixture_params)
+    @pytest.fixture(params=env_fixture_params, scope="class")
     def env_data(self, request) -> Tuple[Environment, StatesModel]:
         if request.param in env_fixture_params:
             env, model_states = create_env_and_model_states(request.param)()
@@ -73,6 +59,11 @@ class TestEnvironment:
         else:
             raise ValueError("Environment not well defined: %s" % request.param)
         return env, model_states
+
+    def test_repr(self, env_data):
+        env, model_states = env_data
+        repr_env = env.__repr__()
+        assert isinstance(repr_env, str)
 
     def test_reset(self, env_data):
         env, model_states = env_data

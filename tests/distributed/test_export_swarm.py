@@ -174,7 +174,7 @@ swarm_dict = {
 }
 swarm_names = list(swarm_dict.keys())
 test_scores = {
-    "export": 130,
+    "export": 120,
 }
 
 

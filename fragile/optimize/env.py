@@ -51,6 +51,7 @@ class Function(Environment):
         shape: tuple = None,
         high: Union[int, float, numpy.ndarray] = numpy.inf,
         low: Union[int, float, numpy.ndarray] = -numpy.inf,
+        custom_domain_check: Callable[[numpy.ndarray], numpy.ndarray] = None,
     ) -> "Function":
         """
         Initialize a function defining its shape and bounds without using a :class:`Bounds`.
@@ -70,6 +71,9 @@ class Function(Environment):
             low: Lower bound of the function domain. If it's an scalar it will \
                   be the same for all dimensions. If its a numpy array it will \
                   be the lower bound for each dimension.
+            custom_domain_check: Callable that checks points inside the bounds \
+                    to know if they are in a custom domain when it is not just \
+                    a set of rectangular bounds.
 
         Returns:
             :class:`Function` with its :class:`Bounds` created from the provided arguments.
@@ -82,7 +86,7 @@ class Function(Environment):
         ):
             raise TypeError("Need to specify shape or high or low must be a numpy array.")
         bounds = Bounds(high=high, low=low, shape=shape)
-        return Function(function=function, bounds=bounds)
+        return Function(function=function, bounds=bounds, custom_domain_check=custom_domain_check)
 
     def __repr__(self):
         text = "{} with function {}, obs shape {},".format(
@@ -162,7 +166,7 @@ class Function(Environment):
         end = numpy.logical_not(self.bounds.points_in_bounds(points)).flatten()
         if self.custom_domain_check is not None:
             alive_mask = numpy.logical_not(end)
-            end[alive_mask] = self.custom_domain_check(points[alive_mask], end[alive_mask])
+            end[alive_mask] = self.custom_domain_check(points[alive_mask])
         return end
 
     def sample_bounds(self, batch_size: int) -> numpy.ndarray:

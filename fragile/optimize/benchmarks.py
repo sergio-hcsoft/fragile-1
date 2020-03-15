@@ -4,7 +4,6 @@ from typing import Callable
 from numba import jit
 import numpy as np
 
-from fragile.core.states import StatesEnv, StatesModel
 from fragile.optimize.env import Bounds, Function
 
 """
@@ -62,53 +61,29 @@ def lennard_jones(x: np.ndarray) -> np.ndarray:
     return result
 
 
-def _one_random_lennard(state):
-    state = state.reshape(-1, 3)
-    npart = len(state)
-    epot = 0.0
-    i, j = 0, 0
-    while i == j:
-        i, j = np.random.randint(0, npart, size=2).tolist()
-    r2 = np.sum((state[j, :] - state[i, :]) ** 2)
-    r2i = 1.0 / r2
-    r6i = r2i * r2i * r2i
-    epot = epot + r6i * (r6i - 1.0)
-    epot = epot * 4
-    return epot
-
-
-def random_lennard(x: np.ndarray):
-    result = np.zeros(x.shape[0])
-    for i in range(x.shape[0]):
-        try:
-            result[i] = _one_random_lennard(x[i])
-        except ZeroDivisionError:
-            result[i] = np.inf
-
-
 class OptimBenchmark(Function):
 
     benchmark = None
     best_state = None
 
-    def __init__(self, shape: tuple, function: Callable):
-        bounds = self.get_bounds(shape=shape)
+    def __init__(self, dims: int, function: Callable):
+        bounds = self.get_bounds(dims=dims)
         super(OptimBenchmark, self).__init__(bounds=bounds, function=function)
 
     @staticmethod
-    def get_bounds(shape):
+    def get_bounds(dims: int) -> Bounds:
         raise NotImplementedError
 
 
 class Sphere(OptimBenchmark):
     benchmark = 0.0
 
-    def __init__(self, shape: tuple):
-        super(Sphere, self).__init__(shape=shape, function=sphere)
+    def __init__(self, dims: int):
+        super(Sphere, self).__init__(dims=dims, function=sphere)
 
     @staticmethod
-    def get_bounds(shape):
-        bounds = [(-1000, 1000) for _ in range(shape[0])]
+    def get_bounds(dims):
+        bounds = [(-1000, 1000) for _ in range(dims)]
         return Bounds.from_tuples(bounds)
 
     @property
@@ -119,12 +94,12 @@ class Sphere(OptimBenchmark):
 class Rastrigin(OptimBenchmark):
     benchmark = 0
 
-    def __init__(self, shape: tuple):
-        super(Rastrigin, self).__init__(shape=shape, function=rastrigin)
+    def __init__(self, dims: int):
+        super(Rastrigin, self).__init__(dims=dims, function=rastrigin)
 
     @staticmethod
-    def get_bounds(shape):
-        bounds = [(-5.12, 5.12) for _ in range(shape[0])]
+    def get_bounds(dims):
+        bounds = [(-5.12, 5.12) for _ in range(dims)]
         return Bounds.from_tuples(bounds)
 
     @property
@@ -135,11 +110,11 @@ class Rastrigin(OptimBenchmark):
 class EggHolder(OptimBenchmark):
     benchmark = -959.64066271
 
-    def __init__(self, shape=None):
-        super(EggHolder, self).__init__(shape=(2,), function=eggholder)
+    def __init__(self, dims: int = None):
+        super(EggHolder, self).__init__(dims=2, function=eggholder)
 
     @staticmethod
-    def get_bounds(shape=None):
+    def get_bounds(dims=None):
         bounds = [(-512, 512), (-512, 512)]
         return Bounds.from_tuples(bounds)
 
@@ -149,12 +124,12 @@ class EggHolder(OptimBenchmark):
 
 
 class StyblinskiTang(OptimBenchmark):
-    def __init__(self, shape: tuple):
-        super(StyblinskiTang, self).__init__(shape=shape, function=styblinski_tang)
+    def __init__(self, dims: tuple):
+        super(StyblinskiTang, self).__init__(dims=dims, function=styblinski_tang)
 
     @staticmethod
-    def get_bounds(shape):
-        bounds = [(-5.0, 5.0) for _ in range(shape[0])]
+    def get_bounds(dims):
+        bounds = [(-5.0, 5.0) for _ in range(dims)]
         return Bounds.from_tuples(bounds)
 
     @property
@@ -196,56 +171,11 @@ class LennardJones(OptimBenchmark):
 
     def __init__(self, n_atoms: int = 10, *args, **kwargs):
         self.n_atoms = n_atoms
-        shape = (3 * n_atoms,)
+        dims = 3 * n_atoms
         self.benchmark = [np.zeros(self.n_atoms * 3), self.minima.get(str(int(n_atoms)), 0)]
-        super(LennardJones, self).__init__(shape=shape, function=lennard_jones)
+        super(LennardJones, self).__init__(dims=dims, function=lennard_jones)
 
     @staticmethod
-    def get_bounds(shape):
-        bounds = [(-1.5, 1.5) for _ in range(shape[0])]
+    def get_bounds(dims):
+        bounds = [(-1.5, 1.5) for _ in range(dims)]
         return Bounds.from_tuples(bounds)
-
-
-class RandomLennard(LennardJones):
-    def __init__(self, *args, **kwargs):
-        super(RandomLennard, self).__init__(*args, **kwargs)
-        self.random_lennard = random_lennard
-
-    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
-        """
-        Sets the environment to the target states by applying the specified actions an arbitrary
-        number of time steps.
-
-        Args:
-            model_states: States corresponding to the model data.
-            env_states: States class containing the state data to be set on the Environment.
-
-        Returns:
-            States containing the information that describes the new state of the Environment.
-        """
-        new_points = model_states.actions + env_states.observs
-
-        rewards = self.random_lennard(new_points).flatten()
-        ends = self.calculate_end(points=new_points)
-
-        last_states = self.states_from_data(model_states.n, new_points, new_points, rewards, ends)
-        return last_states
-
-    def reset(self, batch_size: int = 1, **kwargs) -> StatesEnv:
-        """
-        Resets the environment to the start of a new episode and returns an
-        States instance describing the state of the Environment.
-        Args:
-            batch_size: Number of walkers that the returned state will have.
-            **kwargs: Ignored. This environment resets without using any external data.
-
-        Returns:
-            States instance describing the state of the Environment. The first
-            dimension of the data tensors (number of walkers) will be equal to
-            batch_size.
-        """
-        ends = np.zeros(batch_size, dtype=np.bool_)
-        new_points = self.sample_bounds(batch_size=batch_size)
-        rewards = self.random_lennard(new_points).flatten()
-        new_states = self.states_from_data(batch_size, new_points, new_points, rewards, ends)
-        return new_states

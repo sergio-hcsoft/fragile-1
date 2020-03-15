@@ -16,10 +16,9 @@ def create_cartpole_swarm():
         model=lambda x: DiscreteUniform(env=x),
         walkers=Walkers,
         env=lambda: DiscreteEnv(ClassicControl()),
-        reward_limit=131,
+        reward_limit=121,
         n_walkers=150,
         max_iters=300,
-        prune_tree=True,
         reward_scale=2,
     )
     return swarm
@@ -34,7 +33,6 @@ def create_atari_swarm():
         env=lambda: DiscreteEnv(env),
         n_walkers=67,
         max_iters=20,
-        prune_tree=True,
         reward_scale=2,
         reward_limit=751,
     )
@@ -42,8 +40,7 @@ def create_atari_swarm():
 
 
 def create_function_swarm():
-    shape = (2,)
-    env = Rastrigin(shape=shape)
+    env = Rastrigin(dims=2)
     swarm = FunctionMapper(
         model=lambda x: NormalContinuous(bounds=env.bounds),
         env=lambda: env,
@@ -63,7 +60,7 @@ swarm_dict = {
 }
 swarm_names = list(swarm_dict.keys())
 test_scores = {
-    "cartpole": 130,
+    "cartpole": 120,
     "atari": 750,
     "function": 10,
 }
@@ -79,6 +76,9 @@ class TestSwarm:
         swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
         score = test_scores[request.param]
         return swarm, score
+
+    def test_repr(self, swarm):
+        assert isinstance(swarm.__repr__(), str)
 
     def test_init_not_crashes(self, swarm):
         assert swarm is not None

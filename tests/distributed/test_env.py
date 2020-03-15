@@ -24,7 +24,7 @@ def parallel_environment():
 
 
 def parallel_function():
-    return ParallelFunction(env_callable=lambda: Rastrigin(shape=(2,)), n_workers=2)
+    return ParallelFunction(env_callable=lambda: Rastrigin(dims=2), n_workers=2)
 
 
 def create_env_and_model_states(name="classic") -> Callable:
