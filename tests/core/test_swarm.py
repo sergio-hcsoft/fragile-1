@@ -1,4 +1,4 @@
-from plangym import AtariEnvironment, ParallelEnvironment
+from plangym import AtariEnvironment
 from plangym.minimal import ClassicControl
 import pytest
 
@@ -26,13 +26,7 @@ def create_cartpole_swarm():
 
 
 def create_atari_swarm():
-    env = ParallelEnvironment(
-        env_class=AtariEnvironment,
-        name="MsPacman-ram-v0",
-        clone_seeds=True,
-        autoreset=True,
-        blocking=False,
-    )
+    env = AtariEnvironment(name="MsPacman-ram-v0", clone_seeds=True, autoreset=True)
     dt = GaussianDt(min_dt=3, max_dt=100, loc_dt=5, scale_dt=2)
     swarm = Swarm(
         model=lambda x: DiscreteUniform(env=x, critic=dt),
@@ -76,11 +70,11 @@ test_scores = {
 
 
 class TestSwarm:
-    @pytest.fixture(params=swarm_names)
+    @pytest.fixture(params=swarm_names, scope="class")
     def swarm(self, request):
         return swarm_dict.get(request.param, create_cartpole_swarm)()
 
-    @pytest.fixture(params=swarm_names)
+    @pytest.fixture(params=swarm_names, scope="class")
     def swarm_with_score(self, request):
         swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
         score = test_scores[request.param]

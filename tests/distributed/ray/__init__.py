@@ -2,8 +2,13 @@ try:
     import ray
 
     def init_ray():
-        MB = 1024 * 1024
-        ray.init(redis_max_memory=200 * MB, object_store_memory=200 * MB, ignore_reinit_error=True)
+        min_memory_possible = 52428800 * 7  # 340MB
+        min_object_store_memory = 78643200 * 5  # 370Mb
+        ray.init(
+            memory=min_memory_possible,
+            object_store_memory=min_object_store_memory,
+            ignore_reinit_error=True,
+        )
 
 
 except ImportError:

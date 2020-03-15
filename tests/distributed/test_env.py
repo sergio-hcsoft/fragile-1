@@ -71,9 +71,9 @@ class TestDistributedEnvironment(TestEnvironment):
     def env_data(self, request) -> Tuple[Environment, StatesModel]:
         if request.param in env_fixture_params:
             env, model_states = create_env_and_model_states(request.param)()
-            if request.param == "ray":
+            if "ray" in request.param:
 
-                def kill_env():
+                def kill_ray_env():
                     try:
                         for e in env.envs:
                             e.__ray_terminate__.remote()
@@ -81,7 +81,14 @@ class TestDistributedEnvironment(TestEnvironment):
                         pass
                     ray.shutdown()
 
-                request.addfinalizer(kill_env)
+                request.addfinalizer(kill_ray_env)
+
+            elif "parallel" in request.param:
+
+                def kill_parallel_env():
+                    env.close()
+
+                request.addfinalizer(kill_parallel_env)
 
         else:
             raise ValueError("Environment not well defined: %s" % request.param)

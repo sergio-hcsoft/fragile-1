@@ -1,12 +1,16 @@
 import pytest
 
 import holoviews
+from plangym import AtariEnvironment
 
-from fragile.core.models import NormalContinuous
+from fragile.core.dt_sampler import GaussianDt
+from fragile.core.env import DiscreteEnv
+from fragile.core.models import DiscreteUniform, NormalContinuous
+from fragile.core.swarm import Swarm
 from fragile.dataviz import AtariViz, LandscapeViz, Summary, SwarmViz, SwarmViz1D
 from fragile.optimize.benchmarks import EggHolder
 from fragile.optimize.swarm import FunctionMapper
-from tests.core.test_swarm import TestSwarm, create_atari_swarm
+from tests.core.test_swarm import TestSwarm
 
 
 holoviews.extension("bokeh")
@@ -18,7 +22,21 @@ def create_eggholder_swarm():
         return NormalContinuous(scale=10, loc=0.0, bounds=env.bounds)
 
     swarm = FunctionMapper(
-        env=EggHolder, model=gaussian_model, n_walkers=300, max_iters=750, start_same_pos=True,
+        env=EggHolder, model=gaussian_model, n_walkers=20, max_iters=10, start_same_pos=True,
+    )
+    return swarm
+
+
+def create_atari_swarm():
+    env = AtariEnvironment(name="MsPacman-ram-v0",)
+    dt = GaussianDt(min_dt=3, max_dt=100, loc_dt=5, scale_dt=2)
+    swarm = Swarm(
+        model=lambda x: DiscreteUniform(env=x, critic=dt),
+        env=lambda: DiscreteEnv(env),
+        n_walkers=10,
+        max_iters=20,
+        reward_scale=2,
+        reward_limit=200,
     )
     return swarm
 
@@ -68,7 +86,7 @@ swarm_names = list(swarm_dict.keys())
 
 
 class TestSwarmVisualizations(TestSwarm):
-    @pytest.fixture(params=swarm_names)
+    @pytest.fixture(params=swarm_names, scope="class")
     def swarm(self, request):
         swarm_viz = swarm_dict.get(request.param)()
         PLOTS[request.param] = swarm_viz.plot()

@@ -337,6 +337,11 @@ class _ParallelEnvironment:
     def __getattr__(self, item):
         return getattr(self._env, item)
 
+    def close(self):
+        """close Environment processes"""
+        for env in self._batch_env._envs:
+            env.close()
+
     def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
         Vectorized version of the `step` method. It allows to step a vector of
@@ -384,6 +389,10 @@ class ParallelEnvironment(Environment):
 
     def __getattr__(self, item):
         return getattr(self._local_env, item)
+
+    def close(self):
+        """Close the processes created by the internal parallel_environment."""
+        return self.parallel_env.close()
 
     def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
@@ -467,6 +476,10 @@ class _ParallelFunction:
     def __getattr__(self, item):
         return getattr(self._env, item)
 
+    def close(self):
+        """Close the processes of the internal batch_env."""
+        return self._batch_env.close()
+
     def step(self, points: numpy.ndarray) -> numpy.ndarray:
         """
         Vectorized version of the `step` method. It allows to step a vector of
@@ -514,6 +527,10 @@ class ParallelFunction(Function):
 
     def __getattr__(self, item):
         return getattr(self.local_function, item)
+
+    def close(self):
+        """Close the processes created by the internal parallel_function."""
+        return self.parallel_function.close()
 
     def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """

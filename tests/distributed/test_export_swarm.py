@@ -181,10 +181,10 @@ test_scores = {
 class TestExportInterface(TestSwarm):
     @pytest.fixture(params=swarm_names)
     def swarm(self, request):
-        return swarm_dict.get(request.param, create_cartpole_swarm)()
+        return swarm_dict.get(request.param)()
 
     @pytest.fixture(params=swarm_names)
     def swarm_with_score(self, request):
-        swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
+        swarm = swarm_dict.get(request.param)()
         score = test_scores[request.param]
         return swarm, score
