@@ -46,7 +46,7 @@ class TestExportInterface:
     @pytest.fixture(params=swarm_names, scope="class")
     def export_swarm(self, request):
         init_ray()
-        swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
+        swarm = swarm_dict.get(request.param)()
         request.addfinalizer(lambda: kill_swarm(swarm))
         return swarm
 
