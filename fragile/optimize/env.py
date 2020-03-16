@@ -33,7 +33,10 @@ class Function(Environment):
             bounds: :class:`Bounds` that defines the domain of the function.
             custom_domain_check: Callable that checks points inside the bounds \
                     to know if they are in a custom domain when it is not just \
-                    a set of rectangular bounds.
+                    a set of rectangular bounds. It takes a batch of points as \
+                    input and returns an array of booleans. Each ``True`` value \
+                    indicates that the corresponding point is **outside**  the \
+                    ``custom_domain_check``.
 
         """
         if not isinstance(bounds, Bounds):

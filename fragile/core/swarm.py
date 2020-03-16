@@ -25,10 +25,10 @@ class Swarm(BaseSwarm):
 
     def __init__(
         self,
+        n_walkers: int,
         env: Callable[[], BaseEnvironment],
         model: Callable[[BaseEnvironment], BaseModel],
-        walkers: Callable[..., Walkers],
-        n_walkers: int,
+        walkers: Callable[..., Walkers] = Walkers,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
         tree: Callable[[], BaseStateTree] = None,
@@ -40,10 +40,10 @@ class Swarm(BaseSwarm):
         Initialize a :class:`Swarm`.
 
         Args:
+            n_walkers: Number of walkers of the swarm.
             env: A callable that returns an instance of an Environment.
             model: A callable that returns an instance of a Model.
             walkers: A callable that returns an instance of BaseWalkers.
-            n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.
             dist_scale:Virtual reward exponent for the distance score.
             tree: class:`StatesTree` that keeps track of the visited states.

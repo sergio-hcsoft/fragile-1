@@ -413,7 +413,7 @@ class Walkers(SimpleWalkers):
                           "model", to reference the `env_states` and the \
                           `model_states`. Its values are a set of strings with \
                           the names of the attributes that will not be cloned.
-            critic: critic that will be used to calculate custom rewards.
+            critic: :class:`Critic` that will be used to calculate custom rewards.
             minimize: If ``True`` the algorithm will perform a minimization \
                       process. If ``False`` it will be a maximization process.
             best_walker: Tuple containing the best state and reward that will \
@@ -427,7 +427,8 @@ class Walkers(SimpleWalkers):
 
         """
         # Add data specific to the child class in the StatesWalkers class as new attributes.
-        kwargs["critic_score"] = kwargs.get("critic_score", numpy.zeros(kwargs["n_walkers"]))
+        if critic is not None:
+            kwargs["critic_score"] = kwargs.get("critic_score", numpy.zeros(n_walkers))
         self.dtype = float_type
         if best_walker is not None:
             best_state, best_obs, best_reward = best_walker

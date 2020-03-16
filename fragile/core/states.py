@@ -133,10 +133,10 @@ class States:
         sizes.
 
         Args:
-            states: Iterable returning :class:`State`s with the same attributes.
+            states: Iterable returning :class:`States` with the same attributes.
 
         Returns:
-            :class:`State` containing the combined data of the input values.
+            :class:`States` containing the combined data of the input values.
 
         """
 
@@ -380,7 +380,7 @@ class StatesEnv(States):
                  current :class:`Environment` state. The observations are used \
                  for calculating distances.
         rewards: This vector contains the rewards associated with each observation.
-        oobs: Stands for **Out Of BoundS**. It is a vector of booleans that \
+        oobs: Stands for **Out Of Bounds**. It is a vector of booleans that \
               represents and arbitrary boundary condition. If a value is ``True`` \
               the corresponding states will be treated as being outside the \
               :class:`Environment` domain. The states considered out of bounds \
