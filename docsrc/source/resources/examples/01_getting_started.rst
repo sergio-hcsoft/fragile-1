@@ -1,17 +1,20 @@
+.. include:: ../color_roles.rst
 Getting started
 ---------------
 .. note::
-    The notebook version of this example is available in the `examples` as  ``01_getting_started.ipynb``
+    The notebook version of this example is available in the
+    `examples <https://github.com/FragileTech/fragile/tree/master/examples>`_
+    section as `01_getting_started.ipynb <https://github.com/FragileTech/fragile/blob/master/examples/01_getting_started.ipynb>`_
 
-This is a tutorial that explains how to crate a ``Swarm`` to sample
-Atari games from the OpenAI ``gym`` library. It covers how to
-instantiate a ``Swarm`` and the most important parameters needed to
+This is a tutorial that explains how to crate a :swarm:`Swarm` to sample
+Atari games from the `OpenAI gym <https://gym.openai.com>`_ library. It covers how to
+instantiate a :swarm:`Swarm` and the most important parameters needed to
 control the sampling process.
 
 Structure of a ``Swarm``
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``Swarm`` is the class that implements the algorithm’s evolution
+The :swarm:`Swarm` is the class that implements the algorithm’s evolution
 loop, and controls all the other classes involved in solving a given
 problem:
 
@@ -23,17 +26,20 @@ problem:
 For every problem we want to solve, we will need to define callables
 that return instances of the following classes:
 
--  ``Environment``: Represents problem we want to solve. Given states
+-  :env:`Environment`: Represents problem we want to solve. Given states
    and actions, it returns the next state.
--  ``Model``: It provides an strategy for sampling actions (Policy).
--  ``Walkers``: This class handles the computations of the evolution
-   process of the algorithm. The default value should work fine.
--  ``StateTree``: (Optional) it stores the history of states samples by
-   the ``Swarm``.
--  ``Critic``: This class implements additional computation, such as a
+
+-  :model:`Model`: It provides an strategy for sampling actions (Policy).
+
+-  :walkers:`Walkers`: This class handles the computations of the evolution
+   process of the algorithm.
+
+-  :tree:`StateTree`: It stores the history of states samples by the :swarm:`Swarm`.
+
+-  :critic:`Critic`: This class implements additional computation, such as a
    new reward, or extra values for our policy.
 
-Choosing to pass callables to the ``Swarm`` instead of instances is a
+Choosing to pass callables to the :swarm:`Swarm` instead of instances is a
 design decision that simplifies the deployment at scale in a cluster,
 because it avoids writing tricky serialization code for all the classes.
 
@@ -42,7 +48,7 @@ Defining the ``Environment``
 
 For playing Atari games we will use the interface provided by the
 `plangym <https://github.com/Guillemdb/plangym>`__ package. It is a
-wraper of OpenAI ``gym`` that allows to easily set and recover the state
+wrapper of OpenAI ``gym`` that allows to easily set and recover the state
 of the environments, as well as stepping the environment with batches of
 states.
 
@@ -63,15 +69,15 @@ OpenAI ``gym`` library.
             blocking=False,
         )
 
-In order to use a ``plangym.Environment`` in a ``Swarm`` we will need to
+In order to use a ``plangym.Environment`` in a :swarm:`Swarm` we will need to
 define the appropriate Callable object to pass as a parameter.
 
 ``fragile`` incorporates a wrapper to use a ``plangym.AtariEnvironment``
 that will take care of matching the ``fragile`` API and constructing the
-appropiate ``StatesEnv`` class to store its data.
+appropriate :env-st:`StatesEnv` class to store its data.
 
 The environment callable does not take any parameters, and must return
-an instance of ``fragile.BaseEnvironment``.
+an instance of :env:`fragile.BaseEnvironment`.
 
 .. code:: ipython3
 
@@ -81,25 +87,17 @@ an instance of ``fragile.BaseEnvironment``.
 Defining the ``Model``
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The ``Model`` defines the policy that will be used to sample the
-``Environment``. In this tutorial we will be using a random sampling
-strategy over a discrete uniform distribution. This means that every
-time we sample an action, the ``Model`` will return an integer in the
-range [0, N_actions] for each state.
+The :model:`Model` defines the policy that will be used to sample the :env:`Environment`. In this tutorial we will be using a random sampling strategy over a discrete uniform distribution. This means that every time we sample an action, the :model:`Model` will return an integer in the range \[0, N_actions\] for each state.
 
-We will apply each sampled action a given number of time steps. This
-number of timesteps will be sampled using the ``GaussianDt``, that is a
-``Critic`` that allows to sample a variable number of timesteps for each
-action. The number of timesteps will be sampled from a normal
-distribution and rounded to an integer.
+By default each action will be applied for one time step. In case you want to apply the actions a different number of time steps it is possible to use a :critic:`Critic`. The Critics that allow you to sample time steps values for the actions can be found in `fragile.core.dt_samplers`.
 
-The model callable passed to the ``Swarm`` takes as a parameter the
-``Environment`` and returns an instance of ``Model``.
+In this example we will apply each sampled action a variable number of time steps using the :critic:`GaussianDt`. The :class:`GaussianDt` draws the number of time steps for each action from a normal distribution.
+
+The model callable passed to the :swarm:`Swarm` takes as a parameter the :env:`Environment` and returns an instance of :model:`Model`.
 
 .. code:: ipython3
 
-    from fragile.core.dt_sampler import GaussianDt
-    from fragile.core.models import DiscreteUniform
+    from fragile.core import GaussianDt, GaussianDt
     dt = GaussianDt(min_dt=3, max_dt=1000, loc_dt=4, scale_dt=2)
     model_callable = lambda env: DiscreteUniform(env=env, critic=dt)
 
@@ -107,11 +105,11 @@ Storing the sampled data inside a ``HistoryTree``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is possible to keep track of the sampled data by using a
-``HistoryTree``. This data structure will construct a directed acyclic
+:tree:`HistoryTree`. This data structure will construct a directed acyclic
 graph that will contain the sampled states and their transitions.
 
-Passing the ``prune_tree`` parameter to the ``Swarm`` we can choose to
-store only the branches of the ``HistoryTree`` that are being explored.
+Passing the ``prune_tree`` parameter to the :class:`Swarm` we can choose to
+store only the branches of the :tree:`HistoryTree` that are being explored.
 If ``prune_tree`` is ``True`` all the branches of the graph with no
 walkers will be removed after every iteration, and if it is ``False``
 all the visited states will be kept in memory.
@@ -120,35 +118,35 @@ In order to save memory we will be setting it to ``True``.
 
 .. code:: ipython3
 
-    from fragile.core.tree import HistoryTree
+    from fragile.core import HistoryTree
     prune_tree = True
 
 Initializing a ``Swarm``
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Once we have defined the problem-specific callables for the ``Model``
-and the ``Environment``, we need to define the parameters used by the
+Once we have defined the problem-specific callables for the :model:`Model`
+and the :env:`Environment`, we need to define the parameters used by the
 algorithm:
 
 -  ``n_walkers``: This is population size of our algorithm. It defines
    the number of different states that will be explored simultaneously
    at every iteration of the algorithm. It will be equal to the
-   ``batch_size`` of the ``States`` (size of the first dimension of the
+   ``batch_size`` of the :states:`States` (size of the first dimension of the
    data they store).
 
--  ``max_iters``: Maximum number of iterations that the ``Swarm`` will
+-  ``max_iters``: Maximum number of iterations that the :swarm:`Swarm` will
    execute. The algorithm will stop either when all the walkers reached
    a death condition, or when the maximum number of iterations is
    reached.
 
--  ``reward_scale``: Relative importance given to the ``Environment``
+-  ``reward_scale``: Relative importance given to the :env:`Environment`
    reward with respect to the diversity score of the walkers.
 
 -  ``distance_scale``: Relative importance given to the diversity
    measure of the walkers with respect to their reward.
 
--  ``minimize``: If ``True``, the ``Swarm`` will try to sample states
-   with the lowest reward possible. If ``False`` the ``Swarm`` will
+-  ``minimize``: If ``True``, the :swarm:`Swarm` will try to sample states
+   with the lowest reward possible. If ``False`` the :swarm:`Swarm` will
    undergo a maximization process.
 
 .. code:: ipython3
@@ -161,7 +159,7 @@ algorithm:
 
 .. code:: ipython3
 
-    from fragile.core.swarm import Swarm
+    from fragile.core import Swarm
     swarm = Swarm(
         model=model_callable,
         env=env_callable,
@@ -174,7 +172,7 @@ algorithm:
         minimize=minimize,
     )
 
-By printing a ``Swarm`` we can get an overview of the internal data it
+By printing a :class:`Swarm` we can get an overview of the internal data it
 contains.
 
 .. code:: ipython3
@@ -538,9 +536,9 @@ Running the ``Swarm``
 ^^^^^^^^^^^^^^^^^^^^^
 
 In order to execute the algorithm we only need to call ``run_swarm``. It
-is possible to display the internal data of the ``Swarm`` by using the
+is possible to display the internal data of the :swarm:`Swarm` by using the
 ``print_every`` parameter. This parameter indicates the number of
-iterations that will pass before printing the ``Swarm``.
+iterations that will pass before printing the :swarm:`Swarm`.
 
 .. code:: ipython3
 
@@ -586,7 +584,7 @@ iterations that will pass before printing the ``Swarm``.
 Visualizing the sampled game
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We will extract the branch of the ``StateTree`` that achieved the
+We will extract the branch of the :tree:`StateTree` that achieved the
 maximum reward and use its states and actions in the
 ``plangym.Environment``. This way we can render all the trajectory using
 the ``render`` method provided by the OpenAI gym API.
