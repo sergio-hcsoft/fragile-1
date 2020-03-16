@@ -91,7 +91,8 @@ class TestEnvironment:
         env, model_states = env_data
         states = env.reset(batch_size=batch_size)
         new_states = env.step(model_states=model_states, env_states=states)
-        assert new_states.ends.sum() == 0
+        assert new_states.oobs.sum() == 0
+        assert new_states.terminals.sum() == 0
 
     def test_state_shape(self, env_data):
         env, model_states = env_data
@@ -109,9 +110,9 @@ class TestEnvironment:
         states = numpy.zeros((batch_size, 5)).tolist()
         observs = numpy.ones((batch_size, 5)).tolist()
         rewards = numpy.arange(batch_size).tolist()
-        ends = numpy.zeros(batch_size, dtype=bool).tolist()
+        oobs = numpy.zeros(batch_size, dtype=bool).tolist()
         state = env.states_from_data(
-            batch_size=batch_size, states=states, observs=observs, rewards=rewards, ends=ends
+            batch_size=batch_size, states=states, observs=observs, rewards=rewards, oobs=oobs
         )
         assert isinstance(state, StatesEnv)
         for val in state.vals():

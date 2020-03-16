@@ -1,6 +1,6 @@
 import copy
 
-import numpy as np
+import numpy
 from plangym.env import Environment as PlangymEnv
 
 from fragile.core.base_classes import BaseEnvironment
@@ -43,26 +43,35 @@ class Environment(BaseEnvironment):
         :class:`Environment`.
         """
         params = {
-            "states": {"size": self.states_shape, "dtype": np.int64},
-            "observs": {"size": self.observs_shape, "dtype": np.float32},
-            "rewards": {"dtype": np.float32},
-            "ends": {"dtype": np.bool_},
+            "states": {"size": self.states_shape, "dtype": numpy.int64},
+            "observs": {"size": self.observs_shape, "dtype": numpy.float32},
+            "rewards": {"dtype": numpy.float32},
+            "oobs": {"dtype": numpy.bool_},
+            "terminals": {"dtype": numpy.bool_},
         }
         return params
 
-    def states_from_data(self, batch_size, states, observs, rewards, ends, **kwargs) -> StatesEnv:
+    def states_from_data(
+        self, batch_size, states, observs, rewards, oobs, terminals=None, **kwargs
+    ) -> StatesEnv:
         """Return a new :class:`StatesEnv` object containing the data generated \
         by the environment."""
-        ends = np.array(ends, dtype=np.bool_)
-        rewards = np.array(rewards, dtype=np.float32)
-        observs = np.array(observs)
-        states = np.array(states)
+        oobs = numpy.array(oobs, dtype=numpy.bool_)
+        terminals = (
+            numpy.array(oobs, dtype=numpy.bool_)
+            if terminals is not None
+            else numpy.zeros(len(oobs), dtype=numpy.bool_)
+        )
+        rewards = numpy.array(rewards, dtype=numpy.float32)
+        observs = numpy.array(observs)
+        states = numpy.array(states)
         state = super(Environment, self).states_from_data(
             batch_size=batch_size,
             states=states,
             observs=observs,
             rewards=rewards,
-            ends=ends,
+            oobs=oobs,
+            terminals=terminals,
             **kwargs
         )
         return state
@@ -94,7 +103,6 @@ class DiscreteEnv(Environment):
         """Return the number of different discrete actions that can be taken in the environment."""
         return self._n_actions
 
-    # @profile
     def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
         Set the environment to the target states by applying the specified \
@@ -108,7 +116,7 @@ class DiscreteEnv(Environment):
             States containing the information that describes the new state of the Environment.
 
         """
-        actions = model_states.actions.astype(np.int32)
+        actions = model_states.actions.astype(numpy.int32)
         n_repeat_actions = model_states.dt if hasattr(model_states, "dt") else 1
         new_states, observs, rewards, ends, infos = self._env.step_batch(
             actions=actions, states=env_states.states, n_repeat_action=n_repeat_actions
@@ -134,9 +142,11 @@ class DiscreteEnv(Environment):
 
         """
         state, obs = self._env.reset()
-        states = np.array([copy.deepcopy(state) for _ in range(batch_size)])
-        observs = np.array([copy.deepcopy(obs) for _ in range(batch_size)])
-        rewards = np.zeros(batch_size, dtype=np.float32)
-        ends = np.zeros(batch_size, dtype=np.uint8)
-        new_states = self.states_from_data(batch_size, states, observs, rewards, ends)
+        states = numpy.array([copy.deepcopy(state) for _ in range(batch_size)])
+        observs = numpy.array([copy.deepcopy(obs) for _ in range(batch_size)])
+        rewards = numpy.zeros(batch_size, dtype=numpy.float32)
+        oobs = numpy.zeros(batch_size, dtype=numpy.bool_)
+        new_states = self.states_from_data(
+            batch_size=batch_size, states=states, observs=observs, rewards=rewards, oobs=oobs
+        )
         return new_states

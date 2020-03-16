@@ -110,14 +110,14 @@ class Function(Environment):
 
         """
         new_points = model_states.actions + env_states.observs
-        ends = self.calculate_end(points=new_points)
+        oobs = self.calculate_oobs(points=new_points)
         rewards = self.function(new_points).flatten()
 
         updated_states = self.states_from_data(
             states=new_points,
             observs=new_points,
             rewards=rewards,
-            ends=ends,
+            oobs=oobs,
             batch_size=model_states.n,
         )
         return updated_states
@@ -137,19 +137,19 @@ class Function(Environment):
             equal to batch_size.
 
         """
-        ends = numpy.zeros(batch_size, dtype=numpy.bool_)
+        oobs = numpy.zeros(batch_size, dtype=numpy.bool_)
         new_points = self.sample_bounds(batch_size=batch_size)
         rewards = self.function(new_points).flatten()
         new_states = self.states_from_data(
             states=new_points,
             observs=new_points,
             rewards=rewards,
-            ends=ends,
+            oobs=oobs,
             batch_size=batch_size,
         )
         return new_states
 
-    def calculate_end(self, points: numpy.ndarray) -> numpy.ndarray:
+    def calculate_oobs(self, points: numpy.ndarray) -> numpy.ndarray:
         """
         Determine if a given batch of vectors lie inside the function domain.
 
@@ -163,11 +163,11 @@ class Function(Environment):
             and ``False`` otherwise.
 
         """
-        end = numpy.logical_not(self.bounds.points_in_bounds(points)).flatten()
+        oobs = numpy.logical_not(self.bounds.points_in_bounds(points)).flatten()
         if self.custom_domain_check is not None:
-            alive_mask = numpy.logical_not(end)
-            end[alive_mask] = self.custom_domain_check(points[alive_mask])
-        return end
+            points_in_bounds = numpy.logical_not(oobs)
+            oobs[points_in_bounds] = self.custom_domain_check(points[points_in_bounds])
+        return oobs
 
     def sample_bounds(self, batch_size: int) -> numpy.ndarray:
         """
@@ -321,12 +321,12 @@ class MinimizerWrapper(Function):
             model_states=model_states, env_states=env_states
         )
         new_points, rewards = self.minimizer.minimize_batch(env_states.observs)
-        ends = numpy.logical_not(self.bounds.points_in_bounds(new_points)).flatten()
+        oobs = self.calculate_oobs(new_points)
         updated_states = self.states_from_data(
             states=new_points,
             observs=new_points,
             rewards=rewards.flatten(),
-            ends=ends,
+            oobs=oobs,
             batch_size=model_states.n,
         )
         return updated_states

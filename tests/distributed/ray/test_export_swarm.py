@@ -86,6 +86,6 @@ class TestExportInterface:
         )
         ray.get(export_swarm.reset.remote())
         exported = ray.get(export_swarm.run_exchange_step.remote(walkers))
-        best_found = ray.get(export_swarm.get_data.remote("best_reward_found"))
+        best_found = ray.get(export_swarm.get_data.remote("best_reward"))
         assert len(exported) == ray.get(export_swarm.get_data.remote("n_export"))
         assert best_found == 999

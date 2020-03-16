@@ -264,7 +264,8 @@ class BaseEnvironment(StatesOwner):
                 "states": {"size": self._env.get_state().shape, "dtype": numpy.int64},
                 "observs": {"size": self._env.observation_space.shape, "dtype": numpy.float32},
                 "rewards": {"dtype": numpy.float32},
-                "ends": {"dtype": numpy.bool_},
+                "oobs": {"dtype": numpy.bool_},
+                "terminals": {"dtype": numpy.bool_},
             }
 
         """
@@ -506,7 +507,7 @@ class BaseWalkers(StatesOwner):
         """Sample the clone probability distribution and clone the walkers accordingly."""
         raise NotImplementedError
 
-    def get_alive_compas(self) -> np.ndarray:
+    def get_in_bounds_compas(self) -> np.ndarray:
         """
         Return an array of indexes corresponding to an alive walker chosen \
         at random.

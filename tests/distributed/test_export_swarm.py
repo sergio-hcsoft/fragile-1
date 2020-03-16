@@ -78,12 +78,12 @@ class TestExportedSwarm:
         walkers = ExportedWalkers(1)
         walkers.rewards = numpy.array([numpy.inf])
         new_is_better = export_swarm._imported_best_is_better(walkers)
-        assert new_is_better, export_swarm.best_reward_found
+        assert new_is_better, export_swarm.best_reward
         walkers = ExportedWalkers(1)
         export_swarm.walkers.minimize = True
         walkers.rewards = numpy.array([-numpy.inf])
         new_is_better = export_swarm._imported_best_is_better(walkers)
-        assert new_is_better, export_swarm.best_reward_found
+        assert new_is_better, export_swarm.best_reward
         export_swarm.walkers.minimize = False
 
     @pytest.mark.parametrize("export_swarm", swarm_params, indirect=True)
@@ -110,7 +110,7 @@ class TestExportedSwarm:
         walkers.id_walkers = numpy.array([10, 11])
         walkers.observs = numpy.array([[0, 0, 0, 0], [2, 3, 1, 2]])
         export_swarm.import_best(walkers)
-        assert export_swarm.best_reward_found == 999
+        assert export_swarm.best_reward == 999
         assert export_swarm.walkers.states.best_state == walkers.states[0]
         assert (export_swarm.walkers.states.best_obs == walkers.observs[0]).all()
         assert export_swarm.walkers.states.best_id == walkers.id_walkers[0]
@@ -161,7 +161,7 @@ class TestExportedSwarm:
         export_swarm.reset()
         exported = export_swarm.run_exchange_step(walkers)
         assert len(exported) == export_swarm.n_export
-        assert export_swarm.best_reward_found == 999
+        assert export_swarm.best_reward == 999
 
 
 def create_export_swarm():

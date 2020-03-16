@@ -24,20 +24,20 @@ class TestFaiNumpy:
         arrays(numpy.float32, shape=10),
         arrays(numpy.bool, shape=(10, 1)),
     )
-    def test_calculate_reward(self, observs, rewards, ends):
+    def test_calculate_reward(self, observs, rewards, oobs):
         with numpy.errstate(**NUMPY_IGNORE_WARNINGS_PARAMS):
             virtual_reward, compas = calculate_virtual_reward(
-                observs=observs, rewards=rewards, ends=ends
+                observs=observs, rewards=rewards, oobs=oobs
             )
             assert isinstance(virtual_reward, numpy.ndarray)
             assert len(virtual_reward.shape) == 1
             assert len(virtual_reward) == len(rewards)
 
     @given(arrays(numpy.float32, shape=13), arrays(numpy.bool, shape=13), st.floats(1e-7, 1))
-    def test_calculate_clone(self, virtual_rewards, ends, eps):
+    def test_calculate_clone(self, virtual_rewards, oobs, eps):
         with numpy.errstate(**NUMPY_IGNORE_WARNINGS_PARAMS):
             compas_ix, will_clone = calculate_clone(
-                virtual_rewards=virtual_rewards, ends=ends, eps=eps
+                virtual_rewards=virtual_rewards, oobs=oobs, eps=eps
             )
 
             assert isinstance(compas_ix, numpy.ndarray)
@@ -57,9 +57,9 @@ class TestFaiNumpy:
         arrays(numpy.float32, shape=10),
         arrays(numpy.bool, shape=10),
     )
-    def test_fai_iteration(self, observs, rewards, ends):
+    def test_fai_iteration(self, observs, rewards, oobs):
         with numpy.errstate(**NUMPY_IGNORE_WARNINGS_PARAMS):
-            compas_ix, will_clone = fai_iteration(observs=observs, rewards=rewards, ends=ends)
+            compas_ix, will_clone = fai_iteration(observs=observs, rewards=rewards, oobs=oobs)
             assert isinstance(compas_ix, numpy.ndarray)
             assert isinstance(will_clone, numpy.ndarray)
 

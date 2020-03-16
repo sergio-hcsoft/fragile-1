@@ -3,7 +3,7 @@ from typing import Dict, Generator, Iterable, List, Optional, Set, Tuple, Union
 
 import numpy
 
-from fragile.core.utils import float_type, hash_numpy, Scalar, similiar_chunks_indexes, StateDict
+from fragile.core.utils import float_type, hash_numpy, similiar_chunks_indexes, StateDict
 
 
 class States:
@@ -379,7 +379,8 @@ class StatesEnv(States):
         self.observs = None
         self.states = None
         self.rewards = None
-        self.ends = None
+        self.oobs = None
+        self.terminals = None
         updated_dict = self.get_params_dict()
         if state_dict is not None:
             updated_dict.update(state_dict)
@@ -391,7 +392,8 @@ class StatesEnv(States):
             "states": {"dtype": numpy.int64},
             "observs": {"dtype": numpy.float32},
             "rewards": {"dtype": numpy.float32},
-            "ends": {"dtype": numpy.bool_},
+            "oobs": {"dtype": numpy.bool_},
+            "terminals": {"dtype": numpy.bool_},
         }
         state_dict = super(StatesEnv, self).get_params_dict()
         params.update(state_dict)
@@ -446,30 +448,19 @@ class StatesWalkers(States):
         self.virtual_rewards = None
         self.distances = None
         self.clone_probs = None
-        self.alive_mask = None
+        self.in_bounds = None
         self.id_walkers = None
-        self.end_condition = None
         updated_dict = self.get_params_dict()
         if state_dict is not None:
             updated_dict.update(state_dict)
         super(StatesWalkers, self).__init__(
             state_dict=updated_dict, batch_size=batch_size, **kwargs
         )
+        # This is only to allow __repr__. Should be overridden after reset
         self.best_id = 0
         self.best_obs = None
         self.best_state = None
-        # This is only to allow __repr__. Should be overriden after reset
         self.best_reward = -numpy.inf
-
-    @property
-    def best_found(self) -> numpy.ndarray:
-        """Return the best observation found."""
-        return self.best_obs
-
-    @property
-    def best_reward_found(self) -> Scalar:
-        """Return the value of the best observation found."""
-        return self.best_reward
 
     def get_params_dict(self) -> StateDict:
         """Return a dictionary containing the param_dict to build an instance \
@@ -484,8 +475,7 @@ class StatesWalkers(States):
             "distances": {"dtype": float_type},
             "clone_probs": {"dtype": float_type},
             "will_clone": {"dtype": numpy.bool_},
-            "alive_mask": {"dtype": numpy.bool_},
-            "end_condition": {"dtype": numpy.bool_},
+            "in_bounds": {"dtype": numpy.bool_},
         }
         state_dict = super(StatesWalkers, self).get_params_dict()
         params.update(state_dict)
@@ -513,6 +503,5 @@ class StatesWalkers(States):
             distances=numpy.zeros(self.n, dtype=float_type),
             clone_probs=numpy.zeros(self.n, dtype=float_type),
             will_clone=numpy.zeros(self.n, dtype=numpy.bool_),
-            alive_mask=numpy.ones(self.n, dtype=numpy.bool_),
-            end_condition=numpy.zeros(self.n, dtype=numpy.bool_),
+            in_bounds=numpy.ones(self.n, dtype=numpy.bool_),
         )

@@ -35,7 +35,7 @@ class AtariWalkers(Walkers):
 
         """
         end = super(AtariWalkers, self).calculate_end_condition()
-        return self.env_states.game_ends.all() or end
+        return self.env_states.terminals.all() or end
 
 
 # import numpy as np
