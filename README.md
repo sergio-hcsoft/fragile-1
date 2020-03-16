@@ -11,6 +11,15 @@
 
 Fragile is a framework for developing algorithms inspired by the Fractal AI theory and testing them at scale.
 
+## Features
+
+- Provides classes and an API for easily developing planning algorithms
+- Provides an classes and an API for function optimization
+- Build in visuzalizations of the sampling process
+- Fully documented and tested
+- Support for parallelization and distributed search processes
+
+
 ## About FractalAI
 
 FractalAI is based on the framework of non-equilibrium thermodynamics, and It allows to derive new 
@@ -81,9 +90,10 @@ You can access the documentation on [GitHub Pages](https://fragiletech.github.io
     
 ## Roadmap
 
-- Document and test the `ray` module. Write example notebook
-- Document and refactor Montezuma solver
-- Improve tests coverage (currently 153 for the `core` and `optimize` modules)
+Upcoming features: (Not necessary in order)
+- Add support for saving visualizations.
+- Fix documentation and add examples for the `distributed` module
+- Upload Montezuma solver
 - Add new algorithms to sample different state spaces.
 - Add a module to generate data for training deep learning models
 - Add a benchmarking module
