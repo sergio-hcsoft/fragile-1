@@ -46,7 +46,7 @@ class SummaryTable(Table):
                 {"Epoch": [], "Best Reward": [], "Deaths": [], "Clones": []}, columns=columns
             )
         else:
-            deaths = float(swarm.walkers.states.end_condition.sum()) / len(swarm)
+            deaths = float(swarm.walkers.env_states.oobs.sum()) / len(swarm)
             clones = float(swarm.walkers.states.will_clone.sum()) / len(swarm)
             data = pandas.DataFrame(
                 {

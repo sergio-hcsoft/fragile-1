@@ -21,8 +21,8 @@ def get_atari_walkers_discrete_gym():
         "states": {"size": (128,), "dtype": numpy.int64},
         "observs": {"size": (160, 210, 3), "dtype": numpy.float32},
         "rewards": {"dtype": numpy.float32},
-        "ends": {"dtype": numpy.bool_},
-        "game_ends": {"dtype": numpy.bool_},
+        "oobs": {"dtype": numpy.bool_},
+        "terminals": {"dtype": numpy.bool_},
     }
     model_params = {
         "actions": {"size": (10,), "dtype": numpy.int64},
@@ -45,8 +45,8 @@ class TestAtariWalkers(TestWalkers):
 
     def test_calculate_end_condition(self, walkers):
         walkers.reset()
-        walkers.states.update(ends=numpy.ones(walkers.n))
-        walkers.env_states.update(game_ends=numpy.ones(walkers.n))
+        walkers.states.update(oobs=numpy.ones(walkers.n))
+        walkers.env_states.update(terminals=numpy.ones(walkers.n))
         assert walkers.calculate_end_condition()
 
     @given(observs=arrays(numpy.float32, shape=(N_WALKERS, 160, 210, 3)))

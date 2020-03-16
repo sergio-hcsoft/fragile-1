@@ -545,14 +545,14 @@ class ParallelFunction(Function):
             States containing the information that describes the new state of the Environment.
         """
         new_points = model_states.actions + env_states.observs
-        ends = self.calculate_end(points=new_points)
+        oobs = self.calculate_oobs(points=new_points)
         rewards = self.parallel_function.step(new_points)
 
         updated_states = self.states_from_data(
             states=new_points,
             observs=new_points,
             rewards=rewards,
-            ends=ends,
+            oobs=oobs,
             batch_size=model_states.n,
         )
         return updated_states

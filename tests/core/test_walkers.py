@@ -28,7 +28,7 @@ def get_walkers_discrete_gym():
         "states": {"size": (128,), "dtype": numpy.int64},
         "observs": {"size": (64, 64, 3), "dtype": numpy.float32},
         "rewards": {"dtype": numpy.float32},
-        "ends": {"dtype": numpy.bool_},
+        "oobs": {"dtype": numpy.bool_},
     }
     model_params = {
         "actions": {"size": (10,), "dtype": numpy.int64},
@@ -44,7 +44,7 @@ def get_function_walkers():
         "states": {"size": (3,), "dtype": numpy.int64},
         "observs": {"size": (3,), "dtype": numpy.float32},
         "rewards": {"dtype": numpy.float32},
-        "ends": {"dtype": numpy.bool_},
+        "oobs": {"dtype": numpy.bool_},
     }
     model_params = {
         "actions": {"size": (3,), "dtype": numpy.int64},
@@ -100,9 +100,9 @@ class TestWalkers:
 
     def test_calculate_end_condition(self, walkers):
         walkers.reset()
-        walkers.states.update(end_condition=numpy.ones(walkers.n))
+        walkers.env_states.update(oobs=numpy.ones(walkers.n))
         assert walkers.calculate_end_condition()
-        walkers.states.update(end_condition=numpy.zeros(walkers.n))
+        walkers.env_states.update(oobs=numpy.zeros(walkers.n))
         assert not walkers.calculate_end_condition()
         walkers.max_iters = 10
         walkers.n_iters = 8
@@ -111,12 +111,12 @@ class TestWalkers:
         assert walkers.calculate_end_condition()
 
     def test_alive_compas(self, walkers):
-        end_cond = numpy.ones_like(walkers.states.end_condition).astype(bool).copy()
-        end_cond[3] = 0
-        walkers.states.end_condition = end_cond
-        compas = walkers.get_alive_compas()
+        end_cond = numpy.zeros_like(walkers.env_states.oobs).astype(bool).copy()
+        end_cond[3] = True
+        walkers.states.in_bounds = end_cond
+        compas = walkers.get_in_bounds_compas()
         assert numpy.all(compas == 3), "Type of end_cond: {} end_cond: {}: alive ix: {}".format(
-            type(end_cond), end_cond, walkers.states.alive_mask
+            type(end_cond), end_cond, walkers.states.in_bounds
         )
         assert len(compas.shape) == 1
 

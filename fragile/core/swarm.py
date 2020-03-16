@@ -273,7 +273,7 @@ class Swarm(BaseSwarm):
         )
         env_states = self.env.step(model_states=model_states, env_states=env_states)
         self.walkers.update_states(
-            env_states=env_states, model_states=model_states, end_condition=env_states.ends
+            env_states=env_states, model_states=model_states,
         )
         self.walkers.update_ids()
         self.update_tree(states_ids)

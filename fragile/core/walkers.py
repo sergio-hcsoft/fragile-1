@@ -97,10 +97,10 @@ class SimpleWalkers(BaseWalkers):
 
     def _print_stats(self) -> str:
         """Print several statistics of the current state of the swarm."""
-        text = "{} iteration {} Dead walkers: {:.2f}% Cloned: {:.2f}%\n\n".format(
+        text = "{} iteration {} Out of bounds walkers: {:.2f}% Cloned: {:.2f}%\n\n".format(
             self.__class__.__name__,
             self.n_iters,
-            100 * self.states.end_condition.sum() / self.n,
+            100 * self.env_states.oobs.sum() / self.n,
             100 * self.states.will_clone.sum() / self.n,
         )
         return text
@@ -167,9 +167,11 @@ class SimpleWalkers(BaseWalkers):
             it should be stopped, and ``False`` means it should continue.
 
         """
-        all_dead = self.states.end_condition.sum() == self.n
-        max_iters = self.n_iters >= self.max_iters
-        return all_dead or max_iters
+        non_terminal_states = numpy.logical_not(self.env_states.terminals)
+        all_non_terminal_out_of_bounds = self.env_states.oobs[non_terminal_states].all()
+        max_iters_reached = self.n_iters >= self.max_iters
+        all_in_bounds_are_terminal = self.env_states.terminals[self.states.in_bounds].all()
+        return max_iters_reached or all_non_terminal_out_of_bounds or all_in_bounds_are_terminal
 
     def calculate_distances(self) -> None:
         """Calculate the corresponding distance function for each observation with \
@@ -177,7 +179,7 @@ class SimpleWalkers(BaseWalkers):
 
         The internal :class:`StateWalkers` is updated with the relativized distance values.
         """
-        compas_ix = numpy.random.permutation(numpy.arange(self.n))  # self.get_alive_compas()
+        compas_ix = numpy.random.permutation(numpy.arange(self.n))  # self.get_in_bounds_compas()
         obs = self.env_states.observs.reshape(self.n, -1)
         distances = self.distance_function(obs, obs[compas_ix])
         distances = relativize(distances.flatten())
@@ -194,19 +196,18 @@ class SimpleWalkers(BaseWalkers):
         virt_rw = processed_rewards ** self.reward_scale * self.states.distances ** self.dist_scale
         self.update_states(virtual_rewards=virt_rw, processed_rewards=processed_rewards)
 
-    def get_alive_compas(self) -> numpy.ndarray:
+    def get_in_bounds_compas(self) -> numpy.ndarray:
         """
-        Return the indexes of alive companions chosen at random.
+        Return the indexes of walkers inside bounds chosen at random.
 
         Returns:
-            Numpy array containing the int indexes of alive walkers chosen at \
+            Numpy array containing the int indexes of in bounds walkers chosen at \
             random with replacement. Its length is equal to the number of walkers.
 
         """
-        self.states.alive_mask = numpy.logical_not(self.states.end_condition)
-        if not self.states.alive_mask.any():  # No need to sample if all walkers are dead.
+        if not self.states.in_bounds.any():  # No need to sample if all walkers are dead.
             return numpy.arange(self.n)
-        alive_indexes = numpy.arange(self.n, dtype=int)[self.states.alive_mask]
+        alive_indexes = numpy.arange(self.n, dtype=int)[self.states.in_bounds]
         compas_ix = self.random_state.permutation(alive_indexes)
         compas = self.random_state.choice(compas_ix, self.n, replace=True)
         compas[: len(compas_ix)] = compas_ix
@@ -227,7 +228,7 @@ class SimpleWalkers(BaseWalkers):
             clone_probs = numpy.zeros(self.n, dtype=float_type)
             compas_ix = numpy.arange(self.n)
         else:
-            compas_ix = self.get_alive_compas()
+            compas_ix = self.get_in_bounds_compas()
             companions = self.states.virtual_rewards[compas_ix]
             # This value can be negative!!
             clone_probs = (companions - self.states.virtual_rewards) / self.states.virtual_rewards
@@ -248,6 +249,7 @@ class SimpleWalkers(BaseWalkers):
 
         """
         old_ids = set(self.states.id_walkers.copy())
+        self.states.in_bounds = numpy.logical_not(self.env_states.oobs)
         self.calculate_distances()
         self.calculate_virtual_reward()
         self.update_clone_probs()
@@ -263,7 +265,7 @@ class SimpleWalkers(BaseWalkers):
         :class:`StatesEnv`, and :class:`StatesModel`.
         """
         will_clone = self.states.clone_probs > self.random_state.random_sample(self.n)
-        will_clone[self.states.end_condition] = True  # Dead walkers always clone
+        will_clone[self.env_states.oobs] = True  # Out of bounds walkers always clone
         self.update_states(will_clone=will_clone)
         clone, compas = self.states.clone()
         self._env_states.clone(
@@ -470,7 +472,7 @@ class Walkers(SimpleWalkers):
         If no walker is alive it will return the index of the last walker, which \
         corresponds with the best state found.
         """
-        rewards = self.states.cum_rewards[numpy.logical_not(self.states.end_condition)]
+        rewards = self.states.cum_rewards[self.states.in_bounds]
         if len(rewards) == 0:
             return self.n - 1
         best = rewards.argmin() if self.minimize else rewards.argmax()
@@ -484,13 +486,13 @@ class Walkers(SimpleWalkers):
         best_obs = self.env_states.observs[ix].copy()
         best_reward = float(self.states.cum_rewards[ix])
         best_state = self.env_states.states[ix].copy()
-        best_is_alive = not bool(self.env_states.ends[ix])
+        best_is_in_bounds = not bool(self.env_states.oobs[ix])
         has_improved = (
             self.states.best_reward > best_reward
             if self.minimize
             else self.states.best_reward < best_reward
         )
-        if has_improved and best_is_alive:
+        if has_improved and best_is_in_bounds:
             self.states.update(
                 best_reward=best_reward,
                 best_state=best_state,

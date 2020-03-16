@@ -173,7 +173,7 @@ class ExportSwarm(BaseWrapper):
         random from the :class:`Swarm` walkers. If ``self.export_best`` is true \
         the best walker of the :class:`Swarm` will always be included.
         """
-        if self.swarm.walkers.states.end_condition.all():  # Do not export dead walkers
+        if self.swarm.walkers.env_states.oobs.all():  # Do not export dead walkers
             return ExportedWalkers(batch_size=0)
         indexes = self._get_export_index()
         walkers = self._create_export_walkers(indexes)
@@ -249,7 +249,7 @@ class ExportSwarm(BaseWrapper):
 
     def _get_export_index(self) -> numpy.ndarray:
         """Get an index of the walkers that will be exported."""
-        index = self.swarm.walkers.get_alive_compas()[: self.n_export]
+        index = self.swarm.walkers.get_in_bounds_compas()[: self.n_export]
         if self._export_best:  # Force the best to be present if needed.
             best_ix = self.swarm.walkers.get_best_index()
             if best_ix not in index:
@@ -324,13 +324,13 @@ class ExportSwarm(BaseWrapper):
         to the imported walkers."""
         local_obs = self.swarm.walkers.env_states.observs[local_ix]
         local_rewards = self.swarm.walkers.states.cum_rewards[local_ix]
-        local_ends = self.swarm.walkers.states.end_condition[local_ix]
+        local_oobs = self.swarm.walkers.env_states.oobs[local_ix]
         import_obs = walkers.observs[import_ix]
         import_rewards = walkers.rewards[import_ix]
         compas_ix, will_clone = cross_fai_iteration(
             host_observs=local_obs,
             host_rewards=local_rewards,
-            host_ends=local_ends,
+            host_oobs=local_oobs,
             ext_observs=import_obs,
             ext_rewards=import_rewards,
             dist_coef=self.swarm.walkers.dist_scale,

@@ -89,10 +89,10 @@ class TestFunction(TestEnvironment):
             new_states.rewards,
             new_states.rewards.shape,
         )
-        assert (new_states.ends == 0).all().item()
+        assert (new_states.oobs == 0).all().item()
         assert len(new_states.rewards.shape) == 1
         assert new_states.rewards.shape[0] == batch_size
-        assert new_states.ends.shape[0] == batch_size
+        assert new_states.oobs.shape[0] == batch_size
         assert new_states.observs.shape[0] == batch_size
         assert new_states.observs.shape[1] == 2
 
@@ -114,5 +114,5 @@ class TestFunction(TestEnvironment):
         params = {"actions": {"dtype": numpy.float64, "size": (2,)}}
         states = StatesModel(state_dict=params, batch_size=N_WALKERS)
         assert minim.shape == minim.shape
-        minim.step(model_states=states, env_states=minim.reset(N_WALKERS))
-        assert minim.best_reward == 0
+        states = minim.step(model_states=states, env_states=minim.reset(N_WALKERS))
+        assert numpy.allclose(states.rewards.min(), 0)
