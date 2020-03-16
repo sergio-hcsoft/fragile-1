@@ -57,10 +57,14 @@
 <li class="toctree-l2"><a class="reference internal" href="resources/examples/examples_index.html#function-minimization-example">Function minimization example</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="resources/examples/examples_index.html#testing-a-functionmapper-on-a-benchmark-function">Testing a <code class="docutils literal notranslate"><span class="pre">FunctionMapper</span></code> on a benchmark function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="resources/examples/examples_index.html#sampling-a-function-with-a-local-optimizer">Sampling a function with a local optimizer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="resources/examples/examples_index.html#defining-a-new-problem-using-a-function">Defining a new problem using a <code class="docutils literal notranslate"><span class="pre">Function</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="resources/examples/examples_index.html#optimizing-a-function-with-evolutionary-strategies">Optimizing a function with Evolutionary Strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="resources/examples/examples_index.html#defining-a-new-problem-using-a-function">Defining a new problem using a <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="resources/examples/examples_index.html#the-objective-function">The objective function</a></li>
+<li class="toctree-l4"><a class="reference internal" href="resources/examples/examples_index.html#defining-arbitrary-boundary-conditions">Defining arbitrary boundary conditions</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="resources/examples/examples_index.html#optimizing-a-function-with-evolutionary-strategies">Optimizing a function with Evolutionary Strategies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="resources/examples/examples_index.html#visualizing-a-swarm">Visualizing a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="resources/examples/examples_index.html#summary-visualization">Summary visualization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="resources/examples/examples_index.html#histogram-visualizations">Histogram visualizations</a></li>
@@ -78,6 +82,7 @@
 <li class="toctree-l3"><a class="reference internal" href="module_docs/core.html#baseenvironment"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEnvironment</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="module_docs/core.html#basemodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="module_docs/core.html#basestatetree"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStateTree</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="module_docs/core.html#basecritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="module_docs/core.html#basewrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWrapper</span></code></a></li>
 </ul>
 </li>
@@ -111,6 +116,7 @@
 <li class="toctree-l3"><a class="reference internal" href="module_docs/core.html#stateswalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/core.html#dtsampler">DtSampler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/core.html#statetree">StateTree</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="module_docs/core.html#historytree"><code class="xref py py-class docutils literal notranslate"><span class="pre">HistoryTree</span></code></a></li>
 </ul>
@@ -124,7 +130,6 @@
 <li class="toctree-l1"><a class="reference internal" href="module_docs/atari.html">Atari games</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/atari.html#atarienv"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtariEnv</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/atari.html#atariwalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtariWalkers</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="module_docs/atari.html#montezumawalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">MontezumaWalkers</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/optimize.html">Function Optimization</a><ul>
@@ -142,6 +147,28 @@
 <li class="toctree-l3"><a class="reference internal" href="module_docs/optimize.html#functionmapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">FunctionMapper</span></code></a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/distributed.html">Distributed Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/distributed.html#module-fragile.distributed.env">Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/distributed.html#module-fragile.distributed.distributed_export">Distributed Swarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/distributed.html#ray-remote-classes">Ray remote classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="module_docs/distributed.html#module-fragile.distributed.ray.export_swarm">Swarm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="module_docs/distributed.html#id1">Environments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/dataviz.html">Data Visualization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dataviz.html#swarm-visualizers"><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> Visualizers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="module_docs/dataviz.html#summary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Summary</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="module_docs/dataviz.html#atariviz"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtariViz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="module_docs/dataviz.html#swarmviz1d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmViz1D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="module_docs/dataviz.html#landscapeviz"><code class="xref py py-class docutils literal notranslate"><span class="pre">LandscapeViz</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dataviz.html#module-fragile.dataviz.swarm_stats">Plots for <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/dataviz.html#module-fragile.dataviz.streaming">Streaming plot classes</a></li>
 </ul>
 </li>
 </ul>
@@ -180,6 +207,8 @@
 <li class="toctree-l1"><a class="reference internal" href="module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/dataviz.html">Data Visualization</a></li>
 </ul>
 
 <div class="relations">

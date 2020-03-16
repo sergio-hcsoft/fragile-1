@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>fragile.dataviz.swarm_viz &#8212; Fragile 0.0a documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for fragile.dataviz.swarm_viz</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Wrappers to visualize the internal data of the :class:`Swarm`.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">fragile.core.base_classes</span> <span class="kn">import</span> <span class="n">BaseWrapper</span>
+<span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">StatesEnv</span><span class="p">,</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">StatesWalkers</span>
+<span class="kn">from</span> <span class="nn">fragile.core.swarm</span> <span class="kn">import</span> <span class="n">Swarm</span>
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">clear_output</span>
+<span class="kn">from</span> <span class="nn">fragile.dataviz.swarm_stats</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AtariBestFrame</span><span class="p">,</span>
+    <span class="n">BestReward</span><span class="p">,</span>
+    <span class="n">DistanceHistogram</span><span class="p">,</span>
+    <span class="n">DistanceLandscape</span><span class="p">,</span>
+    <span class="n">GridLandscape</span><span class="p">,</span>
+    <span class="n">KDELandscape</span><span class="p">,</span>
+    <span class="n">RewardHistogram</span><span class="p">,</span>
+    <span class="n">RewardLandscape</span><span class="p">,</span>
+    <span class="n">SummaryTable</span><span class="p">,</span>
+    <span class="n">SwarmLandscape</span><span class="p">,</span>
+    <span class="n">VirtualRewardHistogram</span><span class="p">,</span>
+    <span class="n">VirtualRewardLandscape</span><span class="p">,</span>
+    <span class="n">WalkersDensity</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ALL_SWARM_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">GridLandscape</span><span class="p">,</span>
+    <span class="n">DistanceLandscape</span><span class="p">,</span>
+    <span class="n">RewardLandscape</span><span class="p">,</span>
+    <span class="n">VirtualRewardLandscape</span><span class="p">,</span>
+    <span class="n">WalkersDensity</span><span class="p">,</span>
+    <span class="n">DistanceHistogram</span><span class="p">,</span>
+    <span class="n">VirtualRewardHistogram</span><span class="p">,</span>
+    <span class="n">RewardHistogram</span><span class="p">,</span>
+    <span class="n">BestReward</span><span class="p">,</span>
+    <span class="n">SummaryTable</span><span class="p">,</span>
+    <span class="n">AtariBestFrame</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ALL_PLOT_NAMES</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">plot</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">ALL_SWARM_TYPES</span><span class="p">])</span>
+
+<span class="n">ALL_SWARM_PLOTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">ALL_PLOT_NAMES</span><span class="p">,</span> <span class="n">ALL_SWARM_TYPES</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">SwarmViz</span><span class="p">(</span><span class="n">BaseWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrap a :class:`Swarm` to incorporate visualizations.&quot;&quot;&quot;</span>
+
+    <span class="n">SWARM_STATS_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">DistanceLandscape</span><span class="p">,</span>
+        <span class="n">RewardLandscape</span><span class="p">,</span>
+        <span class="n">VirtualRewardLandscape</span><span class="p">,</span>
+        <span class="n">WalkersDensity</span><span class="p">,</span>
+        <span class="n">DistanceHistogram</span><span class="p">,</span>
+        <span class="n">VirtualRewardHistogram</span><span class="p">,</span>
+        <span class="n">RewardHistogram</span><span class="p">,</span>
+        <span class="n">BestReward</span><span class="p">,</span>
+        <span class="n">SummaryTable</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT_COLUMNS</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">DEFAULT_PLOTS</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span>
+    <span class="n">PLOT_NAMES</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">plot</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">])</span>
+    <span class="n">SWARM_PLOTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">PLOT_NAMES</span><span class="p">,</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span>
+        <span class="n">display_plots</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">stream_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">use_embeddings</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">margin_high</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">margin_low</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+        <span class="n">columns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_COLUMNS</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`SwarmViz`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            swarm: :class:`Swarm` that will be wrapped.</span>
+<span class="sd">            display_plots: List of plots that will be displayed. It contains \</span>
+<span class="sd">                           the ``name`` class attribute of the plots that will \</span>
+<span class="sd">                           be displayed. By default it plots the plots defined \</span>
+<span class="sd">                           in ``cls.SWARM_STATS_TYPES``.</span>
+
+<span class="sd">            stream_interval: Stream data to the plots every ``stream_interval`` iterations.</span>
+<span class="sd">            use_embeddings: Use the embeddings provided by the :class:`Walkers` \</span>
+<span class="sd">                            critic if available.</span>
+<span class="sd">            margin_high: Ignored. (Update pending)</span>
+<span class="sd">            margin_low: Ignored. (Update pending)</span>
+<span class="sd">            n_points: Number of points for each coordinate of the meshgrid dimensions.</span>
+<span class="sd">            columns: Number of columns of the generated grid of visualizations.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SwarmViz</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">swarm</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;swarm&quot;</span><span class="p">)</span>
+        <span class="n">display_plots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_PLOTS</span> <span class="k">if</span> <span class="n">display_plots</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span> <span class="k">else</span> <span class="n">display_plots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_plots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PLOT_NAMES</span> <span class="k">if</span> <span class="n">display_plots</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span> <span class="k">else</span> <span class="n">display_plots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_plots</span><span class="p">(</span>
+            <span class="n">use_embeddings</span><span class="o">=</span><span class="n">use_embeddings</span><span class="p">,</span>
+            <span class="n">margin_low</span><span class="o">=</span><span class="n">margin_low</span><span class="p">,</span>
+            <span class="n">margin_high</span><span class="o">=</span><span class="n">margin_high</span><span class="p">,</span>
+            <span class="n">n_points</span><span class="o">=</span><span class="n">n_points</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream_interval</span> <span class="o">=</span> <span class="n">stream_interval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_init_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_embeddings</span><span class="p">,</span> <span class="n">margin_low</span><span class="p">,</span> <span class="n">margin_high</span><span class="p">,</span> <span class="n">n_points</span><span class="p">):</span>
+        <span class="n">plots</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">plot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SWARM_PLOTS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_plots</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">SwarmLandscape</span><span class="p">):</span>
+                <span class="n">invert_cmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">minimize</span> <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;reward_landscape&quot;</span> <span class="k">else</span> <span class="kc">False</span>
+                <span class="n">plots</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SWARM_PLOTS</span><span class="p">[</span><span class="n">name</span><span class="p">](</span>
+                    <span class="n">margin_high</span><span class="o">=</span><span class="n">margin_high</span><span class="p">,</span>
+                    <span class="n">n_points</span><span class="o">=</span><span class="n">n_points</span><span class="p">,</span>
+                    <span class="n">margin_low</span><span class="o">=</span><span class="n">margin_low</span><span class="p">,</span>
+                    <span class="n">use_embeddings</span><span class="o">=</span><span class="n">use_embeddings</span><span class="p">,</span>
+                    <span class="n">invert_cmap</span><span class="o">=</span><span class="n">invert_cmap</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plots</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SWARM_PLOTS</span><span class="p">[</span><span class="n">name</span><span class="p">]()</span>
+        <span class="k">return</span> <span class="n">plots</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">StatesWalkers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">print_every</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">1e100</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run a new search process.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_states: :class:`StatesEnv` that define the initial state of the model.</span>
+<span class="sd">            model_states: :class:`StatesEModel that define the initial state of the environment.</span>
+<span class="sd">            walkers_states: :class:`StatesWalkers` that define the internal states of the walkers.</span>
+<span class="sd">            print_every: Display the algorithm progress every `print_every` epochs.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span>
+            <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">,</span> <span class="n">walkers_states</span><span class="o">=</span><span class="n">walkers_states</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_end_condition</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">run_step</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">epoch</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                    <span class="n">clear_output</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="k">def</span> <span class="nf">run_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute one iteration of the :class:`Swarm` evolution process and \</span>
+<span class="sd">        update all the data structures, and stream the data to the created plots.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">run_step</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n_iters</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream_interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stream_plots</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">stream_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Stream the :class:`Swarm` data to the plots.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">viz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plots</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">viz</span><span class="o">.</span><span class="n">stream_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot a DynamicMap that will contained the streaming plots of the selected data.&quot;&quot;&quot;</span>
+        <span class="n">ignore</span> <span class="o">=</span> <span class="n">ignore</span> <span class="k">if</span> <span class="n">ignore</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">plots</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">plot</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plots</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">]</span>
+        <span class="n">plot</span> <span class="o">=</span> <span class="n">plots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plots</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">plot</span> <span class="o">=</span> <span class="n">plot</span> <span class="o">+</span> <span class="n">p</span>
+        <span class="k">return</span> <span class="n">plot</span><span class="o">.</span><span class="n">cols</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Summary"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.Summary">[docs]</a><span class="k">class</span> <span class="nc">Summary</span><span class="p">(</span><span class="n">SwarmViz</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :class:`Summary` that plots a table containing information of the epoch, \</span>
+<span class="sd">    best reward found and percentage of deaths and clones.</span>
+
+<span class="sd">    It also plots the evolution of the best reward found. It can work with any \</span>
+<span class="sd">    kind of :class:`Environment`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">SWARM_STATS_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">SummaryTable</span><span class="p">,</span>
+        <span class="n">BestReward</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">PLOT_NAMES</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">plot</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">])</span>
+    <span class="n">SWARM_PLOTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">PLOT_NAMES</span><span class="p">,</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">))</span>
+    <span class="n">DEFAULT_COLUMNS</span> <span class="o">=</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="AtariViz"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.AtariViz">[docs]</a><span class="k">class</span> <span class="nc">AtariViz</span><span class="p">(</span><span class="n">SwarmViz</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :class:`Summary` that plots the RGB frame corresponding to the best state \</span>
+<span class="sd">    found, in addition to the summary table and best reward plot.</span>
+
+<span class="sd">    It also plots the evolution of the best reward found. It can work only with \</span>
+<span class="sd">    an :class:`AtariEnv`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">SWARM_STATS_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">SummaryTable</span><span class="p">,</span>
+        <span class="n">AtariBestFrame</span><span class="p">,</span>
+        <span class="n">BestReward</span><span class="p">,</span>
+        <span class="n">DistanceHistogram</span><span class="p">,</span>
+        <span class="n">VirtualRewardHistogram</span><span class="p">,</span>
+        <span class="n">RewardHistogram</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">PLOT_NAMES</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">plot</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">])</span>
+    <span class="n">SWARM_PLOTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">PLOT_NAMES</span><span class="p">,</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">))</span>
+    <span class="n">DEFAULT_COLUMNS</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">DEFAULT_PLOTS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;summary_table&quot;</span><span class="p">,</span> <span class="s2">&quot;best_frame&quot;</span><span class="p">,</span> <span class="s2">&quot;best_reward&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SwarmViz1D"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.SwarmViz1D">[docs]</a><span class="k">class</span> <span class="nc">SwarmViz1D</span><span class="p">(</span><span class="n">SwarmViz</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :class:`SwarmViz` that plots all the one-dimensional plots: Histograms and \</span>
+<span class="sd">    reward evolution curve. It can work with any kind of :class:`Environment`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">SWARM_STATS_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">DistanceHistogram</span><span class="p">,</span>
+        <span class="n">VirtualRewardHistogram</span><span class="p">,</span>
+        <span class="n">RewardHistogram</span><span class="p">,</span>
+        <span class="n">BestReward</span><span class="p">,</span>
+        <span class="n">SummaryTable</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">PLOT_NAMES</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">plot</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">])</span>
+    <span class="n">SWARM_PLOTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">PLOT_NAMES</span><span class="p">,</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">))</span>
+    <span class="n">DEFAULT_COLUMNS</span> <span class="o">=</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="LandscapeViz"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.LandscapeViz">[docs]</a><span class="k">class</span> <span class="nc">LandscapeViz</span><span class="p">(</span><span class="n">SwarmViz</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :class:`SwarmViz` that plots all the one-dimensional plots: Histograms and \</span>
+<span class="sd">    reward evolution curve. It can work with any kind of :class:`Environment`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">SWARM_STATS_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">DistanceLandscape</span><span class="p">,</span>
+        <span class="n">RewardLandscape</span><span class="p">,</span>
+        <span class="n">VirtualRewardLandscape</span><span class="p">,</span>
+        <span class="n">WalkersDensity</span><span class="p">,</span>
+        <span class="n">BestReward</span><span class="p">,</span>
+        <span class="n">SummaryTable</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">PLOT_NAMES</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">plot</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">])</span>
+    <span class="n">SWARM_PLOTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">PLOT_NAMES</span><span class="p">,</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">))</span></div>
+
+
+<span class="k">class</span> <span class="nc">GridViz</span><span class="p">(</span><span class="n">SwarmViz</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;:class:`SwarmViz` that also plots a :class:`Critic` that contains a grid \</span>
+<span class="sd">    to discretize the search space.&quot;&quot;&quot;</span>
+
+    <span class="n">SWARM_STATS_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">DistanceLandscape</span><span class="p">,</span>
+        <span class="n">RewardLandscape</span><span class="p">,</span>
+        <span class="n">GridLandscape</span><span class="p">,</span>
+        <span class="n">VirtualRewardLandscape</span><span class="p">,</span>
+        <span class="n">WalkersDensity</span><span class="p">,</span>
+        <span class="n">DistanceHistogram</span><span class="p">,</span>
+        <span class="n">VirtualRewardHistogram</span><span class="p">,</span>
+        <span class="n">RewardHistogram</span><span class="p">,</span>
+        <span class="n">BestReward</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">PLOT_NAMES</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">plot</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">])</span>
+    <span class="n">SWARM_PLOTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">PLOT_NAMES</span><span class="p">,</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">KDEViz</span><span class="p">(</span><span class="n">SwarmViz</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;:class:`SwarmViz` that also plots a :class:`Critic` that performs a KDE of the walkers.&quot;&quot;&quot;</span>
+
+    <span class="n">SWARM_STATS_TYPES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">DistanceLandscape</span><span class="p">,</span>
+        <span class="n">RewardLandscape</span><span class="p">,</span>
+        <span class="n">KDELandscape</span><span class="p">,</span>
+        <span class="n">VirtualRewardLandscape</span><span class="p">,</span>
+        <span class="n">WalkersDensity</span><span class="p">,</span>
+        <span class="n">DistanceHistogram</span><span class="p">,</span>
+        <span class="n">VirtualRewardHistogram</span><span class="p">,</span>
+        <span class="n">RewardHistogram</span><span class="p">,</span>
+        <span class="n">BestReward</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">PLOT_NAMES</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">plot</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">plot</span> <span class="ow">in</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">])</span>
+    <span class="n">SWARM_PLOTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">PLOT_NAMES</span><span class="p">,</span> <span class="n">SWARM_STATS_TYPES</span><span class="p">))</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/examples/examples_index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

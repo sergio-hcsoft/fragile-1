@@ -30,19 +30,52 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="getting-started">
+  <style>
+  .states {color: black; font-weight:bold; font-size:16px;
+          border-width: 2px; border-style: solid;
+          border-color: #555555; background-color: #CCCCCC;}
+  .swarm {color: black; font-weight:bold; font-size:16px;
+          border-width: 2px; border-style: solid;
+          border-color: #B85450; background-color: #F8CECC;}
+  .env {color: black; font-weight:bold; font-size:16px;
+        border-width: 2px; border-style: solid;
+         border-color: #6C8EBF; background-color: #7AC9E6;}
+  .model {color: black; font-weight:bold; font-size:16px;
+          border-width: 2px; border-style: solid;
+          border-color: #9673A6; background-color: #E1D5E7;}
+  .walkers {color:black; font-weight:bold; font-size:16px;
+            border-width: 2px; border-style: solid;
+            border-color: #82B366; background-color: #D5E8D4;}
+  .walkers-st {color:black; font-weight:bold; font-size:16px;
+               border-width: 2px; border-style: solid;
+               border-color: #82B366; background-color: #EAFFE9;}
+  .env-st {color: black; font-weight:bold; font-size:16px;
+           border-width: 2px; border-style: solid;
+           border-color: #6C8EBF; background-color: #ABE0FF;}
+  .model-st {color: black; font-weight:bold; font-size:16px;
+             border-width: 2px; border-style: solid;
+             border-color: #9673A6; background-color: #F8EBFF;}
+  .tree {color: black; font-weight:bold; font-size:16px;
+         border-width: 2px; border-style: solid;
+         border-color: #D79B00; background-color: #E0CAB4;}
+  .critic {color: black; font-weight:bold; font-size:16px;
+           border-width: 2px; border-style: solid;
+           border-color: #D6B656; background-color: #FFF2CC;}
+</style><div class="section" id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The notebook version of this example is available in the <cite>examples</cite> as  <code class="docutils literal notranslate"><span class="pre">01_getting_started.ipynb</span></code></p>
+<p>The notebook version of this example is available in the
+<a class="reference external" href="https://github.com/FragileTech/fragile/tree/master/examples">examples</a>
+section as <a class="reference external" href="https://github.com/FragileTech/fragile/blob/master/examples/01_getting_started.ipynb">01_getting_started.ipynb</a></p>
 </div>
-<p>This is a tutorial that explains how to crate a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> to sample
-Atari games from the OpenAI <code class="docutils literal notranslate"><span class="pre">gym</span></code> library. It covers how to
-instantiate a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>and the most important parameters needed to
+<p>This is a tutorial that explains how to crate a <span class="swarm">Swarm</span> to sample
+Atari games from the <a class="reference external" href="https://gym.openai.com">OpenAI gym</a> library. It covers how to
+instantiate a <span class="swarm">Swarm</span> and the most important parameters needed to
 control the sampling process.</p>
 <div class="section" id="structure-of-a-swarm">
 <h2>Structure of a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code><a class="headerlink" href="#structure-of-a-swarm" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> is the class that implements the algorithm’s evolution
+<p>The <span class="swarm">Swarm</span> is the class that implements the algorithm’s evolution
 loop, and controls all the other classes involved in solving a given
 problem:</p>
 <div class="figure align-default" id="id1">
@@ -52,17 +85,16 @@ problem:</p>
 <p>For every problem we want to solve, we will need to define callables
 that return instances of the following classes:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Environment</span></code>: Represents problem we want to solve. Given states
+<li><p><span class="env">Environment</span>: Represents problem we want to solve. Given states
 and actions, it returns the next state.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Model</span></code>: It provides an strategy for sampling actions (Policy).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Walkers</span></code>: This class handles the computations of the evolution
-process of the algorithm. The default value should work fine.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">StateTree</span></code>: (Optional) it stores the history of states samples by
-the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Critic</span></code>: This class implements additional computation, such as a
+<li><p><span class="model">Model</span>: It provides an strategy for sampling actions (Policy).</p></li>
+<li><p><span class="walkers">Walkers</span>: This class handles the computations of the evolution
+process of the algorithm.</p></li>
+<li><p><span class="tree">StateTree</span>: It stores the history of states samples by the <span class="swarm">Swarm</span>.</p></li>
+<li><p><span class="critic">Critic</span>: This class implements additional computation, such as a
 new reward, or extra values for our policy.</p></li>
 </ul>
-<p>Choosing to pass callables to the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> instead of instances is a
+<p>Choosing to pass callables to the <span class="swarm">Swarm</span> instead of instances is a
 design decision that simplifies the deployment at scale in a cluster,
 because it avoids writing tricky serialization code for all the classes.</p>
 </div>
@@ -70,7 +102,7 @@ because it avoids writing tricky serialization code for all the classes.</p>
 <h2>Defining the <code class="docutils literal notranslate"><span class="pre">Environment</span></code><a class="headerlink" href="#defining-the-environment" title="Permalink to this headline">¶</a></h2>
 <p>For playing Atari games we will use the interface provided by the
 <a class="reference external" href="https://github.com/Guillemdb/plangym">plangym</a> package. It is a
-wraper of OpenAI <code class="docutils literal notranslate"><span class="pre">gym</span></code> that allows to easily set and recover the state
+wrapper of OpenAI <code class="docutils literal notranslate"><span class="pre">gym</span></code> that allows to easily set and recover the state
 of the environments, as well as stepping the environment with batches of
 states.</p>
 <p>The following code will initialize a <code class="docutils literal notranslate"><span class="pre">plangym.Environment</span></code> for an
@@ -88,13 +120,13 @@ OpenAI <code class="docutils literal notranslate"><span class="pre">gym</span></
     <span class="p">)</span>
 </pre></div>
 </div>
-<p>In order to use a <code class="docutils literal notranslate"><span class="pre">plangym.Environment</span></code> in a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> we will need to
+<p>In order to use a <code class="docutils literal notranslate"><span class="pre">plangym.Environment</span></code> in a <span class="swarm">Swarm</span> we will need to
 define the appropriate Callable object to pass as a parameter.</p>
 <p><code class="docutils literal notranslate"><span class="pre">fragile</span></code> incorporates a wrapper to use a <code class="docutils literal notranslate"><span class="pre">plangym.AtariEnvironment</span></code>
 that will take care of matching the <code class="docutils literal notranslate"><span class="pre">fragile</span></code> API and constructing the
-appropiate <code class="docutils literal notranslate"><span class="pre">StatesEnv</span></code> class to store its data.</p>
+appropriate <span class="env-st">StatesEnv</span> class to store its data.</p>
 <p>The environment callable does not take any parameters, and must return
-an instance of <code class="docutils literal notranslate"><span class="pre">fragile.BaseEnvironment</span></code>.</p>
+an instance of <span class="env">fragile.BaseEnvironment</span>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.atari.env</span> <span class="kn">import</span> <span class="n">AtariEnv</span>
 <span class="n">env_callable</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">AtariEnv</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
 </pre></div>
@@ -102,20 +134,11 @@ an instance of <code class="docutils literal notranslate"><span class="pre">frag
 </div>
 <div class="section" id="defining-the-model">
 <h2>Defining the <code class="docutils literal notranslate"><span class="pre">Model</span></code><a class="headerlink" href="#defining-the-model" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">Model</span></code> defines the policy that will be used to sample the
-<code class="docutils literal notranslate"><span class="pre">Environment</span></code>. In this tutorial we will be using a random sampling
-strategy over a discrete uniform distribution. This means that every
-time we sample an action, the <code class="docutils literal notranslate"><span class="pre">Model</span></code> will return an integer in the
-range [0, N_actions] for each state.</p>
-<p>We will apply each sampled action a given number of time steps. This
-number of timesteps will be sampled using the <code class="docutils literal notranslate"><span class="pre">GaussianDt</span></code>, that is a
-<code class="docutils literal notranslate"><span class="pre">Critic</span></code> that allows to sample a variable number of timesteps for each
-action. The number of timesteps will be sampled from a normal
-distribution and rounded to an integer.</p>
-<p>The model callable passed to the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> takes as a parameter the
-<code class="docutils literal notranslate"><span class="pre">Environment</span></code> and returns an instance of <code class="docutils literal notranslate"><span class="pre">Model</span></code>.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core.dt_sampler</span> <span class="kn">import</span> <span class="n">GaussianDt</span>
-<span class="kn">from</span> <span class="nn">fragile.core.models</span> <span class="kn">import</span> <span class="n">DiscreteUniform</span>
+<p>The <span class="model">Model</span> defines the policy that will be used to sample the <span class="env">Environment</span>. In this tutorial we will be using a random sampling strategy over a discrete uniform distribution. This means that every time we sample an action, the <span class="model">Model</span> will return an integer in the range [0, N_actions] for each state.</p>
+<p>By default each action will be applied for one time step. In case you want to apply the actions a different number of time steps it is possible to use a <span class="critic">Critic</span>. The Critics that allow you to sample time steps values for the actions can be found in <cite>fragile.core.dt_samplers</cite>.</p>
+<p>In this example we will apply each sampled action a variable number of time steps using the <span class="critic">GaussianDt</span>. The <code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianDt</span></code> draws the number of time steps for each action from a normal distribution.</p>
+<p>The model callable passed to the <span class="swarm">Swarm</span> takes as a parameter the <span class="env">Environment</span> and returns an instance of <span class="model">Model</span>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">GaussianDt</span><span class="p">,</span> <span class="n">GaussianDt</span>
 <span class="n">dt</span> <span class="o">=</span> <span class="n">GaussianDt</span><span class="p">(</span><span class="n">min_dt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_dt</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">loc_dt</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">scale_dt</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">model_callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">env</span><span class="p">:</span> <span class="n">DiscreteUniform</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">critic</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
 </pre></div>
@@ -124,40 +147,40 @@ distribution and rounded to an integer.</p>
 <div class="section" id="storing-the-sampled-data-inside-a-historytree">
 <h2>Storing the sampled data inside a <code class="docutils literal notranslate"><span class="pre">HistoryTree</span></code><a class="headerlink" href="#storing-the-sampled-data-inside-a-historytree" title="Permalink to this headline">¶</a></h2>
 <p>It is possible to keep track of the sampled data by using a
-<code class="docutils literal notranslate"><span class="pre">HistoryTree</span></code>. This data structure will construct a directed acyclic
+<span class="tree">HistoryTree</span>. This data structure will construct a directed acyclic
 graph that will contain the sampled states and their transitions.</p>
-<p>Passing the <code class="docutils literal notranslate"><span class="pre">prune_tree</span></code> parameter to the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> we can choose to
-store only the branches of the <code class="docutils literal notranslate"><span class="pre">HistoryTree</span></code> that are being explored.
+<p>Passing the <code class="docutils literal notranslate"><span class="pre">prune_tree</span></code> parameter to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> we can choose to
+store only the branches of the <span class="tree">HistoryTree</span> that are being explored.
 If <code class="docutils literal notranslate"><span class="pre">prune_tree</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> all the branches of the graph with no
 walkers will be removed after every iteration, and if it is <code class="docutils literal notranslate"><span class="pre">False</span></code>
 all the visited states will be kept in memory.</p>
 <p>In order to save memory we will be setting it to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core.tree</span> <span class="kn">import</span> <span class="n">HistoryTree</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">HistoryTree</span>
 <span class="n">prune_tree</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="initializing-a-swarm">
 <h2>Initializing a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code><a class="headerlink" href="#initializing-a-swarm" title="Permalink to this headline">¶</a></h2>
-<p>Once we have defined the problem-specific callables for the <code class="docutils literal notranslate"><span class="pre">Model</span></code>
-and the <code class="docutils literal notranslate"><span class="pre">Environment</span></code>, we need to define the parameters used by the
+<p>Once we have defined the problem-specific callables for the <span class="model">Model</span>
+and the <span class="env">Environment</span>, we need to define the parameters used by the
 algorithm:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">n_walkers</span></code>: This is population size of our algorithm. It defines
 the number of different states that will be explored simultaneously
 at every iteration of the algorithm. It will be equal to the
-<code class="docutils literal notranslate"><span class="pre">batch_size</span></code> of the <code class="docutils literal notranslate"><span class="pre">States</span></code> (size of the first dimension of the
+<code class="docutils literal notranslate"><span class="pre">batch_size</span></code> of the <span class="states">States</span> (size of the first dimension of the
 data they store).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">max_iters</span></code>: Maximum number of iterations that the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> will
+<li><p><code class="docutils literal notranslate"><span class="pre">max_iters</span></code>: Maximum number of iterations that the <span class="swarm">Swarm</span> will
 execute. The algorithm will stop either when all the walkers reached
 a death condition, or when the maximum number of iterations is
 reached.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reward_scale</span></code>: Relative importance given to the <code class="docutils literal notranslate"><span class="pre">Environment</span></code>
+<li><p><code class="docutils literal notranslate"><span class="pre">reward_scale</span></code>: Relative importance given to the <span class="env">Environment</span>
 reward with respect to the diversity score of the walkers.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">distance_scale</span></code>: Relative importance given to the diversity
 measure of the walkers with respect to their reward.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">minimize</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> will try to sample states
-with the lowest reward possible. If <code class="docutils literal notranslate"><span class="pre">False</span></code> the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> will
+<li><p><code class="docutils literal notranslate"><span class="pre">minimize</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the <span class="swarm">Swarm</span> will try to sample states
+with the lowest reward possible. If <code class="docutils literal notranslate"><span class="pre">False</span></code> the <span class="swarm">Swarm</span> will
 undergo a maximization process.</p></li>
 </ul>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_walkers</span> <span class="o">=</span> <span class="mi">64</span>  <span class="c1"># A bigger number will increase the quality of the trajectories sampled.</span>
@@ -167,7 +190,7 @@ undergo a maximization process.</p></li>
 <span class="n">minimize</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># We want to get the maximum score possible.</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core.swarm</span> <span class="kn">import</span> <span class="n">Swarm</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">Swarm</span>
 <span class="n">swarm</span> <span class="o">=</span> <span class="n">Swarm</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="n">model_callable</span><span class="p">,</span>
     <span class="n">env</span><span class="o">=</span><span class="n">env_callable</span><span class="p">,</span>
@@ -181,7 +204,7 @@ undergo a maximization process.</p></li>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>By printing a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> we can get an overview of the internal data it
+<p>By printing a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> we can get an overview of the internal data it
 contains.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
 </pre></div>
@@ -513,9 +536,9 @@ if ((comm_msg != null) && (Object.keys(comm_msg.content).length > 0)) {
 <div class="section" id="running-the-swarm">
 <h2>Running the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code><a class="headerlink" href="#running-the-swarm" title="Permalink to this headline">¶</a></h2>
 <p>In order to execute the algorithm we only need to call <code class="docutils literal notranslate"><span class="pre">run_swarm</span></code>. It
-is possible to display the internal data of the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> by using the
+is possible to display the internal data of the <span class="swarm">Swarm</span> by using the
 <code class="docutils literal notranslate"><span class="pre">print_every</span></code> parameter. This parameter indicates the number of
-iterations that will pass before printing the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+iterations that will pass before printing the <span class="swarm">Swarm</span>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">swarm_viz</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">print_every</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -553,7 +576,7 @@ iterations that will pass before printing the <code class="docutils literal notr
 </div>
 <div class="section" id="visualizing-the-sampled-game">
 <h2>Visualizing the sampled game<a class="headerlink" href="#visualizing-the-sampled-game" title="Permalink to this headline">¶</a></h2>
-<p>We will extract the branch of the <code class="docutils literal notranslate"><span class="pre">StateTree</span></code> that achieved the
+<p>We will extract the branch of the <span class="tree">StateTree</span> that achieved the
 maximum reward and use its states and actions in the
 <code class="docutils literal notranslate"><span class="pre">plangym.Environment</span></code>. This way we can render all the trajectory using
 the <code class="docutils literal notranslate"><span class="pre">render</span></code> method provided by the OpenAI gym API.</p>
@@ -595,6 +618,8 @@ the <code class="docutils literal notranslate"><span class="pre">render</span></
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dataviz.html">Data Visualization</a></li>
 </ul>
 
 <div class="relations">

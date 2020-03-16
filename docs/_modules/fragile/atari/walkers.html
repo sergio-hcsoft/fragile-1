@@ -31,12 +31,7 @@
           <div class="body" role="main">
             
   <h1>Source code for fragile.atari.walkers</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">relativize</span>
-<span class="kn">from</span> <span class="nn">fragile.core.walkers</span> <span class="kn">import</span> <span class="n">Walkers</span>
-
-<span class="c1"># import line_profiler</span>
+<span></span><span class="kn">from</span> <span class="nn">fragile.core.walkers</span> <span class="kn">import</span> <span class="n">Walkers</span>
 
 
 <div class="viewcode-block" id="AtariWalkers"><a class="viewcode-back" href="../../../module_docs/atari.html#fragile.atari.walkers.AtariWalkers">[docs]</a><span class="k">class</span> <span class="nc">AtariWalkers</span><span class="p">(</span><span class="n">Walkers</span><span class="p">):</span>
@@ -73,31 +68,32 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">end</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AtariWalkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">calculate_end_condition</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">game_ends</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="n">end</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">terminals</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="n">end</span></div></div>
 
 
-<div class="viewcode-block" id="MontezumaWalkers"><a class="viewcode-back" href="../../../module_docs/atari.html#fragile.atari.walkers.MontezumaWalkers">[docs]</a><span class="k">class</span> <span class="nc">MontezumaWalkers</span><span class="p">(</span><span class="n">Walkers</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Walkers class used to calculate distances on Uber&#39;s Montezuma environment \</span>
-<span class="sd">    used in their Go-explore repository.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="c1"># import numpy as np</span>
+<span class="c1"># from fragile.core.functions import relativize</span>
+<span class="c1"># class MontezumaWalkers(Walkers):</span>
+<span class="c1">#    &quot;&quot;&quot;</span>
+<span class="c1">#    Walkers class used to calculate distances on Uber&#39;s Montezuma environment \</span>
+<span class="c1">#    used in their Go-explore repository.</span>
+<span class="c1">#    &quot;&quot;&quot;</span>
 
-    <span class="c1"># @profile</span>
-<div class="viewcode-block" id="MontezumaWalkers.calculate_distances"><a class="viewcode-back" href="../../../module_docs/atari.html#fragile.atari.walkers.MontezumaWalkers.calculate_distances">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculate the corresponding distance function for each state with \</span>
-<span class="sd">        respect to another state chosen at random.</span>
+<span class="c1">#    def calculate_distances(self) -&gt; None:</span>
+<span class="c1">#        &quot;&quot;&quot;Calculate the corresponding distance function for each state with \</span>
+<span class="c1">#        respect to another state chosen at random.</span>
 
-<span class="sd">        The internal state is update with the relativized distance values.</span>
+<span class="c1">#        The internal state is update with the relativized distance values.</span>
 
-<span class="sd">        The distance is performed on the RAM memory of the Atari emulator</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">compas_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
-        <span class="c1"># This unpacks RAMs from Uber Go-explore custom Montezuma environment</span>
-        <span class="n">rams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">12</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
-        <span class="n">vec</span> <span class="o">=</span> <span class="n">rams</span> <span class="o">-</span> <span class="n">rams</span><span class="p">[</span><span class="n">compas_ix</span><span class="p">]</span>
-        <span class="n">dist_ram</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_function</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-        <span class="n">distances</span> <span class="o">=</span> <span class="n">relativize</span><span class="p">(</span><span class="n">dist_ram</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_states</span><span class="p">(</span><span class="n">distances</span><span class="o">=</span><span class="n">distances</span><span class="p">,</span> <span class="n">compas_dist</span><span class="o">=</span><span class="n">compas_ix</span><span class="p">)</span></div></div>
+<span class="c1">#        The distance is performed on the RAM memory of the Atari emulator</span>
+<span class="c1">#        &quot;&quot;&quot;</span>
+<span class="c1">#        compas_ix = np.random.permutation(np.arange(self.n))</span>
+<span class="c1"># This unpacks RAMs from Uber Go-explore custom Montezuma environment</span>
+<span class="c1">#        rams = self.env_states.states.reshape(self.n, -1)[:, :-12].astype(np.uint8)</span>
+<span class="c1">#        vec = rams - rams[compas_ix]</span>
+<span class="c1">#        dist_ram = self.distance_function(vec, axis=1).flatten()</span>
+<span class="c1">#        distances = relativize(dist_ram)</span>
+<span class="c1">#        self.update_states(distances=distances, compas_dist=compas_ix)</span>
 </pre></div>
 
           </div>
@@ -123,6 +119,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
 </ul>
 
 <div class="relations">

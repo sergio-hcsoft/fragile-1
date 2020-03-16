@@ -1,0 +1,558 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>fragile.distributed.export_swarm &#8212; Fragile 0.0a documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for fragile.distributed.export_swarm</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">from</span> <span class="nn">fragile.core.base_classes</span> <span class="kn">import</span> <span class="n">BaseWrapper</span>
+<span class="kn">from</span> <span class="nn">fragile.core.functions</span> <span class="kn">import</span> <span class="n">cross_fai_iteration</span>
+<span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">States</span>
+<span class="kn">from</span> <span class="nn">fragile.core.swarm</span> <span class="kn">import</span> <span class="n">Swarm</span>
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">float_type</span><span class="p">,</span> <span class="n">random_state</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">StateDict</span>
+
+
+<div class="viewcode-block" id="ExportedWalkers"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportedWalkers">[docs]</a><span class="k">class</span> <span class="nc">ExportedWalkers</span><span class="p">(</span><span class="n">States</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents the walkers that are being passed across different instances \</span>
+<span class="sd">    of :class:`ExportSwarm`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ExportedWalkers.__init__"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportedWalkers.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">StateDict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`ExportWalkers`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of walkers that will be exported.</span>
+<span class="sd">            state_dict: External :class:`StateDict` that overrides the default values.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_walkers</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rewards</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Accept external definition of ExportedWalkers param_dict values</span>
+        <span class="n">walkers_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">state_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">walkers_dict</span><span class="p">:</span>
+                    <span class="n">walkers_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExportedWalkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">state_dict</span><span class="o">=</span><span class="n">walkers_dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExportedWalkers.get_params_dict"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportedWalkers.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return a dictionary containing the param_dict to build an instance \</span>
+<span class="sd">        of States that can handle all the data generated by the :class:`Walkers`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;id_walkers&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">},</span>
+            <span class="s2">&quot;rewards&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">float_type</span><span class="p">},</span>
+            <span class="s2">&quot;observs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">float_type</span><span class="p">},</span>
+            <span class="s2">&quot;states&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">float_type</span><span class="p">},</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">params</span></div>
+
+<div class="viewcode-block" id="ExportedWalkers.get_best_index"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportedWalkers.get_best_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the index of the best walker present in the :class:`ExportedWalkers`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            minimize: If ``True`` return the index of the walker with the lowest \</span>
+<span class="sd">                      reward. If ``False`` return the index of the walker with \</span>
+<span class="sd">                      the highest reward.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Index of the best walker.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rewards</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span> <span class="k">if</span> <span class="n">minimize</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">rewards</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ExportedWalkers.get_best_reward"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportedWalkers.get_best_reward">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the reward value of the best walker present in the \</span>
+<span class="sd">        :class:`ExportedWalkers`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            minimize: If ``True`` return the lowest reward. If ``False`` return \</span>
+<span class="sd">            the  highest reward.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Reward value of the best walker.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rewards</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">if</span> <span class="n">minimize</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">rewards</span><span class="o">.</span><span class="n">max</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="BestWalker"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.BestWalker">[docs]</a><span class="k">class</span> <span class="nc">BestWalker</span><span class="p">(</span><span class="n">ExportedWalkers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represent the best walker found during a distributed search process run \</span>
+<span class="sd">    with several :class:`ExportSwarm`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BestWalker.__init__"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.BestWalker.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`BestWalker`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            minimize: If ``True`` the walker represents a minimization process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BestWalker</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span> <span class="o">=</span> <span class="n">minimize</span></div>
+
+<div class="viewcode-block" id="BestWalker.update_best"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.BestWalker.update_best">[docs]</a>    <span class="k">def</span> <span class="nf">update_best</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the values tracked by the walker if the passed \</span>
+<span class="sd">        :class:`ExternalWalkers` contain  a better value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            walkers: The current best values will be compared against the \</span>
+<span class="sd">                     walkers of this instance of :class:`ExportedWalkers`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">curr_best</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_best_reward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minimize</span><span class="p">)</span>
+        <span class="n">other_best</span> <span class="o">=</span> <span class="n">walkers</span><span class="o">.</span><span class="n">get_best_reward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minimize</span><span class="p">)</span>
+        <span class="n">other_improves</span> <span class="o">=</span> <span class="n">curr_best</span> <span class="o">&gt;</span> <span class="n">other_best</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span> <span class="k">else</span> <span class="n">curr_best</span> <span class="o">&lt;</span> <span class="n">other_best</span>
+        <span class="k">if</span> <span class="n">other_improves</span><span class="p">:</span>
+            <span class="n">ix</span> <span class="o">=</span> <span class="n">walkers</span><span class="o">.</span><span class="n">get_best_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minimize</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">ix</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">ix</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rewards</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">rewards</span><span class="p">[</span><span class="n">ix</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id_walkers</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">[</span><span class="n">ix</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="ExportSwarm"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportSwarm">[docs]</a><span class="k">class</span> <span class="nc">ExportSwarm</span><span class="p">(</span><span class="n">BaseWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper that allows to import and export data from :class:`ExportedWalkers`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ExportSwarm.__init__"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportSwarm.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span>
+        <span class="n">n_import</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">n_export</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">export_best</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">import_best</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`ExportSwarm`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            swarm: :class:`Swarm` that will be wrapped.</span>
+<span class="sd">            n_import: Number of walkers that will be imported from an external \</span>
+<span class="sd">                      :class:`ExportedWalkers`.</span>
+<span class="sd">            n_export: Number of walkers that will be exported as :class:`ExportedWalkers`.</span>
+<span class="sd">            export_best: The best walkers of the :class:`Swarm` will always be exported.</span>
+<span class="sd">            import_best: The best walker of the imported :class:`ExportedWalkers` \</span>
+<span class="sd">                         will be compared to the best walkers of the \</span>
+<span class="sd">                         :class:`Swarm`. If it improves the current best value \</span>
+<span class="sd">                         found, the best walker of the :class:`Swarm` will be updated.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_import</span> <span class="o">=</span> <span class="n">n_import</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_export</span> <span class="o">=</span> <span class="n">n_export</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_export_best</span> <span class="o">=</span> <span class="n">export_best</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_import_best</span> <span class="o">=</span> <span class="n">import_best</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExportSwarm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">swarm</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;swarm&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExportSwarm.run_exchange_step"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportSwarm.run_exchange_step">[docs]</a>    <span class="k">def</span> <span class="nf">run_exchange_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExportedWalkers</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Import the target :class:`ExportedWalkers` before iterating the wrapped \</span>
+<span class="sd">        :class:`Swarm`, and export the target number of walkers as a \</span>
+<span class="sd">        :class:`ExportedWalkers` class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            walkers: Walkers that will be imported after running an iteration \</span>
+<span class="sd">            of the :class:`Swarm`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            walkers exported after running an iteration of the :class:`Swarm`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">import_walkers</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_step</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">export_walkers</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ExportSwarm.export_walkers"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportSwarm.export_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">export_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExportedWalkers</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Export the number of walkers defined by ``self.n_export`` chosen at \</span>
+<span class="sd">        random from the :class:`Swarm` walkers. If ``self.export_best`` is true \</span>
+<span class="sd">        the best walker of the :class:`Swarm` will always be included.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">oobs</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>  <span class="c1"># Do not export dead walkers</span>
+            <span class="k">return</span> <span class="n">ExportedWalkers</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">indexes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_export_index</span><span class="p">()</span>
+        <span class="n">walkers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_export_walkers</span><span class="p">(</span><span class="n">indexes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">walkers</span></div>
+
+<div class="viewcode-block" id="ExportSwarm.import_walkers"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportSwarm.import_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">import_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Import the target :class:`ExportedWalkers` into the walkers of the :class:`Swarm`.</span>
+
+<span class="sd">        The importing process will be done cloning ``self.n_import`` walkers \</span>
+<span class="sd">        chosen at random after comparing them to the imported walkers. This will \</span>
+<span class="sd">        be done running the FractalAI cloning operation.</span>
+
+<span class="sd">        If ``self.import_best`` is ``True``, the best walker of the imported \</span>
+<span class="sd">        walkers will be compared against the current best walker and update if \</span>
+<span class="sd">        it improves the current best value found.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            walkers: :class:`ExportedWalkers` that will be imported into the \</span>
+<span class="sd">                    :class:`Swarm` pool of walkers.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Do not import dead walkers</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merge_walkers</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_import_best</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">import_best</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExportSwarm.merge_walkers"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportSwarm.merge_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">merge_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a FractalAI clone operation between a random sample of the \</span>
+<span class="sd">        :class:`Swarm` walkers and the imported walkers.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            walkers: Walkers that will be imported. The :class:`Swarm` walkers \</span>
+<span class="sd">                    can clone to them.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">local_ix</span><span class="p">,</span> <span class="n">import_ix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_merge_indexes</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span>
+        <span class="n">compas_ix</span><span class="p">,</span> <span class="n">will_clone</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cross_fai_iteration</span><span class="p">(</span><span class="n">local_ix</span><span class="p">,</span> <span class="n">import_ix</span><span class="p">,</span> <span class="n">walkers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clone_to_imported</span><span class="p">(</span><span class="n">compas_ix</span><span class="p">,</span> <span class="n">will_clone</span><span class="p">,</span> <span class="n">local_ix</span><span class="p">,</span> <span class="n">import_ix</span><span class="p">,</span> <span class="n">walkers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExportSwarm.import_best"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ExportSwarm.import_best">[docs]</a>    <span class="k">def</span> <span class="nf">import_best</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Import the best walker from the target :class:`ExportedWalkers` if it \</span>
+<span class="sd">        improves the best value present in the :class:`Swarm`&#39; walkers.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            walkers: Walkers containing the best walker that will be imported \</span>
+<span class="sd">                    if it improves the current best value found.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imported_best_is_better</span><span class="p">(</span><span class="n">walkers</span><span class="p">):</span>
+            <span class="n">best_ix</span> <span class="o">=</span> <span class="n">walkers</span><span class="o">.</span><span class="n">get_best_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">minimize</span><span class="p">)</span>
+            <span class="c1"># TODO (guillemdb): Check if deepcopy is really necessary</span>
+            <span class="n">best_reward</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">rewards</span><span class="p">[</span><span class="n">best_ix</span><span class="p">])</span>
+            <span class="n">best_state</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">best_ix</span><span class="p">])</span>
+            <span class="n">best_obs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">best_ix</span><span class="p">])</span>
+            <span class="n">best_id</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">[</span><span class="n">best_ix</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">best_reward</span><span class="o">=</span><span class="n">best_reward</span><span class="p">,</span> <span class="n">best_state</span><span class="o">=</span><span class="n">best_state</span><span class="p">,</span> <span class="n">best_obs</span><span class="o">=</span><span class="n">best_obs</span><span class="p">,</span> <span class="n">best_id</span><span class="o">=</span><span class="n">best_id</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">fix_best</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_export_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get an index of the walkers that will be exported.&quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">get_in_bounds_compas</span><span class="p">()[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_export</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_export_best</span><span class="p">:</span>  <span class="c1"># Force the best to be present if needed.</span>
+            <span class="n">best_ix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">get_best_index</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">best_ix</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
+                <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">best_ix</span>
+        <span class="k">return</span> <span class="n">index</span>
+
+    <span class="k">def</span> <span class="nf">_create_export_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indexes</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExportedWalkers</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create the :class:`ExportedWalkers` containing the walkers that will be exported.&quot;&quot;&quot;</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">indexes</span><span class="p">]</span>
+        <span class="n">observs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">indexes</span><span class="p">]</span>
+        <span class="n">rewards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">[</span><span class="n">indexes</span><span class="p">]</span>
+        <span class="n">id_walkers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">[</span><span class="n">indexes</span><span class="p">]</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
+        <span class="n">state_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">())</span>
+        <span class="n">walkers</span> <span class="o">=</span> <span class="n">ExportedWalkers</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">indexes</span><span class="p">),</span> <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">)</span>
+        <span class="n">walkers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">states</span><span class="o">=</span><span class="n">states</span><span class="p">,</span> <span class="n">observs</span><span class="o">=</span><span class="n">observs</span><span class="p">,</span> <span class="n">rewards</span><span class="o">=</span><span class="n">rewards</span><span class="p">,</span> <span class="n">id_walkers</span><span class="o">=</span><span class="n">id_walkers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">walkers</span>
+
+    <span class="k">def</span> <span class="nf">_imported_best_is_better</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check if the imported walkers improves the current best value of the :class:`Swarm`.&quot;&quot;&quot;</span>
+        <span class="n">minim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">minimize</span>
+        <span class="n">improves</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">best_reward</span> <span class="o">&gt;</span> <span class="n">walkers</span><span class="o">.</span><span class="n">get_best_reward</span><span class="p">(</span><span class="n">minim</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">minim</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">best_reward</span> <span class="o">&lt;</span> <span class="n">walkers</span><span class="o">.</span><span class="n">get_best_reward</span><span class="p">(</span><span class="n">minim</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">improves</span>
+
+    <span class="k">def</span> <span class="nf">_clone_to_imported</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">compas_ix</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">will_clone</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">local_ix</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">import_ix</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Clone the :class:`Swarm` selected walkers to the target imported walkers.&quot;&quot;&quot;</span>
+        <span class="n">clone_ids</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">[</span><span class="n">import_ix</span><span class="p">][</span><span class="n">compas_ix</span><span class="p">][</span><span class="n">will_clone</span><span class="p">])</span>
+        <span class="n">clone_rewards</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">rewards</span><span class="p">[</span><span class="n">import_ix</span><span class="p">][</span><span class="n">compas_ix</span><span class="p">][</span><span class="n">will_clone</span><span class="p">])</span>
+        <span class="n">clone_states</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">import_ix</span><span class="p">][</span><span class="n">compas_ix</span><span class="p">][</span><span class="n">will_clone</span><span class="p">])</span>
+        <span class="n">clone_obs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">import_ix</span><span class="p">][</span><span class="n">compas_ix</span><span class="p">][</span><span class="n">will_clone</span><span class="p">])</span>
+        <span class="c1"># TODO: Find a better way to do this. Assignment does not work after double array indexing</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">wc</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">local_ix</span><span class="p">,</span> <span class="n">will_clone</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">wc</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="n">clone_ids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="n">clone_rewards</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="n">clone_states</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="n">clone_obs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">_get_merge_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get the indexes for selecting the walkers that will be compared in \</span>
+<span class="sd">        the clone operation.&quot;&quot;&quot;</span>
+        <span class="n">local_ix</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_import</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_import</span><span class="p">:</span>
+            <span class="n">import_ix</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_import</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">import_ix</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_import</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">local_ix</span><span class="p">,</span> <span class="n">import_ix</span>
+
+    <span class="k">def</span> <span class="nf">_cross_fai_iteration</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">local_ix</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">import_ix</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Perform a cloning process of the walkers of the :class:`Swarm` \</span>
+<span class="sd">        to the imported walkers.&quot;&quot;&quot;</span>
+        <span class="n">local_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">local_ix</span><span class="p">]</span>
+        <span class="n">local_rewards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">[</span><span class="n">local_ix</span><span class="p">]</span>
+        <span class="n">local_oobs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">oobs</span><span class="p">[</span><span class="n">local_ix</span><span class="p">]</span>
+        <span class="n">import_obs</span> <span class="o">=</span> <span class="n">walkers</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">import_ix</span><span class="p">]</span>
+        <span class="n">import_rewards</span> <span class="o">=</span> <span class="n">walkers</span><span class="o">.</span><span class="n">rewards</span><span class="p">[</span><span class="n">import_ix</span><span class="p">]</span>
+        <span class="n">compas_ix</span><span class="p">,</span> <span class="n">will_clone</span> <span class="o">=</span> <span class="n">cross_fai_iteration</span><span class="p">(</span>
+            <span class="n">host_observs</span><span class="o">=</span><span class="n">local_obs</span><span class="p">,</span>
+            <span class="n">host_rewards</span><span class="o">=</span><span class="n">local_rewards</span><span class="p">,</span>
+            <span class="n">host_oobs</span><span class="o">=</span><span class="n">local_oobs</span><span class="p">,</span>
+            <span class="n">ext_observs</span><span class="o">=</span><span class="n">import_obs</span><span class="p">,</span>
+            <span class="n">ext_rewards</span><span class="o">=</span><span class="n">import_rewards</span><span class="p">,</span>
+            <span class="n">dist_coef</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">dist_scale</span><span class="p">,</span>
+            <span class="n">reward_coef</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">reward_scale</span><span class="p">,</span>
+            <span class="n">distance_function</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">distance_function</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">compas_ix</span><span class="p">,</span> <span class="n">will_clone</span></div>
+
+
+<div class="viewcode-block" id="ParamServer"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ParamServer">[docs]</a><span class="k">class</span> <span class="nc">ParamServer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parameter server that stores the :class:`ExportedWalkers` generated by \</span>
+<span class="sd">    different :class:`ExportSwarm`.</span>
+
+<span class="sd">    It allows different :class:`ExportSwarm` to exchange walkers, and it keeps \</span>
+<span class="sd">    track of the best walker found during the search process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ParamServer.__init__"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ParamServer.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">add_global_best</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`ParamServer`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            max_len: Maximum number of :class:`ExportedWalkers` that the \</span>
+<span class="sd">                     :class:`ParamServer` will keep in its buffer.</span>
+<span class="sd">            minimize: ``True`` if the :class:`ParamServer` will be used for a \</span>
+<span class="sd">                       minimization process, ``False`` if it will be used for a \</span>
+<span class="sd">                       maximization process.</span>
+<span class="sd">            add_global_best: Add the best value found during the search to all \</span>
+<span class="sd">                             the exported walkers that the :class:`ParamServer` \</span>
+<span class="sd">                             returns.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_len</span> <span class="o">=</span> <span class="n">max_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_global_best</span> <span class="o">=</span> <span class="n">add_global_best</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimize</span> <span class="o">=</span> <span class="n">minimize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_len</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best</span> <span class="o">=</span> <span class="n">BestWalker</span><span class="p">(</span><span class="n">minimize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">minimize</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParamServer.__len__"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ParamServer.__len__">[docs]</a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the length of the internal buffer.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max_len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the maximum length of the internal buffer.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_len</span>
+
+<div class="viewcode-block" id="ParamServer.reset"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ParamServer.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Erase the internal data of the :class:`ParamServer`.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_len</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best</span> <span class="o">=</span> <span class="n">BestWalker</span><span class="p">(</span><span class="n">minimize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">minimize</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParamServer.exchange_walkers"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ParamServer.exchange_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">exchange_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExportedWalkers</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store a new instance of :class:`ExportedWalkers` and return on of the \</span>
+<span class="sd">        walkers stored in the internal buffer.</span>
+
+<span class="sd">        If ``self.add_global_best`` is ``True`` the best walker found will be \</span>
+<span class="sd">        included in the returned :class:`ExportedWalkers`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            walkers: Data that will be stored in the internal buffer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`ExportedWalkers` sampled randomly from the internal buffer.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">import_walkers</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ExportedWalkers</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">export_walkers</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ParamServer.import_walkers"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ParamServer.import_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">import_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert a the target :class:`ExportedWalkers` at the end of the internal \</span>
+<span class="sd">        buffer and keep track of the best reward found.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            walkers: Will be appended at the end of the internal buffer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_track_best_walker</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span>
+        <span class="n">new_walkers</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_walkers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParamServer.export_walkers"><a class="viewcode-back" href="../../../module_docs/distributed.html#fragile.distributed.export_swarm.ParamServer.export_walkers">[docs]</a>    <span class="k">def</span> <span class="nf">export_walkers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExportedWalkers</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a :class`ExportedWalkers` sampled randomly from the internal \</span>
+<span class="sd">        buffer.</span>
+
+<span class="sd">        If ``self.add_global_best`` is ``True`` the best walker found will be \</span>
+<span class="sd">        included in the returned :class:`ExportedWalkers`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">index</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="n">walkers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_global_best</span><span class="p">:</span>
+            <span class="n">walkers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_best_to_exported</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">walkers</span></div>
+
+    <span class="k">def</span> <span class="nf">_track_best_walker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the best value found and store it inside the internal \</span>
+<span class="sd">        :class:`BestWalker`.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="o">.</span><span class="n">update_best</span><span class="p">(</span><span class="n">walkers</span><span class="o">=</span><span class="n">walkers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_add_best_to_exported</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">ExportedWalkers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExportedWalkers</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Override randomly one walker of the target :class:`ExportedWalkers` \</span>
+<span class="sd">        with the best walker found.&quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">random_state</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">))</span>
+        <span class="n">walkers</span><span class="o">.</span><span class="n">rewards</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="o">.</span><span class="n">rewards</span>
+        <span class="n">walkers</span><span class="o">.</span><span class="n">id_walkers</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="o">.</span><span class="n">id_walkers</span>
+        <span class="n">walkers</span><span class="o">.</span><span class="n">observs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="o">.</span><span class="n">observs</span>
+        <span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="o">.</span><span class="n">states</span>
+        <span class="k">return</span> <span class="n">walkers</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/examples/examples_index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

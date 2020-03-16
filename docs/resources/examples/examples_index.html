@@ -34,39 +34,71 @@
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="getting-started">
+<style>
+  .states {color: black; font-weight:bold; font-size:16px;
+          border-width: 2px; border-style: solid;
+          border-color: #555555; background-color: #CCCCCC;}
+  .swarm {color: black; font-weight:bold; font-size:16px;
+          border-width: 2px; border-style: solid;
+          border-color: #B85450; background-color: #F8CECC;}
+  .env {color: black; font-weight:bold; font-size:16px;
+        border-width: 2px; border-style: solid;
+         border-color: #6C8EBF; background-color: #7AC9E6;}
+  .model {color: black; font-weight:bold; font-size:16px;
+          border-width: 2px; border-style: solid;
+          border-color: #9673A6; background-color: #E1D5E7;}
+  .walkers {color:black; font-weight:bold; font-size:16px;
+            border-width: 2px; border-style: solid;
+            border-color: #82B366; background-color: #D5E8D4;}
+  .walkers-st {color:black; font-weight:bold; font-size:16px;
+               border-width: 2px; border-style: solid;
+               border-color: #82B366; background-color: #EAFFE9;}
+  .env-st {color: black; font-weight:bold; font-size:16px;
+           border-width: 2px; border-style: solid;
+           border-color: #6C8EBF; background-color: #ABE0FF;}
+  .model-st {color: black; font-weight:bold; font-size:16px;
+             border-width: 2px; border-style: solid;
+             border-color: #9673A6; background-color: #F8EBFF;}
+  .tree {color: black; font-weight:bold; font-size:16px;
+         border-width: 2px; border-style: solid;
+         border-color: #D79B00; background-color: #E0CAB4;}
+  .critic {color: black; font-weight:bold; font-size:16px;
+           border-width: 2px; border-style: solid;
+           border-color: #D6B656; background-color: #FFF2CC;}
+</style><div class="section" id="getting-started">
 <h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The notebook version of this example is available in the <cite>examples</cite> as  <code class="docutils literal notranslate"><span class="pre">01_getting_started.ipynb</span></code></p>
+<p>The notebook version of this example is available in the
+<a class="reference external" href="https://github.com/FragileTech/fragile/tree/master/examples">examples</a>
+section as <a class="reference external" href="https://github.com/FragileTech/fragile/blob/master/examples/01_getting_started.ipynb">01_getting_started.ipynb</a></p>
 </div>
-<p>This is a tutorial that explains how to crate a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> to sample
-Atari games from the OpenAI <code class="docutils literal notranslate"><span class="pre">gym</span></code> library. It covers how to
-instantiate a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>and the most important parameters needed to
+<p>This is a tutorial that explains how to crate a <span class="swarm">Swarm</span> to sample
+Atari games from the <a class="reference external" href="https://gym.openai.com">OpenAI gym</a> library. It covers how to
+instantiate a <span class="swarm">Swarm</span> and the most important parameters needed to
 control the sampling process.</p>
 <div class="section" id="structure-of-a-swarm">
 <h3>Structure of a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code><a class="headerlink" href="#structure-of-a-swarm" title="Permalink to this headline">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> is the class that implements the algorithm’s evolution
+<p>The <span class="swarm">Swarm</span> is the class that implements the algorithm’s evolution
 loop, and controls all the other classes involved in solving a given
 problem:</p>
-<div class="figure align-default" id="id1">
+<div class="figure align-default" id="id3">
 <img alt="swarm architecture" src="../../_images/fragile_architecture1.png" />
-<p class="caption"><span class="caption-text">swarm architecture</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">swarm architecture</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>For every problem we want to solve, we will need to define callables
 that return instances of the following classes:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Environment</span></code>: Represents problem we want to solve. Given states
+<li><p><span class="env">Environment</span>: Represents problem we want to solve. Given states
 and actions, it returns the next state.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Model</span></code>: It provides an strategy for sampling actions (Policy).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Walkers</span></code>: This class handles the computations of the evolution
-process of the algorithm. The default value should work fine.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">StateTree</span></code>: (Optional) it stores the history of states samples by
-the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Critic</span></code>: This class implements additional computation, such as a
+<li><p><span class="model">Model</span>: It provides an strategy for sampling actions (Policy).</p></li>
+<li><p><span class="walkers">Walkers</span>: This class handles the computations of the evolution
+process of the algorithm.</p></li>
+<li><p><span class="tree">StateTree</span>: It stores the history of states samples by the <span class="swarm">Swarm</span>.</p></li>
+<li><p><span class="critic">Critic</span>: This class implements additional computation, such as a
 new reward, or extra values for our policy.</p></li>
 </ul>
-<p>Choosing to pass callables to the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> instead of instances is a
+<p>Choosing to pass callables to the <span class="swarm">Swarm</span> instead of instances is a
 design decision that simplifies the deployment at scale in a cluster,
 because it avoids writing tricky serialization code for all the classes.</p>
 </div>
@@ -74,7 +106,7 @@ because it avoids writing tricky serialization code for all the classes.</p>
 <h3>Defining the <code class="docutils literal notranslate"><span class="pre">Environment</span></code><a class="headerlink" href="#defining-the-environment" title="Permalink to this headline">¶</a></h3>
 <p>For playing Atari games we will use the interface provided by the
 <a class="reference external" href="https://github.com/Guillemdb/plangym">plangym</a> package. It is a
-wraper of OpenAI <code class="docutils literal notranslate"><span class="pre">gym</span></code> that allows to easily set and recover the state
+wrapper of OpenAI <code class="docutils literal notranslate"><span class="pre">gym</span></code> that allows to easily set and recover the state
 of the environments, as well as stepping the environment with batches of
 states.</p>
 <p>The following code will initialize a <code class="docutils literal notranslate"><span class="pre">plangym.Environment</span></code> for an
@@ -92,13 +124,13 @@ OpenAI <code class="docutils literal notranslate"><span class="pre">gym</span></
     <span class="p">)</span>
 </pre></div>
 </div>
-<p>In order to use a <code class="docutils literal notranslate"><span class="pre">plangym.Environment</span></code> in a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> we will need to
+<p>In order to use a <code class="docutils literal notranslate"><span class="pre">plangym.Environment</span></code> in a <span class="swarm">Swarm</span> we will need to
 define the appropriate Callable object to pass as a parameter.</p>
 <p><code class="docutils literal notranslate"><span class="pre">fragile</span></code> incorporates a wrapper to use a <code class="docutils literal notranslate"><span class="pre">plangym.AtariEnvironment</span></code>
 that will take care of matching the <code class="docutils literal notranslate"><span class="pre">fragile</span></code> API and constructing the
-appropiate <code class="docutils literal notranslate"><span class="pre">StatesEnv</span></code> class to store its data.</p>
+appropriate <span class="env-st">StatesEnv</span> class to store its data.</p>
 <p>The environment callable does not take any parameters, and must return
-an instance of <code class="docutils literal notranslate"><span class="pre">fragile.BaseEnvironment</span></code>.</p>
+an instance of <span class="env">fragile.BaseEnvironment</span>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.atari.env</span> <span class="kn">import</span> <span class="n">AtariEnv</span>
 <span class="n">env_callable</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">AtariEnv</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
 </pre></div>
@@ -106,20 +138,11 @@ an instance of <code class="docutils literal notranslate"><span class="pre">frag
 </div>
 <div class="section" id="defining-the-model">
 <h3>Defining the <code class="docutils literal notranslate"><span class="pre">Model</span></code><a class="headerlink" href="#defining-the-model" title="Permalink to this headline">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">Model</span></code> defines the policy that will be used to sample the
-<code class="docutils literal notranslate"><span class="pre">Environment</span></code>. In this tutorial we will be using a random sampling
-strategy over a discrete uniform distribution. This means that every
-time we sample an action, the <code class="docutils literal notranslate"><span class="pre">Model</span></code> will return an integer in the
-range [0, N_actions] for each state.</p>
-<p>We will apply each sampled action a given number of time steps. This
-number of timesteps will be sampled using the <code class="docutils literal notranslate"><span class="pre">GaussianDt</span></code>, that is a
-<code class="docutils literal notranslate"><span class="pre">Critic</span></code> that allows to sample a variable number of timesteps for each
-action. The number of timesteps will be sampled from a normal
-distribution and rounded to an integer.</p>
-<p>The model callable passed to the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> takes as a parameter the
-<code class="docutils literal notranslate"><span class="pre">Environment</span></code> and returns an instance of <code class="docutils literal notranslate"><span class="pre">Model</span></code>.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core.dt_sampler</span> <span class="kn">import</span> <span class="n">GaussianDt</span>
-<span class="kn">from</span> <span class="nn">fragile.core.models</span> <span class="kn">import</span> <span class="n">DiscreteUniform</span>
+<p>The <span class="model">Model</span> defines the policy that will be used to sample the <span class="env">Environment</span>. In this tutorial we will be using a random sampling strategy over a discrete uniform distribution. This means that every time we sample an action, the <span class="model">Model</span> will return an integer in the range [0, N_actions] for each state.</p>
+<p>By default each action will be applied for one time step. In case you want to apply the actions a different number of time steps it is possible to use a <span class="critic">Critic</span>. The Critics that allow you to sample time steps values for the actions can be found in <cite>fragile.core.dt_samplers</cite>.</p>
+<p>In this example we will apply each sampled action a variable number of time steps using the <span class="critic">GaussianDt</span>. The <code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianDt</span></code> draws the number of time steps for each action from a normal distribution.</p>
+<p>The model callable passed to the <span class="swarm">Swarm</span> takes as a parameter the <span class="env">Environment</span> and returns an instance of <span class="model">Model</span>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">GaussianDt</span><span class="p">,</span> <span class="n">GaussianDt</span>
 <span class="n">dt</span> <span class="o">=</span> <span class="n">GaussianDt</span><span class="p">(</span><span class="n">min_dt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_dt</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">loc_dt</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">scale_dt</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">model_callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">env</span><span class="p">:</span> <span class="n">DiscreteUniform</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">critic</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
 </pre></div>
@@ -128,40 +151,40 @@ distribution and rounded to an integer.</p>
 <div class="section" id="storing-the-sampled-data-inside-a-historytree">
 <h3>Storing the sampled data inside a <code class="docutils literal notranslate"><span class="pre">HistoryTree</span></code><a class="headerlink" href="#storing-the-sampled-data-inside-a-historytree" title="Permalink to this headline">¶</a></h3>
 <p>It is possible to keep track of the sampled data by using a
-<code class="docutils literal notranslate"><span class="pre">HistoryTree</span></code>. This data structure will construct a directed acyclic
+<span class="tree">HistoryTree</span>. This data structure will construct a directed acyclic
 graph that will contain the sampled states and their transitions.</p>
-<p>Passing the <code class="docutils literal notranslate"><span class="pre">prune_tree</span></code> parameter to the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> we can choose to
-store only the branches of the <code class="docutils literal notranslate"><span class="pre">HistoryTree</span></code> that are being explored.
+<p>Passing the <code class="docutils literal notranslate"><span class="pre">prune_tree</span></code> parameter to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> we can choose to
+store only the branches of the <span class="tree">HistoryTree</span> that are being explored.
 If <code class="docutils literal notranslate"><span class="pre">prune_tree</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> all the branches of the graph with no
 walkers will be removed after every iteration, and if it is <code class="docutils literal notranslate"><span class="pre">False</span></code>
 all the visited states will be kept in memory.</p>
 <p>In order to save memory we will be setting it to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core.tree</span> <span class="kn">import</span> <span class="n">HistoryTree</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">HistoryTree</span>
 <span class="n">prune_tree</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="initializing-a-swarm">
 <h3>Initializing a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code><a class="headerlink" href="#initializing-a-swarm" title="Permalink to this headline">¶</a></h3>
-<p>Once we have defined the problem-specific callables for the <code class="docutils literal notranslate"><span class="pre">Model</span></code>
-and the <code class="docutils literal notranslate"><span class="pre">Environment</span></code>, we need to define the parameters used by the
+<p>Once we have defined the problem-specific callables for the <span class="model">Model</span>
+and the <span class="env">Environment</span>, we need to define the parameters used by the
 algorithm:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">n_walkers</span></code>: This is population size of our algorithm. It defines
 the number of different states that will be explored simultaneously
 at every iteration of the algorithm. It will be equal to the
-<code class="docutils literal notranslate"><span class="pre">batch_size</span></code> of the <code class="docutils literal notranslate"><span class="pre">States</span></code> (size of the first dimension of the
+<code class="docutils literal notranslate"><span class="pre">batch_size</span></code> of the <span class="states">States</span> (size of the first dimension of the
 data they store).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">max_iters</span></code>: Maximum number of iterations that the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> will
+<li><p><code class="docutils literal notranslate"><span class="pre">max_iters</span></code>: Maximum number of iterations that the <span class="swarm">Swarm</span> will
 execute. The algorithm will stop either when all the walkers reached
 a death condition, or when the maximum number of iterations is
 reached.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reward_scale</span></code>: Relative importance given to the <code class="docutils literal notranslate"><span class="pre">Environment</span></code>
+<li><p><code class="docutils literal notranslate"><span class="pre">reward_scale</span></code>: Relative importance given to the <span class="env">Environment</span>
 reward with respect to the diversity score of the walkers.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">distance_scale</span></code>: Relative importance given to the diversity
 measure of the walkers with respect to their reward.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">minimize</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> will try to sample states
-with the lowest reward possible. If <code class="docutils literal notranslate"><span class="pre">False</span></code> the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> will
+<li><p><code class="docutils literal notranslate"><span class="pre">minimize</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the <span class="swarm">Swarm</span> will try to sample states
+with the lowest reward possible. If <code class="docutils literal notranslate"><span class="pre">False</span></code> the <span class="swarm">Swarm</span> will
 undergo a maximization process.</p></li>
 </ul>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_walkers</span> <span class="o">=</span> <span class="mi">64</span>  <span class="c1"># A bigger number will increase the quality of the trajectories sampled.</span>
@@ -171,7 +194,7 @@ undergo a maximization process.</p></li>
 <span class="n">minimize</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># We want to get the maximum score possible.</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core.swarm</span> <span class="kn">import</span> <span class="n">Swarm</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">Swarm</span>
 <span class="n">swarm</span> <span class="o">=</span> <span class="n">Swarm</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="n">model_callable</span><span class="p">,</span>
     <span class="n">env</span><span class="o">=</span><span class="n">env_callable</span><span class="p">,</span>
@@ -185,7 +208,7 @@ undergo a maximization process.</p></li>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>By printing a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> we can get an overview of the internal data it
+<p>By printing a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> we can get an overview of the internal data it
 contains.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
 </pre></div>
@@ -517,9 +540,9 @@ if ((comm_msg != null) && (Object.keys(comm_msg.content).length > 0)) {
 <div class="section" id="running-the-swarm">
 <h3>Running the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code><a class="headerlink" href="#running-the-swarm" title="Permalink to this headline">¶</a></h3>
 <p>In order to execute the algorithm we only need to call <code class="docutils literal notranslate"><span class="pre">run_swarm</span></code>. It
-is possible to display the internal data of the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> by using the
+is possible to display the internal data of the <span class="swarm">Swarm</span> by using the
 <code class="docutils literal notranslate"><span class="pre">print_every</span></code> parameter. This parameter indicates the number of
-iterations that will pass before printing the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+iterations that will pass before printing the <span class="swarm">Swarm</span>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">swarm_viz</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">print_every</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -557,7 +580,7 @@ iterations that will pass before printing the <code class="docutils literal notr
 </div>
 <div class="section" id="visualizing-the-sampled-game">
 <h3>Visualizing the sampled game<a class="headerlink" href="#visualizing-the-sampled-game" title="Permalink to this headline">¶</a></h3>
-<p>We will extract the branch of the <code class="docutils literal notranslate"><span class="pre">StateTree</span></code> that achieved the
+<p>We will extract the branch of the <span class="tree">StateTree</span> that achieved the
 maximum reward and use its states and actions in the
 <code class="docutils literal notranslate"><span class="pre">plangym.Environment</span></code>. This way we can render all the trajectory using
 the <code class="docutils literal notranslate"><span class="pre">render</span></code> method provided by the OpenAI gym API.</p>
@@ -572,13 +595,46 @@ the <code class="docutils literal notranslate"><span class="pre">render</span></
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
+<style>
+  .states {color: black; font-weight:bold; font-size:16px;
+          border-width: 2px; border-style: solid;
+          border-color: #555555; background-color: #CCCCCC;}
+  .swarm {color: black; font-weight:bold; font-size:16px;
+          border-width: 2px; border-style: solid;
+          border-color: #B85450; background-color: #F8CECC;}
+  .env {color: black; font-weight:bold; font-size:16px;
+        border-width: 2px; border-style: solid;
+         border-color: #6C8EBF; background-color: #7AC9E6;}
+  .model {color: black; font-weight:bold; font-size:16px;
+          border-width: 2px; border-style: solid;
+          border-color: #9673A6; background-color: #E1D5E7;}
+  .walkers {color:black; font-weight:bold; font-size:16px;
+            border-width: 2px; border-style: solid;
+            border-color: #82B366; background-color: #D5E8D4;}
+  .walkers-st {color:black; font-weight:bold; font-size:16px;
+               border-width: 2px; border-style: solid;
+               border-color: #82B366; background-color: #EAFFE9;}
+  .env-st {color: black; font-weight:bold; font-size:16px;
+           border-width: 2px; border-style: solid;
+           border-color: #6C8EBF; background-color: #ABE0FF;}
+  .model-st {color: black; font-weight:bold; font-size:16px;
+             border-width: 2px; border-style: solid;
+             border-color: #9673A6; background-color: #F8EBFF;}
+  .tree {color: black; font-weight:bold; font-size:16px;
+         border-width: 2px; border-style: solid;
+         border-color: #D79B00; background-color: #E0CAB4;}
+  .critic {color: black; font-weight:bold; font-size:16px;
+           border-width: 2px; border-style: solid;
+           border-color: #D6B656; background-color: #FFF2CC;}
+</style></div>
 </div>
 <div class="section" id="function-minimization-example">
 <h2>Function minimization example<a class="headerlink" href="#function-minimization-example" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The notebook version of this example is available in the <cite>examples</cite> as <code class="docutils literal notranslate"><span class="pre">02_function_minimization.ipynb</span></code>.</p>
+<p>The notebook version of this example is available in the
+<a class="reference external" href="https://github.com/FragileTech/fragile/tree/master/examples">examples</a>
+section as <a class="reference external" href="https://github.com/FragileTech/fragile/blob/master/examples/02_function_minimization.ipynb">02_function_minimization.ipynb</a></p>
 </div>
 <p>There are many problems where we only need to sample a single point
 instead of a trajectory. The <code class="docutils literal notranslate"><span class="pre">optimize</span></code> module is designed for this
@@ -587,19 +643,19 @@ landscapes in order to find points that meet a desired Min/Max
 condition.</p>
 <div class="section" id="testing-a-functionmapper-on-a-benchmark-function">
 <h3>Testing a <code class="docutils literal notranslate"><span class="pre">FunctionMapper</span></code> on a benchmark function<a class="headerlink" href="#testing-a-functionmapper-on-a-benchmark-function" title="Permalink to this headline">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">FunctionMapper</span></code> is a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> with updated default parameters
+<p>The <span class="swarm">FunctionMapper</span> is a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> with updated default parameters
 for solving minimization problems. It should be used with a
-<code class="docutils literal notranslate"><span class="pre">Function</span></code>, which is an <code class="docutils literal notranslate"><span class="pre">Environment</span></code> designed to optimize functions
+<span class="env">Function</span>, which is an <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> designed to optimize functions
 that return an scalar.</p>
 <p>In this first example we will be using a benchmarking environment that
 represents the
 <a class="reference external" href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Eggholder</a>
 function:</p>
-<div class="figure align-default" id="id2">
+<div class="figure align-default" id="id4">
 <img alt="eggholder" src="../../_images/02_eggholder.png" />
-<p class="caption"><span class="caption-text">eggholder</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">eggholder</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize.swarm</span> <span class="kn">import</span> <span class="n">FunctionMapper</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize</span> <span class="kn">import</span> <span class="n">FunctionMapper</span>
 <span class="kn">from</span> <span class="nn">fragile.optimize.benchmarks</span> <span class="kn">import</span> <span class="n">EggHolder</span>
 </pre></div>
 </div>
@@ -610,8 +666,7 @@ function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">EggHolder</span> <span class="k">with</span> <span class="n">function</span> <span class="n">eggholder</span><span class="p">,</span> <span class="n">obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">2</span><span class="p">,),</span> <span class="n">Bounds</span> <span class="n">shape</span> <span class="n">int64</span> <span class="n">dtype</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="n">low</span> <span class="p">[</span><span class="o">-</span><span class="mi">512</span> <span class="o">-</span><span class="mi">512</span><span class="p">]</span> <span class="n">high</span> <span class="p">[</span><span class="mi">512</span> <span class="mi">512</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>And its optimum corresponds to the point (512, 404.2319) with a value of
--959.64066271</p>
+<p>And its optimum corresponds to the point (512, 404.2319) with a value of -959.64066271</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">EggHolder</span><span class="p">()</span><span class="o">.</span><span class="n">best_state</span><span class="p">,</span> <span class="n">EggHolder</span><span class="o">.</span><span class="n">benchmark</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -626,8 +681,8 @@ Gaussian distribution</p>
     <span class="k">return</span> <span class="n">NormalContinuous</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>To run the algorithm we need to pass the environment and the model as
-parameters to the <code class="docutils literal notranslate"><span class="pre">FunctionMapper</span></code>.</p>
+<p>To run the algorithm we need to pass the environment and the model callables as
+parameters to the <span class="swarm">FunctionMapper</span>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm</span> <span class="o">=</span> <span class="n">FunctionMapper</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">EggHolder</span><span class="p">,</span>
                        <span class="n">model</span><span class="o">=</span><span class="n">gaussian_model</span><span class="p">,</span>
                        <span class="n">n_walkers</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
@@ -640,31 +695,32 @@ parameters to the <code class="docutils literal notranslate"><span class="pre">F
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">EggHolder</span> <span class="k">with</span> <span class="n">function</span> <span class="n">eggholder</span><span class="p">,</span> <span class="n">obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">2</span><span class="p">,),</span>
 
-<span class="n">Best</span> <span class="n">reward</span> <span class="n">found</span><span class="p">:</span> <span class="o">-</span><span class="mf">958.2408</span> <span class="p">,</span> <span class="n">efficiency</span> <span class="mf">0.685</span><span class="p">,</span> <span class="n">Critic</span><span class="p">:</span> <span class="kc">None</span>
-<span class="n">Walkers</span> <span class="n">iteration</span> <span class="mi">451</span> <span class="n">Dead</span> <span class="n">walkers</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span> <span class="n">Cloned</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span>
+<span class="n">Best</span> <span class="n">reward</span> <span class="n">found</span><span class="p">:</span> <span class="o">-</span><span class="mf">894.4974</span> <span class="p">,</span> <span class="n">efficiency</span> <span class="mf">0.682</span><span class="p">,</span> <span class="n">Critic</span><span class="p">:</span> <span class="kc">None</span>
+<span class="n">Walkers</span> <span class="n">iteration</span> <span class="mi">451</span> <span class="n">Out</span> <span class="n">of</span> <span class="n">bounds</span> <span class="n">walkers</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span> <span class="n">Cloned</span><span class="p">:</span> <span class="mf">36.00</span><span class="o">%</span>
 
 <span class="n">Walkers</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">id_walkers</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">332284778998036.500</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">5362551796820465664.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">9186431489427723264.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">9121433302269767680.000</span>
-<span class="n">compas_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">49.500</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">28.866</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">99.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">processed_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.068</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.598</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.896</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.087</span>
-<span class="n">virtual_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.161</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">1.027</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">3.252</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.030</span>
-<span class="n">cum_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">429.340</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">344.057</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">410.406</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">958.241</span>
-<span class="n">distances</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.068</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.604</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.822</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.213</span>
-<span class="n">clone_probs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">will_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">alive_mask</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
-<span class="n">end_condition</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">id_walkers</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">906495863484378624.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">4959508738323910656.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">8971991439156781056.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">9078798782819690496.000</span>
+<span class="n">compas_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">49.600</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">28.906</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">99.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">processed_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.084</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.489</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.690</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.002</span>
+<span class="n">virtual_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.972</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.640</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">3.233</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.003</span>
+<span class="n">cum_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">790.774</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">86.739</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">475.153</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">894.497</span>
+<span class="n">distances</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.013</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.587</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">2.486</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.170</span>
+<span class="n">clone_probs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">4.795</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">36.629</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">366.720</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.997</span>
+<span class="n">will_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.360</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.480</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">in_bounds</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.980</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.140</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
 <span class="n">best_reward</span> <span class="n">shape</span> <span class="kc">None</span> <span class="n">Mean</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="n">nan</span> <span class="n">Min</span><span class="p">:</span> <span class="n">nan</span>
-<span class="n">best_obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">457.708</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">53.887</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">511.595</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">403.821</span>
-<span class="n">best_state</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">457.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">54.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">511.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">403.000</span>
-<span class="n">critic_score</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">best_obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">39.743</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">425.954</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">386.211</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">465.697</span>
+<span class="n">best_state</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">39.500</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">425.500</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">386.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">465.000</span>
+<span class="n">best_id</span> <span class="n">shape</span> <span class="kc">None</span> <span class="n">Mean</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="n">nan</span> <span class="n">Min</span><span class="p">:</span> <span class="n">nan</span>
 
 <span class="n">Env</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">429.027</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">343.589</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">410.406</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">926.930</span>
-<span class="n">ends</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">states</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">37.320</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">424.444</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">424.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">511.000</span>
+<span class="n">rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">789.777</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">86.112</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">475.153</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">893.765</span>
+<span class="n">oobs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">terminals</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
 
 <span class="n">Model</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">actions</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.606</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">10.654</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">24.927</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">36.085</span>
+<span class="n">actions</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.976</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">9.903</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">31.290</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">24.825</span>
 <span class="n">dt</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
 <span class="n">critic_score</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">100</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
 </pre></div>
@@ -676,13 +732,13 @@ parameters to the <code class="docutils literal notranslate"><span class="pre">F
 sampling new points. It is possible to improve the performance of the
 sampling process if we run a local minimization process after each
 random perturbation.</p>
-<p>This can be done using the <code class="docutils literal notranslate"><span class="pre">MinimizerWrapper</span></code> class, that takes in any
-instance of a <code class="docutils literal notranslate"><span class="pre">Function</span></code> environment, and performs a local minimization
-process after each environment step.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">MinimizerWrapper</span></code> uses <code class="docutils literal notranslate"><span class="pre">scipy.optimize.minimize</span></code> under the
+<p>This can be done using the <span class="env">MinimizerWrapper</span> class, that takes in any
+instance of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> environment, and performs a local
+minimization process after each environment step.</p>
+<p>The <span class="env">MinimizerWrapper</span> uses <code class="docutils literal notranslate"><span class="pre">scipy.optimize.minimize</span></code> under the
 hood, and it can take any parameter that <code class="docutils literal notranslate"><span class="pre">scipy.optimize.minimize</span></code>
 supports.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize.env</span> <span class="kn">import</span> <span class="n">MinimizerWrapper</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize</span> <span class="kn">import</span> <span class="n">MinimizerWrapper</span>
 
 <span class="k">def</span> <span class="nf">optimize_eggholder</span><span class="p">():</span>
     <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}</span>
@@ -700,31 +756,32 @@ supports.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">EggHolder</span> <span class="k">with</span> <span class="n">function</span> <span class="n">eggholder</span><span class="p">,</span> <span class="n">obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">2</span><span class="p">,),</span>
 
-<span class="n">Best</span> <span class="n">reward</span> <span class="n">found</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.6407</span> <span class="p">,</span> <span class="n">efficiency</span> <span class="mf">0.758</span><span class="p">,</span> <span class="n">Critic</span><span class="p">:</span> <span class="kc">None</span>
-<span class="n">Walkers</span> <span class="n">iteration</span> <span class="mi">201</span> <span class="n">Dead</span> <span class="n">walkers</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span> <span class="n">Cloned</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span>
+<span class="n">Best</span> <span class="n">reward</span> <span class="n">found</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.6407</span> <span class="p">,</span> <span class="n">efficiency</span> <span class="mf">0.929</span><span class="p">,</span> <span class="n">Critic</span><span class="p">:</span> <span class="kc">None</span>
+<span class="n">Walkers</span> <span class="n">iteration</span> <span class="mi">201</span> <span class="n">Out</span> <span class="n">of</span> <span class="n">bounds</span> <span class="n">walkers</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span> <span class="n">Cloned</span><span class="p">:</span> <span class="mf">4.00</span><span class="o">%</span>
 
 <span class="n">Walkers</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">id_walkers</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">1334956730834383104.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">4920389966770588672.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">6914237399253209088.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">8832487513487620096.000</span>
+<span class="n">id_walkers</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">8570365125154154496.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">8570365125154154496.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">8570365125154154496.000</span>
 <span class="n">compas_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">24.500</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">14.431</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">49.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">processed_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.040</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.587</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">2.117</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.116</span>
-<span class="n">virtual_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.091</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">1.016</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">4.061</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.044</span>
-<span class="n">cum_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">552.718</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">197.814</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">126.424</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.641</span>
-<span class="n">distances</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.006</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.614</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">2.186</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.228</span>
-<span class="n">clone_probs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">will_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">alive_mask</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
-<span class="n">end_condition</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">processed_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.111</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.159</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.133</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.001</span>
+<span class="n">virtual_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.950</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.339</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">3.145</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.003</span>
+<span class="n">cum_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.641</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.641</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.641</span>
+<span class="n">distances</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.894</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.384</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">2.775</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.815</span>
+<span class="n">clone_probs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">7.299</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">50.998</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">364.275</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.997</span>
+<span class="n">will_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.040</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.196</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">in_bounds</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
 <span class="n">best_reward</span> <span class="n">shape</span> <span class="kc">None</span> <span class="n">Mean</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="n">nan</span> <span class="n">Min</span><span class="p">:</span> <span class="n">nan</span>
 <span class="n">best_obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">458.116</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">53.884</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">512.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">404.232</span>
 <span class="n">best_state</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">458.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">54.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">512.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">404.000</span>
-<span class="n">critic_score</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">best_id</span> <span class="n">shape</span> <span class="kc">None</span> <span class="n">Mean</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="n">nan</span> <span class="n">Min</span><span class="p">:</span> <span class="n">nan</span>
 
 <span class="n">Env</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">552.718</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">197.814</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">126.424</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.641</span>
-<span class="n">ends</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">states</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">458.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">54.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">512.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">404.000</span>
+<span class="n">rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.641</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.641</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">959.641</span>
+<span class="n">oobs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">terminals</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
 
 <span class="n">Model</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">actions</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.049</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">9.475</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">23.702</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">29.835</span>
+<span class="n">actions</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.089</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">9.910</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">26.221</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">23.486</span>
 <span class="n">dt</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
 <span class="n">critic_score</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
 </pre></div>
@@ -733,30 +790,31 @@ supports.</p>
 expense of using more computational resources.</p>
 </div>
 <div class="section" id="defining-a-new-problem-using-a-function">
-<h3>Defining a new problem using a <code class="docutils literal notranslate"><span class="pre">Function</span></code><a class="headerlink" href="#defining-a-new-problem-using-a-function" title="Permalink to this headline">¶</a></h3>
+<h3>Defining a new problem using a <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code><a class="headerlink" href="#defining-a-new-problem-using-a-function" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="the-objective-function">
+<h4>The objective function<a class="headerlink" href="#the-objective-function" title="Permalink to this headline">¶</a></h4>
 <p>It is possible to optimize any python function that returns an scalar
-using a <code class="docutils literal notranslate"><span class="pre">Function</span></code>, as long as two requirements are met:</p>
+using a <span class="env">Function</span>, as long as two requirements are met:</p>
 <ul class="simple">
 <li><p>The function needs to work with batches of points stacked across the
 first dimension of a numpy array.</p></li>
 <li><p>It returns a vector of scalars corresponding to the values of each
 point evaluated.</p></li>
 </ul>
-<p>This will allow the <code class="docutils literal notranslate"><span class="pre">Function</span></code> to vectorize the calculations on the
+<p>This will allow the <span class="env">Function</span> to vectorize the calculations on the
 batch of walkers.</p>
-<p>We will also need to create a <code class="docutils literal notranslate"><span class="pre">Bounds</span></code> class that define the function
+<p>We will also need to create a <code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code> class that define the function
 domain.</p>
-<p>In this example we will optimize a four dimensional <em>styblinski_tang</em>
+<p>In this example we will optimize a four dimensional <strong>styblinski_tang</strong>
 function, which all its coordinates defined in the [-5, 5] interval:</p>
-<div class="figure align-default" id="id3">
+<div class="figure align-default" id="id5">
 <img alt="styblinski_tang" src="../../_images/02_styblinski_tang.png" />
-<p class="caption"><span class="caption-text">styblinski_tang</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text">styblinski_tang</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">Bounds</span>
-<span class="kn">import</span> <span class="nn">numpy</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">styblinski_tang</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">Bounds</span>
+
+<span class="k">def</span> <span class="nf">styblinski_tang</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="mi">4</span> <span class="o">-</span> <span class="mi">16</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
 
 <span class="n">bounds</span> <span class="o">=</span> <span class="n">Bounds</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,))</span>
@@ -766,86 +824,89 @@ function, which all its coordinates defined in the [-5, 5] interval:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bounds</span> <span class="n">shape</span> <span class="n">float64</span> <span class="n">dtype</span> <span class="p">(</span><span class="mi">4</span><span class="p">,)</span> <span class="n">low</span> <span class="p">[</span><span class="o">-</span><span class="mf">5.</span> <span class="o">-</span><span class="mf">5.</span> <span class="o">-</span><span class="mf">5.</span> <span class="o">-</span><span class="mf">5.</span><span class="p">]</span> <span class="n">high</span> <span class="p">[</span><span class="mf">5.</span> <span class="mf">5.</span> <span class="mf">5.</span> <span class="mf">5.</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>To define the new environment we only need to pass those two parameters
-to a <code class="docutils literal notranslate"><span class="pre">Function</span></code></p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize.env</span> <span class="kn">import</span> <span class="n">Function</span>
+</div>
+<div class="section" id="defining-arbitrary-boundary-conditions">
+<h4>Defining arbitrary boundary conditions<a class="headerlink" href="#defining-arbitrary-boundary-conditions" title="Permalink to this headline">¶</a></h4>
+<p>It is possible to define any kind of boundary conditions for the
+objective function. This can be done by passing a callable object (such
+as a function) to the <code class="docutils literal notranslate"><span class="pre">custom_domain_check</span></code> parameter.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">custom_domain_check</span></code> function has the following signature:</p>
+<ul class="simple">
+<li><p>It takes a batch of points as input (same as the <code class="docutils literal notranslate"><span class="pre">function</span></code>
+parameter).</p></li>
+<li><p>It returns an array of booleans with the same length as the input
+array.</p></li>
+<li><p>Each <code class="docutils literal notranslate"><span class="pre">True</span></code> value of the returned array indicates that the
+corresponding point is <strong>outside</strong> the function domain.</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">custom_domain_check</span></code> will only be applied to the points that are
+inside the defined <code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_custom_domain_check</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To define the new environment we only need to define the appropriate
+<code class="docutils literal notranslate"><span class="pre">env</span></code> callable passing the target <code class="docutils literal notranslate"><span class="pre">function</span></code>, the <code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code>, and
+optionally a <code class="docutils literal notranslate"><span class="pre">custom_domain_check</span></code> to a <span class="env">Function</span>.</p>
+<p>Then we can use a <span class="swarm">FunctionMapper</span> (or any other kind of <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>) to
+perform the optimization process.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize</span> <span class="kn">import</span> <span class="n">Function</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">local_optimize_styblinsky_tang</span><span class="p">():</span>
-    <span class="n">function</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">function</span><span class="o">=</span><span class="n">styblinski_tang</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
-    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+    <span class="n">function</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">function</span><span class="o">=</span><span class="n">styblinski_tang</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                        <span class="n">custom_domain_check</span><span class="o">=</span><span class="n">my_custom_domain_check</span><span class="p">)</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">MinimizerWrapper</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
 
 <span class="n">swarm</span> <span class="o">=</span> <span class="n">FunctionMapper</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">local_optimize_styblinsky_tang</span><span class="p">,</span>
-                       <span class="n">model</span><span class="o">=</span><span class="n">gaussian_model</span><span class="p">,</span>
+                       <span class="n">model</span><span class="o">=</span><span class="k">lambda</span> <span class="n">env</span><span class="p">:</span> <span class="n">NormalContinuous</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                                                          <span class="n">bounds</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">bounds</span><span class="p">),</span>
                        <span class="n">n_walkers</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
-                       <span class="n">max_iters</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span>
-                      <span class="p">)</span>
+                       <span class="n">max_iters</span><span class="o">=</span><span class="mi">101</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Please be aware that if you use a <span class="env">MinimizerWrapper</span> with a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> that has a <code class="docutils literal notranslate"><span class="pre">custom_domain_check</span></code> defined you can run into
+trouble.</p>
+<p>This is because the <code class="docutils literal notranslate"><span class="pre">scipy.optimize.minimize</span></code> function that is running
+under the hood cannot account for arbitrary boundary conditions. This
+can lead to the <code class="docutils literal notranslate"><span class="pre">minimize</span></code> function returning only local minima that
+are outside the defined <code class="docutils literal notranslate"><span class="pre">custom_domain_check</span></code>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">print_every</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Function</span> <span class="k">with</span> <span class="n">function</span> <span class="n">styblinski_tang</span><span class="p">,</span> <span class="n">obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">4</span><span class="p">,),</span>
-
-<span class="n">Best</span> <span class="n">reward</span> <span class="n">found</span><span class="p">:</span> <span class="o">-</span><span class="mf">156.6647</span> <span class="p">,</span> <span class="n">efficiency</span> <span class="mf">0.695</span><span class="p">,</span> <span class="n">Critic</span><span class="p">:</span> <span class="kc">None</span>
-<span class="n">Walkers</span> <span class="n">iteration</span> <span class="mi">101</span> <span class="n">Dead</span> <span class="n">walkers</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span> <span class="n">Cloned</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span>
-
-<span class="n">Walkers</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">id_walkers</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">473754779102187904.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">5777536638421506048.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">8800337807658314752.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">9101554059192675328.000</span>
-<span class="n">compas_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">24.500</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">14.431</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">49.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">processed_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.067</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.546</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.998</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.065</span>
-<span class="n">virtual_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.062</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.825</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">2.901</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.046</span>
-<span class="n">cum_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">118.226</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">23.576</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">53.542</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">156.665</span>
-<span class="n">distances</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.053</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.576</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.924</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.119</span>
-<span class="n">clone_probs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">will_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">alive_mask</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
-<span class="n">end_condition</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">best_reward</span> <span class="n">shape</span> <span class="kc">None</span> <span class="n">Mean</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="n">nan</span> <span class="n">Min</span><span class="p">:</span> <span class="n">nan</span>
-<span class="n">best_obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">4</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.903</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.903</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.904</span>
-<span class="n">best_state</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">4</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.000</span>
-<span class="n">critic_score</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-
-<span class="n">Env</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">116.922</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">23.214</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="o">-</span><span class="mf">53.542</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">156.664</span>
-<span class="n">ends</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-
-<span class="n">Model</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">actions</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.072</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">4.279</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">5.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.000</span>
-<span class="n">dt</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
-<span class="n">critic_score</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">50</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
+<p>We can see how the optimization was successful in finding the global optima of -156.66468</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm</span><span class="o">.</span><span class="n">best_obs</span>
 </pre></div>
 </div>
-<p>We can see how the optimization was successful in finding the global
-optima of -156.66468</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm</span><span class="o">.</span><span class="n">best_found</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.9035306</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.903532</span> <span class="p">,</span> <span class="o">-</span><span class="mf">2.9035275</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.903538</span> <span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.9036179</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.9030898</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.9035947</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.9032462</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm</span><span class="o">.</span><span class="n">best_reward_found</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm</span><span class="o">.</span><span class="n">best_reward</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="mf">156.66465759277344</span>
 </pre></div>
 </div>
 </div>
+</div>
+</div>
 <div class="section" id="optimizing-a-function-with-evolutionary-strategies">
-<h3>Optimizing a function with Evolutionary Strategies<a class="headerlink" href="#optimizing-a-function-with-evolutionary-strategies" title="Permalink to this headline">¶</a></h3>
+<h2>Optimizing a function with Evolutionary Strategies<a class="headerlink" href="#optimizing-a-function-with-evolutionary-strategies" title="Permalink to this headline">¶</a></h2>
 <p>It is possible to use the <code class="docutils literal notranslate"><span class="pre">fragile</span></code> framework to implement
 optimization algorithms that do not rely on a cloning process, such as
 Evolutionary Strategies.</p>
-<p>If the cloning process is not needed the <code class="docutils literal notranslate"><span class="pre">NoBalance</span></code> <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> is the
-recommended choice. It has the same features of a regular <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>, but
+<p>If the cloning process is not needed the <span class="swarm">NoBalance`</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> is the
+recommended choice. It has the same features of a regular <span class="swarm">Swarm</span>, but
 it does not perform the cloning process.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core.swarm</span> <span class="kn">import</span> <span class="n">NoBalance</span>
-<span class="kn">from</span> <span class="nn">fragile.optimize.models</span> <span class="kn">import</span> <span class="n">ESModel</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">NoBalance</span>
+<span class="kn">from</span> <span class="nn">fragile.optimize</span> <span class="kn">import</span> <span class="n">ESModel</span>
 </pre></div>
 </div>
 <p>In this example we will be solving a Lennard-Jonnes cluster of 4
-particles, which is a 12-dimensional function with a global minima at -6.</p>
+particles, which is a 12-dimensional function with a global minima at
+-6.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize.benchmarks</span> <span class="kn">import</span> <span class="n">LennardJones</span>
 </pre></div>
 </div>
@@ -861,35 +922,35 @@ particles, which is a 12-dimensional function with a global minima at -6.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">print_every</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Best</span> <span class="n">reward</span> <span class="n">found</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.9707</span> <span class="p">,</span> <span class="n">efficiency</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Critic</span><span class="p">:</span> <span class="kc">None</span>
-<span class="n">Walkers</span> <span class="n">iteration</span> <span class="mi">5001</span> <span class="n">Dead</span> <span class="n">walkers</span><span class="p">:</span> <span class="mf">50.00</span><span class="o">%</span> <span class="n">Cloned</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Best</span> <span class="n">reward</span> <span class="n">found</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.4128</span> <span class="p">,</span> <span class="n">efficiency</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Critic</span><span class="p">:</span> <span class="kc">None</span>
+<span class="n">Walkers</span> <span class="n">iteration</span> <span class="mi">5001</span> <span class="n">Out</span> <span class="n">of</span> <span class="n">bounds</span> <span class="n">walkers</span><span class="p">:</span> <span class="mf">40.00</span><span class="o">%</span> <span class="n">Cloned</span><span class="p">:</span> <span class="mf">0.00</span><span class="o">%</span>
 
 <span class="n">Walkers</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">id_walkers</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">969645893255145472.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">4148011912550082560.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">4808734810587725824.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">7723777933071844352.000</span>
+<span class="n">id_walkers</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">414594831663469312.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">3482706534469331456.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">7797802107834368000.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">3246923136020674048.000</span>
 <span class="n">compas_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">4.500</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">2.872</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">9.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
 <span class="n">processed_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
 <span class="n">virtual_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
-<span class="n">cum_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">27353.668</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">81408.398</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">271574.469</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.971</span>
+<span class="n">cum_rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1881.650</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">5298.438</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">17760.336</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.413</span>
 <span class="n">distances</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
 <span class="n">clone_probs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
 <span class="n">will_clone</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
-<span class="n">alive_mask</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
-<span class="n">end_condition</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.500</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.500</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">in_bounds</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
 <span class="n">best_reward</span> <span class="n">shape</span> <span class="kc">None</span> <span class="n">Mean</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="n">nan</span> <span class="n">Min</span><span class="p">:</span> <span class="n">nan</span>
-<span class="n">best_obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">12</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.119</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.572</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.877</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.166</span>
-<span class="n">best_state</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">12</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.083</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.276</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.000</span>
-<span class="n">critic_score</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">best_obs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">12</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.051</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.468</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.978</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.859</span>
+<span class="n">best_state</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">12</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">best_id</span> <span class="n">shape</span> <span class="kc">None</span> <span class="n">Mean</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="n">nan</span> <span class="n">Min</span><span class="p">:</span> <span class="n">nan</span>
 
 <span class="n">Env</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">27354.051</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">81408.273</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">271574.469</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.753</span>
-<span class="n">ends</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.500</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.500</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">states</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.025</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.376</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.000</span>
+<span class="n">rewards</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1882.268</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">5298.219</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">17760.336</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.230</span>
+<span class="n">oobs</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.400</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.490</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
+<span class="n">terminals</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">0.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">0.000</span>
 
 <span class="n">Model</span> <span class="n">States</span><span class="p">:</span>
-<span class="n">actions</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">0.020</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.379</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.429</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.500</span>
+<span class="n">actions</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="n">Mean</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.004</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.581</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.500</span> <span class="n">Min</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.500</span>
 <span class="n">dt</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
 <span class="n">critic_score</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">10</span><span class="p">,)</span> <span class="n">Mean</span><span class="p">:</span> <span class="mf">1.000</span><span class="p">,</span> <span class="n">Std</span><span class="p">:</span> <span class="mf">0.000</span><span class="p">,</span> <span class="n">Max</span><span class="p">:</span> <span class="mf">1.000</span> <span class="n">Min</span><span class="p">:</span> <span class="mf">1.000</span>
 </pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="visualizing-a-swarm">
@@ -906,20 +967,21 @@ kinds of visualizations. In order to visualize a <code class="docutils literal n
 <code class="docutils literal notranslate"><span class="pre">jupyter</span> <span class="pre">notebook</span></code> the first thing we need to do is loading the
 <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> extension for <code class="docutils literal notranslate"><span class="pre">bokeh</span></code>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holoviews</span>
-<span class="kn">from</span> <span class="nn">fragile.dataviz</span> <span class="kn">import</span> <span class="n">AtariViz</span><span class="p">,</span> <span class="n">LandscapeViz</span><span class="p">,</span> <span class="n">Summary</span><span class="p">,</span> <span class="n">SwarmViz</span><span class="p">,</span> <span class="n">SwarmViz1D</span>
 <span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">remove_notebook_margin</span>
+<span class="kn">from</span> <span class="nn">fragile.dataviz</span> <span class="kn">import</span> <span class="n">AtariViz</span><span class="p">,</span> <span class="n">LandscapeViz</span><span class="p">,</span> <span class="n">Summary</span><span class="p">,</span> <span class="n">SwarmViz</span><span class="p">,</span> <span class="n">SwarmViz1D</span>
 <span class="n">holoviews</span><span class="o">.</span><span class="n">extension</span><span class="p">(</span><span class="s2">&quot;bokeh&quot;</span><span class="p">)</span>
 <span class="n">remove_notebook_margin</span><span class="p">()</span>  <span class="c1"># Make the output cell wider</span>
 </pre></div>
 </div>
-<p>All the visualization classes wrap a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> to handle all the data
-streaming and visualization logic for plotting the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>’s data.</p>
+<p>All the visualization classes wrap a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> to handle all the data
+streaming and visualization logic for plotting the <span class="swarm">Swarm</span>’s data.</p>
 <p>We will start initializing a Swarm like we did in the last tutorial. We
 are not focusing on the performance of the sampling, but using the swarm
 just to create the visualizations.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.optimize.swarm</span> <span class="kn">import</span> <span class="n">FunctionMapper</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">NormalContinuous</span>
+<span class="kn">from</span> <span class="nn">fragile.optimize</span> <span class="kn">import</span> <span class="n">FunctionMapper</span>
 <span class="kn">from</span> <span class="nn">fragile.optimize.benchmarks</span> <span class="kn">import</span> <span class="n">EggHolder</span>
-<span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">NormalContinuous</span>
+
 <span class="k">def</span> <span class="nf">gaussian_model</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
     <span class="c1"># Gaussian of mean 0 and std of 10, adapted to the environment bounds</span>
     <span class="k">return</span> <span class="n">NormalContinuous</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
@@ -934,28 +996,28 @@ just to create the visualizations.</p>
 <div class="section" id="summary-visualization">
 <h3>Summary visualization<a class="headerlink" href="#summary-visualization" title="Permalink to this headline">¶</a></h3>
 <p>This is the simplest and fastest visualization, and it includes a table
-with information about the current iteration of the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>, the best
+with information about the current iteration of the <span class="swarm">Swarm</span>, the best
 score achieved, and the percentages of deaths and clones.</p>
-<p>To initialize it you only have to wrap the <code class="docutils literal notranslate"><span class="pre">Swarm</span></code> you want to
+<p>To initialize it you only have to wrap the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> you want to
 visualize.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">summary</span> <span class="o">=</span> <span class="n">Summary</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Once the class is initialized, you need to call the <code class="docutils literal notranslate"><span class="pre">plot</span></code>
-function to initialize the plots and create the <code class="docutils literal notranslate"><span class="pre">holoviews.DynamicMap</span></code>
+function to initialize the plots and create the <code class="xref py py-class docutils literal notranslate"><span class="pre">holoviews.DynamicMap</span></code>
 that will plot the data streamed during the algorithm run. The data streaming
 will start when <code class="docutils literal notranslate"><span class="pre">run</span></code> is called.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">summary</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/03_summary.gif" src="../../_images/03_summary.gif" />
+<img alt="../../_images/03_summary1.gif" src="../../_images/03_summary1.gif" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">summary</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="histogram-visualizations">
 <h3>Histogram visualizations<a class="headerlink" href="#histogram-visualizations" title="Permalink to this headline">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">SwarmViz1d</span></code> can be used in any kind of <code class="docutils literal notranslate"><span class="pre">Swarm</span></code>, and it allows
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmViz1d</span></code> can be used in any kind of <span class="swarm">Swarm</span>, and it allows
 to display no only the summary table and the reward evolution curve, but
 also histograms for the reward, distance, and virtual reward
 distributions of the walkers.</p>
@@ -968,7 +1030,7 @@ is streamed every 100 iterations by default.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm_viz_1d</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/03_1dviz.gif" src="../../_images/03_1dviz.gif" />
+<img alt="../../_images/03_1dviz1.gif" src="../../_images/03_1dviz1.gif" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">swarm_viz_1d</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -979,7 +1041,7 @@ is streamed every 100 iterations by default.</p>
 dimensional plots. These plots come specially in handy if you are using
 two dimensional embeddings of your state space, but the can also be
 applied to visualize the first two dimensions of the sampled state space.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">LandscapeViz</span></code> incorporates visualizations of the walkers
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">LandscapeViz</span></code> incorporates visualizations of the walkers
 distribution, the rewards, the virtual reward and the distance function.
 This is done by interpolating the values of the walkers to create a grid,
 where the target value will be displayed using a colormap.</p>
@@ -991,14 +1053,14 @@ where the target value will be displayed using a colormap.</p>
 landscape_viz.plot()
 </pre></div>
 </div>
-<img alt="../../_images/03_landscape.gif" src="../../_images/03_landscape.gif" />
+<img alt="../../_images/03_landscape1.gif" src="../../_images/03_landscape1.gif" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">landscape_viz</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="plotting-2d-distributions-and-histograms">
 <h3>Plotting 2D distributions and histograms<a class="headerlink" href="#plotting-2d-distributions-and-histograms" title="Permalink to this headline">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">SwarmViz</span></code> class incorporated all the distributions presented
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmViz</span></code> class incorporated all the distributions presented
 above. All the <code class="docutils literal notranslate"><span class="pre">dataviz</span></code> classes allow you to select the
 visualizations you want to display by passing a list of their names to
 the <code class="docutils literal notranslate"><span class="pre">display_plots</span></code> parameter.</p>
@@ -1023,19 +1085,18 @@ swarm_viz.plot()
 </div>
 <div class="section" id="visualizing-atari-games">
 <h3>Visualizing Atari games<a class="headerlink" href="#visualizing-atari-games" title="Permalink to this headline">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">AtariViz</span></code> class includes all the plots that can help visualize
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">AtariViz</span></code> class includes all the plots that can help visualize
 the sampling process of an Atari game. On top of the visualizations
-available on the <code class="docutils literal notranslate"><span class="pre">SwarmViz1d</span></code> class, it allows to display the frame of
+available on the <code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmViz1d</span></code> class, it allows to display the frame of
 the best state sampled.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.dataviz.swarm_viz</span> <span class="kn">import</span> <span class="n">AtariViz</span>
 </pre></div>
 </div>
-<p>We will use the game <strong>Qbert</strong> to show how the <code class="docutils literal notranslate"><span class="pre">AtariViz</span></code> works.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fragile.atari.env</span> <span class="kn">import</span> <span class="n">AtariEnv</span>
-<span class="kn">from</span> <span class="nn">fragile.core.dt_sampler</span> <span class="kn">import</span> <span class="n">GaussianDt</span>
-<span class="kn">from</span> <span class="nn">fragile.core.models</span> <span class="kn">import</span> <span class="n">DiscreteUniform</span>
-<span class="kn">from</span> <span class="nn">fragile.core.swarm</span> <span class="kn">import</span> <span class="n">Swarm</span>
-<span class="kn">from</span> <span class="nn">plangym</span> <span class="kn">import</span> <span class="n">AtariEnvironment</span><span class="p">,</span> <span class="n">ParallelEnvironment</span>
+<p>We will use the game <strong>Qbert</strong> to show how the <code class="xref py py-class docutils literal notranslate"><span class="pre">AtariViz</span></code> works.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">plangym</span> <span class="kn">import</span> <span class="n">AtariEnvironment</span><span class="p">,</span> <span class="n">ParallelEnvironment</span>
+<span class="kn">from</span> <span class="nn">fragile.atari</span> <span class="kn">import</span> <span class="n">AtariEnv</span>
+<span class="kn">from</span> <span class="nn">fragile.core</span> <span class="kn">import</span> <span class="n">DiscreteUniform</span><span class="p">,</span> <span class="n">GaussianDt</span><span class="p">,</span> <span class="n">Swarm</span>
+
 <span class="n">game_name</span> <span class="o">=</span> <span class="s2">&quot;Qbert-ram-v0&quot;</span>
 <span class="n">env</span> <span class="o">=</span> <span class="n">ParallelEnvironment</span><span class="p">(</span>
         <span class="n">env_class</span><span class="o">=</span><span class="n">AtariEnvironment</span><span class="p">,</span>
@@ -1078,7 +1139,7 @@ to <code class="docutils literal notranslate"><span class="pre">display_plots</s
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atviz</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="../../_images/03_atariviz.gif" src="../../_images/03_atariviz.gif" />
+<img alt="../../_images/03_atariviz1.gif" src="../../_images/03_atariviz1.gif" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atviz</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -1121,10 +1182,14 @@ to <code class="docutils literal notranslate"><span class="pre">display_plots</s
 <li class="toctree-l2"><a class="reference internal" href="#function-minimization-example">Function minimization example</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#testing-a-functionmapper-on-a-benchmark-function">Testing a <code class="docutils literal notranslate"><span class="pre">FunctionMapper</span></code> on a benchmark function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sampling-a-function-with-a-local-optimizer">Sampling a function with a local optimizer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#defining-a-new-problem-using-a-function">Defining a new problem using a <code class="docutils literal notranslate"><span class="pre">Function</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#optimizing-a-function-with-evolutionary-strategies">Optimizing a function with Evolutionary Strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-a-new-problem-using-a-function">Defining a new problem using a <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#the-objective-function">The objective function</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#defining-arbitrary-boundary-conditions">Defining arbitrary boundary conditions</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#optimizing-a-function-with-evolutionary-strategies">Optimizing a function with Evolutionary Strategies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#visualizing-a-swarm">Visualizing a <code class="docutils literal notranslate"><span class="pre">Swarm</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#summary-visualization">Summary visualization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#histogram-visualizations">Histogram visualizations</a></li>
@@ -1138,6 +1203,8 @@ to <code class="docutils literal notranslate"><span class="pre">display_plots</s
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/dataviz.html">Data Visualization</a></li>
 </ul>
 
 <div class="relations">

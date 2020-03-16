@@ -1,0 +1,721 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>fragile.dataviz.swarm_stats &#8212; Fragile 0.0a documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for fragile.dataviz.swarm_stats</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains streaming plots that visualize the internal data of a :class:`Swarm`.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">holoviews</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="kn">from</span> <span class="nn">fragile.core.bounds</span> <span class="kn">import</span> <span class="n">Bounds</span>
+<span class="kn">from</span> <span class="nn">fragile.core.functions</span> <span class="kn">import</span> <span class="n">relativize</span>
+<span class="kn">from</span> <span class="nn">fragile.core.swarm</span> <span class="kn">import</span> <span class="n">Swarm</span>
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">get_plangym_env</span>
+<span class="kn">from</span> <span class="nn">fragile.dataviz.streaming</span> <span class="kn">import</span> <span class="n">Curve</span><span class="p">,</span> <span class="n">Histogram</span><span class="p">,</span> <span class="n">Landscape2D</span><span class="p">,</span> <span class="n">RGB</span><span class="p">,</span> <span class="n">Table</span>
+
+<span class="n">PLOT_NAMES</span> <span class="o">=</span> <span class="p">()</span>
+
+
+<div class="viewcode-block" id="SummaryTable"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SummaryTable">[docs]</a><span class="k">class</span> <span class="nc">SummaryTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Display a table containing information about the current algorithm run.</span>
+
+<span class="sd">    The displayed information contains:</span>
+<span class="sd">        - Epoch: Number of the current epoch of the :class:`Swarm`.</span>
+<span class="sd">        - Best Reward: Value of the best reward found in the current run.</span>
+<span class="sd">        - Deaths: Percentage of walkers that fell out of the domain&#39;s boundary \</span>
+<span class="sd">                  condition during the last iteration.</span>
+<span class="sd">        - Clones: Percentage of walkers that cloned during the last iteration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;summary_table&quot;</span>
+
+<div class="viewcode-block" id="SummaryTable.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SummaryTable.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Run summary&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SummaryTable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SummaryTable.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SummaryTable.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the best reward found by the swarm and create a \</span>
+<span class="sd">        :class:`pandas.DataFrame` to keep track of it.&quot;&quot;&quot;</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Epoch&quot;</span><span class="p">,</span> <span class="s2">&quot;Best Reward&quot;</span><span class="p">,</span> <span class="s2">&quot;Deaths&quot;</span><span class="p">,</span> <span class="s2">&quot;Clones&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">swarm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;Epoch&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;Best Reward&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;Deaths&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;Clones&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">deaths</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">oobs</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
+            <span class="n">clones</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">will_clone</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;Epoch&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n_iters</span><span class="p">)],</span>
+                    <span class="s2">&quot;Best Reward&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{:.4f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">best_reward</span><span class="p">))],</span>
+                    <span class="s2">&quot;Deaths&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{:.2f}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">deaths</span><span class="p">)],</span>
+                    <span class="s2">&quot;Clones&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{:.2f}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">clones</span><span class="p">)],</span>
+                <span class="p">},</span>
+                <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div></div>
+
+
+<div class="viewcode-block" id="AtariBestFrame"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.AtariBestFrame">[docs]</a><span class="k">class</span> <span class="nc">AtariBestFrame</span><span class="p">(</span><span class="n">RGB</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Display the Atari frame that corresponds to the best state sampled.</span>
+
+<span class="sd">    It only works for environments of class :class:`AtariEnv`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;best_frame&quot;</span>
+
+<div class="viewcode-block" id="AtariBestFrame.image_from_state"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.AtariBestFrame.image_from_state">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">image_from_state</span><span class="p">(</span><span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the frame corresponding to a given :class:`AtariEnv` state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            swarm: Swarm containing the target environment.</span>
+<span class="sd">            state: States that will be used to extract the frame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array of size (210, 160, 3) containing the RGB frame representing \</span>
+<span class="sd">            the target state.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">get_plangym_env</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">ale</span><span class="o">.</span><span class="n">getScreenRGB</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AtariBestFrame.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.AtariBestFrame.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Extract the frame from the :class:`AtariEnv` that the target \</span>
+<span class="sd">        :class:`Swarm` contains.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">swarm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">210</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">best_ix</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">best_ix</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_from_state</span><span class="p">(</span><span class="n">swarm</span><span class="o">=</span><span class="n">swarm</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AtariBestFrame.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.AtariBestFrame.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Best state sampled&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">210</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AtariBestFrame</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="BestReward"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.BestReward">[docs]</a><span class="k">class</span> <span class="nc">BestReward</span><span class="p">(</span><span class="n">Curve</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot a curve that represents the evolution of the best reward found.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;best_reward&quot;</span>
+
+<div class="viewcode-block" id="BestReward.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.BestReward.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Best value found&quot;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;iteration&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Best value&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BestReward</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BestReward.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.BestReward.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the best reward found by the swarm and create a \</span>
+<span class="sd">        :class:`pandas.DataFrame` to keep track of it.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">swarm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;best_val&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;best_val&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n_iters</span><span class="p">)],</span> <span class="s2">&quot;best_val&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">best_reward</span><span class="p">)]},</span>
+                <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;best_val&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div></div>
+
+
+<div class="viewcode-block" id="SwarmHistogram"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SwarmHistogram">[docs]</a><span class="k">class</span> <span class="nc">SwarmHistogram</span><span class="p">(</span><span class="n">Histogram</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract class to create histograms using data from the :class:`Swarm`.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;swarm_histogram&quot;</span>
+
+<div class="viewcode-block" id="SwarmHistogram.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SwarmHistogram.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">margin_high</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">margin_low</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`SwarmHistogram`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            margin_high: Ignored. (Update pending)</span>
+<span class="sd">            margin_low: Ignored. (Update pending)</span>
+<span class="sd">            *args: Passed to :class:`Histogram`.</span>
+<span class="sd">            **kwargs: Passed to :class:`Histogram`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">margin_high</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="n">margin_low</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SwarmHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwarmHistogram.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SwarmHistogram.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Frequency&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SwarmHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_update_lims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the x axis boundaries to match the values of the plotted distribution.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+<div class="viewcode-block" id="SwarmHistogram.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SwarmHistogram.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;states&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract the data of the attribute of the :class:`Swarm` that will be \</span>
+<span class="sd">        represented as a histogram.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            swarm: Target :class:`Swarm`.</span>
+<span class="sd">            attr: Attribute of the target :class:`States` that will be plotted.</span>
+<span class="sd">            states: States class that contains the data to be plotted. Accepts \</span>
+<span class="sd">                    {&quot;states&quot;, &quot;env_states&quot;, &quot;model_states&quot;}</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Histogram containing the target data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">swarm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SwarmHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_plot_data</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
+        <span class="n">states_class</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="p">,</span> <span class="n">states</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">states_class</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">if</span> <span class="n">swarm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_lims</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SwarmHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_plot_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RewardHistogram"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.RewardHistogram">[docs]</a><span class="k">class</span> <span class="nc">RewardHistogram</span><span class="p">(</span><span class="n">SwarmHistogram</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot a histogram of the reward distribution of a :class:`Swarm`.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;reward_histogram&quot;</span>
+
+<div class="viewcode-block" id="RewardHistogram.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.RewardHistogram.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Reward distribution&quot;</span><span class="p">,</span> <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Reward&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RewardHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RewardHistogram.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.RewardHistogram.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a histogram of the ``cum_rewards`` attribute of the :class:`Walkers`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">RewardHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_plot_data</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="s2">&quot;cum_rewards&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DistanceHistogram"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.DistanceHistogram">[docs]</a><span class="k">class</span> <span class="nc">DistanceHistogram</span><span class="p">(</span><span class="n">SwarmHistogram</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot a histogram of the distance distribution of a :class:`Swarm`.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;distance_histogram&quot;</span>
+
+<div class="viewcode-block" id="DistanceHistogram.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.DistanceHistogram.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Distance distribution&quot;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Distance&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Frequency&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DistanceHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DistanceHistogram.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.DistanceHistogram.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a histogram of the ``distance`` attribute of the :class:`Walkers`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">DistanceHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_plot_data</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="s2">&quot;distances&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="VirtualRewardHistogram"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.VirtualRewardHistogram">[docs]</a><span class="k">class</span> <span class="nc">VirtualRewardHistogram</span><span class="p">(</span><span class="n">SwarmHistogram</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot a histogram of the virtual reward distribution of a :class:`Swarm`.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;virtual_reward_histogram&quot;</span>
+
+<div class="viewcode-block" id="VirtualRewardHistogram.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.VirtualRewardHistogram.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Virtual reward distribution&quot;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Virtual reward&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Frequency&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VirtualRewardHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VirtualRewardHistogram.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.VirtualRewardHistogram.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a histogram of the ``virtual_reward`` attribute of the :class:`Walkers`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">VirtualRewardHistogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_plot_data</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="s2">&quot;virtual_rewards&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="has_embedding"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.has_embedding">[docs]</a><span class="k">def</span> <span class="nf">has_embedding</span><span class="p">(</span><span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Return ``True`` if the target :class:`Swarm` has a critic to calculate embeddings.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="s2">&quot;critic&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="p">,</span> <span class="s2">&quot;preprocess_input&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="get_xy_coords"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.get_xy_coords">[docs]</a><span class="k">def</span> <span class="nf">get_xy_coords</span><span class="p">(</span><span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">use_embedding</span><span class="p">:</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the x,y coordinates to represent observations values in 2D.</span>
+
+<span class="sd">    If the :class:`Swarm` has a critic to calculate 2D embeddings, the \</span>
+<span class="sd">    two first dimensions of embedding values will be used. Otherwise return \</span>
+<span class="sd">    the first two dimensions of ``observs``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">use_embedding</span> <span class="ow">and</span> <span class="n">has_embedding</span><span class="p">(</span><span class="n">swarm</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">preprocess_input</span><span class="p">(</span>
+            <span class="n">env_states</span><span class="o">=</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="p">,</span>
+            <span class="n">walkers_states</span><span class="o">=</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="p">,</span>
+            <span class="n">model_states</span><span class="o">=</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">model_states</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">swarm</span>
+    <span class="k">return</span> <span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">env_states</span><span class="o">.</span><span class="n">observs</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SwarmLandscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SwarmLandscape">[docs]</a><span class="k">class</span> <span class="nc">SwarmLandscape</span><span class="p">(</span><span class="n">Landscape2D</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot a 2D landscape of :class:`Swarm` data.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;swarm_landscape&quot;</span>
+
+<div class="viewcode-block" id="SwarmLandscape.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SwarmLandscape.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">use_embeddings</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">margin_high</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">margin_low</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`SwarmLandscape2D`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            use_embeddings: Use embeddings to represent the observations if available.</span>
+<span class="sd">            margin_high: Ignored. (Update pending)</span>
+<span class="sd">            margin_low: Ignored. (Update pending)</span>
+<span class="sd">            *args: Passed to :class:`Landscape2D`.</span>
+<span class="sd">            **kwargs: Passed to :class:`Landscape2D`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_embeddings</span> <span class="o">=</span> <span class="n">use_embeddings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">margin_high</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="n">margin_low</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SwarmLandscape</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwarmLandscape.get_z_coords"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SwarmLandscape.get_z_coords">[docs]</a>    <span class="k">def</span> <span class="nf">get_z_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the z values of the target lanscape.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="k">def</span> <span class="nf">_update_lims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">backup_bounds</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">bounds</span> <span class="k">if</span> <span class="n">swarm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Bounds</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span> <span class="k">if</span> <span class="n">has_embedding</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_embeddings</span> <span class="k">else</span> <span class="n">backup_bounds</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylim</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">to_tuples</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SwarmLandscape.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SwarmLandscape.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xlim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span> <span class="k">if</span> <span class="n">xlim</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span> <span class="k">else</span> <span class="n">xlim</span>
+        <span class="n">ylim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylim</span> <span class="k">if</span> <span class="n">ylim</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span> <span class="k">else</span> <span class="n">ylim</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SwarmLandscape</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="n">ylim</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_plot_data_with_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">swarm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">get_xy_coords</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_embeddings</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_z_coords</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">invert_cmap</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">minimize</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_lims</span><span class="p">(</span><span class="n">swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">z</span>
+
+<div class="viewcode-block" id="SwarmLandscape.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.SwarmLandscape.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Extract the observations and target values needed to plot the landscape.&quot;&quot;&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_plot_data_with_defaults</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">z</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SwarmLandscape</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_plot_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RewardLandscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.RewardLandscape">[docs]</a><span class="k">class</span> <span class="nc">RewardLandscape</span><span class="p">(</span><span class="n">SwarmLandscape</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot an interpolate landscape of the reward distribution of the :class:`Walkers`.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;reward_landscape&quot;</span>
+
+<div class="viewcode-block" id="RewardLandscape.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.RewardLandscape.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Reward landscape&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">RewardLandscape</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RewardLandscape.get_z_coords"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.RewardLandscape.get_z_coords">[docs]</a>    <span class="k">def</span> <span class="nf">get_z_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the normalized ``cum_rewards`` of the walkers.&quot;&quot;&quot;</span>
+        <span class="n">rewards</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">relativize</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rewards</span></div></div>
+
+
+<div class="viewcode-block" id="VirtualRewardLandscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.VirtualRewardLandscape">[docs]</a><span class="k">class</span> <span class="nc">VirtualRewardLandscape</span><span class="p">(</span><span class="n">SwarmLandscape</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot an interpolate landscape of the virtual reward distribution of the :class:`Walkers`.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;virtual_reward_landscape&quot;</span>
+
+<div class="viewcode-block" id="VirtualRewardLandscape.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.VirtualRewardLandscape.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Virtual reward landscape&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VirtualRewardLandscape</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VirtualRewardLandscape.get_z_coords"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.VirtualRewardLandscape.get_z_coords">[docs]</a>    <span class="k">def</span> <span class="nf">get_z_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the normalized ``virtual_rewards`` of the walkers.&quot;&quot;&quot;</span>
+        <span class="n">virtual_rewards</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">virtual_rewards</span>
+        <span class="k">return</span> <span class="n">virtual_rewards</span></div></div>
+
+
+<div class="viewcode-block" id="DistanceLandscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.DistanceLandscape">[docs]</a><span class="k">class</span> <span class="nc">DistanceLandscape</span><span class="p">(</span><span class="n">SwarmLandscape</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot an interpolate landscape of the distance distribution of the :class:`Walkers`.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;distance_landscape&quot;</span>
+
+<div class="viewcode-block" id="DistanceLandscape.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.DistanceLandscape.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Distance landscape&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DistanceLandscape</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DistanceLandscape.get_z_coords"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.DistanceLandscape.get_z_coords">[docs]</a>    <span class="k">def</span> <span class="nf">get_z_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the normalized ``distances`` of the walkers.&quot;&quot;&quot;</span>
+        <span class="n">distances</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">distances</span>
+        <span class="k">return</span> <span class="n">distances</span></div></div>
+
+
+<div class="viewcode-block" id="WalkersDensity"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.WalkersDensity">[docs]</a><span class="k">class</span> <span class="nc">WalkersDensity</span><span class="p">(</span><span class="n">SwarmLandscape</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot the density distribution of the walkers.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;walkers_density&quot;</span>
+
+<div class="viewcode-block" id="WalkersDensity.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.WalkersDensity.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_embeddings</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`WalkersDensity`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            use_embeddings: Use embeddings to represent the observations if available.</span>
+<span class="sd">            *args: Passed to :class:`SwarmLandscape`.</span>
+<span class="sd">            **kwargs: Passed to :class:`SwarmLandscape`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_embeddings</span> <span class="o">=</span> <span class="n">use_embeddings</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WalkersDensity</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="WalkersDensity.get_z_coords"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.WalkersDensity.get_z_coords">[docs]</a>    <span class="k">def</span> <span class="nf">get_z_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Do nothing.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="WalkersDensity.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.WalkersDensity.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Walkers density distribution&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span>
+        <span class="n">shared_axes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">framewise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">axiswise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tools</span> <span class="o">=</span> <span class="n">tools</span> <span class="k">if</span> <span class="n">tools</span> <span class="o">!=</span> <span class="s2">&quot;default&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;hover&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">Bivariate</span><span class="p">(</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">show_legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">filled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">),</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+                <span class="n">fill_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                <span class="n">size</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">),</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">(</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="WalkersDensity.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.WalkersDensity.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the observations of the walkers and the plot limits.&quot;&quot;&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_plot_data_with_defaults</span><span class="p">(</span><span class="n">swarm</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylim</span></div>
+
+<div class="viewcode-block" id="WalkersDensity.plot_landscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.WalkersDensity.plot_landscape">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">plot_landscape</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot the walkers distribution overlaying a histogram on a bivariate plot.&quot;&quot;&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">Bivariate</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">scatter</span> <span class="o">=</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">Scatter</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="n">contour_mesh</span> <span class="o">=</span> <span class="n">mesh</span> <span class="o">*</span> <span class="n">scatter</span>
+        <span class="k">return</span> <span class="n">contour_mesh</span><span class="o">.</span><span class="n">redim</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">holoviews</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">xlim</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">holoviews</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">ylim</span><span class="p">),</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GridLandscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.GridLandscape">[docs]</a><span class="k">class</span> <span class="nc">GridLandscape</span><span class="p">(</span><span class="n">SwarmLandscape</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot the memory grid of a :class:`Critic` that provides a memory grid.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;grid_landscape&quot;</span>
+
+<div class="viewcode-block" id="GridLandscape.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.GridLandscape.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Memory grid values&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GridLandscape</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GridLandscape.plot_landscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.GridLandscape.plot_landscape">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">plot_landscape</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Overlay the walkers on top of the bins defined by the memory grid.&quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">memory_vals</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># Avoid errors when initializing the plot.</span>
+            <span class="n">memory_vals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">QuadMesh</span><span class="p">((</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">memory_vals</span><span class="p">))</span>
+        <span class="n">plot</span> <span class="o">=</span> <span class="p">(</span><span class="n">mesh</span> <span class="o">*</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">Scatter</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)))</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="n">ylim</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">plot</span></div>
+
+<div class="viewcode-block" id="GridLandscape.get_z_coords"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.GridLandscape.get_z_coords">[docs]</a>    <span class="k">def</span> <span class="nf">get_z_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Extract the memory values of the :class:`Critic`&#39;s grid.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">swarm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_points</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">Bounds</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.1</span><span class="p">)</span>
+        <span class="c1"># target grid to interpolate to</span>
+        <span class="n">xi</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="n">yi</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()]</span>
+        <span class="k">if</span> <span class="n">swarm</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">warmed</span><span class="p">:</span>
+            <span class="n">memory_values</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+            <span class="n">memory_values</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">swarm</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">memory</span><span class="p">[</span><span class="n">ix</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ix</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="n">memory_values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">memory_values</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">memory_values</span></div></div>
+
+
+<div class="viewcode-block" id="KDELandscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.KDELandscape">[docs]</a><span class="k">class</span> <span class="nc">KDELandscape</span><span class="p">(</span><span class="n">SwarmLandscape</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot the probability landscape of a :class:`Critic` that provides a KDE memory.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;kde_landscape&quot;</span>
+
+<div class="viewcode-block" id="KDELandscape.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.KDELandscape.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Memory grid values&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KDELandscape</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KDELandscape.plot_landscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.KDELandscape.plot_landscape">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">plot_landscape</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Display the walkers overlied on a mesh representing the probability \</span>
+<span class="sd">        assigned by the :class:`Critic`.&quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">memory_vals</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># Avoid errors when initializing the plot.</span>
+            <span class="n">memory_vals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">QuadMesh</span><span class="p">((</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">memory_vals</span><span class="p">))</span>
+        <span class="n">plot</span> <span class="o">=</span> <span class="p">(</span><span class="n">mesh</span> <span class="o">*</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">Scatter</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)))</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="n">ylim</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">plot</span></div>
+
+<div class="viewcode-block" id="KDELandscape.get_z_coords"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.swarm_stats.KDELandscape.get_z_coords">[docs]</a>    <span class="k">def</span> <span class="nf">get_z_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swarm</span><span class="p">:</span> <span class="n">Swarm</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the values assigned by the :class:`Critic` to the regions of the state space.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">swarm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_points</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">Bounds</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.1</span><span class="p">)</span>
+        <span class="c1"># target grid to interpolate to</span>
+        <span class="n">xi</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="n">yi</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()]</span>
+        <span class="k">if</span> <span class="n">swarm</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">warmed</span><span class="p">:</span>
+            <span class="n">memory_values</span> <span class="o">=</span> <span class="n">swarm</span><span class="o">.</span><span class="n">swarm</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+            <span class="n">memory_values</span> <span class="o">=</span> <span class="n">relativize</span><span class="p">(</span><span class="o">-</span><span class="n">memory_values</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">memory_values</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">memory_values</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/examples/examples_index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

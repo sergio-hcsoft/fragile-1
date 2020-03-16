@@ -1,0 +1,704 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Distributed Module &#8212; Fragile 0.0a documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data Visualization" href="dataviz.html" />
+    <link rel="prev" title="Function Optimization" href="optimize.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fragile.distributed">
+<span id="distributed-module"></span><h1>Distributed Module<a class="headerlink" href="#module-fragile.distributed" title="Permalink to this headline">¶</a></h1>
+<p>Module that includes scalable search algorithms.</p>
+<div class="section" id="module-fragile.distributed.env">
+<span id="environments"></span><h2>Environments<a class="headerlink" href="#module-fragile.distributed.env" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fragile.distributed.env.ParallelEnvironment">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.distributed.env.</code><code class="sig-name descname">ParallelEnvironment</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable[[...], fragile.core.env.Environment], n_workers: int = 1, blocking: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelEnvironment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelEnvironment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Step an <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> in parallel using the multiprocessing library.</p>
+<dl class="method">
+<dt id="fragile.distributed.env.ParallelEnvironment.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable[[...], fragile.core.env.Environment], n_workers: int = 1, blocking: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelEnvironment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelEnvironment.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.distributed.env.ParallelEnvironment" title="fragile.distributed.env.ParallelEnvironment"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParallelEnvironment</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_callable</strong> – Returns the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> that will be distributed.</p></li>
+<li><p><strong>n_workers</strong> – Number of processes that will step the                        <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> in parallel.</p></li>
+<li><p><strong>blocking</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> perform the steps in a sequential fashion and                       block the process between steps.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.ParallelEnvironment.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelEnvironment.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelEnvironment.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the processes created by the internal parallel_environment.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.ParallelEnvironment.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelEnvironment.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelEnvironment.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the environment and return <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> class with batch_size copies         of the initial state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of walkers that the resulting state will have.</p></li>
+<li><p><strong>env_states</strong> – States class used to set the environment to an arbitrary                         state.</p></li>
+<li><p><strong>kwargs</strong> – Additional keyword arguments not related to environment data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States class containing the information of the environment after the              reset.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.ParallelEnvironment.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelEnvironment.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelEnvironment.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the environment to the target and perform an step in parallel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – States corresponding to the model data.</p></li>
+<li><p><strong>env_states</strong> – States class containing the state data to be set on the Environment.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States containing the information that describes the new state of the Environment.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.distributed.env.ParallelFunction">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.distributed.env.</code><code class="sig-name descname">ParallelFunction</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable[[...], fragile.optimize.env.Function], n_workers: int = 1, blocking: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the internal function of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> in parallel using     the multiprocessing library.</p>
+<dl class="method">
+<dt id="fragile.distributed.env.ParallelFunction.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable[[...], fragile.optimize.env.Function], n_workers: int = 1, blocking: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelFunction.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelFunction.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.distributed.env.ParallelEnvironment" title="fragile.distributed.env.ParallelEnvironment"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParallelEnvironment</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_callable</strong> – Returns the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> that will be distributed.</p></li>
+<li><p><strong>n_workers</strong> – Number of processes that will step the                        <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> in parallel.</p></li>
+<li><p><strong>blocking</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> perform the steps in a sequential fashion and                       block the process between steps.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.ParallelFunction.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelFunction.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelFunction.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the processes created by the internal parallel_function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.ParallelFunction.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelFunction.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelFunction.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> to the start of a new episode and returns         an <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> instance describing its internal state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of walkers that the returned state will have.</p></li>
+<li><p><strong>**kwargs</strong> – Ignored. This environment resets without using any external data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">EnvStates</span></code> instance describing the state of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code>.             The first dimension of the data tensors (number of walkers) will be             equal to batch_size.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.ParallelFunction.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/distributed/env.html#ParallelFunction.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.ParallelFunction.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> to the target states and sums the actions         provided by the <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> data.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> containing the data where the function              will be evaluated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> containing the information that describes the             new states sampled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.distributed.env.RayEnv">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.distributed.env.</code><code class="sig-name descname">RayEnv</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable[[dict], fragile.core.env.Environment], n_workers: int, env_kwargs: dict = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#RayEnv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayEnv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Step an <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> in parallel using <code class="docutils literal notranslate"><span class="pre">ray</span></code>.</p>
+<dl class="method">
+<dt id="fragile.distributed.env.RayEnv.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable[[dict], fragile.core.env.Environment], n_workers: int, env_kwargs: dict = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#RayEnv.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayEnv.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.distributed.env.RayEnv" title="fragile.distributed.env.RayEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">RayEnv</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_callable</strong> – Returns the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> that will be distributed.</p></li>
+<li><p><strong>n_workers</strong> – Number of processes that will step the                        <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> in parallel.</p></li>
+<li><p><strong>env_kwargs</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">env_callable</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.RayEnv.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="../_modules/fragile/distributed/env.html#RayEnv.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayEnv.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing the param_dict to build an instance         of <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> that can handle all the data generated by an         <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.RayEnv.observs_shape">
+<em class="property">property </em><code class="sig-name descname">observs_shape</code><a class="headerlink" href="#fragile.distributed.env.RayEnv.observs_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the shape of the observations state of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.RayEnv.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/distributed/env.html#RayEnv.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayEnv.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the environment to the start of a new episode and returns a new         States instance describing the state of the Environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of walkers that the returned state will have.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> representing the data to be set in                         the environment.</p></li>
+<li><p><strong>*args</strong> – Passed to the internal environment <code class="docutils literal notranslate"><span class="pre">reset</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to the internal environment <code class="docutils literal notranslate"><span class="pre">reset</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States instance describing the state of the Environment. The first             dimension of the data tensors (number of walkers) will be equal to             batch_size.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.RayEnv.states_shape">
+<em class="property">property </em><code class="sig-name descname">states_shape</code><a class="headerlink" href="#fragile.distributed.env.RayEnv.states_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the shape of the internal state of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.RayEnv.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/distributed/env.html#RayEnv.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayEnv.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the environment to the target states by applying the specified         actions an arbitrary number of time steps.</p>
+<p>The state transitions will be calculated in parallel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> representing the data to be used                          to act on the environment.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> representing the data to be set in                         the environment.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> containing the information that describes the             new state of the Environment.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.distributed.env.RayFunction">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.distributed.env.</code><code class="sig-name descname">RayFunction</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable[[dict], fragile.optimize.env.Function], n_workers: int, env_kwargs: dict = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#RayFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Step an <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> in parallel using <code class="docutils literal notranslate"><span class="pre">ray</span></code>.</p>
+<dl class="method">
+<dt id="fragile.distributed.env.RayFunction.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable[[dict], fragile.optimize.env.Function], n_workers: int, env_kwargs: dict = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/env.html#RayFunction.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayFunction.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.distributed.env.RayEnv" title="fragile.distributed.env.RayEnv"><code class="xref py py-class docutils literal notranslate"><span class="pre">RayEnv</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_callable</strong> – Returns the <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> that will be distributed.</p></li>
+<li><p><strong>n_workers</strong> – Number of processes that will step the                        <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> in parallel.</p></li>
+<li><p><strong>env_kwargs</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">env_callable</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.RayFunction.function">
+<code class="sig-name descname">function</code><span class="sig-paren">(</span><em class="sig-param">points: &lt;MagicMock id='139833268146832'&gt;</em><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139833267407696'&gt;<a class="reference internal" href="../_modules/fragile/distributed/env.html#RayFunction.function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayFunction.function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the target <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> function in parallel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>points</strong> – Array of batched points to be evaluated. The length of the                     first dimension or <code class="docutils literal notranslate"><span class="pre">points</span></code> equals the batch size.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Rewards associated with each point.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.RayFunction.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/distributed/env.html#RayFunction.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayFunction.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> to the start of a new episode and returns         an <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> instance describing its internal state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of walkers that the returned state will have.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> representing the data to be set in                         the environment.</p></li>
+<li><p><strong>*args</strong> – Passed to the internal environment <code class="docutils literal notranslate"><span class="pre">reset</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to the internal environment <code class="docutils literal notranslate"><span class="pre">reset</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Ignored. This environment resets without using any external data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">EnvStates</span></code> instance describing the state of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code>.             The first dimension of the data tensors (number of walkers) will be             equal to batch_size.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.env.RayFunction.step">
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/distributed/env.html#RayFunction.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.env.RayFunction.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> to the target states and sums the actions         provided by the <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> data.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> containing the data where the function              will be evaluated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> containing the information that describes the             new states sampled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fragile.distributed.distributed_export">
+<span id="distributed-swarm"></span><h2>Distributed Swarm<a class="headerlink" href="#module-fragile.distributed.distributed_export" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fragile.distributed.distributed_export.DistributedExport">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.distributed.distributed_export.</code><code class="sig-name descname">DistributedExport</code><span class="sig-paren">(</span><em class="sig-param">swarm: Callable</em>, <em class="sig-param">n_swarms: 2</em>, <em class="sig-param">n_import: int = 2</em>, <em class="sig-param">n_export: int = 2</em>, <em class="sig-param">export_best: bool = True</em>, <em class="sig-param">import_best: bool = True</em>, <em class="sig-param">max_len: int = 20</em>, <em class="sig-param">add_global_best: bool = True</em>, <em class="sig-param">swarm_kwargs: dict = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/distributed_export.html#DistributedExport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.distributed_export.DistributedExport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a search process that exchanges <code class="xref py py-class docutils literal notranslate"><span class="pre">ExportSwarm</span></code>.</p>
+<p>This search process uses a <code class="xref py py-class docutils literal notranslate"><span class="pre">ParamServer</span></code> to exchange the specified     number o walkers between different <code class="xref py py-class docutils literal notranslate"><span class="pre">ExportSwarm</span></code>.</p>
+<dl class="method">
+<dt id="fragile.distributed.distributed_export.DistributedExport.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">swarm: Callable</em>, <em class="sig-param">n_swarms: 2</em>, <em class="sig-param">n_import: int = 2</em>, <em class="sig-param">n_export: int = 2</em>, <em class="sig-param">export_best: bool = True</em>, <em class="sig-param">import_best: bool = True</em>, <em class="sig-param">max_len: int = 20</em>, <em class="sig-param">add_global_best: bool = True</em>, <em class="sig-param">swarm_kwargs: dict = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/distributed_export.html#DistributedExport.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.distributed_export.DistributedExport.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.distributed.distributed_export.DistributedExport" title="fragile.distributed.distributed_export.DistributedExport"><code class="xref py py-class docutils literal notranslate"><span class="pre">DistributedExport</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>swarm</strong> – Callable that returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>. Accepts keyword                    arguments defined in <code class="docutils literal notranslate"><span class="pre">swarm_kwargs</span></code>.</p></li>
+<li><p><strong>n_swarms</strong> – Number of <code class="xref py py-class docutils literal notranslate"><span class="pre">ExportSwarm</span></code> that will be used in the                       to run the search process.</p></li>
+<li><p><strong>n_import</strong> – Number of walkers that will be imported from an external                       <code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code>.</p></li>
+<li><p><strong>n_export</strong> – Number of walkers that will be exported as <code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code>.</p></li>
+<li><p><strong>export_best</strong> – The best walkers of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> will always be exported.</p></li>
+<li><p><strong>import_best</strong> – The best walker of the imported <code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code>                          will be compared to the best walkers of the                          <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>. If it improves the current best value                          found, the best walker of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> will be updated.</p></li>
+<li><p><strong>max_len</strong> – Maximum number of <code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code> that the                      <code class="xref py py-class docutils literal notranslate"><span class="pre">ParamServer</span></code> will keep in its buffer.</p></li>
+<li><p><strong>add_global_best</strong> – Add the best value found during the search to all                              the exported walkers that the <code class="xref py py-class docutils literal notranslate"><span class="pre">ParamServer</span></code>                              returns.</p></li>
+<li><p><strong>swarm_kwargs</strong> – Dictionary containing keyword that will be passed to <code class="docutils literal notranslate"><span class="pre">swarm</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.distributed_export.DistributedExport.get_best">
+<code class="sig-name descname">get_best</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; fragile.distributed.export_swarm.BestWalker<a class="reference internal" href="../_modules/fragile/distributed/distributed_export.html#DistributedExport.get_best"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.distributed_export.DistributedExport.get_best" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the best walkers found during the algorithm run.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.distributed_export.DistributedExport.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/distributed_export.html#DistributedExport.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.distributed_export.DistributedExport.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the internal data of the swarms and parameter server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.distributed_export.DistributedExport.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">print_every=10000000000.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/distributed_export.html#DistributedExport.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.distributed_export.DistributedExport.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the distributed search algorithm asynchronously.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-fragile.distributed.export_swarm"></span><dl class="class">
+<dt id="fragile.distributed.export_swarm.BestWalker">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.distributed.export_swarm.</code><code class="sig-name descname">BestWalker</code><span class="sig-paren">(</span><em class="sig-param">minimize: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#BestWalker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.BestWalker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent the best walker found during a distributed search process run     with several <a class="reference internal" href="#fragile.distributed.export_swarm.ExportSwarm" title="fragile.distributed.export_swarm.ExportSwarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportSwarm</span></code></a>.</p>
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.BestWalker.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">minimize: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#BestWalker.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.BestWalker.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.distributed.export_swarm.BestWalker" title="fragile.distributed.export_swarm.BestWalker"><code class="xref py py-class docutils literal notranslate"><span class="pre">BestWalker</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>minimize</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the walker represents a minimization process.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.BestWalker.update_best">
+<code class="sig-name descname">update_best</code><span class="sig-paren">(</span><em class="sig-param">walkers: fragile.distributed.export_swarm.ExportedWalkers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#BestWalker.update_best"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.BestWalker.update_best" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the values tracked by the walker if the passed         <code class="xref py py-class docutils literal notranslate"><span class="pre">ExternalWalkers</span></code> contain  a better value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>walkers</strong> – The current best values will be compared against the                      walkers of this instance of <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.distributed.export_swarm.ExportSwarm">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.distributed.export_swarm.</code><code class="sig-name descname">ExportSwarm</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">n_import: int = 2</em>, <em class="sig-param">n_export: int = 2</em>, <em class="sig-param">export_best: bool = True</em>, <em class="sig-param">import_best: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportSwarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportSwarm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper that allows to import and export data from <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a>.</p>
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportSwarm.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">n_import: int = 2</em>, <em class="sig-param">n_export: int = 2</em>, <em class="sig-param">export_best: bool = True</em>, <em class="sig-param">import_best: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportSwarm.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportSwarm.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.distributed.export_swarm.ExportSwarm" title="fragile.distributed.export_swarm.ExportSwarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportSwarm</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>swarm</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> that will be wrapped.</p></li>
+<li><p><strong>n_import</strong> – Number of walkers that will be imported from an external                       <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a>.</p></li>
+<li><p><strong>n_export</strong> – Number of walkers that will be exported as <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a>.</p></li>
+<li><p><strong>export_best</strong> – The best walkers of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> will always be exported.</p></li>
+<li><p><strong>import_best</strong> – The best walker of the imported <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a>                          will be compared to the best walkers of the                          <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>. If it improves the current best value                          found, the best walker of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> will be updated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportSwarm.export_walkers">
+<code class="sig-name descname">export_walkers</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; fragile.distributed.export_swarm.ExportedWalkers<a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportSwarm.export_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportSwarm.export_walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export the number of walkers defined by <code class="docutils literal notranslate"><span class="pre">self.n_export</span></code> chosen at         random from the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> walkers. If <code class="docutils literal notranslate"><span class="pre">self.export_best</span></code> is true         the best walker of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> will always be included.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportSwarm.import_best">
+<code class="sig-name descname">import_best</code><span class="sig-paren">(</span><em class="sig-param">walkers: fragile.distributed.export_swarm.ExportedWalkers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportSwarm.import_best"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportSwarm.import_best" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import the best walker from the target <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> if it         improves the best value present in the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>’ walkers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>walkers</strong> – Walkers containing the best walker that will be imported                     if it improves the current best value found.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportSwarm.import_walkers">
+<code class="sig-name descname">import_walkers</code><span class="sig-paren">(</span><em class="sig-param">walkers: fragile.distributed.export_swarm.ExportedWalkers</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportSwarm.import_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportSwarm.import_walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import the target <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> into the walkers of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+<p>The importing process will be done cloning <code class="docutils literal notranslate"><span class="pre">self.n_import</span></code> walkers         chosen at random after comparing them to the imported walkers. This will         be done running the FractalAI cloning operation.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">self.import_best</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the best walker of the imported         walkers will be compared against the current best walker and update if         it improves the current best value found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>walkers</strong> – <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> that will be imported into the                     <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> pool of walkers.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportSwarm.merge_walkers">
+<code class="sig-name descname">merge_walkers</code><span class="sig-paren">(</span><em class="sig-param">walkers: fragile.distributed.export_swarm.ExportedWalkers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportSwarm.merge_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportSwarm.merge_walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a FractalAI clone operation between a random sample of the         <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> walkers and the imported walkers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>walkers</strong> – Walkers that will be imported. The <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> walkers                     can clone to them.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportSwarm.run_exchange_step">
+<code class="sig-name descname">run_exchange_step</code><span class="sig-paren">(</span><em class="sig-param">walkers: fragile.distributed.export_swarm.ExportedWalkers</em><span class="sig-paren">)</span> &#x2192; fragile.distributed.export_swarm.ExportedWalkers<a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportSwarm.run_exchange_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportSwarm.run_exchange_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import the target <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> before iterating the wrapped         <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>, and export the target number of walkers as a         <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>walkers</strong> – Walkers that will be imported after running an iteration             of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>walkers exported after running an iteration of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.distributed.export_swarm.ExportedWalkers">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.distributed.export_swarm.</code><code class="sig-name descname">ExportedWalkers</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportedWalkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportedWalkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the walkers that are being passed across different instances     of <a class="reference internal" href="#fragile.distributed.export_swarm.ExportSwarm" title="fragile.distributed.export_swarm.ExportSwarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportSwarm</span></code></a>.</p>
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportedWalkers.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportedWalkers.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportedWalkers.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <code class="xref py py-class docutils literal notranslate"><span class="pre">ExportWalkers</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of walkers that will be exported.</p></li>
+<li><p><strong>state_dict</strong> – External <code class="xref py py-class docutils literal notranslate"><span class="pre">StateDict</span></code> that overrides the default values.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportedWalkers.get_best_index">
+<code class="sig-name descname">get_best_index</code><span class="sig-paren">(</span><em class="sig-param">minimize: bool</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportedWalkers.get_best_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportedWalkers.get_best_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the index of the best walker present in the <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>minimize</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> return the index of the walker with the lowest                       reward. If <code class="docutils literal notranslate"><span class="pre">False</span></code> return the index of the walker with                       the highest reward.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Index of the best walker.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportedWalkers.get_best_reward">
+<code class="sig-name descname">get_best_reward</code><span class="sig-paren">(</span><em class="sig-param">minimize: bool</em><span class="sig-paren">)</span> &#x2192; Union[int, &lt;MagicMock id='139833291415120'&gt;, float, &lt;MagicMock id='139833291440528'&gt;]<a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportedWalkers.get_best_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportedWalkers.get_best_reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the reward value of the best walker present in the         <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>minimize</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> return the lowest reward. If <code class="docutils literal notranslate"><span class="pre">False</span></code> return             the  highest reward.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward value of the best walker.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ExportedWalkers.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ExportedWalkers.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ExportedWalkers.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing the param_dict to build an instance         of States that can handle all the data generated by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.distributed.export_swarm.ParamServer">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.distributed.export_swarm.</code><code class="sig-name descname">ParamServer</code><span class="sig-paren">(</span><em class="sig-param">max_len: int = 20</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">add_global_best: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ParamServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ParamServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter server that stores the <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> generated by     different <a class="reference internal" href="#fragile.distributed.export_swarm.ExportSwarm" title="fragile.distributed.export_swarm.ExportSwarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportSwarm</span></code></a>.</p>
+<p>It allows different <a class="reference internal" href="#fragile.distributed.export_swarm.ExportSwarm" title="fragile.distributed.export_swarm.ExportSwarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportSwarm</span></code></a> to exchange walkers, and it keeps     track of the best walker found during the search process.</p>
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ParamServer.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">max_len: int = 20</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">add_global_best: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ParamServer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ParamServer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.distributed.export_swarm.ParamServer" title="fragile.distributed.export_swarm.ParamServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParamServer</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_len</strong> – Maximum number of <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> that the                      <a class="reference internal" href="#fragile.distributed.export_swarm.ParamServer" title="fragile.distributed.export_swarm.ParamServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParamServer</span></code></a> will keep in its buffer.</p></li>
+<li><p><strong>minimize</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the <a class="reference internal" href="#fragile.distributed.export_swarm.ParamServer" title="fragile.distributed.export_swarm.ParamServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParamServer</span></code></a> will be used for a                        minimization process, <code class="docutils literal notranslate"><span class="pre">False</span></code> if it will be used for a                        maximization process.</p></li>
+<li><p><strong>add_global_best</strong> – Add the best value found during the search to all                              the exported walkers that the <a class="reference internal" href="#fragile.distributed.export_swarm.ParamServer" title="fragile.distributed.export_swarm.ParamServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParamServer</span></code></a>                              returns.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ParamServer.__len__">
+<code class="sig-name descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ParamServer.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ParamServer.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the length of the internal buffer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ParamServer.exchange_walkers">
+<code class="sig-name descname">exchange_walkers</code><span class="sig-paren">(</span><em class="sig-param">walkers: fragile.distributed.export_swarm.ExportedWalkers</em><span class="sig-paren">)</span> &#x2192; fragile.distributed.export_swarm.ExportedWalkers<a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ParamServer.exchange_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ParamServer.exchange_walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a new instance of <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> and return on of the         walkers stored in the internal buffer.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">self.add_global_best</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> the best walker found will be         included in the returned <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>walkers</strong> – Data that will be stored in the internal buffer.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> sampled randomly from the internal buffer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ParamServer.export_walkers">
+<code class="sig-name descname">export_walkers</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; fragile.distributed.export_swarm.ExportedWalkers<a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ParamServer.export_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ParamServer.export_walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a :class`ExportedWalkers` sampled randomly from the internal         buffer.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">self.add_global_best</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> the best walker found will be         included in the returned <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ParamServer.import_walkers">
+<code class="sig-name descname">import_walkers</code><span class="sig-paren">(</span><em class="sig-param">walkers: fragile.distributed.export_swarm.ExportedWalkers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ParamServer.import_walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ParamServer.import_walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a the target <a class="reference internal" href="#fragile.distributed.export_swarm.ExportedWalkers" title="fragile.distributed.export_swarm.ExportedWalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExportedWalkers</span></code></a> at the end of the internal         buffer and keep track of the best reward found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>walkers</strong> – Will be appended at the end of the internal buffer.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ParamServer.max_len">
+<em class="property">property </em><code class="sig-name descname">max_len</code><a class="headerlink" href="#fragile.distributed.export_swarm.ParamServer.max_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the maximum length of the internal buffer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.distributed.export_swarm.ParamServer.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/distributed/export_swarm.html#ParamServer.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.distributed.export_swarm.ParamServer.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Erase the internal data of the <a class="reference internal" href="#fragile.distributed.export_swarm.ParamServer" title="fragile.distributed.export_swarm.ParamServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParamServer</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ray-remote-classes">
+<h2>Ray remote classes<a class="headerlink" href="#ray-remote-classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-fragile.distributed.ray.export_swarm">
+<span id="swarm"></span><h3>Swarm<a class="headerlink" href="#module-fragile.distributed.ray.export_swarm" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id1">
+<h3>Environments<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="module-fragile.distributed.ray.env"></span></div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../resources/examples/examples_index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimize.html">Function Optimization</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Distributed Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-fragile.distributed.env">Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-fragile.distributed.distributed_export">Distributed Swarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ray-remote-classes">Ray remote classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-fragile.distributed.ray.export_swarm">Swarm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Environments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dataviz.html">Data Visualization</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="optimize.html" title="previous chapter">Function Optimization</a></li>
+      <li>Next: <a href="dataviz.html" title="next chapter">Data Visualization</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/module_docs/distributed.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

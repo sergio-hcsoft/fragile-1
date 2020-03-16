@@ -26,8 +26,11 @@
                  border-width: 2px; border-style: solid;
                  border-color: #9673A6; background-color: #F8EBFF;}
       .tree {color: black; font-weight:bold; font-size:16px;
-                 border-width: 2px; border-style: solid;
-                 border-color: #D79B00; background-color: #E0CAB4;}
+             border-width: 2px; border-style: solid;
+             border-color: #D79B00; background-color: #E0CAB4;}
+      .critic {color: black; font-weight:bold; font-size:16px;
+               border-width: 2px; border-style: solid;
+               border-color: #D6B656; background-color: #FFF2CC;}
     </style>
 
 .. role:: states
@@ -39,3 +42,4 @@
 .. role:: model-st
 .. role:: walkers-st
 .. role:: tree
+.. role:: critic

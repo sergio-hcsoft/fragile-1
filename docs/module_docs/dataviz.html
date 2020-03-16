@@ -1,0 +1,890 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Data Visualization &#8212; Fragile 0.0a documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Distributed Module" href="distributed.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="data-visualization">
+<h1>Data Visualization<a class="headerlink" href="#data-visualization" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="swarm-visualizers">
+<h2><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> Visualizers<a class="headerlink" href="#swarm-visualizers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="summary">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">Summary</span></code><a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.dataviz.Summary">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.</code><code class="sig-name descname">Summary</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">display_plots='default'</em>, <em class="sig-param">stream_interval: int = 100</em>, <em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">n_points: int = 50</em>, <em class="sig-param">columns: int = 3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_viz.html#Summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.Summary" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fragile.dataviz.Summary" title="fragile.dataviz.Summary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Summary</span></code></a> that plots a table containing information of the epoch,     best reward found and percentage of deaths and clones.</p>
+<p>It also plots the evolution of the best reward found. It can work with any     kind of <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+</dd></dl>
+
+<img alt="../_images/03_summary.gif" src="../_images/03_summary.gif" />
+</div>
+<div class="section" id="atariviz">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">AtariViz</span></code><a class="headerlink" href="#atariviz" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.dataviz.swarm_viz.AtariViz">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_viz.</code><code class="sig-name descname">AtariViz</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">display_plots='default'</em>, <em class="sig-param">stream_interval: int = 100</em>, <em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">n_points: int = 50</em>, <em class="sig-param">columns: int = 3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_viz.html#AtariViz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_viz.AtariViz" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Summary</span></code> that plots the RGB frame corresponding to the best state     found, in addition to the summary table and best reward plot.</p>
+<p>It also plots the evolution of the best reward found. It can work only with     an <code class="xref py py-class docutils literal notranslate"><span class="pre">AtariEnv</span></code>.</p>
+</dd></dl>
+
+<img alt="../_images/03_atariviz.gif" src="../_images/03_atariviz.gif" />
+</div>
+<div class="section" id="swarmviz1d">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmViz1D</span></code><a class="headerlink" href="#swarmviz1d" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.dataviz.swarm_viz.SwarmViz1D">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_viz.</code><code class="sig-name descname">SwarmViz1D</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">display_plots='default'</em>, <em class="sig-param">stream_interval: int = 100</em>, <em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">n_points: int = 50</em>, <em class="sig-param">columns: int = 3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_viz.html#SwarmViz1D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_viz.SwarmViz1D" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmViz</span></code> that plots all the one-dimensional plots: Histograms and     reward evolution curve. It can work with any kind of <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+</dd></dl>
+
+<img alt="../_images/03_1dviz.gif" src="../_images/03_1dviz.gif" />
+</div>
+<div class="section" id="landscapeviz">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">LandscapeViz</span></code><a class="headerlink" href="#landscapeviz" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.dataviz.LandscapeViz">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.</code><code class="sig-name descname">LandscapeViz</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">display_plots='default'</em>, <em class="sig-param">stream_interval: int = 100</em>, <em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">n_points: int = 50</em>, <em class="sig-param">columns: int = 3</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_viz.html#LandscapeViz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.LandscapeViz" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmViz</span></code> that plots all the one-dimensional plots: Histograms and     reward evolution curve. It can work with any kind of <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+</dd></dl>
+
+<img alt="../_images/03_landscape.gif" src="../_images/03_landscape.gif" />
+</div>
+</div>
+<div class="section" id="module-fragile.dataviz.swarm_stats">
+<span id="plots-for-swarm-data"></span><h2>Plots for <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> data<a class="headerlink" href="#module-fragile.dataviz.swarm_stats" title="Permalink to this headline">¶</a></h2>
+<p>Contains streaming plots that visualize the internal data of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.AtariBestFrame">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">AtariBestFrame</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#AtariBestFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.AtariBestFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the Atari frame that corresponds to the best state sampled.</p>
+<p>It only works for environments of class <code class="xref py py-class docutils literal notranslate"><span class="pre">AtariEnv</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.AtariBestFrame.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm = None</em><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139833272375760'&gt;<a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#AtariBestFrame.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.AtariBestFrame.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the frame from the <code class="xref py py-class docutils literal notranslate"><span class="pre">AtariEnv</span></code> that the target         <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> contains.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.AtariBestFrame.image_from_state">
+<em class="property">static </em><code class="sig-name descname">image_from_state</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">state: &lt;MagicMock id='139833270373520'&gt;</em><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139833272354576'&gt;<a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#AtariBestFrame.image_from_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.AtariBestFrame.image_from_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the frame corresponding to a given <code class="xref py py-class docutils literal notranslate"><span class="pre">AtariEnv</span></code> state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>swarm</strong> – Swarm containing the target environment.</p></li>
+<li><p><strong>state</strong> – States that will be used to extract the frame.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of size (210, 160, 3) containing the RGB frame representing             the target state.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.AtariBestFrame.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Best state sampled'</em>, <em class="sig-param">width=160</em>, <em class="sig-param">height=210</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#AtariBestFrame.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.AtariBestFrame.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.BestReward">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">BestReward</code><span class="sig-paren">(</span><em class="sig-param">buffer_length: int = 10000</em>, <em class="sig-param">index: bool = False</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#BestReward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.BestReward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a curve that represents the evolution of the best reward found.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.BestReward.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#BestReward.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.BestReward.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the best reward found by the swarm and create a         <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> to keep track of it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.BestReward.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Best value found'</em>, <em class="sig-param">xlabel: str = 'iteration'</em>, <em class="sig-param">ylabel: str = 'Best value'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#BestReward.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.BestReward.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.DistanceHistogram">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">DistanceHistogram</code><span class="sig-paren">(</span><em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#DistanceHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.DistanceHistogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a histogram of the distance distribution of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.DistanceHistogram.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#DistanceHistogram.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.DistanceHistogram.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a histogram of the <code class="docutils literal notranslate"><span class="pre">distance</span></code> attribute of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.DistanceHistogram.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Distance distribution'</em>, <em class="sig-param">xlabel: str = 'Distance'</em>, <em class="sig-param">ylabel: str = 'Frequency'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#DistanceHistogram.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.DistanceHistogram.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.DistanceLandscape">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">DistanceLandscape</code><span class="sig-paren">(</span><em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#DistanceLandscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.DistanceLandscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot an interpolate landscape of the distance distribution of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.DistanceLandscape.get_z_coords">
+<code class="sig-name descname">get_z_coords</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">X: &lt;MagicMock id='139833272530768'&gt; = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#DistanceLandscape.get_z_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.DistanceLandscape.get_z_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the normalized <code class="docutils literal notranslate"><span class="pre">distances</span></code> of the walkers.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.DistanceLandscape.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Distance landscape'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#DistanceLandscape.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.DistanceLandscape.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.GridLandscape">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">GridLandscape</code><span class="sig-paren">(</span><em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#GridLandscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.GridLandscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the memory grid of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code> that provides a memory grid.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.GridLandscape.get_z_coords">
+<code class="sig-name descname">get_z_coords</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">X: &lt;MagicMock id='139833272561232'&gt; = None</em><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139833273132304'&gt;<a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#GridLandscape.get_z_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.GridLandscape.get_z_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the memory values of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code>’s grid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.GridLandscape.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Memory grid values'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#GridLandscape.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.GridLandscape.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.GridLandscape.plot_landscape">
+<em class="property">static </em><code class="sig-name descname">plot_landscape</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#GridLandscape.plot_landscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.GridLandscape.plot_landscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overlay the walkers on top of the bins defined by the memory grid.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.KDELandscape">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">KDELandscape</code><span class="sig-paren">(</span><em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#KDELandscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.KDELandscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the probability landscape of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code> that provides a KDE memory.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.KDELandscape.get_z_coords">
+<code class="sig-name descname">get_z_coords</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">X: &lt;MagicMock id='139833272603856'&gt; = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#KDELandscape.get_z_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.KDELandscape.get_z_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the values assigned by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code> to the regions of the state space.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.KDELandscape.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Memory grid values'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#KDELandscape.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.KDELandscape.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.KDELandscape.plot_landscape">
+<em class="property">static </em><code class="sig-name descname">plot_landscape</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#KDELandscape.plot_landscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.KDELandscape.plot_landscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the walkers overlied on a mesh representing the probability         assigned by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.RewardHistogram">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">RewardHistogram</code><span class="sig-paren">(</span><em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#RewardHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.RewardHistogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a histogram of the reward distribution of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.RewardHistogram.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#RewardHistogram.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.RewardHistogram.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a histogram of the <code class="docutils literal notranslate"><span class="pre">cum_rewards</span></code> attribute of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.RewardHistogram.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Reward distribution'</em>, <em class="sig-param">xlabel: str = 'Reward'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#RewardHistogram.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.RewardHistogram.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.RewardLandscape">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">RewardLandscape</code><span class="sig-paren">(</span><em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#RewardLandscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.RewardLandscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot an interpolate landscape of the reward distribution of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.RewardLandscape.get_z_coords">
+<code class="sig-name descname">get_z_coords</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">X: &lt;MagicMock id='139833272500432'&gt; = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#RewardLandscape.get_z_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.RewardLandscape.get_z_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the normalized <code class="docutils literal notranslate"><span class="pre">cum_rewards</span></code> of the walkers.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.RewardLandscape.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Reward landscape'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#RewardLandscape.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.RewardLandscape.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.SummaryTable">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">SummaryTable</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">stream=&lt;MagicMock id='139833278321616'&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SummaryTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SummaryTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display a table containing information about the current algorithm run.</p>
+<dl class="simple">
+<dt>The displayed information contains:</dt><dd><ul class="simple">
+<li><p>Epoch: Number of the current epoch of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p></li>
+<li><p>Best Reward: Value of the best reward found in the current run.</p></li>
+<li><p>Deaths: Percentage of walkers that fell out of the domain’s boundary                   condition during the last iteration.</p></li>
+<li><p>Clones: Percentage of walkers that cloned during the last iteration.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.SummaryTable.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SummaryTable.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SummaryTable.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the best reward found by the swarm and create a         <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> to keep track of it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.SummaryTable.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Run summary'</em>, <em class="sig-param">width=350</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SummaryTable.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SummaryTable.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.SwarmHistogram">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">SwarmHistogram</code><span class="sig-paren">(</span><em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SwarmHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SwarmHistogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract class to create histograms using data from the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.SwarmHistogram.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SwarmHistogram.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SwarmHistogram.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.dataviz.swarm_stats.SwarmHistogram" title="fragile.dataviz.swarm_stats.SwarmHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmHistogram</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>margin_high</strong> – Ignored. (Update pending)</p></li>
+<li><p><strong>margin_low</strong> – Ignored. (Update pending)</p></li>
+<li><p><strong>*args</strong> – Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">Histogram</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">Histogram</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.SwarmHistogram.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">attr: str</em>, <em class="sig-param">states: str = 'states'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SwarmHistogram.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SwarmHistogram.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the data of the attribute of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> that will be         represented as a histogram.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>swarm</strong> – Target <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p></li>
+<li><p><strong>attr</strong> – Attribute of the target <code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code> that will be plotted.</p></li>
+<li><p><strong>states</strong> – States class that contains the data to be plotted. Accepts                     {“states”, “env_states”, “model_states”}</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Histogram containing the target data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.SwarmHistogram.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">ylabel: str = 'Frequency'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SwarmHistogram.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SwarmHistogram.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.SwarmLandscape">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">SwarmLandscape</code><span class="sig-paren">(</span><em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SwarmLandscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SwarmLandscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a 2D landscape of <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> data.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.SwarmLandscape.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SwarmLandscape.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SwarmLandscape.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmLandscape2D</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>use_embeddings</strong> – Use embeddings to represent the observations if available.</p></li>
+<li><p><strong>margin_high</strong> – Ignored. (Update pending)</p></li>
+<li><p><strong>margin_low</strong> – Ignored. (Update pending)</p></li>
+<li><p><strong>*args</strong> – Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">Landscape2D</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">Landscape2D</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.SwarmLandscape.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139833272475088'&gt;<a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SwarmLandscape.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SwarmLandscape.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the observations and target values needed to plot the landscape.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.SwarmLandscape.get_z_coords">
+<code class="sig-name descname">get_z_coords</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">X: &lt;MagicMock id='139833272431760'&gt;</em><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139833273803088'&gt;<a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SwarmLandscape.get_z_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SwarmLandscape.get_z_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the z values of the target lanscape.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.SwarmLandscape.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">xlim='default'</em>, <em class="sig-param">ylim='default'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#SwarmLandscape.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.SwarmLandscape.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.VirtualRewardHistogram">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">VirtualRewardHistogram</code><span class="sig-paren">(</span><em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#VirtualRewardHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.VirtualRewardHistogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a histogram of the virtual reward distribution of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.VirtualRewardHistogram.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#VirtualRewardHistogram.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.VirtualRewardHistogram.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a histogram of the <code class="docutils literal notranslate"><span class="pre">virtual_reward</span></code> attribute of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.VirtualRewardHistogram.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Virtual reward distribution'</em>, <em class="sig-param">xlabel: str = 'Virtual reward'</em>, <em class="sig-param">ylabel: str = 'Frequency'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#VirtualRewardHistogram.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.VirtualRewardHistogram.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.VirtualRewardLandscape">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">VirtualRewardLandscape</code><span class="sig-paren">(</span><em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">margin_high=1.0</em>, <em class="sig-param">margin_low=1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#VirtualRewardLandscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.VirtualRewardLandscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot an interpolate landscape of the virtual reward distribution of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.VirtualRewardLandscape.get_z_coords">
+<code class="sig-name descname">get_z_coords</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">X: &lt;MagicMock id='139833272509456'&gt; = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#VirtualRewardLandscape.get_z_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.VirtualRewardLandscape.get_z_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the normalized <code class="docutils literal notranslate"><span class="pre">virtual_rewards</span></code> of the walkers.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.VirtualRewardLandscape.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Virtual reward landscape'</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#VirtualRewardLandscape.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.VirtualRewardLandscape.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.swarm_stats.WalkersDensity">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">WalkersDensity</code><span class="sig-paren">(</span><em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#WalkersDensity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.WalkersDensity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the density distribution of the walkers.</p>
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.WalkersDensity.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">use_embeddings: bool = True</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#WalkersDensity.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.WalkersDensity.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.dataviz.swarm_stats.WalkersDensity" title="fragile.dataviz.swarm_stats.WalkersDensity"><code class="xref py py-class docutils literal notranslate"><span class="pre">WalkersDensity</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>use_embeddings</strong> – Use embeddings to represent the observations if available.</p></li>
+<li><p><strong>*args</strong> – Passed to <a class="reference internal" href="#fragile.dataviz.swarm_stats.SwarmLandscape" title="fragile.dataviz.swarm_stats.SwarmLandscape"><code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmLandscape</span></code></a>.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to <a class="reference internal" href="#fragile.dataviz.swarm_stats.SwarmLandscape" title="fragile.dataviz.swarm_stats.SwarmLandscape"><code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmLandscape</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.WalkersDensity.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em><span class="sig-paren">)</span> &#x2192; Tuple<a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#WalkersDensity.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.WalkersDensity.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the observations of the walkers and the plot limits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.WalkersDensity.get_z_coords">
+<code class="sig-name descname">get_z_coords</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">X: &lt;MagicMock id='139833272547984'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#WalkersDensity.get_z_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.WalkersDensity.get_z_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do nothing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.WalkersDensity.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Walkers density distribution'</em>, <em class="sig-param">tools='default'</em>, <em class="sig-param">xlabel: str = 'x'</em>, <em class="sig-param">ylabel: str = 'y'</em>, <em class="sig-param">shared_axes: bool = False</em>, <em class="sig-param">framewise: bool = True</em>, <em class="sig-param">axiswise: bool = True</em>, <em class="sig-param">normalize: bool = True</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#WalkersDensity.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.WalkersDensity.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.swarm_stats.WalkersDensity.plot_landscape">
+<em class="property">static </em><code class="sig-name descname">plot_landscape</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#WalkersDensity.plot_landscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.WalkersDensity.plot_landscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the walkers distribution overlaying a histogram on a bivariate plot.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="fragile.dataviz.swarm_stats.get_xy_coords">
+<code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">get_xy_coords</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em>, <em class="sig-param">use_embedding: False</em><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139833272410448'&gt;<a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#get_xy_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.get_xy_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the x,y coordinates to represent observations values in 2D.</p>
+<p>If the <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> has a critic to calculate 2D embeddings, the     two first dimensions of embedding values will be used. Otherwise return     the first two dimensions of <code class="docutils literal notranslate"><span class="pre">observs</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fragile.dataviz.swarm_stats.has_embedding">
+<code class="sig-prename descclassname">fragile.dataviz.swarm_stats.</code><code class="sig-name descname">has_embedding</code><span class="sig-paren">(</span><em class="sig-param">swarm: fragile.core.swarm.Swarm</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/fragile/dataviz/swarm_stats.html#has_embedding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.swarm_stats.has_embedding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the target <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> has a critic to calculate embeddings.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-fragile.dataviz.streaming">
+<span id="streaming-plot-classes"></span><h2>Streaming plot classes<a class="headerlink" href="#module-fragile.dataviz.streaming" title="Permalink to this headline">¶</a></h2>
+<p>Contains the necessary logic to create <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> plots that accept streaming data.</p>
+<dl class="class">
+<dt id="fragile.dataviz.streaming.Bivariate">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.streaming.</code><code class="sig-name descname">Bivariate</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Bivariate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Bivariate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">holoviews.Bivariate</span></code> plot that plots steaming data.</p>
+<p>The streaming process is handled using a <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipe</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Bivariate.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Bivariate.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Bivariate.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.dataviz.streaming.Bivariate" title="fragile.dataviz.streaming.Bivariate"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bivariate</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">holoviews.Bivariate</span></code>.</p></li>
+<li><p><strong>*args</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">holoviews.Bivariate</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">holoviews.Bivariate</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Bivariate.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title=''</em>, <em class="sig-param">tools='default'</em>, <em class="sig-param">xlabel: str = 'x'</em>, <em class="sig-param">ylabel: str = 'y'</em>, <em class="sig-param">shared_axes: bool = False</em>, <em class="sig-param">framewise: bool = True</em>, <em class="sig-param">axiswise: bool = True</em>, <em class="sig-param">normalize: bool = True</em>, <em class="sig-param">height: int = 350</em>, <em class="sig-param">width: int = 400</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Bivariate.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Bivariate.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.streaming.Curve">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.streaming.</code><code class="sig-name descname">Curve</code><span class="sig-paren">(</span><em class="sig-param">buffer_length: int = 10000</em>, <em class="sig-param">index: bool = False</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">holoviews.Curve</span></code> plot that plots steaming data.</p>
+<p>The streaming process is handled using a <code class="xref py py-class docutils literal notranslate"><span class="pre">Buffer</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Curve.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">buffer_length: int = 10000</em>, <em class="sig-param">index: bool = False</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Curve.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Curve.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.dataviz.streaming.Curve" title="fragile.dataviz.streaming.Curve"><code class="xref py py-class docutils literal notranslate"><span class="pre">Curve</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer_length</strong> – Maximum number of data points that will be displayed in the plot.</p></li>
+<li><p><strong>index</strong> – Passed to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Buffer</span></code> that streams data to the plot.</p></li>
+<li><p><strong>data</strong> – Passed to <a class="reference internal" href="#fragile.dataviz.streaming.Plot" title="fragile.dataviz.streaming.Plot"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plot</span></code></a>.``get_plot_data``. Contains the necessary data to                   initialize the plot.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Curve.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title=''</em>, <em class="sig-param">tools='default'</em>, <em class="sig-param">xlabel: str = 'x'</em>, <em class="sig-param">ylabel: str = 'y'</em>, <em class="sig-param">shared_axes: bool = False</em>, <em class="sig-param">framewise: bool = True</em>, <em class="sig-param">axiswise: bool = True</em>, <em class="sig-param">normalize: bool = True</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Curve.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Curve.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.streaming.Histogram">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.streaming.</code><code class="sig-name descname">Histogram</code><span class="sig-paren">(</span><em class="sig-param">n_bins: int = 20</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Histogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">holoviews.Histogram</span></code> plot that plots steaming data.</p>
+<p>The streaming process is handled using a <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipe</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Histogram.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_bins: int = 20</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Histogram.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Histogram.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.dataviz.streaming.Histogram" title="fragile.dataviz.streaming.Histogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">Histogram</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_bins</strong> – Number of bins of the histogram that will be plotted.</p></li>
+<li><p><strong>data</strong> – Used to initialize the plot.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Histogram.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">data: &lt;MagicMock id='139833270364112'&gt;</em><span class="sig-paren">)</span> &#x2192; Tuple[Tuple[&lt;MagicMock id='139833274006352'&gt;, &lt;MagicMock id='139833281566608'&gt;], Tuple[Union[int, &lt;MagicMock id='139833291415120'&gt;, float, &lt;MagicMock id='139833291440528'&gt;, None], Union[int, &lt;MagicMock id='139833291415120'&gt;, float, &lt;MagicMock id='139833291440528'&gt;, None]]]<a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Histogram.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Histogram.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the histogram of the streamed data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – Values used to calculate the histogram.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple containing (values, bins), xlim. xlim is a tuple                   containing two scalars that represent the limits of the x                   axis of the histogram.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Histogram.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title=''</em>, <em class="sig-param">tools='default'</em>, <em class="sig-param">xlabel: str = 'x'</em>, <em class="sig-param">ylabel: str = 'count'</em>, <em class="sig-param">shared_axes: bool = False</em>, <em class="sig-param">framewise: bool = True</em>, <em class="sig-param">axiswise: bool = True</em>, <em class="sig-param">normalize: bool = True</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Histogram.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Histogram.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Histogram.plot_histogram">
+<em class="property">static </em><code class="sig-name descname">plot_histogram</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Histogram.plot_histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Histogram.plot_histogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the histogram.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – Tuple containing (values, bins), xlim. xlim is a tuple                   containing two scalars that represent the limits of the x                   axis of the histogram.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Histogram plot.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.streaming.Landscape2D">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.streaming.</code><code class="sig-name descname">Landscape2D</code><span class="sig-paren">(</span><em class="sig-param">n_points: int = 50</em>, <em class="sig-param">data=None</em>, <em class="sig-param">invert_cmap: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Landscape2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Landscape2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the interpolated landscaped of values of a set of points.</p>
+<p>The data is visualized creating a <code class="xref py py-class docutils literal notranslate"><span class="pre">holoviews.QuadMesh</span></code> with a     <code class="xref py py-class docutils literal notranslate"><span class="pre">holoviews.Contours</span></code> plot with the original data points displayed as     a <code class="xref py py-class docutils literal notranslate"><span class="pre">holoviews.Scatter</span></code>.</p>
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Landscape2D.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_points: int = 50</em>, <em class="sig-param">data=None</em>, <em class="sig-param">invert_cmap: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Landscape2D.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Landscape2D.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <code class="xref py py-class docutils literal notranslate"><span class="pre">Landscape2d</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_points</strong> – Number of points per dimension used to create the                       meshgrid grid that will be used to interpolate the data.</p></li>
+<li><p><strong>data</strong> – Initial data for the plot.</p></li>
+<li><p><strong>invert_cmap</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, invert the colormap to assign high value                          colors to the lowest values.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Landscape2D.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">data: Tuple[&lt;MagicMock id='139833272916944'&gt;, &lt;MagicMock id='139833272926672'&gt;, &lt;MagicMock id='139833272209680'&gt;]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Landscape2D.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Landscape2D.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the meshgrid needed to interpolate the target data points.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Landscape2D.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">title='Distribution landscape'</em>, <em class="sig-param">tools='default'</em>, <em class="sig-param">xlabel: str = 'x'</em>, <em class="sig-param">ylabel: str = 'y'</em>, <em class="sig-param">shared_axes: bool = False</em>, <em class="sig-param">framewise: bool = True</em>, <em class="sig-param">axiswise: bool = True</em>, <em class="sig-param">normalize: bool = True</em>, <em class="sig-param">cmap: str = 'default'</em>, <em class="sig-param">height: int = 350</em>, <em class="sig-param">width: int = 350</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Landscape2D.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Landscape2D.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Landscape2D.plot_landscape">
+<em class="property">static </em><code class="sig-name descname">plot_landscape</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Landscape2D.plot_landscape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Landscape2D.plot_landscape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the data as an energy landscape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – (x, y, xx, yy, z, xlim, ylim). x, y, z represent the                   coordinates of the points that will be interpolated. xx, yy                   represent the meshgrid used to interpolate the points. xlim,                   ylim are tuples containing the limits of the x and y axes.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Plot representing the interpolated energy landscape of the target points.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.streaming.Plot">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.streaming.</code><code class="sig-name descname">Plot</code><span class="sig-paren">(</span><em class="sig-param">plot: Callable</em>, <em class="sig-param">data: Any = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class that manages the creation of <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> plots.</p>
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Plot.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">plot: Callable</em>, <em class="sig-param">data: Any = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Plot.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Plot.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.dataviz.streaming.Plot" title="fragile.dataviz.streaming.Plot"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plot</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot</strong> – Callable that returns an holoviews plot.</p></li>
+<li><p><strong>data</strong> – Passed to <a class="reference internal" href="#fragile.dataviz.streaming.Plot" title="fragile.dataviz.streaming.Plot"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plot</span></code></a>.``get_plot_data``. Contains the necessary data to                   initialize the plot.</p></li>
+<li><p><strong>args</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p></li>
+<li><p><strong>kwargs</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Plot.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">data: Any</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Plot.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Plot.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the necessary data wrangling for plotting the data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Plot.init_plot">
+<code class="sig-name descname">init_plot</code><span class="sig-paren">(</span><em class="sig-param">plot: Callable</em>, <em class="sig-param">data=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Plot.init_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Plot.init_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the holoviews plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot</strong> – Callable that returns an holoviews plot.</p></li>
+<li><p><strong>data</strong> – Passed to <a class="reference internal" href="#fragile.dataviz.streaming.Plot" title="fragile.dataviz.streaming.Plot"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plot</span></code></a>.``get_plot_data``. Contains the necessary data to                   initialize the plot.</p></li>
+<li><p><strong>args</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p></li>
+<li><p><strong>kwargs</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Plot.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Plot.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Plot.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.streaming.RGB">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.streaming.</code><code class="sig-name descname">RGB</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#RGB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.RGB" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">holoviews.RGB</span></code> with data streaming capabilities.</p>
+<dl class="method">
+<dt id="fragile.dataviz.streaming.RGB.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#RGB.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.RGB.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.dataviz.streaming.RGB" title="fragile.dataviz.streaming.RGB"><code class="xref py py-class docutils literal notranslate"><span class="pre">RGB</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.RGB.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">xaxis=None</em>, <em class="sig-param">yaxis=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#RGB.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.RGB.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.streaming.StreamingPlot">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.streaming.</code><code class="sig-name descname">StreamingPlot</code><span class="sig-paren">(</span><em class="sig-param">plot: Callable</em>, <em class="sig-param">stream=&lt;MagicMock id='139833278321616'&gt;</em>, <em class="sig-param">data=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#StreamingPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.StreamingPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a an holoviews plot updated with streamed data.</p>
+<dl class="method">
+<dt id="fragile.dataviz.streaming.StreamingPlot.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">plot: Callable</em>, <em class="sig-param">stream=&lt;MagicMock id='139833278321616'&gt;</em>, <em class="sig-param">data=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#StreamingPlot.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.StreamingPlot.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.dataviz.streaming.StreamingPlot" title="fragile.dataviz.streaming.StreamingPlot"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamingPlot</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot</strong> – Callable that returns an holoviews plot.</p></li>
+<li><p><strong>stream</strong> – Class used to stream data to the plot.</p></li>
+<li><p><strong>data</strong> – Passed to <a class="reference internal" href="#fragile.dataviz.streaming.Plot" title="fragile.dataviz.streaming.Plot"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plot</span></code></a>.``get_plot_data``. Contains the necessary data to                   initialize the plot.</p></li>
+<li><p><strong>args</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p></li>
+<li><p><strong>kwargs</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.StreamingPlot.get_plot_data">
+<code class="sig-name descname">get_plot_data</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#StreamingPlot.get_plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.StreamingPlot.get_plot_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the necessary data wrangling for plotting the data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.StreamingPlot.init_plot">
+<code class="sig-name descname">init_plot</code><span class="sig-paren">(</span><em class="sig-param">plot: Callable</em>, <em class="sig-param">data=None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#StreamingPlot.init_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.StreamingPlot.init_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the holoviews plot to accept streaming data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot</strong> – Callable that returns an holoviews plot.</p></li>
+<li><p><strong>data</strong> – Passed to <a class="reference internal" href="#fragile.dataviz.streaming.Plot" title="fragile.dataviz.streaming.Plot"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plot</span></code></a>.``get_plot_data``. Contains the necessary data to                   initialize the plot.</p></li>
+<li><p><strong>args</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p></li>
+<li><p><strong>kwargs</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.StreamingPlot.init_stream">
+<code class="sig-name descname">init_stream</code><span class="sig-paren">(</span><em class="sig-param">stream</em>, <em class="sig-param">data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#StreamingPlot.init_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.StreamingPlot.init_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the data stream that will be used to stream data to the plot.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.StreamingPlot.stream_data">
+<code class="sig-name descname">stream_data</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#StreamingPlot.stream_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.StreamingPlot.stream_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stream data to the plot and keep track of how many times the data has been streamed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.dataviz.streaming.Table">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.dataviz.streaming.</code><code class="sig-name descname">Table</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">stream=&lt;MagicMock id='139833278321616'&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Table" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">holoviews.Table</span></code> with data streaming capabilities.</p>
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Table.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">data=None</em>, <em class="sig-param">stream=&lt;MagicMock id='139833278321616'&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Table.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Table.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.dataviz.streaming.Table" title="fragile.dataviz.streaming.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Data to initialize the stream.</p></li>
+<li><p><strong>stream</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">holoviews.stream</span></code> type. Defaults to <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipe</span></code>.</p></li>
+<li><p><strong>*args</strong> – Passed to <a class="reference internal" href="#fragile.dataviz.streaming.StreamingPlot" title="fragile.dataviz.streaming.StreamingPlot"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamingPlot</span></code></a>.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to <a class="reference internal" href="#fragile.dataviz.streaming.StreamingPlot" title="fragile.dataviz.streaming.StreamingPlot"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamingPlot</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.dataviz.streaming.Table.opts">
+<code class="sig-name descname">opts</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/dataviz/streaming.html#Table.opts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.dataviz.streaming.Table.opts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the plot parameters. Same as <code class="docutils literal notranslate"><span class="pre">holoviews</span></code> <code class="docutils literal notranslate"><span class="pre">opts</span></code>.</p>
+<p>The default values updates the plot axes independently when being         displayed in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Holomap</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../resources/examples/examples_index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="distributed.html">Distributed Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Data Visualization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#swarm-visualizers"><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> Visualizers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#summary"><code class="xref py py-class docutils literal notranslate"><span class="pre">Summary</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#atariviz"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtariViz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#swarmviz1d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SwarmViz1D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#landscapeviz"><code class="xref py py-class docutils literal notranslate"><span class="pre">LandscapeViz</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-fragile.dataviz.swarm_stats">Plots for <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code> data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-fragile.dataviz.streaming">Streaming plot classes</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="distributed.html" title="previous chapter">Distributed Module</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/module_docs/dataviz.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
