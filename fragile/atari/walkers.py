@@ -1,9 +1,4 @@
-import numpy as np
-
-from fragile.core.functions import relativize
 from fragile.core.walkers import Walkers
-
-# import line_profiler
 
 
 class AtariWalkers(Walkers):
@@ -43,25 +38,26 @@ class AtariWalkers(Walkers):
         return self.env_states.game_ends.all() or end
 
 
-class MontezumaWalkers(Walkers):
-    """
-    Walkers class used to calculate distances on Uber's Montezuma environment \
-    used in their Go-explore repository.
-    """
+# import numpy as np
+# from fragile.core.functions import relativize
+# class MontezumaWalkers(Walkers):
+#    """
+#    Walkers class used to calculate distances on Uber's Montezuma environment \
+#    used in their Go-explore repository.
+#    """
 
-    # @profile
-    def calculate_distances(self) -> None:
-        """Calculate the corresponding distance function for each state with \
-        respect to another state chosen at random.
+#    def calculate_distances(self) -> None:
+#        """Calculate the corresponding distance function for each state with \
+#        respect to another state chosen at random.
 
-        The internal state is update with the relativized distance values.
+#        The internal state is update with the relativized distance values.
 
-        The distance is performed on the RAM memory of the Atari emulator
-        """
-        compas_ix = np.random.permutation(np.arange(self.n))
-        # This unpacks RAMs from Uber Go-explore custom Montezuma environment
-        rams = self.env_states.states.reshape(self.n, -1)[:, :-12].astype(np.uint8)
-        vec = rams - rams[compas_ix]
-        dist_ram = self.distance_function(vec, axis=1).flatten()
-        distances = relativize(dist_ram)
-        self.update_states(distances=distances, compas_dist=compas_ix)
+#        The distance is performed on the RAM memory of the Atari emulator
+#        """
+#        compas_ix = np.random.permutation(np.arange(self.n))
+# This unpacks RAMs from Uber Go-explore custom Montezuma environment
+#        rams = self.env_states.states.reshape(self.n, -1)[:, :-12].astype(np.uint8)
+#        vec = rams - rams[compas_ix]
+#        dist_ram = self.distance_function(vec, axis=1).flatten()
+#        distances = relativize(dist_ram)
+#        self.update_states(distances=distances, compas_dist=compas_ix)

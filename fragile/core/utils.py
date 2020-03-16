@@ -1,8 +1,8 @@
-import copy
 from typing import Any, Dict, Generator, Tuple, Union
 
 import numpy
 from PIL import Image
+from plangym.env import Environment, ParallelEnvironment
 
 try:
     from IPython.core.display import clear_output
@@ -28,6 +28,24 @@ NUMPY_IGNORE_WARNINGS_PARAMS = {
 }
 
 
+def get_plangym_env(swarm: "Swarm") -> Environment:
+    """Return the :class:`plangym.Environment` of the target Swarm."""
+    from fragile import core
+    from fragile.atari import env
+
+    valid_env_types = (core.DiscreteEnv, env.AtariEnv)
+    if isinstance(swarm.env, valid_env_types):
+        if not isinstance(swarm.env._env, Environment):
+            raise TypeError("swarm.env needs to represent a `plangym.Environment`.")
+    elif not isinstance(swarm.env, valid_env_types):
+        raise TypeError("swarm.env needs to represent a `plangym.Environment`")
+    plangym_env = swarm.env._env
+    if isinstance(plangym_env, ParallelEnvironment):
+        return plangym_env._env
+    else:
+        return plangym_env
+
+
 def remove_notebook_margin(output_width_pct: int = 80):
     """Make the notebook output wider."""
     from IPython.core.display import HTML
@@ -50,15 +68,15 @@ def hash_numpy(x: numpy.ndarray) -> int:
 
 
 def resize_frame(
-    frame: numpy.ndarray, height: int, width: int, mode: str = "RGB"
+    frame: numpy.ndarray, width: int, height: int, mode: str = "RGB"
 ) -> numpy.ndarray:
     """
     Use PIL to resize an RGB frame to an specified height and width.
 
     Args:
         frame: Target numpy array representing the image that will be resized.
-        height: Height of the resized image.
         width: Width of the resized image.
+        height: Height of the resized image.
         mode: Passed to Image.convert.
 
     Returns:
@@ -66,19 +84,8 @@ def resize_frame(
 
     """
     frame = Image.fromarray(frame)
-    frame = frame.convert(mode).resize((height, width))
+    frame = frame.convert(mode).resize(size=(width, height))
     return numpy.array(frame)
-
-
-def params_to_tensors(param_dict, n_walkers: int):
-    """Transform a parameter dictionary into an array dictionary."""
-    tensor_dict = {}
-    copy_dict = copy.deepcopy(param_dict)
-    for key, val in copy_dict.items():
-        sizes = tuple([n_walkers]) + val["size"]
-        del val["size"]
-        tensor_dict[key] = numpy.empty(sizes, **val)
-    return tensor_dict
 
 
 def statistics_from_array(x: numpy.ndarray):

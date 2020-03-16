@@ -83,12 +83,9 @@ class TestStatesWalkers:
 
 
 class TestWalkers:
-    @pytest.fixture(params=walkers_fixture_params)
+    @pytest.fixture(params=walkers_fixture_params, scope="class")
     def walkers(self, request):
         return walkers_config.get(request.param, get_walkers_discrete_gym)()
-
-    def test_init(self, walkers):
-        pass
 
     def test_repr_not_crashes(self, walkers):
         assert isinstance(walkers.__repr__(), str)
@@ -138,9 +135,10 @@ class TestWalkers:
         assert len(walkers.states.clone_probs.shape) == 1
 
     def test_balance_not_crashes(self, walkers):
-        walkers.reset()
-        walkers.balance()
-        assert walkers.states.will_clone.sum() == 0
+        with numpy.errstate(**NUMPY_IGNORE_WARNINGS_PARAMS):
+            walkers.reset()
+            walkers.balance()
+            assert walkers.states.will_clone.sum() == 0
 
     def test_accumulate_rewards(self, walkers):
         walkers.reset()

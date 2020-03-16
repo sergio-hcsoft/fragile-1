@@ -1,6 +1,7 @@
 import numpy
 import pytest  # noqa: F401
 
+from fragile.core.dt_sampler import GaussianDt
 from fragile.core.models import (
     _DtModel,
     BaseCritic,
@@ -25,6 +26,9 @@ def create_model(name="discrete"):
     elif name == "random_normal":
         bs = Bounds(low=-1, high=1, shape=(3,))
         return lambda: NormalContinuous(loc=0, scale=1, bounds=bs)
+    elif name == "discrete_with_critic":
+        critic = GaussianDt(max_dt=3)
+        return lambda: DiscreteUniform(n_actions=10, critic=critic)
     raise ValueError("Invalid param `name`.")
 
 
@@ -32,7 +36,7 @@ def create_model_states(model: BaseModel, batch_size: int = 10):
     return StatesModel(batch_size=batch_size, state_dict=model.get_params_dict())
 
 
-model_fixture_params = ["discrete", "continuous", "random_normal"]
+model_fixture_params = ["discrete", "continuous", "random_normal", "discrete_with_critic"]
 
 
 class TestModel:

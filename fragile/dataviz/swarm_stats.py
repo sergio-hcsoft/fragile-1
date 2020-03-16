@@ -5,10 +5,10 @@ import holoviews
 import numpy
 import pandas
 
-from fragile.atari.env import get_plangym_env
 from fragile.core.bounds import Bounds
 from fragile.core.functions import relativize
 from fragile.core.swarm import Swarm
+from fragile.core.utils import get_plangym_env
 from fragile.dataviz.streaming import Curve, Histogram, Landscape2D, RGB, Table
 
 PLOT_NAMES = ()

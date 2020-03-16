@@ -1,27 +1,10 @@
 import copy
 
 import numpy
-from plangym import AtariEnvironment, ParallelEnvironment
-from plangym.env import Environment
 
 from fragile.core.env import DiscreteEnv
 from fragile.core.states import StatesEnv, StatesModel
-from fragile.core.swarm import Swarm
 from fragile.core.utils import StateDict
-
-
-def get_plangym_env(swarm: Swarm) -> AtariEnvironment:
-    """Return the :class:`plangym.AtariEnvironment` of the target Swarm."""
-    if isinstance(swarm.env, DiscreteEnv):
-        if not isinstance(swarm.env._env, Environment):
-            raise TypeError("swarm.env needs to represent an Atari game.")
-    elif not isinstance(swarm.env, AtariEnv):
-        raise TypeError("swarm.env needs to represent an Atari game.")
-    plangym_env = swarm.env._env
-    if isinstance(plangym_env, ParallelEnvironment):
-        return plangym_env._env
-    else:
-        return plangym_env
 
 
 class AtariEnv(DiscreteEnv):
