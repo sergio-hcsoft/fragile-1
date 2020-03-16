@@ -4,7 +4,6 @@ max-line-length=99
 exclude=
     .git
     docs
-    fragile/distributed/env.py
 
 inline-quotes="
 import-order-style=appnexus
