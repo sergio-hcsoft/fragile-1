@@ -13,7 +13,6 @@ from fragile.core.utils import NUMPY_IGNORE_WARNINGS_PARAMS
 
 warnings.filterwarnings("ignore", category=HypothesisDeprecationWarning)
 
-
 N_WALKERS = 21
 
 
@@ -40,7 +39,7 @@ walkers_fixture_params = ["discrete-atari-gym"]
 
 
 class TestAtariWalkers(TestWalkers):
-    @pytest.fixture(params=walkers_fixture_params)
+    @pytest.fixture(params=walkers_fixture_params, scope="class")
     def walkers(self, request):
         return walkers_config.get(request.param)()
 
