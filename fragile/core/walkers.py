@@ -6,7 +6,14 @@ import numpy
 from fragile.core.base_classes import BaseCritic, BaseWalkers
 from fragile.core.functions import relativize
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
-from fragile.core.utils import float_type, Scalar, StateDict, statistics_from_array
+from fragile.core.utils import (
+    DistanceFunction,
+    float_type,
+    hash_numpy,
+    Scalar,
+    StateDict,
+    statistics_from_array,
+)
 
 
 class SimpleWalkers(BaseWalkers):
@@ -58,7 +65,7 @@ class SimpleWalkers(BaseWalkers):
             ignore_clone: Dictionary containing the attribute values that will \
                           not be cloned. Its keys can be be either "env", of \
                           "model", to reference the `env_states` and the \
-                          `model_states`. Its values are a set of string with \
+                          `model_states`. Its values are a set of strings with \
                           the names of the attributes that will not be cloned.
             kwargs: Additional attributes stored in the :class:`StatesWalkers`.
 
@@ -179,7 +186,8 @@ class SimpleWalkers(BaseWalkers):
 
         The internal :class:`StateWalkers` is updated with the relativized distance values.
         """
-        compas_ix = numpy.random.permutation(numpy.arange(self.n))  # self.get_in_bounds_compas()
+        # TODO(guillemdb): Check if self.get_in_bounds_compas() works better.
+        compas_ix = numpy.random.permutation(numpy.arange(self.n))
         obs = self.env_states.observs.reshape(self.n, -1)
         distances = self.distance_function(obs, obs[compas_ix])
         distances = relativize(distances.flatten())
@@ -363,17 +371,48 @@ class Walkers(SimpleWalkers):
 
     def __init__(
         self,
-        critic: BaseCritic = None,
+        n_walkers: int,
+        env_state_params: StateDict,
+        model_state_params: StateDict,
+        reward_scale: float = 1.0,
+        dist_scale: float = 1.0,
+        max_iters: int = None,
+        accumulate_rewards: bool = True,
+        distance_function: Optional[DistanceFunction] = None,
+        ignore_clone: Optional[Dict[str, Set[str]]] = None,
+        critic: Optional[BaseCritic] = None,
         minimize: bool = False,
-        best_walker: Tuple[numpy.ndarray, Scalar] = None,
+        best_walker: Optional[Tuple[numpy.ndarray, numpy.ndarray, Scalar]] = None,
         reward_limit: float = None,
-        *args,
         **kwargs
     ):
         """
         Initialize a :class:`Walkers`.
 
         Args:
+            n_walkers: Number of walkers of the instance.
+            env_state_params: Dictionary to instantiate the States of an :class:`Environment`.
+            model_state_params: Dictionary to instantiate the States of a :class:`Model`.
+            reward_scale: Regulates the importance of the reward. Recommended to \
+                          keep in the [0, 5] range. Higher values correspond to \
+                          higher importance.
+            dist_scale: Regulates the importance of the distance. Recommended to \
+                          keep in the [0, 5] range. Higher values correspond to \
+                          higher importance.
+            max_iters: Maximum number of iterations that the walkers are allowed \
+                       to perform.
+            accumulate_rewards: If ``True`` the rewards obtained after transitioning \
+                                to a new state will accumulate. If ``False`` only the last \
+                                reward will be taken into account.
+            distance_function: Function to compute the distances between two \
+                               groups of walkers. It will be applied row-wise \
+                               to the walkers observations and it will return a \
+                               vector of scalars. Defaults to l2 norm.
+            ignore_clone: Dictionary containing the attribute values that will \
+                          not be cloned. Its keys can be be either "env", of \
+                          "model", to reference the `env_states` and the \
+                          `model_states`. Its values are a set of strings with \
+                          the names of the attributes that will not be cloned.
             critic: critic that will be used to calculate custom rewards.
             minimize: If ``True`` the algorithm will perform a minimization \
                       process. If ``False`` it will be a maximization process.
@@ -384,17 +423,32 @@ class Walkers(SimpleWalkers):
                           it will be considered the minimum reward possible, and \
                           if you are maximizing a reward it will be the maximum \
                           value.
-            *args: Passed to :class:`SimpleWalkers`.
-            **kwargs: Passed to :class:`SimpleWalkers`.
+            kwargs: Additional attributes stored in the :class:`StatesWalkers`.
+
         """
         # Add data specific to the child class in the StatesWalkers class as new attributes.
         kwargs["critic_score"] = kwargs.get("critic_score", numpy.zeros(kwargs["n_walkers"]))
         self.dtype = float_type
-        best_state, best_obs, best_reward = (
-            best_walker if best_walker is not None else (None, None, -numpy.inf)
-        )
+        if best_walker is not None:
+            best_state, best_obs, best_reward = best_walker
+            best_id = hash_numpy(best_state)
+        else:
+            best_state, best_obs, best_reward, best_id = (None, None, -numpy.inf, None)
         super(Walkers, self).__init__(
-            best_reward=best_reward, best_obs=best_obs, best_state=best_state, *args, **kwargs
+            n_walkers=n_walkers,
+            env_state_params=env_state_params,
+            model_state_params=model_state_params,
+            reward_scale=reward_scale,
+            dist_scale=dist_scale,
+            max_iters=max_iters,
+            accumulate_rewards=accumulate_rewards,
+            distance_function=distance_function,
+            ignore_clone=ignore_clone,
+            best_reward=best_reward,
+            best_obs=best_obs,
+            best_state=best_state,
+            best_id=best_id,
+            **kwargs
         )
         self.critic = critic
         self.minimize = minimize

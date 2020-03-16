@@ -8,12 +8,14 @@ from fragile.core.utils import float_type, hash_numpy, similiar_chunks_indexes, 
 
 class States:
     """
-    Handles several tensors that will contain the data associated with the \
-    walkers of a Swarm. Each tensor will be associated to a class attribute.
+    Handles several arrays that will contain the data associated with the \
+    walkers of a :class:`Swarm`. Each array will be associated to a class \
+    attribute, and it will store the corresponding value of that attribute \
+    for all the walkers of a :class:`Swarm`.
 
-    This class behaves as a dictionary of tensors with some extra functionality
-    to make easier the process of cloning the walkers' states by adding an \
-    extra dimension equal to the number of walkers to each tensor.
+    This class behaves as a dictionary of arrays with some extra functionality \
+    to make easier the process of cloning the walkers' data. All of its internal \
+    arrays will have an extra first dimension equal to the number of walkers.
 
     In order to define the tensors, a `state_dict` dictionary needs to be \
     specified using the following structure::
@@ -23,20 +25,24 @@ class States:
                                 },
                      }
 
-    Where tuple is a tuple indicating the shape of the desired tensor, that will \
-    be accessed using the name_1 attribute of the class. If "size" is not defined \
-    the attribute will be considered a vector of length `batch_size`.
+    Where tuple is a tuple indicating the shape of the desired tensor. The \
+    created arrays will accessible the ``name_1`` attribute of the class, or \
+    indexing the class with ``states["name_1"]``.
+
+    If ``size`` is not defined the attribute will be considered a vector of \
+    length `batch_size`.
 
 
     Args:
         batch_size: The number of items in the first dimension of the tensors.
         state_dict: Dictionary defining the attributes of the tensors.
         **kwargs: Data can be directly specified as keyword arguments.
+
     """
 
     def __init__(self, batch_size: int, state_dict: Optional[StateDict] = None, **kwargs):
         """
-        Initialise a :class:`States`.
+        Initialize a :class:`States`.
 
         Args:
              batch_size: The number of items in the first dimension of the tensors.
@@ -364,7 +370,27 @@ class States:
 
 
 class StatesEnv(States):
-    """Keeps track of the data structures used by the :class:`Env`."""
+    """
+    Keeps track of the data structures used by the :class:`Environment`.
+
+    Attributes:
+        states: This data tracks the internal state of the Environment simulation, \
+                 and they are only used to save and restore its state.
+        observs: This is the data that corresponds to the observations of the \
+                 current :class:`Environment` state. The observations are used \
+                 for calculating distances.
+        rewards: This vector contains the rewards associated with each observation.
+        oobs: Stands for **Out Of BoundS**. It is a vector of booleans that \
+              represents and arbitrary boundary condition. If a value is ``True`` \
+              the corresponding states will be treated as being outside the \
+              :class:`Environment` domain. The states considered out of bounds \
+              will be avoided by the sampling algorithms.
+        terminals: Vector of booleans representing the successful termination \
+                   of an environment. A ``True`` value indicates that the \
+                   :class:`Environment` has successfully reached a terminal \
+                   state that is not out of bounds.
+
+    """
 
     def __init__(self, batch_size: int, state_dict: Optional[StateDict] = None, **kwargs):
         """
@@ -401,7 +427,13 @@ class StatesEnv(States):
 
 
 class StatesModel(States):
-    """Keeps track of the data structures used by the :class:`Model`."""
+    """
+    Keeps track of the data structures used by the :class:`Model`.
+
+    Attributes:
+        actions: Represents the actions that will be sampled by a :class:`Model`.
+
+    """
 
     def __init__(self, batch_size: int, state_dict: Optional[StateDict] = None, **kwargs):
         """
@@ -430,7 +462,38 @@ class StatesModel(States):
 
 
 class StatesWalkers(States):
-    """Keeps track of the data structures used by the :class:`Walkers`."""
+    """
+    Keeps track of the data structures used by the :class:`Walkers`.
+
+    Attributes:
+        id_walkers: Array of of integers that uniquely identify a given state. \
+                    They are obtained by hashing the states.
+        compas_clone: Array of integers containing the index of the walkers \
+                      selected as companions for cloning.
+        processed_rewards: Array of normalized rewards. It contains positive \
+                           values with an average of 1. Values greater than one \
+                           correspond to rewards above the average, and values \
+                           lower than one correspond to rewards below the average.
+        virtual_rewards: Array containing the virtual rewards assigned to each walker.
+        cum_rewards: Array of rewards used to compute the virtual_reward. This \
+                    value can accumulate the rewards provided by the \
+                    :class:`Environment` during an algorithm run.
+        distances: Array containing the similarity metric of each walker used \
+                   to compute the virtual reward.
+        clone_probs: Array containing the probability that a walker clones to \
+                     its companion during the cloning phase.
+        will_clone: Boolean array. A ``True`` value indicates that the \
+                    corresponding walker will clone to its companion.
+        in_bounds: Boolean array. A `True` value indicates that a walker is \
+                   in the domain defined by the :class:`Environment`.
+
+        best_state: State of the walker with the best ``cum_reward`` found \
+                   during the algorithm run.
+        best_obs: Observation corresponding to the ``best_state``.
+        best_reward: Best ``cum_reward`` found during the algorithm run.
+        best_id: Integer representing the hash of the ``best_state``.
+
+    """
 
     def __init__(self, batch_size: int, state_dict: Optional[StateDict] = None, **kwargs):
         """
@@ -450,17 +513,17 @@ class StatesWalkers(States):
         self.clone_probs = None
         self.in_bounds = None
         self.id_walkers = None
+        # This is only to allow __repr__. Should be overridden after reset
+        self.best_id = None
+        self.best_obs = None
+        self.best_state = None
+        self.best_reward = -numpy.inf
         updated_dict = self.get_params_dict()
         if state_dict is not None:
             updated_dict.update(state_dict)
         super(StatesWalkers, self).__init__(
             state_dict=updated_dict, batch_size=batch_size, **kwargs
         )
-        # This is only to allow __repr__. Should be overridden after reset
-        self.best_id = 0
-        self.best_obs = None
-        self.best_state = None
-        self.best_reward = -numpy.inf
 
     def get_params_dict(self) -> StateDict:
         """Return a dictionary containing the param_dict to build an instance \

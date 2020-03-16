@@ -525,9 +525,9 @@ class BaseSwarm:
 
     def __init__(
         self,
-        env: Callable,
-        model: Callable,
-        walkers: Callable,
+        env: Callable[[], BaseEnvironment],
+        model: Callable[[BaseEnvironment], BaseModel],
+        walkers: Callable[..., BaseWalkers],
         n_walkers: int,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
