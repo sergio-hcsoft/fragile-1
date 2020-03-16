@@ -3,7 +3,7 @@ import pytest
 import holoviews
 from plangym import AtariEnvironment
 
-from fragile.core.dt_sampler import GaussianDt
+from fragile.core.dt_samplers import GaussianDt
 from fragile.core.env import DiscreteEnv
 from fragile.core.models import DiscreteUniform, NormalContinuous
 from fragile.core.swarm import Swarm

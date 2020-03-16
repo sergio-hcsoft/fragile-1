@@ -1,7 +1,7 @@
 import numpy
 import pytest  # noqa: F401
 
-from fragile.core.dt_sampler import GaussianDt
+from fragile.core.dt_samplers import GaussianDt
 from fragile.core.models import (
     _DtModel,
     BaseCritic,
