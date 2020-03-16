@@ -51,7 +51,7 @@ class SummaryTable(Table):
             data = pandas.DataFrame(
                 {
                     "Epoch": [int(swarm.walkers.n_iters)],
-                    "Best Reward": ["{:.4f}".format(float(swarm.best_reward_found))],
+                    "Best Reward": ["{:.4f}".format(float(swarm.best_reward))],
                     "Deaths": ["{:.2f}%".format(100 * deaths)],
                     "Clones": ["{:.2f}%".format(100 * clones)],
                 },
@@ -135,7 +135,7 @@ class BestReward(Curve):
             data = pandas.DataFrame({"x": [], "best_val": []}, columns=["x", "best_val"])
         else:
             data = pandas.DataFrame(
-                {"x": [int(swarm.walkers.n_iters)], "best_val": [float(swarm.best_reward_found)]},
+                {"x": [int(swarm.walkers.n_iters)], "best_val": [float(swarm.best_reward)]},
                 columns=["x", "best_val"],
             )
         return data

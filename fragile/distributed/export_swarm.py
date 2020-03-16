@@ -272,9 +272,9 @@ class ExportSwarm(BaseWrapper):
         """Check if the imported walkers improves the current best value of the :class:`Swarm`."""
         minim = self.swarm.walkers.minimize
         improves = (
-            self.swarm.best_reward_found > walkers.get_best_reward(minim)
+            self.swarm.best_reward > walkers.get_best_reward(minim)
             if minim
-            else self.swarm.best_reward_found < walkers.get_best_reward(minim)
+            else self.swarm.best_reward < walkers.get_best_reward(minim)
         )
         return improves
 

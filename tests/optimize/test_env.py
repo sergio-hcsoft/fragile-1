@@ -102,11 +102,17 @@ class TestFunction(TestEnvironment):
         new_states: StatesEnv = dummy_env.step(actions, states)
         assert isinstance(new_states, StatesEnv)
         assert new_states.rewards[0].item() == 1
-        if isinstance(dummy_env, MinimizerWrapper):
-            assert dummy_env.best_found == 0
 
     def test_minimizer_getattr(self):
         bounds = Bounds(shape=(2,), high=10, low=-5, dtype=float)
         env = Function(function=sphere, bounds=bounds)
         minim = MinimizerWrapper(env)
         assert minim.shape == env.shape
+
+    def test_minimizer_step(self):
+        minim = local_minimizer()
+        params = {"actions": {"dtype": numpy.float64, "size": (2,)}}
+        states = StatesModel(state_dict=params, batch_size=N_WALKERS)
+        assert minim.shape == minim.shape
+        minim.step(model_states=states, env_states=minim.reset(N_WALKERS))
+        assert minim.best_reward == 0

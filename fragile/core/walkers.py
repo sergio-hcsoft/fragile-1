@@ -132,6 +132,32 @@ class SimpleWalkers(BaseWalkers):
         """Return the `States` class that contains the data used by a Model."""
         return self._model_states
 
+    @property
+    def best_state(self) -> numpy.ndarray:
+        """Return the state of the best walker found in the current algorithm run."""
+        return self.states.best_state
+
+    @property
+    def best_reward(self) -> Scalar:
+        """Return the reward of the best walker found in the current algorithm run."""
+        return self.states.best_reward
+
+    @property
+    def best_id(self) -> int:
+        """
+        Return the id (hash value of the state) of the best walker found in the \
+        current algorithm run.
+        """
+        return self.states.best_id
+
+    @property
+    def best_obs(self) -> numpy.ndarray:
+        """
+        Return the observation corresponding to the best walker found in the \
+        current algorithm run.
+        """
+        return self.states.best_obs
+
     def calculate_end_condition(self) -> bool:
         """
         Process data from the current state to decide if the iteration process should stop.
@@ -393,9 +419,9 @@ class Walkers(SimpleWalkers):
         """
         end_condition = super(Walkers, self).calculate_end_condition()
         reward_limit_reached = (
-            self.states.best_reward_found < self.reward_limit
+            self.states.best_reward < self.reward_limit
             if self.minimize
-            else self.states.best_reward_found > self.reward_limit
+            else self.states.best_reward > self.reward_limit
         )
         return end_condition or reward_limit_reached
 

@@ -57,14 +57,30 @@ class Swarm(BaseSwarm):
         return self._walkers
 
     @property
-    def best_found(self) -> numpy.ndarray:
-        """Return the best state found in the current algorithm run."""
-        return self.walkers.states.best_obs
+    def best_state(self) -> numpy.ndarray:
+        """Return the state of the best walker found in the current algorithm run."""
+        return self.walkers.best_state
 
     @property
-    def best_reward_found(self) -> Scalar:
-        """Return the best reward found in the current algorithm run."""
-        return self.walkers.states.best_reward
+    def best_reward(self) -> Scalar:
+        """Return the reward of the best walker found in the current algorithm run."""
+        return self.walkers.best_reward
+
+    @property
+    def best_id(self) -> int:
+        """
+        Return the id (hash value of the state) of the best walker found in the \
+        current algorithm run.
+        """
+        return self.walkers.best_id
+
+    @property
+    def best_obs(self) -> numpy.ndarray:
+        """
+        Return the observation corresponding to the best walker found in the \
+        current algorithm run.
+        """
+        return self.walkers.best_obs
 
     @property
     def critic(self) -> BaseCritic:

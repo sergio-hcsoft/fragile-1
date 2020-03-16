@@ -3,7 +3,7 @@ from typing import Dict, Generator, Iterable, List, Optional, Set, Tuple, Union
 
 import numpy
 
-from fragile.core.utils import float_type, hash_numpy, Scalar, similiar_chunks_indexes, StateDict
+from fragile.core.utils import float_type, hash_numpy, similiar_chunks_indexes, StateDict
 
 
 class States:
@@ -460,16 +460,6 @@ class StatesWalkers(States):
         self.best_state = None
         # This is only to allow __repr__. Should be overriden after reset
         self.best_reward = -numpy.inf
-
-    @property
-    def best_found(self) -> numpy.ndarray:
-        """Return the best observation found."""
-        return self.best_obs
-
-    @property
-    def best_reward_found(self) -> Scalar:
-        """Return the value of the best observation found."""
-        return self.best_reward
 
     def get_params_dict(self) -> StateDict:
         """Return a dictionary containing the param_dict to build an instance \

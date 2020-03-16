@@ -72,8 +72,8 @@ class ESModel(NormalContinuous):
             if env_states is not None
             else numpy.zeros(((batch_size,) + self.shape))
         )
-        has_best = walkers_states is not None and walkers_states.best_found is not None
-        best = walkers_states.best_found if has_best else observs
+        has_best = walkers_states is not None and walkers_states.best_state is not None
+        best = walkers_states.best_state if has_best else observs
         # Choose 2 random indices
         indexes = numpy.arange(observs.shape[0])
         a_rand = self.random_state.permutation(indexes)
