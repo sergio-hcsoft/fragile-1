@@ -7,8 +7,6 @@
 [![license: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![unstable](https://badgen.net/badge/stability/unstable/E5AE13)](http://github.com/badges/stability-badges)
 
-**This repository is under active development.**
-
 Fragile is a framework for developing algorithms inspired by the Fractal AI theory and testing them at scale.
 
 ## Features
