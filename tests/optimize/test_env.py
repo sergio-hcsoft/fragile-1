@@ -44,13 +44,21 @@ def create_env_and_model_states(name="classic") -> Callable:
         states = StatesModel(state_dict=params, batch_size=N_WALKERS)
         return env, states
 
+    def _custom_domain_function():
+        env = custom_domain_function()
+        params = {"actions": {"dtype": numpy.float64, "size": (2,)}}
+        states = StatesModel(state_dict=params, batch_size=N_WALKERS)
+        return env, states
+
     if name.lower() == "function":
         return _function
+    elif name.lower() == "custom_domain_function":
+        return _custom_domain_function
     elif name.lower() == "local_minimizer":
         return _local_minimizer
 
 
-env_fixture_params = ["local_minimizer", "function"]
+env_fixture_params = ["local_minimizer", "function", "custom_domain_function"]
 
 
 class TestFunction(TestEnvironment):

@@ -11,6 +11,7 @@ from fragile.optimize.benchmarks import Rastrigin
 from tests.core.test_env import discrete_atari_env, classic_control_env, TestEnvironment
 from tests.distributed.ray import init_ray, ray
 from tests.optimize.test_env import Function, TestFunction, local_minimizer
+
 N_WALKERS = 10
 
 
@@ -109,7 +110,6 @@ ray_env_fixture_params = ["ray_env", "ray_function"]
 
 @pytest.mark.skipif(sys.version_info >= (3, 8), reason="Requires python3.7 or lower")
 class TestDistributedFunction(TestFunction):
-
     @pytest.fixture(params=ray_env_fixture_params)
     def env_data(self, request):
         if request.param in ray_env_fixture_params:
