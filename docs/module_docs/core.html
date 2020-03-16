@@ -40,12 +40,12 @@
 <h3><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSwarm</span></code><a class="headerlink" href="#baseswarm" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.base_classes.BaseSwarm">
-<em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseSwarm</code><span class="sig-paren">(</span><em class="sig-param">env: Callable</em>, <em class="sig-param">model: Callable</em>, <em class="sig-param">walkers: Callable</em>, <em class="sig-param">n_walkers: int</em>, <em class="sig-param">reward_scale: float = 1.0</em>, <em class="sig-param">dist_scale: float = 1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseSwarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseSwarm</code><span class="sig-paren">(</span><em class="sig-param">env: Callable[[], fragile.core.base_classes.BaseEnvironment], model: Callable[[fragile.core.base_classes.BaseEnvironment], fragile.core.base_classes.BaseModel], walkers: Callable[[...], fragile.core.base_classes.BaseWalkers], n_walkers: int, reward_scale: float = 1.0, dist_scale: float = 1.0, *args, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseSwarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Swarm implements the iteration logic to make the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> evolve.</p>
 <p>It contains the necessary logic to use an Environment, a Model, and a     Walkers instance to create the algorithm execution loop.</p>
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseSwarm.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">env: Callable</em>, <em class="sig-param">model: Callable</em>, <em class="sig-param">walkers: Callable</em>, <em class="sig-param">n_walkers: int</em>, <em class="sig-param">reward_scale: float = 1.0</em>, <em class="sig-param">dist_scale: float = 1.0</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseSwarm.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">env: Callable[[], fragile.core.base_classes.BaseEnvironment], model: Callable[[fragile.core.base_classes.BaseEnvironment], fragile.core.base_classes.BaseModel], walkers: Callable[[...], fragile.core.base_classes.BaseWalkers], n_walkers: int, reward_scale: float = 1.0, dist_scale: float = 1.0, *args, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseSwarm.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseSwarm.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a <a class="reference internal" href="#fragile.core.base_classes.BaseSwarm" title="fragile.core.base_classes.BaseSwarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSwarm</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -223,8 +223,8 @@ of the environment.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.base_classes.BaseWalkers.get_alive_compas">
-<code class="sig-name descname">get_alive_compas</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139988770196688'&gt;<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseWalkers.get_alive_compas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.get_alive_compas" title="Permalink to this definition">¶</a></dt>
+<dt id="fragile.core.base_classes.BaseWalkers.get_in_bounds_compas">
+<code class="sig-name descname">get_in_bounds_compas</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139833289861840'&gt;<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseWalkers.get_in_bounds_compas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseWalkers.get_in_bounds_compas" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an array of indexes corresponding to an alive walker chosen         at random.</p>
 </dd></dl>
 
@@ -310,7 +310,8 @@ of the environment.</p></li>
     <span class="s2">&quot;states&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">},</span>
     <span class="s2">&quot;observs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">observation_space</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
     <span class="s2">&quot;rewards&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
-    <span class="s2">&quot;ends&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
+    <span class="s2">&quot;oobs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
+    <span class="s2">&quot;terminals&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -318,14 +319,13 @@ of the environment.</p></li>
 
 <dl class="method">
 <dt id="fragile.core.base_classes.BaseEnvironment.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseEnvironment.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment.reset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseEnvironment.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseEnvironment.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the environment and return an States class with batch_size copies         of the initial state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>batch_size</strong> – Number of walkers that the resulting state will have.</p></li>
 <li><p><strong>env_states</strong> – States class used to set the environment to an arbitrary                         state.</p></li>
-<li><p><strong>args</strong> – Additional arguments not related to environment data.</p></li>
 <li><p><strong>kwargs</strong> – Additional keyword arguments not related to environment data.</p></li>
 </ul>
 </dd>
@@ -480,6 +480,91 @@ of the environment.</p></li>
 </dd></dl>
 
 </div>
+<div class="section" id="basecritic">
+<h3><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code><a class="headerlink" href="#basecritic" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fragile.core.base_classes.BaseCritic">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.base_classes.</code><code class="sig-name descname">BaseCritic</code><a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseCritic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseCritic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform additional computation. It can be used in a <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>     or a <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p>
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseCritic.calculate">
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = None</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseCritic.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseCritic.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the target time step values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of new points to the sampled.</p></li>
+<li><p><strong>model_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesModel</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> data.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> data.</p></li>
+<li><p><strong>walkers_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States containing the the internal state of the <a class="reference internal" href="#fragile.core.base_classes.BaseCritic" title="fragile.core.base_classes.BaseCritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseCritic.get_params_dict">
+<em class="property">classmethod </em><code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseCritic.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseCritic.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an state_dict to be used for instantiating an States class.</p>
+<p>In order to define the tensors, a state_dict dictionary needs to be specified         using the following structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">numpy</span>
+<span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name_1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span>
+                         <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+                       <span class="p">},</span>
+              <span class="p">}</span>
+</pre></div>
+</div>
+<p>Where tuple is a tuple indicating the shape of the desired tensor, that         will be accessed using the name_1 attribute of the class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseCritic.reset">
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; Optional[fragile.core.states.States]<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseCritic.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseCritic.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restart the <cite>Critic</cite> and reset its internal state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of elements in the first dimension of the model                         States data.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to model data. If provided the                           model will be reset to this state.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> data.</p></li>
+<li><p><strong>walkers_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> data.</p></li>
+<li><p><strong>args</strong> – Additional arguments not related to <a class="reference internal" href="#fragile.core.base_classes.BaseCritic" title="fragile.core.base_classes.BaseCritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a> data.</p></li>
+<li><p><strong>kwargs</strong> – Additional keyword arguments not related to <a class="reference internal" href="#fragile.core.base_classes.BaseCritic" title="fragile.core.base_classes.BaseCritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a> data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States containing the information of the current state of the             <a class="reference internal" href="#fragile.core.base_classes.BaseCritic" title="fragile.core.base_classes.BaseCritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a> (after the reset).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.base_classes.BaseCritic.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int = 1</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel = None</em>, <em class="sig-param">env_states: fragile.core.states.StatesEnv = None</em>, <em class="sig-param">walkers_states: fragile.core.states.StatesWalkers = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; Optional[fragile.core.states.States]<a class="reference internal" href="../_modules/fragile/core/base_classes.html#BaseCritic.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.base_classes.BaseCritic.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the <a class="reference internal" href="#fragile.core.base_classes.BaseCritic" title="fragile.core.base_classes.BaseCritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a> internal state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of elements in the first dimension of the model                         States data.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to model data. If provided the                           model will be reset to this state.</p></li>
+<li><p><strong>env_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> data.</p></li>
+<li><p><strong>walkers_states</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code> corresponding to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code> data.</p></li>
+<li><p><strong>args</strong> – Additional arguments not related to <a class="reference internal" href="#fragile.core.base_classes.BaseCritic" title="fragile.core.base_classes.BaseCritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a> data.</p></li>
+<li><p><strong>kwargs</strong> – Additional keyword arguments not related to <a class="reference internal" href="#fragile.core.base_classes.BaseCritic" title="fragile.core.base_classes.BaseCritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a> data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>States containing the information of the current state of the             <a class="reference internal" href="#fragile.core.base_classes.BaseCritic" title="fragile.core.base_classes.BaseCritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="basewrapper">
 <h3><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWrapper</span></code><a class="headerlink" href="#basewrapper" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
@@ -522,13 +607,29 @@ of the environment.</p></li>
 <h3><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.swarm.Swarm">
-<em class="property">class </em><code class="sig-prename descclassname">fragile.core.swarm.</code><code class="sig-name descname">Swarm</code><span class="sig-paren">(</span><em class="sig-param">walkers: Callable = &lt;class 'fragile.core.walkers.Walkers'&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/swarm.html#Swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.swarm.</code><code class="sig-name descname">Swarm</code><span class="sig-paren">(</span><em class="sig-param">n_walkers: int, env: Callable[[], fragile.core.base_classes.BaseEnvironment], model: Callable[[fragile.core.base_classes.BaseEnvironment], fragile.core.base_classes.BaseModel], walkers: Callable[[...], fragile.core.walkers.Walkers] = &lt;class 'fragile.core.walkers.Walkers'&gt;, reward_scale: float = 1.0, dist_scale: float = 1.0, tree: Callable[[], fragile.core.base_classes.BaseStateTree] = None, prune_tree: bool = True, *args, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/swarm.html#Swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Swarm is in charge of performing a fractal evolution process.</p>
 <p>It contains the necessary logic to use an Environment, a Model, and a     Walkers instance to run the Swarm evolution algorithm.</p>
 <dl class="method">
 <dt id="fragile.core.swarm.Swarm.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">walkers: Callable = &lt;class 'fragile.core.walkers.Walkers'&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/swarm.html#Swarm.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_walkers: int, env: Callable[[], fragile.core.base_classes.BaseEnvironment], model: Callable[[fragile.core.base_classes.BaseEnvironment], fragile.core.base_classes.BaseModel], walkers: Callable[[...], fragile.core.walkers.Walkers] = &lt;class 'fragile.core.walkers.Walkers'&gt;, reward_scale: float = 1.0, dist_scale: float = 1.0, tree: Callable[[], fragile.core.base_classes.BaseStateTree] = None, prune_tree: bool = True, *args, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/swarm.html#Swarm.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a <a class="reference internal" href="#fragile.core.swarm.Swarm" title="fragile.core.swarm.Swarm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_walkers</strong> – Number of walkers of the swarm.</p></li>
+<li><p><strong>env</strong> – A callable that returns an instance of an Environment.</p></li>
+<li><p><strong>model</strong> – A callable that returns an instance of a Model.</p></li>
+<li><p><strong>walkers</strong> – A callable that returns an instance of BaseWalkers.</p></li>
+<li><p><strong>reward_scale</strong> – Virtual reward exponent for the reward score.</p></li>
+<li><p><strong>dist_scale</strong> – Virtual reward exponent for the distance score.</p></li>
+<li><p><strong>tree</strong> – class:<cite>StatesTree</cite> that keeps track of the visited states.</p></li>
+<li><p><strong>prune_tree</strong> – If <cite>tree</cite> is <cite>None</cite> it has no effect. If true,                        store in the <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code> only the past history of alive                         walkers, and discard the branches with leaves that have                         no walkers.</p></li>
+<li><p><strong>*args</strong> – Additional args passed to init_swarm.</p></li>
+<li><p><strong>**kwargs</strong> – Additional kwargs passed to init_swarm.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -539,15 +640,27 @@ of the environment.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.swarm.Swarm.best_found">
-<em class="property">property </em><code class="sig-name descname">best_found</code><a class="headerlink" href="#fragile.core.swarm.Swarm.best_found" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the best state found in the current algorithm run.</p>
+<dt id="fragile.core.swarm.Swarm.best_id">
+<em class="property">property </em><code class="sig-name descname">best_id</code><a class="headerlink" href="#fragile.core.swarm.Swarm.best_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the id (hash value of the state) of the best walker found in the         current algorithm run.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.swarm.Swarm.best_reward_found">
-<em class="property">property </em><code class="sig-name descname">best_reward_found</code><a class="headerlink" href="#fragile.core.swarm.Swarm.best_reward_found" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the best reward found in the current algorithm run.</p>
+<dt id="fragile.core.swarm.Swarm.best_obs">
+<em class="property">property </em><code class="sig-name descname">best_obs</code><a class="headerlink" href="#fragile.core.swarm.Swarm.best_obs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the observation corresponding to the best walker found in the         current algorithm run.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.swarm.Swarm.best_reward">
+<em class="property">property </em><code class="sig-name descname">best_reward</code><a class="headerlink" href="#fragile.core.swarm.Swarm.best_reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the reward of the best walker found in the current algorithm run.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.swarm.Swarm.best_state">
+<em class="property">property </em><code class="sig-name descname">best_state</code><a class="headerlink" href="#fragile.core.swarm.Swarm.best_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the state of the best walker found in the current algorithm run.</p>
 </dd></dl>
 
 <dl class="method">
@@ -570,7 +683,7 @@ of the environment.</p></li>
 
 <dl class="method">
 <dt id="fragile.core.swarm.Swarm.init_swarm">
-<code class="sig-name descname">init_swarm</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable</em>, <em class="sig-param">model_callable: Callable</em>, <em class="sig-param">walkers_callable: Callable</em>, <em class="sig-param">n_walkers: int</em>, <em class="sig-param">reward_scale: float = 1.0</em>, <em class="sig-param">dist_scale: float = 1.0</em>, <em class="sig-param">tree: Callable = None</em>, <em class="sig-param">prune_tree: bool = True</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/swarm.html#Swarm.init_swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.init_swarm" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">init_swarm</code><span class="sig-paren">(</span><em class="sig-param">env_callable: Callable[[], fragile.core.base_classes.BaseEnvironment], model_callable: Callable[[fragile.core.base_classes.BaseEnvironment], fragile.core.base_classes.BaseModel], walkers_callable: Callable[[...], fragile.core.walkers.Walkers], n_walkers: int, reward_scale: float = 1.0, dist_scale: float = 1.0, tree: Callable[[], fragile.core.base_classes.BaseStateTree] = None, prune_tree: bool = True, *args, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/swarm.html#Swarm.init_swarm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.swarm.Swarm.init_swarm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize and set up all the necessary internal variables to run the swarm.</p>
 <p>This process involves instantiating the Swarm, the Environment and the         model.</p>
 <dl class="field-list simple">
@@ -694,21 +807,29 @@ of the environment.</p></li>
 <h3><code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.walkers.Walkers">
-<em class="property">class </em><code class="sig-prename descclassname">fragile.core.walkers.</code><code class="sig-name descname">Walkers</code><span class="sig-paren">(</span><em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">best_walker: Tuple[&lt;MagicMock id='139988769289616'&gt;</em>, <em class="sig-param">Union[int</em>, <em class="sig-param">&lt;MagicMock id='139988771319248'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139988771340560'&gt;]] = None</em>, <em class="sig-param">reward_limit: float = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.walkers.</code><code class="sig-name descname">Walkers</code><span class="sig-paren">(</span><em class="sig-param">n_walkers: int, env_state_params: Dict[str, Dict[str, Any]], model_state_params: Dict[str, Dict[str, Any]], reward_scale: float = 1.0, dist_scale: float = 1.0, max_iters: int = None, accumulate_rewards: bool = True, distance_function: Optional[Callable[[&lt;MagicMock id='139833291526096'&gt;, &lt;MagicMock id='139833291026704'&gt;], &lt;MagicMock id='139833291039760'&gt;]] = None, ignore_clone: Optional[Dict[str, Set[str]]] = None, critic: Optional[fragile.core.base_classes.BaseCritic] = None, minimize: bool = False, best_walker: Optional[Tuple[&lt;MagicMock id='139833289596432'&gt;, &lt;MagicMock id='139833288790416'&gt;, Union[int, &lt;MagicMock id='139833291415120'&gt;, float, &lt;MagicMock id='139833291440528'&gt;]]] = None, reward_limit: float = None, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Walkers is a data structure that takes care of all the data involved     in making a Swarm evolve.</p>
 <dl class="method">
 <dt id="fragile.core.walkers.Walkers.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">critic: fragile.core.base_classes.BaseCritic = None</em>, <em class="sig-param">minimize: bool = False</em>, <em class="sig-param">best_walker: Tuple[&lt;MagicMock id='139988769289616'&gt;</em>, <em class="sig-param">Union[int</em>, <em class="sig-param">&lt;MagicMock id='139988771319248'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139988771340560'&gt;]] = None</em>, <em class="sig-param">reward_limit: float = None</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">n_walkers: int, env_state_params: Dict[str, Dict[str, Any]], model_state_params: Dict[str, Dict[str, Any]], reward_scale: float = 1.0, dist_scale: float = 1.0, max_iters: int = None, accumulate_rewards: bool = True, distance_function: Optional[Callable[[&lt;MagicMock id='139833291526096'&gt;, &lt;MagicMock id='139833291026704'&gt;], &lt;MagicMock id='139833291039760'&gt;]] = None, ignore_clone: Optional[Dict[str, Set[str]]] = None, critic: Optional[fragile.core.base_classes.BaseCritic] = None, minimize: bool = False, best_walker: Optional[Tuple[&lt;MagicMock id='139833289596432'&gt;, &lt;MagicMock id='139833288790416'&gt;, Union[int, &lt;MagicMock id='139833291415120'&gt;, float, &lt;MagicMock id='139833291440528'&gt;]]] = None, reward_limit: float = None, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a <a class="reference internal" href="#fragile.core.walkers.Walkers" title="fragile.core.walkers.Walkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>critic</strong> – critic that will be used to calculate custom rewards.</p></li>
+<li><p><strong>n_walkers</strong> – Number of walkers of the instance.</p></li>
+<li><p><strong>env_state_params</strong> – Dictionary to instantiate the States of an <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p></li>
+<li><p><strong>model_state_params</strong> – Dictionary to instantiate the States of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p></li>
+<li><p><strong>reward_scale</strong> – Regulates the importance of the reward. Recommended to                           keep in the [0, 5] range. Higher values correspond to                           higher importance.</p></li>
+<li><p><strong>dist_scale</strong> – Regulates the importance of the distance. Recommended to                           keep in the [0, 5] range. Higher values correspond to                           higher importance.</p></li>
+<li><p><strong>max_iters</strong> – Maximum number of iterations that the walkers are allowed                        to perform.</p></li>
+<li><p><strong>accumulate_rewards</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the rewards obtained after transitioning                                 to a new state will accumulate. If <code class="docutils literal notranslate"><span class="pre">False</span></code> only the last                                 reward will be taken into account.</p></li>
+<li><p><strong>distance_function</strong> – Function to compute the distances between two                                groups of walkers. It will be applied row-wise                                to the walkers observations and it will return a                                vector of scalars. Defaults to l2 norm.</p></li>
+<li><p><strong>ignore_clone</strong> – Dictionary containing the attribute values that will                           not be cloned. Its keys can be be either “env”, of                           “model”, to reference the <cite>env_states</cite> and the                           <cite>model_states</cite>. Its values are a set of strings with                           the names of the attributes that will not be cloned.</p></li>
+<li><p><strong>critic</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code> that will be used to calculate custom rewards.</p></li>
 <li><p><strong>minimize</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the algorithm will perform a minimization                       process. If <code class="docutils literal notranslate"><span class="pre">False</span></code> it will be a maximization process.</p></li>
 <li><p><strong>best_walker</strong> – Tuple containing the best state and reward that will                         be used as the initial best values found.</p></li>
 <li><p><strong>reward_limit</strong> – The iteration process will stop after reaching this                           reward value. If you are running a minimization process                           it will be considered the minimum reward possible, and                           if you are maximizing a reward it will be the maximum                           value.</p></li>
-<li><p><strong>*args</strong> – Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleWalkers</span></code>.</p></li>
-<li><p><strong>**kwargs</strong> – Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleWalkers</span></code>.</p></li>
+<li><p><strong>kwargs</strong> – Additional attributes stored in the <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -741,6 +862,12 @@ of the environment.</p></li>
 <dt id="fragile.core.walkers.Walkers.fix_best">
 <code class="sig-name descname">fix_best</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.fix_best"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.fix_best" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ensure the best state found is assigned to the last walker of the         swarm, so walkers can always choose to clone to the best state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.walkers.Walkers.get_best_index">
+<code class="sig-name descname">get_best_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="../_modules/fragile/core/walkers.html#Walkers.get_best_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.walkers.Walkers.get_best_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the index of the best state present in the <a class="reference internal" href="#fragile.core.walkers.Walkers" title="fragile.core.walkers.Walkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code></a>         that is considered alive (inside the boundary conditions of the problem).         If no walker is alive it will return the index of the last walker, which         corresponds with the best state found.</p>
 </dd></dl>
 
 <dl class="method">
@@ -795,7 +922,7 @@ of the environment.</p></li>
 <dl class="method">
 <dt id="fragile.core.env.Environment.get_params_dict">
 <code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="../_modules/fragile/core/env.html#Environment.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.get_params_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a dictionary containing the param_dict to build an instance         of <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> that can handle all the data generated by a         <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a>.</p>
+<dd><p>Return a dictionary containing the param_dict to build an instance         of <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> that can handle all the data generated by an         <a class="reference internal" href="#fragile.core.env.Environment" title="fragile.core.env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -806,7 +933,7 @@ of the environment.</p></li>
 
 <dl class="method">
 <dt id="fragile.core.env.Environment.states_from_data">
-<code class="sig-name descname">states_from_data</code><span class="sig-paren">(</span><em class="sig-param">batch_size</em>, <em class="sig-param">states</em>, <em class="sig-param">observs</em>, <em class="sig-param">rewards</em>, <em class="sig-param">ends</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/core/env.html#Environment.states_from_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.states_from_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">states_from_data</code><span class="sig-paren">(</span><em class="sig-param">batch_size</em>, <em class="sig-param">states</em>, <em class="sig-param">observs</em>, <em class="sig-param">rewards</em>, <em class="sig-param">oobs</em>, <em class="sig-param">terminals=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesEnv<a class="reference internal" href="../_modules/fragile/core/env.html#Environment.states_from_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.env.Environment.states_from_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a new <code class="xref py py-class docutils literal notranslate"><span class="pre">StatesEnv</span></code> object containing the data generated         by the environment.</p>
 </dd></dl>
 
@@ -977,7 +1104,7 @@ of the environment.</p></li>
 
 <dl class="method">
 <dt id="fragile.core.models.Model.update_states_with_critic">
-<code class="sig-name descname">update_states_with_critic</code><span class="sig-paren">(</span><em class="sig-param">actions: &lt;MagicMock id='139988769867792'&gt;</em>, <em class="sig-param">batch_size: int</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="../_modules/fragile/core/models.html#Model.update_states_with_critic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.Model.update_states_with_critic" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_states_with_critic</code><span class="sig-paren">(</span><em class="sig-param">actions: &lt;MagicMock id='139833289566352'&gt;</em>, <em class="sig-param">batch_size: int</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="../_modules/fragile/core/models.html#Model.update_states_with_critic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.Model.update_states_with_critic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the time steps generated by the critic and add them to         <cite>model_states</cite>. If there is no Critic the default value of dt will be a         vector of 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1020,7 +1147,7 @@ of the environment.</p></li>
 
 <dl class="method">
 <dt id="fragile.core.models._DtModel.update_states_with_critic">
-<code class="sig-name descname">update_states_with_critic</code><span class="sig-paren">(</span><em class="sig-param">actions: &lt;MagicMock id='139988769841296'&gt;</em>, <em class="sig-param">batch_size: int</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="../_modules/fragile/core/models.html#_DtModel.update_states_with_critic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models._DtModel.update_states_with_critic" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_states_with_critic</code><span class="sig-paren">(</span><em class="sig-param">actions: &lt;MagicMock id='139833289564944'&gt;</em>, <em class="sig-param">batch_size: int</em>, <em class="sig-param">model_states: fragile.core.states.StatesModel</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.StatesModel<a class="reference internal" href="../_modules/fragile/core/models.html#_DtModel.update_states_with_critic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models._DtModel.update_states_with_critic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the time steps generated by the critic and add them to         <cite>model_states</cite>. If there is no Critic the default value of dt will be a         vector of 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1044,17 +1171,18 @@ of the environment.</p></li>
 <h3><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousModel</span></code> (Abstract)<a class="headerlink" href="#continuousmodel-abstract" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.models.ContinuousModel">
-<em class="property">class </em><code class="sig-prename descclassname">fragile.core.models.</code><code class="sig-name descname">ContinuousModel</code><span class="sig-paren">(</span><em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">critic: Optional[fragile.core.base_classes.BaseCritic] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/models.html#ContinuousModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinuousModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.models.</code><code class="sig-name descname">ContinuousModel</code><span class="sig-paren">(</span><em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">critic: Optional[fragile.core.base_classes.BaseCritic] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/models.html#ContinuousModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinuousModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>It represents the base Model class that handles a continuous interval of     possible outcomes.</p>
 <dl class="method">
 <dt id="fragile.core.models.ContinuousModel.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">critic: Optional[fragile.core.base_classes.BaseCritic] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/models.html#ContinuousModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinuousModel.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">critic: Optional[fragile.core.base_classes.BaseCritic] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/models.html#ContinuousModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinuousModel.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a <code class="xref py py-class docutils literal notranslate"><span class="pre">RandomContinuous</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>bounds</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code> class defining the range of allowed output             values of the model.</p></li>
 <li><p><strong>critic</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code> that will be used to make additional computation.</p></li>
+<li><p><strong>**kwargs</strong> – Ignored. Only defined to march <a class="reference internal" href="#fragile.core.models.Model" title="fragile.core.models.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> interface.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1198,7 +1326,7 @@ of the environment.</p></li>
 <h3><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousUniform</span></code><a class="headerlink" href="#continuousuniform" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.models.ContinuousUniform">
-<em class="property">class </em><code class="sig-prename descclassname">fragile.core.models.</code><code class="sig-name descname">ContinuousUniform</code><span class="sig-paren">(</span><em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">critic: Optional[fragile.core.base_classes.BaseCritic] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/models.html#ContinuousUniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinuousUniform" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.models.</code><code class="sig-name descname">ContinuousUniform</code><span class="sig-paren">(</span><em class="sig-param">bounds: fragile.core.bounds.Bounds</em>, <em class="sig-param">critic: Optional[fragile.core.base_classes.BaseCritic] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/models.html#ContinuousUniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.models.ContinuousUniform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Model that samples continuous actions in a given interval using a uniform prior.</p>
 <dl class="method">
 <dt id="fragile.core.models.ContinuousUniform.sample">
@@ -1229,9 +1357,8 @@ of the environment.</p></li>
 <dl class="class">
 <dt id="fragile.core.states.States">
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">States</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#States"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handles several tensors that will contain the data associated with the     walkers of a Swarm. Each tensor will be associated to a class attribute.</p>
-<p>This class behaves as a dictionary of tensors with some extra functionality
-to make easier the process of cloning the walkers’ states by adding an     extra dimension equal to the number of walkers to each tensor.</p>
+<dd><p>Handles several arrays that will contain the data associated with the     walkers of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>. Each array will be associated to a class     attribute, and it will store the corresponding value of that attribute     for all the walkers of a <code class="xref py py-class docutils literal notranslate"><span class="pre">Swarm</span></code>.</p>
+<p>This class behaves as a dictionary of arrays with some extra functionality     to make easier the process of cloning the walkers’ data. All of its internal     arrays will have an extra first dimension equal to the number of walkers.</p>
 <p>In order to define the tensors, a <cite>state_dict</cite> dictionary needs to be     specified using the following structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name_1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span>
                          <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
@@ -1239,7 +1366,8 @@ to make easier the process of cloning the walkers’ states by adding an     ext
              <span class="p">}</span>
 </pre></div>
 </div>
-<p>Where tuple is a tuple indicating the shape of the desired tensor, that will     be accessed using the name_1 attribute of the class. If “size” is not defined     the attribute will be considered a vector of length <cite>batch_size</cite>.</p>
+<p>Where tuple is a tuple indicating the shape of the desired tensor. The     created arrays will accessible the <code class="docutils literal notranslate"><span class="pre">name_1</span></code> attribute of the class, or     indexing the class with <code class="docutils literal notranslate"><span class="pre">states[&quot;name_1&quot;]</span></code>.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">size</span></code> is not defined the attribute will be considered a vector of     length <cite>batch_size</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1251,7 +1379,7 @@ to make easier the process of cloning the walkers’ states by adding an     ext
 </dl>
 <dl class="method">
 <dt id="fragile.core.states.States.__getitem__">
-<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">item: str</em><span class="sig-paren">)</span> &#x2192; Union[&lt;MagicMock id='139988770490448'&gt;, List[&lt;MagicMock id='139988769983440'&gt;]]<a class="reference internal" href="../_modules/fragile/core/states.html#States.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.__getitem__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">item: str</em><span class="sig-paren">)</span> &#x2192; Union[&lt;MagicMock id='139833290443920'&gt;, List[&lt;MagicMock id='139833290039248'&gt;]]<a class="reference internal" href="../_modules/fragile/core/states.html#States.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Query an attribute of the class as if it was a dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1266,7 +1394,7 @@ to make easier the process of cloning the walkers’ states by adding an     ext
 <dl class="method">
 <dt id="fragile.core.states.States.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#States.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialise a <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1286,7 +1414,7 @@ to make easier the process of cloning the walkers’ states by adding an     ext
 
 <dl class="method">
 <dt id="fragile.core.states.States.__setitem__">
-<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">key, value: Union[Tuple, List, &lt;MagicMock id='139988770070096'&gt;]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#States.__setitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.__setitem__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">key, value: Union[Tuple, List, &lt;MagicMock id='139833290130000'&gt;]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#States.__setitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.__setitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allow the class to set its attributes as if it was a dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1303,7 +1431,7 @@ to make easier the process of cloning the walkers’ states by adding an     ext
 
 <dl class="method">
 <dt id="fragile.core.states.States.clone">
-<code class="sig-name descname">clone</code><span class="sig-paren">(</span><em class="sig-param">will_clone: &lt;MagicMock id='139988770122448'&gt;</em>, <em class="sig-param">compas_ix: &lt;MagicMock id='139988770151952'&gt;</em>, <em class="sig-param">ignore: Optional[Set[str]] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#States.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.clone" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">clone</code><span class="sig-paren">(</span><em class="sig-param">will_clone: &lt;MagicMock id='139833290182352'&gt;</em>, <em class="sig-param">compas_ix: &lt;MagicMock id='139833290216080'&gt;</em>, <em class="sig-param">ignore: Optional[Set[str]] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#States.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.clone" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clone all the stored data according to the provided arrays.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1314,12 +1442,6 @@ to make easier the process of cloning the walkers’ states by adding an     ext
 </ul>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.states.States.concat_states">
-<em class="property">classmethod </em><code class="sig-name descname">concat_states</code><span class="sig-paren">(</span><em class="sig-param">states: List[States]</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="../_modules/fragile/core/states.html#States.concat_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.concat_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transform a list containing states with only one walker to a single         States instance with many walkers.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1404,6 +1526,20 @@ correspond to a given walker.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fragile.core.states.States.merge_states">
+<em class="property">static </em><code class="sig-name descname">merge_states</code><span class="sig-paren">(</span><em class="sig-param">states: Iterable[States]</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="../_modules/fragile/core/states.html#States.merge_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.merge_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine different states containing the same kind of data into a single         <code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code> with batch size equal to the sum of all the state batch         sizes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>states</strong> – Iterable returning <a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a> with the same attributes.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#fragile.core.states.States" title="fragile.core.states.States"><code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code></a> containing the combined data of the input values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.states.States.n">
 <em class="property">property </em><code class="sig-name descname">n</code><a class="headerlink" href="#fragile.core.states.States.n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the batch_size of the vectors, which is equivalent to the number of walkers.</p>
@@ -1411,7 +1547,7 @@ correspond to a given walker.</p>
 
 <dl class="method">
 <dt id="fragile.core.states.States.params_to_arrays">
-<em class="property">static </em><code class="sig-name descname">params_to_arrays</code><span class="sig-paren">(</span><em class="sig-param">param_dict: Dict[str, Dict[str, Any]], n_walkers: int</em><span class="sig-paren">)</span> &#x2192; Dict[str, &lt;MagicMock id='139988770488976'&gt;]<a class="reference internal" href="../_modules/fragile/core/states.html#States.params_to_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.params_to_arrays" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">params_to_arrays</code><span class="sig-paren">(</span><em class="sig-param">param_dict: Dict[str, Dict[str, Any]], n_walkers: int</em><span class="sig-paren">)</span> &#x2192; Dict[str, &lt;MagicMock id='139833290225168'&gt;]<a class="reference internal" href="../_modules/fragile/core/states.html#States.params_to_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.params_to_arrays" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a dictionary containing the arrays specified by param_dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1428,8 +1564,8 @@ correspond to a given walker.</p>
 
 <dl class="method">
 <dt id="fragile.core.states.States.split_states">
-<code class="sig-name descname">split_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="../_modules/fragile/core/states.html#States.split_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.split_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a generator for n_walkers different states, where each one         contain only the data corresponding to one walker.</p>
+<code class="sig-name descname">split_states</code><span class="sig-paren">(</span><em class="sig-param">n_chunks: int</em><span class="sig-paren">)</span> &#x2192; Generator[fragile.core.states.States, None, None]<a class="reference internal" href="../_modules/fragile/core/states.html#States.split_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.States.split_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator for n_chunks different states, where each one         contain only the data corresponding to one walker.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1461,7 +1597,37 @@ correspond to a given walker.</p>
 <dl class="class">
 <dt id="fragile.core.states.StatesEnv">
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">StatesEnv</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesEnv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesEnv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Keeps track of the data structures used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Env</span></code>.</p>
+<dd><p>Keeps track of the data structures used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+<dl class="attribute">
+<dt id="fragile.core.states.StatesEnv.states">
+<code class="sig-name descname">states</code><a class="headerlink" href="#fragile.core.states.StatesEnv.states" title="Permalink to this definition">¶</a></dt>
+<dd><p>This data tracks the internal state of the Environment simulation,                  and they are only used to save and restore its state.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesEnv.observs">
+<code class="sig-name descname">observs</code><a class="headerlink" href="#fragile.core.states.StatesEnv.observs" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the data that corresponds to the observations of the                  current <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> state. The observations are used                  for calculating distances.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesEnv.rewards">
+<code class="sig-name descname">rewards</code><a class="headerlink" href="#fragile.core.states.StatesEnv.rewards" title="Permalink to this definition">¶</a></dt>
+<dd><p>This vector contains the rewards associated with each observation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesEnv.oobs">
+<code class="sig-name descname">oobs</code><a class="headerlink" href="#fragile.core.states.StatesEnv.oobs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stands for <strong>Out Of Bounds</strong>. It is a vector of booleans that               represents and arbitrary boundary condition. If a value is <code class="docutils literal notranslate"><span class="pre">True</span></code>               the corresponding states will be treated as being outside the               <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> domain. The states considered out of bounds               will be avoided by the sampling algorithms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesEnv.terminals">
+<code class="sig-name descname">terminals</code><a class="headerlink" href="#fragile.core.states.StatesEnv.terminals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vector of booleans representing the successful termination                    of an environment. A <code class="docutils literal notranslate"><span class="pre">True</span></code> value indicates that the                    <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> has successfully reached a terminal                    state that is not out of bounds.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="fragile.core.states.StatesEnv.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesEnv.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesEnv.__init__" title="Permalink to this definition">¶</a></dt>
@@ -1492,6 +1658,12 @@ correspond to a given walker.</p>
 <dt id="fragile.core.states.StatesModel">
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">StatesModel</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keeps track of the data structures used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p>
+<dl class="attribute">
+<dt id="fragile.core.states.StatesModel.actions">
+<code class="sig-name descname">actions</code><a class="headerlink" href="#fragile.core.states.StatesModel.actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the actions that will be sampled by a <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code>.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="fragile.core.states.StatesModel.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesModel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesModel.__init__" title="Permalink to this definition">¶</a></dt>
@@ -1522,6 +1694,84 @@ correspond to a given walker.</p>
 <dt id="fragile.core.states.StatesWalkers">
 <em class="property">class </em><code class="sig-prename descclassname">fragile.core.states.</code><code class="sig-name descname">StatesWalkers</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesWalkers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesWalkers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keeps track of the data structures used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Walkers</span></code>.</p>
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.id_walkers">
+<code class="sig-name descname">id_walkers</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.id_walkers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of of integers that uniquely identify a given state.                     They are obtained by hashing the states.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.compas_clone">
+<code class="sig-name descname">compas_clone</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.compas_clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of integers containing the index of the walkers                       selected as companions for cloning.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.processed_rewards">
+<code class="sig-name descname">processed_rewards</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.processed_rewards" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of normalized rewards. It contains positive                            values with an average of 1. Values greater than one                            correspond to rewards above the average, and values                            lower than one correspond to rewards below the average.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.virtual_rewards">
+<code class="sig-name descname">virtual_rewards</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.virtual_rewards" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array containing the virtual rewards assigned to each walker.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.cum_rewards">
+<code class="sig-name descname">cum_rewards</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.cum_rewards" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of rewards used to compute the virtual_reward. This                     value can accumulate the rewards provided by the                     <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code> during an algorithm run.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.distances">
+<code class="sig-name descname">distances</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array containing the similarity metric of each walker used                    to compute the virtual reward.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.clone_probs">
+<code class="sig-name descname">clone_probs</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.clone_probs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array containing the probability that a walker clones to                      its companion during the cloning phase.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.will_clone">
+<code class="sig-name descname">will_clone</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.will_clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean array. A <code class="docutils literal notranslate"><span class="pre">True</span></code> value indicates that the                     corresponding walker will clone to its companion.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.in_bounds">
+<code class="sig-name descname">in_bounds</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.in_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean array. A <cite>True</cite> value indicates that a walker is                    in the domain defined by the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.best_state">
+<code class="sig-name descname">best_state</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.best_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>State of the walker with the best <code class="docutils literal notranslate"><span class="pre">cum_reward</span></code> found                    during the algorithm run.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.best_obs">
+<code class="sig-name descname">best_obs</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.best_obs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observation corresponding to the <code class="docutils literal notranslate"><span class="pre">best_state</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.best_reward">
+<code class="sig-name descname">best_reward</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.best_reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Best <code class="docutils literal notranslate"><span class="pre">cum_reward</span></code> found during the algorithm run.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fragile.core.states.StatesWalkers.best_id">
+<code class="sig-name descname">best_id</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.best_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integer representing the hash of the <code class="docutils literal notranslate"><span class="pre">best_state</span></code>.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="fragile.core.states.StatesWalkers.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">batch_size: int</em>, <em class="sig-param">state_dict: Optional[Dict[str</em>, <em class="sig-param">Dict[str</em>, <em class="sig-param">Any]]] = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/states.html#StatesWalkers.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesWalkers.__init__" title="Permalink to this definition">¶</a></dt>
@@ -1538,20 +1788,8 @@ correspond to a given walker.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="fragile.core.states.StatesWalkers.best_found">
-<em class="property">property </em><code class="sig-name descname">best_found</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.best_found" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the best observation found.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="fragile.core.states.StatesWalkers.best_reward_found">
-<em class="property">property </em><code class="sig-name descname">best_reward_found</code><a class="headerlink" href="#fragile.core.states.StatesWalkers.best_reward_found" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the value of the best observation found.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="fragile.core.states.StatesWalkers.clone">
-<code class="sig-name descname">clone</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; Tuple[&lt;MagicMock id='139988770273424'&gt;, &lt;MagicMock id='139988770260112'&gt;]<a class="reference internal" href="../_modules/fragile/core/states.html#StatesWalkers.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesWalkers.clone" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">clone</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; Tuple[&lt;MagicMock id='139833289761936'&gt;, &lt;MagicMock id='139833289787408'&gt;]<a class="reference internal" href="../_modules/fragile/core/states.html#StatesWalkers.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.states.StatesWalkers.clone" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform the clone only on cum_rewards and id_walkers and reset the other arrays.</p>
 </dd></dl>
 
@@ -1570,6 +1808,174 @@ correspond to a given walker.</p>
 </dd></dl>
 
 </div>
+</div>
+<div class="section" id="dtsampler">
+<h2>DtSampler<a class="headerlink" href="#dtsampler" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fragile.core.dt_samplers.BaseDtSampler">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.dt_samplers.</code><code class="sig-name descname">BaseDtSampler</code><span class="sig-paren">(</span><em class="sig-param">discrete_values: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#BaseDtSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.BaseDtSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Critic</span></code> that returns contains the attribute <code class="docutils literal notranslate"><span class="pre">dt</span></code> in its <code class="xref py py-class docutils literal notranslate"><span class="pre">States</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dt</span></code> value represents the number of time steps a given action will     be applied. The returned values are floats so the critic can also be used     to sample a learning rate. If you need discrete values transform the sampled     array to integers in the <code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code>, or change the data type     overriding the default <code class="docutils literal notranslate"><span class="pre">get_params_dict</span></code> behavior.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dt</span></code> value will also be replicated in the <code class="docutils literal notranslate"><span class="pre">critic_score</span></code> attribute     of the states to comply with the critic interface.</p>
+<dl class="method">
+<dt id="fragile.core.dt_samplers.BaseDtSampler.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">discrete_values: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#BaseDtSampler.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.BaseDtSampler.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.dt_samplers.BaseDtSampler" title="fragile.core.dt_samplers.BaseDtSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDtSampler</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>discrete_values</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> return discrete time step values. If                             <code class="docutils literal notranslate"><span class="pre">False</span></code> allow to return floating point time steps.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.dt_samplers.BaseDtSampler.calculate">
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">batch_size: Optional[int] = None</em>, <em class="sig-param">model_states: Optional[fragile.core.states.StatesModel] = None</em>, <em class="sig-param">env_states: Optional[fragile.core.states.StatesEnv] = None</em>, <em class="sig-param">walkers_states: Optional[fragile.core.states.StatesWalkers] = None</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#BaseDtSampler.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.BaseDtSampler.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the target time step values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of new points to the sampled.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to the model data.</p></li>
+<li><p><strong>env_states</strong> – States corresponding to the environment data.</p></li>
+<li><p><strong>walkers_states</strong> – States corresponding to the walkers data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array containing the sampled time step.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.dt_samplers.BaseDtSampler.get_params_dict">
+<code class="sig-name descname">get_params_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict[str, Dict[str, Any]]<a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#BaseDtSampler.get_params_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.BaseDtSampler.get_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the dictionary with the parameters to create a new <cite>GaussianDt</cite> critic.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.core.dt_samplers.ConstantDt">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.dt_samplers.</code><code class="sig-name descname">ConstantDt</code><span class="sig-paren">(</span><em class="sig-param">dt: float</em>, <em class="sig-param">discrete_values: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#ConstantDt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.ConstantDt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the actions sampled a constant number of time steps.</p>
+<dl class="method">
+<dt id="fragile.core.dt_samplers.ConstantDt.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">dt: float</em>, <em class="sig-param">discrete_values: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#ConstantDt.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.ConstantDt.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.dt_samplers.ConstantDt" title="fragile.core.dt_samplers.ConstantDt"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConstantDt</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> – Number of time steps that each action will be applied.</p></li>
+<li><p><strong>discrete_values</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> return discrete time step values. If                             <code class="docutils literal notranslate"><span class="pre">False</span></code> allow to return floating point time steps.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.dt_samplers.ConstantDt.calculate">
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">batch_size: Optional[int] = None</em>, <em class="sig-param">model_states: Optional[fragile.core.states.StatesModel] = None</em>, <em class="sig-param">env_states: Optional[fragile.core.states.StatesEnv] = None</em>, <em class="sig-param">walkers_states: Optional[fragile.core.states.StatesWalkers] = None</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#ConstantDt.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.ConstantDt.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the target time step values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of new points to the sampled.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to the model data.</p></li>
+<li><p><strong>env_states</strong> – States corresponding to the environment data.</p></li>
+<li><p><strong>walkers_states</strong> – States corresponding to the walkers data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array containing the sampled time step.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.core.dt_samplers.UniformDt">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.dt_samplers.</code><code class="sig-name descname">UniformDt</code><span class="sig-paren">(</span><em class="sig-param">min_dt: float = 1.0</em>, <em class="sig-param">max_dt: float = 1.0</em>, <em class="sig-param">discrete_values: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#UniformDt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.UniformDt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample the <code class="docutils literal notranslate"><span class="pre">dt</span></code> values for each action from a discrete uniform distribution.</p>
+<dl class="method">
+<dt id="fragile.core.dt_samplers.UniformDt.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">min_dt: float = 1.0</em>, <em class="sig-param">max_dt: float = 1.0</em>, <em class="sig-param">discrete_values: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#UniformDt.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.UniformDt.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.dt_samplers.GaussianDt" title="fragile.core.dt_samplers.GaussianDt"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianDt</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_dt</strong> – Minimum dt that can be sampled.</p></li>
+<li><p><strong>max_dt</strong> – Maximum dt that can be sampled.</p></li>
+<li><p><strong>discrete_values</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> return discrete time step values. If                             <code class="docutils literal notranslate"><span class="pre">False</span></code> allow to return floating point time steps.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.dt_samplers.UniformDt.calculate">
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">batch_size: Optional[int] = None</em>, <em class="sig-param">model_states: Optional[fragile.core.states.StatesModel] = None</em>, <em class="sig-param">env_states: Optional[fragile.core.states.StatesEnv] = None</em>, <em class="sig-param">walkers_states: Optional[fragile.core.states.StatesWalkers] = None</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#UniformDt.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.UniformDt.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the target time step values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of new points to the sampled.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to the model data.</p></li>
+<li><p><strong>env_states</strong> – States corresponding to the environment data.</p></li>
+<li><p><strong>walkers_states</strong> – States corresponding to the walkers data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array containing the sampled time step for each value drawn for a             uniform distribution.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fragile.core.dt_samplers.GaussianDt">
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.dt_samplers.</code><code class="sig-name descname">GaussianDt</code><span class="sig-paren">(</span><em class="sig-param">min_dt: float = 1.0</em>, <em class="sig-param">max_dt: float = 1.0</em>, <em class="sig-param">loc_dt: float = 0.0</em>, <em class="sig-param">scale_dt: float = 1.0</em>, <em class="sig-param">discrete_values: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#GaussianDt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.GaussianDt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample an additional vector of clipped gaussian random variables, and     stores it in an attribute called <cite>dt</cite>.</p>
+<dl class="method">
+<dt id="fragile.core.dt_samplers.GaussianDt.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">min_dt: float = 1.0</em>, <em class="sig-param">max_dt: float = 1.0</em>, <em class="sig-param">loc_dt: float = 0.0</em>, <em class="sig-param">scale_dt: float = 1.0</em>, <em class="sig-param">discrete_values: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#GaussianDt.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.GaussianDt.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a <a class="reference internal" href="#fragile.core.dt_samplers.GaussianDt" title="fragile.core.dt_samplers.GaussianDt"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianDt</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_dt</strong> – Minimum dt that will be predicted by the model.</p></li>
+<li><p><strong>max_dt</strong> – Maximum dt that will be predicted by the model.</p></li>
+<li><p><strong>loc_dt</strong> – Mean of the gaussian random variable that will model dt.</p></li>
+<li><p><strong>scale_dt</strong> – Standard deviation of the gaussian random variable that will model dt.</p></li>
+<li><p><strong>discrete_values</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> return discrete time step values. If                             <code class="docutils literal notranslate"><span class="pre">False</span></code> allow to return floating point time steps.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fragile.core.dt_samplers.GaussianDt.calculate">
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param">batch_size: Optional[int] = None</em>, <em class="sig-param">model_states: Optional[fragile.core.states.StatesModel] = None</em>, <em class="sig-param">env_states: Optional[fragile.core.states.StatesEnv] = None</em>, <em class="sig-param">walkers_states: Optional[fragile.core.states.StatesWalkers] = None</em><span class="sig-paren">)</span> &#x2192; fragile.core.states.States<a class="reference internal" href="../_modules/fragile/core/dt_samplers.html#GaussianDt.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.dt_samplers.GaussianDt.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the target time step values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – Number of new points to the sampled.</p></li>
+<li><p><strong>model_states</strong> – States corresponding to the model data.</p></li>
+<li><p><strong>env_states</strong> – States corresponding to the environment data.</p></li>
+<li><p><strong>walkers_states</strong> – States corresponding to the walkers data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array containing the sampled time step values drawn from a gaussian             distribution.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="statetree">
 <h2>StateTree<a class="headerlink" href="#statetree" title="Permalink to this headline">¶</a></h2>
@@ -1626,12 +2032,12 @@ correspond to a given walker.</p>
 <h3><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code><a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fragile.core.bounds.Bounds">
-<em class="property">class </em><code class="sig-prename descclassname">fragile.core.bounds.</code><code class="sig-name descname">Bounds</code><span class="sig-paren">(</span><em class="sig-param">high: Union[&lt;MagicMock id='139988771246480'&gt;</em>, <em class="sig-param">int</em>, <em class="sig-param">&lt;MagicMock id='139988771319248'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139988771340560'&gt;] = &lt;MagicMock id='139988834059856'&gt;</em>, <em class="sig-param">low: Union[&lt;MagicMock id='139988770770064'&gt;</em>, <em class="sig-param">int</em>, <em class="sig-param">&lt;MagicMock id='139988771319248'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139988771340560'&gt;] = &lt;MagicMock name='mock.__neg__()' id='139988771196816'&gt;</em>, <em class="sig-param">shape: Optional[tuple] = None</em>, <em class="sig-param">dtype: Optional[type] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fragile.core.bounds.</code><code class="sig-name descname">Bounds</code><span class="sig-paren">(</span><em class="sig-param">high: Union[&lt;MagicMock id='139833290869328'&gt;</em>, <em class="sig-param">int</em>, <em class="sig-param">&lt;MagicMock id='139833291415120'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139833291440528'&gt;] = &lt;MagicMock id='139833303306832'&gt;</em>, <em class="sig-param">low: Union[&lt;MagicMock id='139833290921168'&gt;</em>, <em class="sig-param">int</em>, <em class="sig-param">&lt;MagicMock id='139833291415120'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139833291440528'&gt;] = &lt;MagicMock name='mock.__neg__()' id='139833290828240'&gt;</em>, <em class="sig-param">shape: Optional[tuple] = None</em>, <em class="sig-param">dtype: Optional[type] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds" title="Permalink to this definition">¶</a></dt>
 <dd><p>The <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> implements the logic for defining and managing closed intervals,     and checking if a numpy array’s values are inside a given interval.</p>
 <p>It is used on a numpy array of a target shape.</p>
 <dl class="method">
 <dt id="fragile.core.bounds.Bounds.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">high: Union[&lt;MagicMock id='139988771246480'&gt;</em>, <em class="sig-param">int</em>, <em class="sig-param">&lt;MagicMock id='139988771319248'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139988771340560'&gt;] = &lt;MagicMock id='139988834059856'&gt;</em>, <em class="sig-param">low: Union[&lt;MagicMock id='139988770770064'&gt;</em>, <em class="sig-param">int</em>, <em class="sig-param">&lt;MagicMock id='139988771319248'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139988771340560'&gt;] = &lt;MagicMock name='mock.__neg__()' id='139988771196816'&gt;</em>, <em class="sig-param">shape: Optional[tuple] = None</em>, <em class="sig-param">dtype: Optional[type] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">high: Union[&lt;MagicMock id='139833290869328'&gt;</em>, <em class="sig-param">int</em>, <em class="sig-param">&lt;MagicMock id='139833291415120'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139833291440528'&gt;] = &lt;MagicMock id='139833303306832'&gt;</em>, <em class="sig-param">low: Union[&lt;MagicMock id='139833290921168'&gt;</em>, <em class="sig-param">int</em>, <em class="sig-param">&lt;MagicMock id='139833291415120'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">&lt;MagicMock id='139833291440528'&gt;] = &lt;MagicMock name='mock.__neg__()' id='139833290828240'&gt;</em>, <em class="sig-param">shape: Optional[tuple] = None</em>, <em class="sig-param">dtype: Optional[type] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1663,8 +2069,14 @@ correspond to a given walker.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fragile.core.bounds.Bounds.__len__">
+<code class="sig-name descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of dimensions of the bounds.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fragile.core.bounds.Bounds.clip">
-<code class="sig-name descname">clip</code><span class="sig-paren">(</span><em class="sig-param">x: &lt;MagicMock id='139988770548112'&gt;</em><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139988770561232'&gt;<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.clip" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">clip</code><span class="sig-paren">(</span><em class="sig-param">x: &lt;MagicMock id='139833290707728'&gt;</em><span class="sig-paren">)</span> &#x2192; &lt;MagicMock id='139833290716752'&gt;<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.clip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clip the values of the target array to fall inside the bounds (closed interval).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1678,7 +2090,7 @@ correspond to a given walker.</p>
 
 <dl class="method">
 <dt id="fragile.core.bounds.Bounds.from_array">
-<em class="property">classmethod </em><code class="sig-name descname">from_array</code><span class="sig-paren">(</span><em class="sig-param">x: &lt;MagicMock id='139988770530960'&gt;</em>, <em class="sig-param">scale: float = 1.0</em><span class="sig-paren">)</span> &#x2192; fragile.core.bounds.Bounds<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.from_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.from_array" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">from_array</code><span class="sig-paren">(</span><em class="sig-param">x: &lt;MagicMock id='139833290674128'&gt;</em>, <em class="sig-param">scale: float = 1.0</em><span class="sig-paren">)</span> &#x2192; fragile.core.bounds.Bounds<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.from_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.from_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instantiate a bounds compatible for bounding the given array. It also allows to set a         margin for the high and low values.</p>
 <p>The value of the high and low will be proportional to the maximum and minimum values of         the array. Scale defines the proportion to make the bounds bigger and smaller. For         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10%         smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10%         higher. If scale is one, <cite>high</cite> and <cite>low</cite> will be equal to the maximum and minimum values         of the array.</p>
 <dl class="field-list simple">
@@ -1726,7 +2138,7 @@ correspond to a given walker.</p>
 
 <dl class="method">
 <dt id="fragile.core.bounds.Bounds.get_scaled_intervals">
-<em class="property">static </em><code class="sig-name descname">get_scaled_intervals</code><span class="sig-paren">(</span><em class="sig-param">low: Union[&lt;MagicMock id='139988770834960'&gt;, float, int], high: Union[&lt;MagicMock id='139988770890768'&gt;, float, int], scale: float</em><span class="sig-paren">)</span> &#x2192; Tuple[Union[&lt;MagicMock id='139988770942672'&gt;, float], Union[&lt;MagicMock id='139988770994576'&gt;, float]]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.get_scaled_intervals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.get_scaled_intervals" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">get_scaled_intervals</code><span class="sig-paren">(</span><em class="sig-param">low: Union[&lt;MagicMock id='139833290994576'&gt;, float, int], high: Union[&lt;MagicMock id='139833290517776'&gt;, float, int], scale: float</em><span class="sig-paren">)</span> &#x2192; Tuple[Union[&lt;MagicMock id='139833290569744'&gt;, float], Union[&lt;MagicMock id='139833290625808'&gt;, float]]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.get_scaled_intervals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.get_scaled_intervals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scale the high and low vectors by an scale factor.</p>
 <p>The value of the high and low will be proportional to the maximum and minimum values of         the array. Scale defines the proportion to make the bounds bigger and smaller. For         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10%         smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10%         higher. If scale is one, <cite>high</cite> and <cite>low</cite> will be equal to the maximum and minimum values         of the array.</p>
 <dl class="field-list simple">
@@ -1745,7 +2157,7 @@ correspond to a given walker.</p>
 
 <dl class="method">
 <dt id="fragile.core.bounds.Bounds.points_in_bounds">
-<code class="sig-name descname">points_in_bounds</code><span class="sig-paren">(</span><em class="sig-param">x: &lt;MagicMock id='139988777037008'&gt;</em><span class="sig-paren">)</span> &#x2192; Union[&lt;MagicMock id='139988770595664'&gt;, bool]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.points_in_bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.points_in_bounds" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">points_in_bounds</code><span class="sig-paren">(</span><em class="sig-param">x: &lt;MagicMock id='139833290729872'&gt;</em><span class="sig-paren">)</span> &#x2192; Union[&lt;MagicMock id='139833290742992'&gt;, bool]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.points_in_bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.points_in_bounds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the rows of the target array have all their coordinates inside         specified bounds.</p>
 <p>If the array is one dimensional it will return a boolean, otherwise a vector of booleans.</p>
 <dl class="field-list simple">
@@ -1760,7 +2172,7 @@ correspond to a given walker.</p>
 
 <dl class="method">
 <dt id="fragile.core.bounds.Bounds.safe_margin">
-<code class="sig-name descname">safe_margin</code><span class="sig-paren">(</span><em class="sig-param">low: Union[&lt;MagicMock id='139988770639248'&gt;</em>, <em class="sig-param">float] = None</em>, <em class="sig-param">high: Union[&lt;MagicMock id='139988770703504'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">None] = None</em>, <em class="sig-param">scale: float = 1.0</em><span class="sig-paren">)</span> &#x2192; fragile.core.bounds.Bounds<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.safe_margin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.safe_margin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">safe_margin</code><span class="sig-paren">(</span><em class="sig-param">low: Union[&lt;MagicMock id='139833290274640'&gt;</em>, <em class="sig-param">float] = None</em>, <em class="sig-param">high: Union[&lt;MagicMock id='139833290330640'&gt;</em>, <em class="sig-param">float</em>, <em class="sig-param">None] = None</em>, <em class="sig-param">scale: float = 1.0</em><span class="sig-paren">)</span> &#x2192; fragile.core.bounds.Bounds<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.safe_margin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.safe_margin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a new <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> with its bounds increased o decreased         by an scale factor.</p>
 <p>This is done multiplying both high and low for a given factor. The value of the new         high and low will be proportional to the maximum and minimum values of         the array. Scale defines the proportion to make the bounds bigger and smaller. For         example, if scale is 1.1 the higher bound will be 10% higher, and the lower bounds 10%         smaller. If scale is 0.9 the higher bound will be 10% lower, and the lower bound 10%         higher. If scale is one, <cite>high</cite> and <cite>low</cite> will be equal to the maximum and minimum values         of the array.</p>
 <dl class="field-list simple">
@@ -1790,7 +2202,7 @@ correspond to a given walker.</p>
 
 <dl class="method">
 <dt id="fragile.core.bounds.Bounds.to_tuples">
-<code class="sig-name descname">to_tuples</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Tuple[Tuple[Union[int, &lt;MagicMock id='139988771319248'&gt;, float, &lt;MagicMock id='139988771340560'&gt;], Union[int, &lt;MagicMock id='139988771319248'&gt;, float, &lt;MagicMock id='139988771340560'&gt;]], ...]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.to_tuples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.to_tuples" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_tuples</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Tuple[Tuple[Union[int, &lt;MagicMock id='139833291415120'&gt;, float, &lt;MagicMock id='139833291440528'&gt;], Union[int, &lt;MagicMock id='139833291415120'&gt;, float, &lt;MagicMock id='139833291440528'&gt;]], ...]<a class="reference internal" href="../_modules/fragile/core/bounds.html#Bounds.to_tuples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fragile.core.bounds.Bounds.to_tuples" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a tuple of tuples containing the lower and higher bound for each         coordinate of the <a class="reference internal" href="#fragile.core.bounds.Bounds" title="fragile.core.bounds.Bounds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bounds</span></code></a> shape.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1841,6 +2253,7 @@ correspond to a given walker.</p>
 <li class="toctree-l3"><a class="reference internal" href="#baseenvironment"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEnvironment</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#basemodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#basestatetree"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStateTree</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#basecritic"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCritic</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#basewrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWrapper</span></code></a></li>
 </ul>
 </li>
@@ -1874,6 +2287,7 @@ correspond to a given walker.</p>
 <li class="toctree-l3"><a class="reference internal" href="#stateswalkers"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatesWalkers</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#dtsampler">DtSampler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#statetree">StateTree</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#historytree"><code class="xref py py-class docutils literal notranslate"><span class="pre">HistoryTree</span></code></a></li>
 </ul>
@@ -1886,6 +2300,8 @@ correspond to a given walker.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataviz.html">Data Visualization</a></li>
 </ul>
 
 <div class="relations">

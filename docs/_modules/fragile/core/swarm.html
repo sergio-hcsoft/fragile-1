@@ -56,11 +56,52 @@
 <span class="sd">    Walkers instance to run the Swarm evolution algorithm.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Swarm.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">walkers</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">Walkers</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize a :class:`Swarm`.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Swarm.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_walkers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">BaseEnvironment</span><span class="p">],</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">BaseEnvironment</span><span class="p">],</span> <span class="n">BaseModel</span><span class="p">],</span>
+        <span class="n">walkers</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Walkers</span><span class="p">]</span> <span class="o">=</span> <span class="n">Walkers</span><span class="p">,</span>
+        <span class="n">reward_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">dist_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">BaseStateTree</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">prune_tree</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`Swarm`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_walkers: Number of walkers of the swarm.</span>
+<span class="sd">            env: A callable that returns an instance of an Environment.</span>
+<span class="sd">            model: A callable that returns an instance of a Model.</span>
+<span class="sd">            walkers: A callable that returns an instance of BaseWalkers.</span>
+<span class="sd">            reward_scale: Virtual reward exponent for the reward score.</span>
+<span class="sd">            dist_scale:Virtual reward exponent for the distance score.</span>
+<span class="sd">            tree: class:`StatesTree` that keeps track of the visited states.</span>
+<span class="sd">            prune_tree: If `tree` is `None` it has no effect. If true, \</span>
+<span class="sd">                       store in the :class:`Tree` only the past history of alive \</span>
+<span class="sd">                        walkers, and discard the branches with leaves that have \</span>
+<span class="sd">                        no walkers.</span>
+<span class="sd">            *args: Additional args passed to init_swarm.</span>
+<span class="sd">            **kwargs: Additional kwargs passed to init_swarm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_tree</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prune_tree</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Swarm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">walkers</span><span class="o">=</span><span class="n">walkers</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Swarm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">walkers</span><span class="o">=</span><span class="n">walkers</span><span class="p">,</span>
+            <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">n_walkers</span><span class="o">=</span><span class="n">n_walkers</span><span class="p">,</span>
+            <span class="n">reward_scale</span><span class="o">=</span><span class="n">reward_scale</span><span class="p">,</span>
+            <span class="n">dist_scale</span><span class="o">=</span><span class="n">dist_scale</span><span class="p">,</span>
+            <span class="n">tree</span><span class="o">=</span><span class="n">tree</span><span class="p">,</span>
+            <span class="n">prune_tree</span><span class="o">=</span><span class="n">prune_tree</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">n</span>
@@ -90,14 +131,30 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walkers</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">best_found</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Return the best state found in the current algorithm run.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_obs</span>
+    <span class="k">def</span> <span class="nf">best_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the state of the best walker found in the current algorithm run.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">best_state</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">best_reward_found</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Return the best reward found in the current algorithm run.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">best_reward</span>
+    <span class="k">def</span> <span class="nf">best_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the reward of the best walker found in the current algorithm run.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">best_reward</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">best_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the id (hash value of the state) of the best walker found in the \</span>
+<span class="sd">        current algorithm run.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">best_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">best_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the observation corresponding to the best walker found in the \</span>
+<span class="sd">        current algorithm run.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">best_obs</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">critic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseCritic</span><span class="p">:</span>
@@ -106,13 +163,13 @@
 
 <div class="viewcode-block" id="Swarm.init_swarm"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.init_swarm">[docs]</a>    <span class="k">def</span> <span class="nf">init_swarm</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">env_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-        <span class="n">model_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-        <span class="n">walkers_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">env_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">BaseEnvironment</span><span class="p">],</span>
+        <span class="n">model_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">BaseEnvironment</span><span class="p">],</span> <span class="n">BaseModel</span><span class="p">],</span>
+        <span class="n">walkers_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Walkers</span><span class="p">],</span>
         <span class="n">n_walkers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">reward_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">dist_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">tree</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">BaseStateTree</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">prune_tree</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span>
@@ -198,7 +255,8 @@
                 <span class="n">model_states</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">model_states</span><span class="p">,</span>
                 <span class="n">walkers_states</span><span class="o">=</span><span class="n">walkers_states</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">update_tree</span><span class="p">(</span><span class="n">root_ids</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span></div>
+            <span class="n">ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">root_ids</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_tree</span><span class="p">(</span><span class="n">states_ids</span><span class="o">=</span><span class="n">ids</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Swarm.run"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.swarm.Swarm.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -290,7 +348,7 @@
         <span class="p">)</span>
         <span class="n">env_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">update_states</span><span class="p">(</span>
-            <span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span> <span class="n">end_condition</span><span class="o">=</span><span class="n">env_states</span><span class="o">.</span><span class="n">ends</span>
+            <span class="n">env_states</span><span class="o">=</span><span class="n">env_states</span><span class="p">,</span> <span class="n">model_states</span><span class="o">=</span><span class="n">model_states</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">walkers</span><span class="o">.</span><span class="n">update_ids</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_tree</span><span class="p">(</span><span class="n">states_ids</span><span class="p">)</span></div>
@@ -358,6 +416,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
 </ul>
 
 <div class="relations">

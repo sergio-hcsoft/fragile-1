@@ -2,7 +2,7 @@ from plangym import AtariEnvironment
 from plangym.minimal import ClassicControl
 import pytest
 
-from fragile.core.dt_sampler import GaussianDt
+from fragile.core.dt_samplers import GaussianDt
 from fragile.core.env import BaseEnvironment, DiscreteEnv
 from fragile.core.models import BaseModel, DiscreteUniform, NormalContinuous
 from fragile.core.swarm import Swarm

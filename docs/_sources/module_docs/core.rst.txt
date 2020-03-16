@@ -29,6 +29,11 @@ API abstract classes
 .. autoclass:: fragile.core.base_classes.BaseStateTree
    :members:
 
+:class:`BaseCritic`
+^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.base_classes.BaseCritic
+   :members:
+
 :class:`BaseWrapper`
 ^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: fragile.core.base_classes.BaseWrapper
@@ -124,6 +129,20 @@ States
 :class:`StatesWalkers`
 ^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: fragile.core.states.StatesWalkers
+   :members:
+
+DtSampler
+---------
+.. autoclass:: fragile.core.dt_samplers.BaseDtSampler
+   :members:
+
+.. autoclass:: fragile.core.dt_samplers.ConstantDt
+   :members:
+
+.. autoclass:: fragile.core.dt_samplers.UniformDt
+   :members:
+
+.. autoclass:: fragile.core.dt_samplers.GaussianDt
    :members:
 
 StateTree

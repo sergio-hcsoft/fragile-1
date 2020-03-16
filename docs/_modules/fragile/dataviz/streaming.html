@@ -1,0 +1,669 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>fragile.dataviz.streaming &#8212; Fragile 0.0a documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for fragile.dataviz.streaming</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains the necessary logic to create ``holoviews`` plots that accept streaming data.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">holoviews</span>
+<span class="kn">from</span> <span class="nn">holoviews.streams</span> <span class="kn">import</span> <span class="n">Buffer</span><span class="p">,</span> <span class="n">Pipe</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">griddata</span>
+
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">Scalar</span>
+
+
+<div class="viewcode-block" id="Plot"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Plot">[docs]</a><span class="k">class</span> <span class="nc">Plot</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Base class that manages the creation of ``holoviews`` plots.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<div class="viewcode-block" id="Plot.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Plot.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`Plot`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plot: Callable that returns an holoviews plot.</span>
+<span class="sd">            data: Passed to :class:`Plot`.``get_plot_data``. Contains the necessary data to \</span>
+<span class="sd">                  initialize the plot.</span>
+<span class="sd">            args: Passed to ``opts``.</span>
+<span class="sd">            kwargs: Passed to ``opts``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_plot</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Plot.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Plot.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform the necessary data wrangling for plotting the data.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="Plot.init_plot"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Plot.init_plot">[docs]</a>    <span class="k">def</span> <span class="nf">init_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the holoviews plot.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plot: Callable that returns an holoviews plot.</span>
+<span class="sd">            data: Passed to :class:`Plot`.``get_plot_data``. Contains the necessary data to \</span>
+<span class="sd">                  initialize the plot.</span>
+<span class="sd">            args: Passed to ``opts``.</span>
+<span class="sd">            kwargs: Passed to ``opts``.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_plot_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Plot.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Plot.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the plot parameters. Same as ``holoviews`` ``opts``.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="StreamingPlot"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.StreamingPlot">[docs]</a><span class="k">class</span> <span class="nc">StreamingPlot</span><span class="p">(</span><span class="n">Plot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a an holoviews plot updated with streamed data.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<div class="viewcode-block" id="StreamingPlot.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.StreamingPlot.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">Pipe</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`StreamingPlot`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plot: Callable that returns an holoviews plot.</span>
+<span class="sd">            stream: Class used to stream data to the plot.</span>
+<span class="sd">            data: Passed to :class:`Plot`.``get_plot_data``. Contains the necessary data to \</span>
+<span class="sd">                  initialize the plot.</span>
+<span class="sd">            args: Passed to ``opts``.</span>
+<span class="sd">            kwargs: Passed to ``opts``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_stream</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_stream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StreamingPlot</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StreamingPlot.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.StreamingPlot.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform the necessary data wrangling for plotting the data.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="StreamingPlot.stream_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.StreamingPlot.stream_data">[docs]</a>    <span class="k">def</span> <span class="nf">stream_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Stream data to the plot and keep track of how many times the data has been streamed.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_plot_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_stream</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="StreamingPlot.init_plot"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.StreamingPlot.init_plot">[docs]</a>    <span class="k">def</span> <span class="nf">init_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the holoviews plot to accept streaming data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plot: Callable that returns an holoviews plot.</span>
+<span class="sd">            data: Passed to :class:`Plot`.``get_plot_data``. Contains the necessary data to \</span>
+<span class="sd">                  initialize the plot.</span>
+<span class="sd">            args: Passed to ``opts``.</span>
+<span class="sd">            kwargs: Passed to ``opts``.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">DynamicMap</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">streams</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_stream</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StreamingPlot.init_stream"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.StreamingPlot.init_stream">[docs]</a>    <span class="k">def</span> <span class="nf">init_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the data stream that will be used to stream data to the plot.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_plot_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_stream</span> <span class="o">=</span> <span class="n">stream</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Table"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Table">[docs]</a><span class="k">class</span> <span class="nc">Table</span><span class="p">(</span><span class="n">StreamingPlot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;``holoviews.Table`` with data streaming capabilities.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;table&quot;</span>
+
+<div class="viewcode-block" id="Table.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Table.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">Pipe</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`Table`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Data to initialize the stream.</span>
+<span class="sd">            stream: :class:`holoviews.stream` type. Defaults to :class:`Pipe`.</span>
+<span class="sd">            *args: Passed to :class:`StreamingPlot`.</span>
+<span class="sd">            **kwargs: Passed to :class:`StreamingPlot`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Table</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">holoviews</span><span class="o">.</span><span class="n">Table</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Table.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Table.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="RGB"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.RGB">[docs]</a><span class="k">class</span> <span class="nc">RGB</span><span class="p">(</span><span class="n">StreamingPlot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;``holoviews.RGB`` with data streaming capabilities.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;rgb&quot;</span>
+
+<div class="viewcode-block" id="RGB.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.RGB.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize a :class:`RGB`.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RGB</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">Pipe</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">holoviews</span><span class="o">.</span><span class="n">RGB</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RGB.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.RGB.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">xaxis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">RGB</span><span class="p">(</span><span class="n">xaxis</span><span class="o">=</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="n">yaxis</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="Curve"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Curve">[docs]</a><span class="k">class</span> <span class="nc">Curve</span><span class="p">(</span><span class="n">StreamingPlot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a ``holoviews.Curve`` plot that plots steaming data.</span>
+
+<span class="sd">    The streaming process is handled using a :class:`Buffer`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;curve&quot;</span>
+
+<div class="viewcode-block" id="Curve.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Curve.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">buffer_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`Curve`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            buffer_length: Maximum number of data points that will be displayed in the plot.</span>
+<span class="sd">            index: Passed to the :class:`Buffer` that streams data to the plot.</span>
+<span class="sd">            data: Passed to :class:`Plot`.``get_plot_data``. Contains the necessary data to \</span>
+<span class="sd">                  initialize the plot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">get_stream</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Buffer</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">buffer_length</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">Curve</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">get_stream</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">holoviews</span><span class="o">.</span><span class="n">Curve</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Curve.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Curve.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span>
+        <span class="n">shared_axes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">framewise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">axiswise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tools</span> <span class="o">=</span> <span class="n">tools</span> <span class="k">if</span> <span class="n">tools</span> <span class="o">!=</span> <span class="s2">&quot;default&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;hover&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">Curve</span><span class="p">(</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">kwargs</span>
+            <span class="p">),</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">(</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Histogram"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Histogram">[docs]</a><span class="k">class</span> <span class="nc">Histogram</span><span class="p">(</span><span class="n">StreamingPlot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a ``holoviews.Histogram`` plot that plots steaming data.</span>
+
+<span class="sd">    The streaming process is handled using a :class:`Pipe`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;histogram&quot;</span>
+
+<div class="viewcode-block" id="Histogram.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Histogram.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`Histogram`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_bins: Number of bins of the histogram that will be plotted.</span>
+<span class="sd">            data: Used to initialize the plot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_bins</span> <span class="o">=</span> <span class="n">n_bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Histogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">Pipe</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_histogram</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Histogram.plot_histogram"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Histogram.plot_histogram">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">plot_histogram</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the histogram.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Tuple containing (values, bins), xlim. xlim is a tuple \</span>
+<span class="sd">                  containing two scalars that represent the limits of the x \</span>
+<span class="sd">                  axis of the histogram.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Histogram plot.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">plot_data</span><span class="p">,</span> <span class="n">xlim</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">Histogram</span><span class="p">(</span><span class="n">plot_data</span><span class="p">)</span><span class="o">.</span><span class="n">redim</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">holoviews</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">xlim</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Histogram.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Histogram.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;count&quot;</span><span class="p">,</span>
+        <span class="n">shared_axes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">framewise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">axiswise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tools</span> <span class="o">=</span> <span class="n">tools</span> <span class="k">if</span> <span class="n">tools</span> <span class="o">!=</span> <span class="s2">&quot;default&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;hover&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">Histogram</span><span class="p">(</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">kwargs</span>
+            <span class="p">),</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">(</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Histogram.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Histogram.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Scalar</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">Scalar</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]</span>
+    <span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the histogram of the streamed data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Values used to calculate the histogram.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple containing (values, bins), xlim. xlim is a tuple \</span>
+<span class="sd">                  containing two scalars that represent the limits of the x \</span>
+<span class="sd">                  axis of the histogram.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bins</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span></div></div>
+
+
+<div class="viewcode-block" id="Bivariate"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Bivariate">[docs]</a><span class="k">class</span> <span class="nc">Bivariate</span><span class="p">(</span><span class="n">StreamingPlot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a ``holoviews.Bivariate`` plot that plots steaming data.</span>
+
+<span class="sd">    The streaming process is handled using a :class:`Pipe`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;bivariate&quot;</span>
+
+<div class="viewcode-block" id="Bivariate.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Bivariate.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`Bivariate`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Passed to ``holoviews.Bivariate``.</span>
+<span class="sd">            *args: Passed to ``holoviews.Bivariate``.</span>
+<span class="sd">            **kwargs: Passed to ``holoviews.Bivariate``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">bivariate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">Bivariate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">Bivariate</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">Pipe</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">bivariate</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Bivariate.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Bivariate.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span>
+        <span class="n">shared_axes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">framewise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">axiswise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">350</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tools</span> <span class="o">=</span> <span class="n">tools</span> <span class="k">if</span> <span class="n">tools</span> <span class="o">!=</span> <span class="s2">&quot;default&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;hover&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">Bivariate</span><span class="p">(</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">),</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+                <span class="n">fill_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                <span class="n">size</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">),</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">(</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Landscape2D"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Landscape2D">[docs]</a><span class="k">class</span> <span class="nc">Landscape2D</span><span class="p">(</span><span class="n">StreamingPlot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plots the interpolated landscaped of values of a set of points.</span>
+
+<span class="sd">    The data is visualized creating a :class:`holoviews.QuadMesh` with a \</span>
+<span class="sd">    :class:`holoviews.Contours` plot with the original data points displayed as \</span>
+<span class="sd">    a :class:`holoviews.Scatter`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;landscape&quot;</span>
+
+<div class="viewcode-block" id="Landscape2D.__init__"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Landscape2D.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invert_cmap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`Landscape2d`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_points: Number of points per dimension used to create the \</span>
+<span class="sd">                      meshgrid grid that will be used to interpolate the data.</span>
+<span class="sd">            data: Initial data for the plot.</span>
+<span class="sd">            invert_cmap: If ``True``, invert the colormap to assign high value \</span>
+<span class="sd">                         colors to the lowest values.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span> <span class="o">=</span> <span class="n">n_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">invert_cmap</span> <span class="o">=</span> <span class="n">invert_cmap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylim</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Landscape2D</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">Pipe</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_landscape</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Landscape2D.plot_landscape"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Landscape2D.plot_landscape">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">plot_landscape</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the data as an energy landscape.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: (x, y, xx, yy, z, xlim, ylim). x, y, z represent the \</span>
+<span class="sd">                  coordinates of the points that will be interpolated. xx, yy \</span>
+<span class="sd">                  represent the meshgrid used to interpolate the points. xlim, \</span>
+<span class="sd">                  ylim are tuples containing the limits of the x and y axes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Plot representing the interpolated energy landscape of the target points.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">zz</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">z</span><span class="p">,</span> <span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">QuadMesh</span><span class="p">((</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">zz</span><span class="p">))</span>
+        <span class="n">contour</span> <span class="o">=</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">operation</span><span class="o">.</span><span class="n">contours</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="n">scatter</span> <span class="o">=</span> <span class="n">holoviews</span><span class="o">.</span><span class="n">Scatter</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="n">contour_mesh</span> <span class="o">=</span> <span class="n">mesh</span> <span class="o">*</span> <span class="n">contour</span> <span class="o">*</span> <span class="n">scatter</span>
+        <span class="k">return</span> <span class="n">contour_mesh</span><span class="o">.</span><span class="n">redim</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">holoviews</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">xlim</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">holoviews</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">ylim</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Landscape2D.get_plot_data"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Landscape2D.get_plot_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Create the meshgrid needed to interpolate the target data points.&quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span>
+        <span class="c1"># target grid to interpolate to</span>
+        <span class="n">xi</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="n">yi</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span><span class="p">)</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylim</span></div>
+
+<div class="viewcode-block" id="Landscape2D.opts"><a class="viewcode-back" href="../../../module_docs/dataviz.html#fragile.dataviz.streaming.Landscape2D.opts">[docs]</a>    <span class="k">def</span> <span class="nf">opts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Distribution landscape&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span>
+        <span class="n">shared_axes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">framewise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">axiswise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">350</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">350</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the plot parameters. Same as ``holoviews`` ``opts``.</span>
+
+<span class="sd">        The default values updates the plot axes independently when being \</span>
+<span class="sd">        displayed in a :class:`Holomap`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tools</span> <span class="o">=</span> <span class="n">tools</span> <span class="k">if</span> <span class="n">tools</span> <span class="o">!=</span> <span class="s2">&quot;default&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;hover&quot;</span><span class="p">]</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">cmap</span> <span class="k">if</span> <span class="n">cmap</span> <span class="o">!=</span> <span class="s2">&quot;default&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;viridis_r&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">invert_cmap</span> <span class="k">else</span> <span class="s2">&quot;viridis&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">QuadMesh</span><span class="p">(</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;lightgray&quot;</span><span class="p">,</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">),</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">Contours</span><span class="p">(</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;black&quot;</span><span class="p">],</span>
+                <span class="n">line_width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">show_legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">),</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span>
+                <span class="n">fill_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                <span class="n">size</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">),</span>
+            <span class="n">holoviews</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">(</span>
+                <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">framewise</span><span class="o">=</span><span class="n">framewise</span><span class="p">,</span>
+                <span class="n">axiswise</span><span class="o">=</span><span class="n">axiswise</span><span class="p">,</span>
+                <span class="n">shared_axes</span><span class="o">=</span><span class="n">shared_axes</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/examples/examples_index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

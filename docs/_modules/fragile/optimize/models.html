@@ -105,8 +105,8 @@
             <span class="k">if</span> <span class="n">env_states</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="k">else</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">batch_size</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
         <span class="p">)</span>
-        <span class="n">has_best</span> <span class="o">=</span> <span class="n">walkers_states</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">walkers_states</span><span class="o">.</span><span class="n">best_found</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="n">best</span> <span class="o">=</span> <span class="n">walkers_states</span><span class="o">.</span><span class="n">best_found</span> <span class="k">if</span> <span class="n">has_best</span> <span class="k">else</span> <span class="n">observs</span>
+        <span class="n">has_best</span> <span class="o">=</span> <span class="n">walkers_states</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">walkers_states</span><span class="o">.</span><span class="n">best_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="n">walkers_states</span><span class="o">.</span><span class="n">best_state</span> <span class="k">if</span> <span class="n">has_best</span> <span class="k">else</span> <span class="n">observs</span>
         <span class="c1"># Choose 2 random indices</span>
         <span class="n">indexes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">observs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">a_rand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">indexes</span><span class="p">)</span>
@@ -152,6 +152,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
 </ul>
 
 <div class="relations">

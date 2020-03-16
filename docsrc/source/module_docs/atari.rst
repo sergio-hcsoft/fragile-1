@@ -10,8 +10,3 @@ Atari games
 ^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: fragile.atari.walkers.AtariWalkers
    :members:
-
-:class:`MontezumaWalkers`
-^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.atari.walkers.MontezumaWalkers
-   :members:

@@ -16,13 +16,13 @@ kinds of visualizations. In order to visualize a ``Swarm`` in the
 .. code:: ipython3
 
     import holoviews
-    from fragile.dataviz import AtariViz, LandscapeViz, Summary, SwarmViz, SwarmViz1D
     from fragile.core.utils import remove_notebook_margin
+    from fragile.dataviz import AtariViz, LandscapeViz, Summary, SwarmViz, SwarmViz1D
     holoviews.extension("bokeh")
     remove_notebook_margin()  # Make the output cell wider
 
-All the visualization classes wrap a ``Swarm`` to handle all the data
-streaming and visualization logic for plotting the ``Swarm``\ ’s data.
+All the visualization classes wrap a :class:`Swarm` to handle all the data
+streaming and visualization logic for plotting the :swarm:`Swarm`’s data.
 
 We will start initializing a Swarm like we did in the last tutorial. We
 are not focusing on the performance of the sampling, but using the swarm
@@ -30,9 +30,10 @@ just to create the visualizations.
 
 .. code:: ipython3
 
-    from fragile.optimize.swarm import FunctionMapper
-    from fragile.optimize.benchmarks import EggHolder
     from fragile.core import NormalContinuous
+    from fragile.optimize import FunctionMapper
+    from fragile.optimize.benchmarks import EggHolder
+
     def gaussian_model(env):
         # Gaussian of mean 0 and std of 10, adapted to the environment bounds
         return NormalContinuous(scale=10, loc=0., bounds=env.bounds)
@@ -47,10 +48,10 @@ Summary visualization
 ^^^^^^^^^^^^^^^^^^^^^
 
 This is the simplest and fastest visualization, and it includes a table
-with information about the current iteration of the ``Swarm``, the best
+with information about the current iteration of the :swarm:`Swarm`, the best
 score achieved, and the percentages of deaths and clones.
 
-To initialize it you only have to wrap the ``Swarm`` you want to
+To initialize it you only have to wrap the :class:`Swarm` you want to
 visualize.
 
 .. code:: ipython3
@@ -58,7 +59,7 @@ visualize.
     summary = Summary(swarm)
 
 Once the class is initialized, you need to call the ``plot``
-function to initialize the plots and create the ``holoviews.DynamicMap``
+function to initialize the plots and create the :class:`holoviews.DynamicMap`
 that will plot the data streamed during the algorithm run. The data streaming
 will start when ``run`` is called.
 
@@ -76,7 +77,7 @@ will start when ``run`` is called.
 Histogram visualizations
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``SwarmViz1d`` can be used in any kind of ``Swarm``, and it allows
+The :class:`SwarmViz1d` can be used in any kind of :swarm:`Swarm`, and it allows
 to display no only the summary table and the reward evolution curve, but
 also histograms for the reward, distance, and virtual reward
 distributions of the walkers.
@@ -108,7 +109,7 @@ dimensional plots. These plots come specially in handy if you are using
 two dimensional embeddings of your state space, but the can also be
 applied to visualize the first two dimensions of the sampled state space.
 
-The ``LandscapeViz`` incorporates visualizations of the walkers
+The :class:`LandscapeViz` incorporates visualizations of the walkers
 distribution, the rewards, the virtual reward and the distance function.
 This is done by interpolating the values of the walkers to create a grid,
 where the target value will be displayed using a colormap.
@@ -133,7 +134,7 @@ where the target value will be displayed using a colormap.
 Plotting 2D distributions and histograms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``SwarmViz`` class incorporated all the distributions presented
+The :class:`SwarmViz` class incorporated all the distributions presented
 above. All the ``dataviz`` classes allow you to select the
 visualizations you want to display by passing a list of their names to
 the ``display_plots`` parameter.
@@ -166,24 +167,23 @@ attribute of the class.
 Visualizing Atari games
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``AtariViz`` class includes all the plots that can help visualize
+The :class:`AtariViz` class includes all the plots that can help visualize
 the sampling process of an Atari game. On top of the visualizations
-available on the ``SwarmViz1d`` class, it allows to display the frame of
+available on the :class:`SwarmViz1d` class, it allows to display the frame of
 the best state sampled.
 
 .. code:: ipython3
 
     from fragile.dataviz.swarm_viz import AtariViz
 
-We will use the game **Qbert** to show how the ``AtariViz`` works.
+We will use the game **Qbert** to show how the :class:`AtariViz` works.
 
 .. code:: ipython3
 
-    from fragile.atari.env import AtariEnv
-    from fragile.core.dt_sampler import GaussianDt
-    from fragile.core.models import DiscreteUniform
-    from fragile.core.swarm import Swarm
     from plangym import AtariEnvironment, ParallelEnvironment
+    from fragile.atari import AtariEnv
+    from fragile.core import DiscreteUniform, GaussianDt, Swarm
+
     game_name = "Qbert-ram-v0"
     env = ParallelEnvironment(
             env_class=AtariEnvironment,

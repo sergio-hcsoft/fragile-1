@@ -23,11 +23,52 @@ class Swarm(BaseSwarm):
     Walkers instance to run the Swarm evolution algorithm.
     """
 
-    def __init__(self, walkers: Callable = Walkers, *args, **kwargs):
-        """Initialize a :class:`Swarm`."""
+    def __init__(
+        self,
+        n_walkers: int,
+        env: Callable[[], BaseEnvironment],
+        model: Callable[[BaseEnvironment], BaseModel],
+        walkers: Callable[..., Walkers] = Walkers,
+        reward_scale: float = 1.0,
+        dist_scale: float = 1.0,
+        tree: Callable[[], BaseStateTree] = None,
+        prune_tree: bool = True,
+        *args,
+        **kwargs
+    ):
+        """
+        Initialize a :class:`Swarm`.
+
+        Args:
+            n_walkers: Number of walkers of the swarm.
+            env: A callable that returns an instance of an Environment.
+            model: A callable that returns an instance of a Model.
+            walkers: A callable that returns an instance of BaseWalkers.
+            reward_scale: Virtual reward exponent for the reward score.
+            dist_scale:Virtual reward exponent for the distance score.
+            tree: class:`StatesTree` that keeps track of the visited states.
+            prune_tree: If `tree` is `None` it has no effect. If true, \
+                       store in the :class:`Tree` only the past history of alive \
+                        walkers, and discard the branches with leaves that have \
+                        no walkers.
+            *args: Additional args passed to init_swarm.
+            **kwargs: Additional kwargs passed to init_swarm.
+
+        """
         self._use_tree = False
         self._prune_tree = False
-        super(Swarm, self).__init__(walkers=walkers, *args, **kwargs)
+        super(Swarm, self).__init__(
+            walkers=walkers,
+            env=env,
+            model=model,
+            n_walkers=n_walkers,
+            reward_scale=reward_scale,
+            dist_scale=dist_scale,
+            tree=tree,
+            prune_tree=prune_tree,
+            *args,
+            **kwargs
+        )
 
     def __len__(self) -> int:
         return self.walkers.n
@@ -89,13 +130,13 @@ class Swarm(BaseSwarm):
 
     def init_swarm(
         self,
-        env_callable: Callable,
-        model_callable: Callable,
-        walkers_callable: Callable,
+        env_callable: Callable[[], BaseEnvironment],
+        model_callable: Callable[[BaseEnvironment], BaseModel],
+        walkers_callable: Callable[..., Walkers],
         n_walkers: int,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
-        tree: Callable = None,
+        tree: Callable[[], BaseStateTree] = None,
         prune_tree: bool = True,
         *args,
         **kwargs
@@ -181,7 +222,8 @@ class Swarm(BaseSwarm):
                 model_states=self.walkers.model_states,
                 walkers_states=walkers_states,
             )
-            self.update_tree(root_ids.tolist())
+            ids: List[int] = root_ids.tolist()
+            self.update_tree(states_ids=ids)
 
     def run(
         self,

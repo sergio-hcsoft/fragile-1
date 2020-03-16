@@ -345,9 +345,9 @@ class Bivariate(StreamingPlot):
         Initialize a :class:`Bivariate`.
 
         Args:
-            data: Passed to ``holoviews.Bivariate`.
-            *args: Passed to ``holoviews.Bivariate`.
-            **kwargs: Passed to ``holoviews.Bivariate`.
+            data: Passed to ``holoviews.Bivariate``.
+            *args: Passed to ``holoviews.Bivariate``.
+            **kwargs: Passed to ``holoviews.Bivariate``.
         """
 
         def bivariate(data):
@@ -431,7 +431,7 @@ class Landscape2D(StreamingPlot):
 
     def __init__(self, n_points: int = 50, data=None, invert_cmap: bool = False):
         """
-        Initialize a :class:`Landscape2d.
+        Initialize a :class:`Landscape2d`.
 
         Args:
             n_points: Number of points per dimension used to create the \

@@ -15,6 +15,8 @@ Welcome to Fragile's documentation!
    module_docs/core.rst
    module_docs/atari.rst
    module_docs/optimize.rst
+   module_docs/distributed.rst
+   module_docs/dataviz.rst
 
 
 Indices and tables

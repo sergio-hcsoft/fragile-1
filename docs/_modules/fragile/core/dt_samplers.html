@@ -1,0 +1,322 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>fragile.core.dt_samplers &#8212; Fragile 0.0a documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for fragile.core.dt_samplers</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">fragile.core.base_classes</span> <span class="kn">import</span> <span class="n">BaseCritic</span>
+<span class="kn">from</span> <span class="nn">fragile.core.states</span> <span class="kn">import</span> <span class="n">States</span><span class="p">,</span> <span class="n">StatesEnv</span><span class="p">,</span> <span class="n">StatesModel</span><span class="p">,</span> <span class="n">StatesWalkers</span>
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">float_type</span><span class="p">,</span> <span class="n">StateDict</span>
+
+
+<div class="viewcode-block" id="BaseDtSampler"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.BaseDtSampler">[docs]</a><span class="k">class</span> <span class="nc">BaseDtSampler</span><span class="p">(</span><span class="n">BaseCritic</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :class:`Critic` that returns contains the attribute ``dt`` in its :class:`States`.</span>
+
+<span class="sd">    The ``dt`` value represents the number of time steps a given action will \</span>
+<span class="sd">    be applied. The returned values are floats so the critic can also be used \</span>
+<span class="sd">    to sample a learning rate. If you need discrete values transform the sampled \</span>
+<span class="sd">    array to integers in the :class:`Environment`, or change the data type \</span>
+<span class="sd">    overriding the default ``get_params_dict`` behavior.</span>
+
+<span class="sd">    The ``dt`` value will also be replicated in the ``critic_score`` attribute \</span>
+<span class="sd">    of the states to comply with the critic interface.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BaseDtSampler.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.BaseDtSampler.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discrete_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`BaseDtSampler`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            discrete_values: If ``True`` return discrete time step values. If \</span>
+<span class="sd">                            ``False`` allow to return floating point time steps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">float_type</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">discrete_values</span> <span class="k">else</span> <span class="nb">int</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BaseDtSampler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BaseDtSampler.get_params_dict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.BaseDtSampler.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the dictionary with the parameters to create a new `GaussianDt` critic.&quot;&quot;&quot;</span>
+        <span class="n">base_params</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">BaseDtSampler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">}}</span>
+        <span class="n">base_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">base_params</span></div>
+
+<div class="viewcode-block" id="BaseDtSampler.calculate"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.BaseDtSampler.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesEnv</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesWalkers</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">States</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the target time step values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled.</span>
+<span class="sd">            model_states: States corresponding to the model data.</span>
+<span class="sd">            env_states: States corresponding to the environment data.</span>
+<span class="sd">            walkers_states: States corresponding to the walkers data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array containing the sampled time step.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+
+
+<div class="viewcode-block" id="ConstantDt"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.ConstantDt">[docs]</a><span class="k">class</span> <span class="nc">ConstantDt</span><span class="p">(</span><span class="n">BaseDtSampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Apply the actions sampled a constant number of time steps.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConstantDt.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.ConstantDt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">discrete_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`ConstantDt`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dt: Number of time steps that each action will be applied.</span>
+<span class="sd">            discrete_values: If ``True`` return discrete time step values. If \</span>
+<span class="sd">                            ``False`` allow to return floating point time steps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConstantDt</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">discrete_values</span><span class="o">=</span><span class="n">discrete_values</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ConstantDt.calculate"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.ConstantDt.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesEnv</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesWalkers</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">States</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the target time step values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled.</span>
+<span class="sd">            model_states: States corresponding to the model data.</span>
+<span class="sd">            env_states: States corresponding to the environment data.</span>
+<span class="sd">            walkers_states: States corresponding to the walkers data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array containing the sampled time step.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">env_states</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;env_states and batch_size cannot be both None.&quot;</span><span class="p">)</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="ow">or</span> <span class="n">env_states</span><span class="o">.</span><span class="n">n</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states_from_data</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">critic_score</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">states</span></div></div>
+
+
+<div class="viewcode-block" id="UniformDt"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.UniformDt">[docs]</a><span class="k">class</span> <span class="nc">UniformDt</span><span class="p">(</span><span class="n">BaseDtSampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sample the ``dt`` values for each action from a discrete uniform distribution.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="UniformDt.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.UniformDt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">max_dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">discrete_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`GaussianDt`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            min_dt: Minimum dt that can be sampled.</span>
+<span class="sd">            max_dt: Maximum dt that can be sampled.</span>
+<span class="sd">            discrete_values: If ``True`` return discrete time step values. If \</span>
+<span class="sd">                            ``False`` allow to return floating point time steps.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_dt</span> <span class="o">=</span> <span class="n">min_dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_dt</span> <span class="o">=</span> <span class="n">max_dt</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UniformDt</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">discrete_values</span><span class="o">=</span><span class="n">discrete_values</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UniformDt.calculate"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.UniformDt.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesEnv</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesWalkers</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">States</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the target time step values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled.</span>
+<span class="sd">            model_states: States corresponding to the model data.</span>
+<span class="sd">            env_states: States corresponding to the environment data.</span>
+<span class="sd">            walkers_states: States corresponding to the walkers data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array containing the sampled time step for each value drawn for a \</span>
+<span class="sd">            uniform distribution.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">env_states</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;env_states and batch_size cannot be both None.&quot;</span><span class="p">)</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="ow">or</span> <span class="n">env_states</span><span class="o">.</span><span class="n">n</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_dt</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_dt</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states_from_data</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">critic_score</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">states</span></div></div>
+
+
+<div class="viewcode-block" id="GaussianDt"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.GaussianDt">[docs]</a><span class="k">class</span> <span class="nc">GaussianDt</span><span class="p">(</span><span class="n">BaseDtSampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sample an additional vector of clipped gaussian random variables, and \</span>
+<span class="sd">    stores it in an attribute called `dt`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GaussianDt.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.GaussianDt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">min_dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">max_dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">loc_dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">scale_dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">discrete_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a :class:`GaussianDt`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            min_dt: Minimum dt that will be predicted by the model.</span>
+<span class="sd">            max_dt: Maximum dt that will be predicted by the model.</span>
+<span class="sd">            loc_dt: Mean of the gaussian random variable that will model dt.</span>
+<span class="sd">            scale_dt: Standard deviation of the gaussian random variable that will model dt.</span>
+<span class="sd">            discrete_values: If ``True`` return discrete time step values. If \</span>
+<span class="sd">                            ``False`` allow to return floating point time steps.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_dt</span> <span class="o">=</span> <span class="n">min_dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_dt</span> <span class="o">=</span> <span class="n">max_dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_dt</span> <span class="o">=</span> <span class="n">loc_dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_dt</span> <span class="o">=</span> <span class="n">scale_dt</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GaussianDt</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">discrete_values</span><span class="o">=</span><span class="n">discrete_values</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GaussianDt.calculate"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.dt_samplers.GaussianDt.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesEnv</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">walkers_states</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StatesWalkers</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">States</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the target time step values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of new points to the sampled.</span>
+<span class="sd">            model_states: States corresponding to the model data.</span>
+<span class="sd">            env_states: States corresponding to the environment data.</span>
+<span class="sd">            walkers_states: States corresponding to the walkers data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array containing the sampled time step values drawn from a gaussian \</span>
+<span class="sd">            distribution.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">env_states</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;env_states and batch_size cannot be both None.&quot;</span><span class="p">)</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="ow">or</span> <span class="n">env_states</span><span class="o">.</span><span class="n">n</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_dt</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">std_dt</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_dt</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states_from_data</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">critic_score</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">states</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Fragile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../resources/examples/examples_index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Guillem Duran, Sergio Hernandez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

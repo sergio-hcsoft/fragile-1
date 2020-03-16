@@ -32,21 +32,23 @@
             
   <h1>Source code for fragile.core.states</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
 
-<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">float_type</span><span class="p">,</span> <span class="n">hash_numpy</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">,</span> <span class="n">StateDict</span>
+<span class="kn">from</span> <span class="nn">fragile.core.utils</span> <span class="kn">import</span> <span class="n">float_type</span><span class="p">,</span> <span class="n">hash_numpy</span><span class="p">,</span> <span class="n">similiar_chunks_indexes</span><span class="p">,</span> <span class="n">StateDict</span>
 
 
 <div class="viewcode-block" id="States"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States">[docs]</a><span class="k">class</span> <span class="nc">States</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Handles several tensors that will contain the data associated with the \</span>
-<span class="sd">    walkers of a Swarm. Each tensor will be associated to a class attribute.</span>
+<span class="sd">    Handles several arrays that will contain the data associated with the \</span>
+<span class="sd">    walkers of a :class:`Swarm`. Each array will be associated to a class \</span>
+<span class="sd">    attribute, and it will store the corresponding value of that attribute \</span>
+<span class="sd">    for all the walkers of a :class:`Swarm`.</span>
 
-<span class="sd">    This class behaves as a dictionary of tensors with some extra functionality</span>
-<span class="sd">    to make easier the process of cloning the walkers&#39; states by adding an \</span>
-<span class="sd">    extra dimension equal to the number of walkers to each tensor.</span>
+<span class="sd">    This class behaves as a dictionary of arrays with some extra functionality \</span>
+<span class="sd">    to make easier the process of cloning the walkers&#39; data. All of its internal \</span>
+<span class="sd">    arrays will have an extra first dimension equal to the number of walkers.</span>
 
 <span class="sd">    In order to define the tensors, a `state_dict` dictionary needs to be \</span>
 <span class="sd">    specified using the following structure::</span>
@@ -56,20 +58,24 @@
 <span class="sd">                                },</span>
 <span class="sd">                     }</span>
 
-<span class="sd">    Where tuple is a tuple indicating the shape of the desired tensor, that will \</span>
-<span class="sd">    be accessed using the name_1 attribute of the class. If &quot;size&quot; is not defined \</span>
-<span class="sd">    the attribute will be considered a vector of length `batch_size`.</span>
+<span class="sd">    Where tuple is a tuple indicating the shape of the desired tensor. The \</span>
+<span class="sd">    created arrays will accessible the ``name_1`` attribute of the class, or \</span>
+<span class="sd">    indexing the class with ``states[&quot;name_1&quot;]``.</span>
+
+<span class="sd">    If ``size`` is not defined the attribute will be considered a vector of \</span>
+<span class="sd">    length `batch_size`.</span>
 
 
 <span class="sd">    Args:</span>
 <span class="sd">        batch_size: The number of items in the first dimension of the tensors.</span>
 <span class="sd">        state_dict: Dictionary defining the attributes of the tensors.</span>
 <span class="sd">        **kwargs: Data can be directly specified as keyword arguments.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="States.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StateDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialise a :class:`States`.</span>
+<span class="sd">        Initialize a :class:`States`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">             batch_size: The number of items in the first dimension of the tensors.</span>
@@ -88,7 +94,7 @@
         <span class="sd">&quot;&quot;&quot;Length is equal to n_walkers.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span></div>
 
-<div class="viewcode-block" id="States.__getitem__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.__getitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+<div class="viewcode-block" id="States.__getitem__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.__getitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Query an attribute of the class as if it was a dictionary.</span>
 
@@ -107,7 +113,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;item must be an instance of str, got </span><span class="si">{}</span><span class="s2"> instead&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">item</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="States.__setitem__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.__setitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
+<div class="viewcode-block" id="States.__setitem__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.__setitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Allow the class to set its attributes as if it was a dict.</span>
 
@@ -133,35 +139,87 @@
 
     <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">_hash</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span>
-            <span class="nb">tuple</span><span class="p">([</span><span class="n">hash_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="nb">hash</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vals</span><span class="p">()])</span>
+            <span class="nb">tuple</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">hash_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="nb">hash</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vals</span><span class="p">()]</span>
+            <span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">_hash</span>
 
 <div class="viewcode-block" id="States.group_hash"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.group_hash">[docs]</a>    <span class="k">def</span> <span class="nf">group_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return a unique id for a given attribute.&quot;&quot;&quot;</span>
         <span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">hash_numpy</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="nb">hash</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">hash_numpy</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="nb">hash</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="States.hash_values"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.hash_values">[docs]</a>    <span class="k">def</span> <span class="nf">hash_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Return a unique id for each walker attribute.&quot;&quot;&quot;</span>
         <span class="n">values</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="n">hashes</span> <span class="o">=</span> <span class="p">[</span><span class="n">hash_numpy</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="nb">hash</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+        <span class="n">hashes</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">hash_numpy</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="nb">hash</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span>
+        <span class="p">]</span>
         <span class="k">return</span> <span class="n">hashes</span></div>
 
-<div class="viewcode-block" id="States.concat_states"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.concat_states">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">concat_states</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;States&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;States&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="States.merge_states"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.merge_states">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">merge_states</span><span class="p">(</span><span class="n">states</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="s2">&quot;States&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;States&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Transform a list containing states with only one walker to a single \</span>
-<span class="sd">        States instance with many walkers.</span>
+<span class="sd">        Combine different states containing the same kind of data into a single \</span>
+<span class="sd">        :class:`State` with batch size equal to the sum of all the state batch \</span>
+<span class="sd">        sizes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            states: Iterable returning :class:`States` with the same attributes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`States` containing the combined data of the input values.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">n_walkers</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">n</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">])</span>
-        <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
-            <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">n_walkers</span><span class="p">])</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-            <span class="n">state_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="nb">tuple</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">n_walkers</span><span class="p">,</span> <span class="o">**</span><span class="n">state_dict</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">s</span></div>
+
+        <span class="k">def</span> <span class="nf">merge_one_name</span><span class="p">(</span><span class="n">states_list</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">is_scalar_vector</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states_list</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="c1"># Attributes that are not numpy arrays are not stacked.</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">data</span>
+                <span class="n">state_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">state_len</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># Name is scalar vector. Data is scalar value. Transform to array first</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">data</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">state_len</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># Name is scalar vector. Data already transformed to an array</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">data</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Name is a matrix of vectors. Data needs an additional dimension</span>
+                        <span class="n">is_scalar_vector</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">data</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">state_len</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># Name is a scalar vector. Data already has is a one dimensional array</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="k">elif</span> <span class="p">(</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                    <span class="ow">and</span> <span class="n">state_len</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                    <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+                <span class="p">):</span>
+                    <span class="c1"># Name is a matrix of vectors. Data has the correct shape</span>
+                    <span class="n">is_scalar_vector</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Could not infer data concatenation for attribute </span><span class="si">%s</span><span class="s2">  with shape </span><span class="si">%s</span><span class="s2">&quot;</span>
+                        <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_scalar_vector</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+        <span class="c1"># Assumes all states have the same names.</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">merge_one_name</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_names</span><span class="p">}</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">n</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -223,16 +281,31 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vals</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
-            <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vals</span><span class="p">()]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vals</span><span class="p">())</span>
             <span class="k">yield</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_names</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="States.split_states"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.split_states">[docs]</a>    <span class="k">def</span> <span class="nf">split_states</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;States&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="States.split_states"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.split_states">[docs]</a>    <span class="k">def</span> <span class="nf">split_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_chunks</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="s2">&quot;States&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return a generator for n_walkers different states, where each one \</span>
+<span class="sd">        Return a generator for n_chunks different states, where each one \</span>
 <span class="sd">        contain only the data corresponding to one walker.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)))</span></div>
+
+        <span class="k">def</span> <span class="nf">get_chunck_size</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">_names</span><span class="p">:</span>
+                <span class="n">attr</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">/</span> <span class="n">n_chunks</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">similiar_chunks_indexes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">n_chunks</span><span class="p">):</span>
+            <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">get_chunck_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">val</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="n">new_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">new_state</span></div>
 
 <div class="viewcode-block" id="States.update"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;States&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -260,7 +333,10 @@
             <span class="n">update_or_set_attributes</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="States.clone"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.clone">[docs]</a>    <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">will_clone</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">compas_ix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">ignore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">will_clone</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">compas_ix</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">ignore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Clone all the stored data according to the provided arrays.</span>
@@ -276,7 +352,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ignore</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="k">if</span> <span class="n">ignore</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ignore</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">:</span>
                 <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">will_clone</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">compas_ix</span><span class="p">][</span><span class="n">will_clone</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="States.get_params_dict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
@@ -284,7 +360,7 @@
         <span class="k">return</span> <span class="p">{</span>
             <span class="n">k</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">dtype</span><span class="p">}</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
         <span class="p">}</span></div>
 
 <div class="viewcode-block" id="States.copy"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;States&quot;</span><span class="p">:</span>
@@ -293,7 +369,7 @@
         <span class="k">return</span> <span class="n">States</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">param_dict</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="States.params_to_arrays"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.States.params_to_arrays">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">params_to_arrays</span><span class="p">(</span><span class="n">param_dict</span><span class="p">:</span> <span class="n">StateDict</span><span class="p">,</span> <span class="n">n_walkers</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">params_to_arrays</span><span class="p">(</span><span class="n">param_dict</span><span class="p">:</span> <span class="n">StateDict</span><span class="p">,</span> <span class="n">n_walkers</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a dictionary containing the arrays specified by param_dict.</span>
 
@@ -308,16 +384,46 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tensor_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">val_size</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">)</span>
+            <span class="c1"># Shape already includes the number of walkers. Remove walkers axis to create size.</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">val_size</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">val_size</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">val_size</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">)</span>
+            <span class="c1"># Create appropriate shapes with current state&#39;s number of walkers.</span>
             <span class="n">sizes</span> <span class="o">=</span> <span class="n">n_walkers</span> <span class="k">if</span> <span class="n">val_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">n_walkers</span><span class="p">])</span> <span class="o">+</span> <span class="n">val_size</span>
             <span class="k">if</span> <span class="s2">&quot;size&quot;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
                 <span class="k">del</span> <span class="n">val</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span>
-            <span class="n">tensor_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="o">**</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;shape&quot;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">val</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span>
+            <span class="n">tensor_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">sizes</span><span class="p">,</span> <span class="o">**</span><span class="n">val</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tensor_dict</span></div></div>
 
 
 <div class="viewcode-block" id="StatesEnv"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesEnv">[docs]</a><span class="k">class</span> <span class="nc">StatesEnv</span><span class="p">(</span><span class="n">States</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Keeps track of the data structures used by the :class:`Env`.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Keeps track of the data structures used by the :class:`Environment`.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        states: This data tracks the internal state of the Environment simulation, \</span>
+<span class="sd">                 and they are only used to save and restore its state.</span>
+<span class="sd">        observs: This is the data that corresponds to the observations of the \</span>
+<span class="sd">                 current :class:`Environment` state. The observations are used \</span>
+<span class="sd">                 for calculating distances.</span>
+<span class="sd">        rewards: This vector contains the rewards associated with each observation.</span>
+<span class="sd">        oobs: Stands for **Out Of Bounds**. It is a vector of booleans that \</span>
+<span class="sd">              represents and arbitrary boundary condition. If a value is ``True`` \</span>
+<span class="sd">              the corresponding states will be treated as being outside the \</span>
+<span class="sd">              :class:`Environment` domain. The states considered out of bounds \</span>
+<span class="sd">              will be avoided by the sampling algorithms.</span>
+<span class="sd">        terminals: Vector of booleans representing the successful termination \</span>
+<span class="sd">                   of an environment. A ``True`` value indicates that the \</span>
+<span class="sd">                   :class:`Environment` has successfully reached a terminal \</span>
+<span class="sd">                   state that is not out of bounds.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="StatesEnv.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesEnv.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StateDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -332,7 +438,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">observs</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rewards</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ends</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oobs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminals</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">updated_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">state_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">updated_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
@@ -341,10 +448,11 @@
 <div class="viewcode-block" id="StatesEnv.get_params_dict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesEnv.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return a dictionary describing the data stored in the :class:`StatesEnv`.&quot;&quot;&quot;</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;states&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">},</span>
-            <span class="s2">&quot;observs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
-            <span class="s2">&quot;rewards&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
-            <span class="s2">&quot;ends&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
+            <span class="s2">&quot;states&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">},</span>
+            <span class="s2">&quot;observs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
+            <span class="s2">&quot;rewards&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
+            <span class="s2">&quot;oobs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
+            <span class="s2">&quot;terminals&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
         <span class="p">}</span>
         <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">StatesEnv</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
         <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
@@ -352,7 +460,13 @@
 
 
 <div class="viewcode-block" id="StatesModel"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesModel">[docs]</a><span class="k">class</span> <span class="nc">StatesModel</span><span class="p">(</span><span class="n">States</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Keeps track of the data structures used by the :class:`Model`.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Keeps track of the data structures used by the :class:`Model`.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        actions: Represents the actions that will be sampled by a :class:`Model`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="StatesModel.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesModel.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StateDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -373,7 +487,7 @@
 <div class="viewcode-block" id="StatesModel.get_params_dict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesModel.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return the parameter dictionary with tre attributes common to all Models.&quot;&quot;&quot;</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
+            <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
         <span class="p">}</span>
         <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">StatesModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
         <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
@@ -381,7 +495,38 @@
 
 
 <div class="viewcode-block" id="StatesWalkers"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesWalkers">[docs]</a><span class="k">class</span> <span class="nc">StatesWalkers</span><span class="p">(</span><span class="n">States</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Keeps track of the data structures used by the :class:`Walkers`.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Keeps track of the data structures used by the :class:`Walkers`.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id_walkers: Array of of integers that uniquely identify a given state. \</span>
+<span class="sd">                    They are obtained by hashing the states.</span>
+<span class="sd">        compas_clone: Array of integers containing the index of the walkers \</span>
+<span class="sd">                      selected as companions for cloning.</span>
+<span class="sd">        processed_rewards: Array of normalized rewards. It contains positive \</span>
+<span class="sd">                           values with an average of 1. Values greater than one \</span>
+<span class="sd">                           correspond to rewards above the average, and values \</span>
+<span class="sd">                           lower than one correspond to rewards below the average.</span>
+<span class="sd">        virtual_rewards: Array containing the virtual rewards assigned to each walker.</span>
+<span class="sd">        cum_rewards: Array of rewards used to compute the virtual_reward. This \</span>
+<span class="sd">                    value can accumulate the rewards provided by the \</span>
+<span class="sd">                    :class:`Environment` during an algorithm run.</span>
+<span class="sd">        distances: Array containing the similarity metric of each walker used \</span>
+<span class="sd">                   to compute the virtual reward.</span>
+<span class="sd">        clone_probs: Array containing the probability that a walker clones to \</span>
+<span class="sd">                     its companion during the cloning phase.</span>
+<span class="sd">        will_clone: Boolean array. A ``True`` value indicates that the \</span>
+<span class="sd">                    corresponding walker will clone to its companion.</span>
+<span class="sd">        in_bounds: Boolean array. A `True` value indicates that a walker is \</span>
+<span class="sd">                   in the domain defined by the :class:`Environment`.</span>
+
+<span class="sd">        best_state: State of the walker with the best ``cum_reward`` found \</span>
+<span class="sd">                   during the algorithm run.</span>
+<span class="sd">        best_obs: Observation corresponding to the ``best_state``.</span>
+<span class="sd">        best_reward: Best ``cum_reward`` found during the algorithm run.</span>
+<span class="sd">        best_id: Integer representing the hash of the ``best_state``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="StatesWalkers.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesWalkers.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StateDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -399,50 +544,40 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">virtual_rewards</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">distances</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clone_probs</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">alive_mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_bounds</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id_walkers</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">end_condition</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># This is only to allow __repr__. Should be overridden after reset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_obs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_state</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_reward</span> <span class="o">=</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span>
         <span class="n">updated_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">state_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">updated_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">StatesWalkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">state_dict</span><span class="o">=</span><span class="n">updated_dict</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">best_id</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">best_obs</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">best_reward</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">best_found</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Return the best observation found.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_obs</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">best_reward_found</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scalar</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Return the value of the best observation found.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_reward</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="StatesWalkers.get_params_dict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesWalkers.get_params_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return a dictionary containing the param_dict to build an instance \</span>
 <span class="sd">        of States that can handle all the data generated by the :class:`Walkers`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;id_walkers&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">},</span>
-            <span class="s2">&quot;compas_clone&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">},</span>
+            <span class="s2">&quot;id_walkers&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">},</span>
+            <span class="s2">&quot;compas_clone&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">},</span>
             <span class="s2">&quot;processed_rewards&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">float_type</span><span class="p">},</span>
             <span class="s2">&quot;virtual_rewards&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">float_type</span><span class="p">},</span>
             <span class="s2">&quot;cum_rewards&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">float_type</span><span class="p">},</span>
             <span class="s2">&quot;distances&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">float_type</span><span class="p">},</span>
             <span class="s2">&quot;clone_probs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">float_type</span><span class="p">},</span>
-            <span class="s2">&quot;will_clone&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
-            <span class="s2">&quot;alive_mask&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
-            <span class="s2">&quot;end_condition&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
+            <span class="s2">&quot;will_clone&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
+            <span class="s2">&quot;in_bounds&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">},</span>
         <span class="p">}</span>
         <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">StatesWalkers</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_params_dict</span><span class="p">()</span>
         <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">params</span></div>
 
-<div class="viewcode-block" id="StatesWalkers.clone"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesWalkers.clone">[docs]</a>    <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<div class="viewcode-block" id="StatesWalkers.clone"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.atari.env.StatesWalkers.clone">[docs]</a>    <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Perform the clone only on cum_rewards and id_walkers and reset the other arrays.&quot;&quot;&quot;</span>
         <span class="n">clone</span><span class="p">,</span> <span class="n">compas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">will_clone</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">compas_clone</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">[</span><span class="n">clone</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cum_rewards</span><span class="p">[</span><span class="n">compas</span><span class="p">][</span><span class="n">clone</span><span class="p">])</span>
@@ -455,17 +590,16 @@
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">other_attrs</span><span class="p">:</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="n">id_walkers</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
-            <span class="n">compas_dist</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">),</span>
-            <span class="n">compas_clone</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">),</span>
-            <span class="n">processed_rewards</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
-            <span class="n">cum_rewards</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
-            <span class="n">virtual_rewards</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
-            <span class="n">distances</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
-            <span class="n">clone_probs</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
-            <span class="n">will_clone</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-            <span class="n">alive_mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
-            <span class="n">end_condition</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
+            <span class="n">id_walkers</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+            <span class="n">compas_dist</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">),</span>
+            <span class="n">compas_clone</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">),</span>
+            <span class="n">processed_rewards</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
+            <span class="n">cum_rewards</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
+            <span class="n">virtual_rewards</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
+            <span class="n">distances</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
+            <span class="n">clone_probs</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float_type</span><span class="p">),</span>
+            <span class="n">will_clone</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
+            <span class="n">in_bounds</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
         <span class="p">)</span></div></div>
 </pre></div>
 
@@ -492,6 +626,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
 </ul>
 
 <div class="relations">

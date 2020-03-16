@@ -160,7 +160,7 @@
         <span class="k">pass</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">BaseCritic</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseCritic"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseCritic">[docs]</a><span class="k">class</span> <span class="nc">BaseCritic</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform additional computation. It can be used in a :class:`Walkers` \</span>
 <span class="sd">    or a :class:`Model`.</span>
@@ -168,7 +168,7 @@
 
     <span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
 
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseCritic.get_params_dict"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseCritic.get_params_dict">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_params_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return an state_dict to be used for instantiating an States class.</span>
@@ -188,9 +188,9 @@
         <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;critic_score&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">},</span>
         <span class="p">}</span>
-        <span class="k">return</span> <span class="n">state_dict</span>
+        <span class="k">return</span> <span class="n">state_dict</span></div>
 
-    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseCritic.calculate"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseCritic.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -210,9 +210,9 @@
 <span class="sd">            States containing the the internal state of the :class:`BaseCritic`</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseCritic.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseCritic.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -239,9 +239,9 @@
 <span class="sd">            :class:`BaseCritic` (after the reset).</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
+<div class="viewcode-block" id="BaseCritic.update"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseCritic.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">model_states</span><span class="p">:</span> <span class="n">StatesModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -268,7 +268,7 @@
 <span class="sd">            :class:`BaseCritic`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+        <span class="k">pass</span></div></div>
 
 
 <div class="viewcode-block" id="BaseEnvironment"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseEnvironment">[docs]</a><span class="k">class</span> <span class="nc">BaseEnvironment</span><span class="p">(</span><span class="n">StatesOwner</span><span class="p">):</span>
@@ -297,7 +297,8 @@
 <span class="sd">                &quot;states&quot;: {&quot;size&quot;: self._env.get_state().shape, &quot;dtype&quot;: numpy.int64},</span>
 <span class="sd">                &quot;observs&quot;: {&quot;size&quot;: self._env.observation_space.shape, &quot;dtype&quot;: numpy.float32},</span>
 <span class="sd">                &quot;rewards&quot;: {&quot;dtype&quot;: numpy.float32},</span>
-<span class="sd">                &quot;ends&quot;: {&quot;dtype&quot;: numpy.bool_},</span>
+<span class="sd">                &quot;oobs&quot;: {&quot;dtype&quot;: numpy.bool_},</span>
+<span class="sd">                &quot;terminals&quot;: {&quot;dtype&quot;: numpy.bool_},</span>
 <span class="sd">            }</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -318,9 +319,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseEnvironment.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseEnvironment.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesEnv</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseEnvironment.reset"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseEnvironment.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">env_states</span><span class="p">:</span> <span class="n">StatesEnv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatesEnv</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reset the environment and return an States class with batch_size copies \</span>
 <span class="sd">        of the initial state.</span>
@@ -329,7 +328,6 @@
 <span class="sd">            batch_size: Number of walkers that the resulting state will have.</span>
 <span class="sd">            env_states: States class used to set the environment to an arbitrary \</span>
 <span class="sd">                        state.</span>
-<span class="sd">            args: Additional arguments not related to environment data.</span>
 <span class="sd">            kwargs: Additional keyword arguments not related to environment data.</span>
 
 <span class="sd">        Returns:</span>
@@ -542,7 +540,7 @@
         <span class="sd">&quot;&quot;&quot;Sample the clone probability distribution and clone the walkers accordingly.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseWalkers.get_alive_compas"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.get_alive_compas">[docs]</a>    <span class="k">def</span> <span class="nf">get_alive_compas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseWalkers.get_in_bounds_compas"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseWalkers.get_in_bounds_compas">[docs]</a>    <span class="k">def</span> <span class="nf">get_in_bounds_compas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return an array of indexes corresponding to an alive walker chosen \</span>
 <span class="sd">        at random.</span>
@@ -560,9 +558,9 @@
 
 <div class="viewcode-block" id="BaseSwarm.__init__"><a class="viewcode-back" href="../../../module_docs/core.html#fragile.core.base_classes.BaseSwarm.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">env</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-        <span class="n">walkers</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">BaseEnvironment</span><span class="p">],</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">BaseEnvironment</span><span class="p">],</span> <span class="n">BaseModel</span><span class="p">],</span>
+        <span class="n">walkers</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">BaseWalkers</span><span class="p">],</span>
         <span class="n">n_walkers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">reward_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">dist_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
@@ -773,6 +771,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/core.html">Core module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/atari.html">Atari games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../module_docs/optimize.html">Function Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/distributed.html">Distributed Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/dataviz.html">Data Visualization</a></li>
 </ul>
 
 <div class="relations">

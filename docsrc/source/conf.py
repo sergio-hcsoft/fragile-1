@@ -26,7 +26,8 @@ class Mock(MagicMock):
 
 sys.path.insert(0, os.path.abspath("../.."))
 sys.setrecursionlimit(1500)
-MOCK_MODULES = ["plangym", "numpy", "atari-py", "scipy", "numba"]
+MOCK_MODULES = ["plangym", "numpy", "atari-py", "scipy",
+                "numba", "holoviews.streams", "pandas", "ray", "streamz", "holoviews"]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # -- Project information -----------------------------------------------------
 
