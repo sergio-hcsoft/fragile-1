@@ -260,7 +260,7 @@ inside the defined :class:`Bounds`.
 .. code:: ipython3
 
     def my_custom_domain_check(x: numpy.ndarray) -> numpy.ndarray:
-        return (numpy.sum(x) > 0.0)
+        return (numpy.sum(x, axis=1) > 0.0)
 
 To define the new environment we only need to define the appropriate
 ``env`` callable passing the target ``function``, the :class:`Bounds`, and
