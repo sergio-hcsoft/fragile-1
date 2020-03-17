@@ -24,21 +24,22 @@ class Mock(MagicMock):
         return MagicMock()
 
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../../"))
 sys.setrecursionlimit(1500)
-MOCK_MODULES = ["plangym", "numpy", "atari-py", "scipy",
-                "numba", "holoviews.streams", "pandas", "ray", "streamz", "holoviews"]
+MOCK_MODULES = ["pandas", "holoviews.streams",
+                "holoviews", "PIL", "numba", "pyarrow"]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # -- Project information -----------------------------------------------------
 
 project = "Fragile"
-copyright = "2020, Guillem Duran, Sergio Hernandez"
+copyright = "2020, Fragile Technologies"
 author = "Guillem Duran, Sergio Hernandez"
 
 # The short X.Y version
-version = "0.0"
+from fragile import __version__
+version = __version__
 # The full version, including alpha/beta/rc tags
-release = "0.0a"
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -76,8 +77,6 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
 
-autodoc_mock_imports = ["plangym", "numpy", "atari-py", "scipy", "numba"]
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
@@ -111,7 +110,7 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "alabaster"
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

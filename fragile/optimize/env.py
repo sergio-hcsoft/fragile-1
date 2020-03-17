@@ -53,7 +53,7 @@ class Function(Environment):
         function: Callable,
         shape: tuple = None,
         high: Union[int, float, numpy.ndarray] = numpy.inf,
-        low: Union[int, float, numpy.ndarray] = -numpy.inf,
+        low: Union[int, float, numpy.ndarray] = numpy.NINF,
         custom_domain_check: Callable[[numpy.ndarray], numpy.ndarray] = None,
     ) -> "Function":
         """
