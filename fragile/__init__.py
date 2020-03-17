@@ -16,6 +16,11 @@ warnings.filterwarnings(
         "documentation for alternative uses"
     ),
 )
+warnings.filterwarnings(
+    "ignore",
+    message=("Using or importing the ABCs from 'collections' instead of from "
+             "'collections.abc' is deprecated, and in 3.8 it will stop working"),
+)
 from fragile.core.states import States  # noqa: E402
 from fragile.core.walkers import Walkers  # noqa: E402
 from fragile.version import __version__  # noqa: E402
