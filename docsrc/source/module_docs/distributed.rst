@@ -1,5 +1,3 @@
-Distributed Module
-==================
 .. automodule:: fragile.distributed
     :members:
 

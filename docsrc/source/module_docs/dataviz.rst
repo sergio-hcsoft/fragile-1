@@ -1,7 +1,4 @@
-Data Visualization
-==================
-
-:class:`Swarm` Visualizers
+Swarm Visualizers
 ---------------------------
 
 :class:`Summary`
@@ -36,7 +33,7 @@ Data Visualization
 .. image::
     ../resources/images/03_landscape.gif
 
-Plots for :class:`Swarm` data
+Plots for Swarm data
 ------------------------------
 
 .. automodule:: fragile.dataviz.swarm_stats
