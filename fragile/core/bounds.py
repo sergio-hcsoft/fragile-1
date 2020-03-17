@@ -1,7 +1,7 @@
 from collections.abc import Iterable as _Iterable
 from typing import Iterable, Optional, Tuple, Union
 
-import numpy as np
+import numpy as numpy
 
 from fragile.core.utils import Scalar
 
@@ -16,8 +16,8 @@ class Bounds:
 
     def __init__(
         self,
-        high: Union[np.ndarray, Scalar] = np.inf,
-        low: Union[np.ndarray, Scalar] = -np.inf,
+        high: Union[numpy.ndarray, Scalar] = numpy.inf,
+        low: Union[numpy.ndarray, Scalar] = numpy.NINF,
         shape: Optional[tuple] = None,
         dtype: Optional[type] = None,
     ):
@@ -62,10 +62,10 @@ class Bounds:
         elif shape is None:
             raise TypeError("If shape is None high or low need to have .shape attribute.")
         # High and low will be arrays of target shape
-        if not isinstance(high, np.ndarray):
-            high = np.array(high) if isinstance(high, _Iterable) else np.ones(shape) * high
-        if not isinstance(low, np.ndarray):
-            low = np.array(low) if isinstance(low, _Iterable) else np.ones(shape) * low
+        if not isinstance(high, numpy.ndarray):
+            high = numpy.array(high) if isinstance(high, _Iterable) else numpy.ones(shape) * high
+        if not isinstance(low, numpy.ndarray):
+            low = numpy.array(low) if isinstance(low, _Iterable) else numpy.ones(shape) * low
         self.high = high
         self.low = low
         if dtype is not None:
@@ -121,13 +121,13 @@ class Bounds:
         for lo, hi in bounds:
             low.append(lo)
             high.append(hi)
-        low, high = np.array(low), np.array(high)
+        low, high = numpy.array(low), numpy.array(high)
         return Bounds(low=low, high=high)
 
     @staticmethod
     def get_scaled_intervals(
-        low: Union[np.ndarray, float, int], high: Union[np.ndarray, float, int], scale: float
-    ) -> Tuple[Union[np.ndarray, float], Union[np.ndarray, float]]:
+        low: Union[numpy.ndarray, float, int], high: Union[numpy.ndarray, float, int], scale: float
+    ) -> Tuple[Union[numpy.ndarray, float], Union[numpy.ndarray, float]]:
         """
         Scale the high and low vectors by an scale factor.
 
@@ -149,18 +149,18 @@ class Bounds:
 
         """
         pct = scale - 1
-        big_scale = 1 + np.abs(pct)
-        small_scale = 1 - np.abs(pct)
+        big_scale = 1 + numpy.abs(pct)
+        small_scale = 1 - numpy.abs(pct)
         if pct > 0:
-            xmin_scaled = np.where(low < 0, low * big_scale, low * small_scale)
-            xmax_scaled = np.where(high < 0, high * small_scale, high * big_scale)
+            xmin_scaled = numpy.where(low < 0, low * big_scale, low * small_scale)
+            xmax_scaled = numpy.where(high < 0, high * small_scale, high * big_scale)
         else:
-            xmin_scaled = np.where(low < 0, low * small_scale, low * small_scale)
-            xmax_scaled = np.where(high < 0, high * big_scale, high * small_scale)
+            xmin_scaled = numpy.where(low < 0, low * small_scale, low * small_scale)
+            xmax_scaled = numpy.where(high < 0, high * big_scale, high * small_scale)
         return xmin_scaled, xmax_scaled
 
     @classmethod
-    def from_array(cls, x: np.ndarray, scale: float = 1.0) -> "Bounds":
+    def from_array(cls, x: numpy.ndarray, scale: float = 1.0) -> "Bounds":
         """
         Instantiate a bounds compatible for bounding the given array. It also allows to set a \
         margin for the high and low values.
@@ -193,7 +193,7 @@ class Bounds:
         xmin_scaled, xmax_scaled = cls.get_scaled_intervals(xmin, xmax, scale)
         return Bounds(low=xmin_scaled, high=xmax_scaled)
 
-    def clip(self, x: np.ndarray) -> np.ndarray:
+    def clip(self, x: numpy.ndarray) -> numpy.ndarray:
         """
         Clip the values of the target array to fall inside the bounds (closed interval).
 
@@ -204,9 +204,9 @@ class Bounds:
             Clipped numpy array with all its values inside the defined bounds.
 
         """
-        return np.clip(x, self.low, self.high)
+        return numpy.clip(x, self.low, self.high)
 
-    def points_in_bounds(self, x: np.ndarray) -> Union[np.ndarray, bool]:
+    def points_in_bounds(self, x: numpy.ndarray) -> Union[numpy.ndarray, bool]:
         """
         Check if the rows of the target array have all their coordinates inside \
         specified bounds.
@@ -225,8 +225,8 @@ class Bounds:
 
     def safe_margin(
         self,
-        low: Union[np.ndarray, float] = None,
-        high: Optional[Union[np.ndarray, float]] = None,
+        low: Union[numpy.ndarray, float] = None,
+        high: Optional[Union[numpy.ndarray, float]] = None,
         scale: float = 1.0,
     ) -> "Bounds":
         """

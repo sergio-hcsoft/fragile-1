@@ -33,6 +33,7 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata
 *.egg-info/
 .installed.cfg
 *.egg
@@ -117,7 +118,5 @@ ENV/
 
 # Notebooks by default are ignored
 *.ipynb
-# Project ignores
-fragile/experimental
-old_examples/
+
 data/
