@@ -8,3 +8,4 @@ numpy==1.18.1
 scipy==1.4.1
 psycopg2-binary==2.8.4
 setproctitle==1.1.10
+ipython==7.13.0

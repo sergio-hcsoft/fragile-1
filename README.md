@@ -33,8 +33,8 @@ mathematical tools for efficiently exploring state spaces.
 
 ## Getting started 
 
-Check out the [Getting started with Atari games](https://fragile.readthedocs.io/en/latest/resources/examples/01_getting_started.html) 
-section of the docs, or check out the examples folder.
+Check out the [getting started](https://fragile.readthedocs.io/en/latest/resources/examples/01_getting_started.html) 
+section of the docs, or check out the [examples](https://github.com/FragileTech/fragile/tree/master/examples) folder.
 
 ## Running in docker
 The fragile docker container will execute a Jupyter notebook accessible on port 8080 with password: `fragile`
@@ -57,7 +57,7 @@ Detailed installation instructions can be found in the [docs](https://fragile.re
 
 ## Documentation
 
-You can access the documentation on [Read The docs](https://fragile.readthedocs.io/en/latest/).
+You can access the documentation on [Read The Docs](https://fragile.readthedocs.io/en/latest/).
     
 ## Roadmap
 

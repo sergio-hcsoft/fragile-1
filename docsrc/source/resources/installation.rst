@@ -1,9 +1,11 @@
 .. include:: ../color_roles.rst
+
 Installation
 ========================
 
 Fragile has been tested in Ubuntu 18.04 and Ubuntu 19.04. It supports Python 3.6, 3.7 and 3.8.
-If you find any problems running it in a different OS or Python version please `open an issue <https://github.com/FragileTech/fragile/issues>`_.
+If you find any problems running it in a different OS or Python version please
+`open an issue <https://github.com/FragileTech/fragile/issues>`_.
 
 Installing from pip
 ^^^^^^^^^^^^^^^^^^^^^
@@ -56,7 +58,7 @@ To install ``fragile`` from source you can run:
 
 Running in Docker
 ^^^^^^^^^^^^^^^^^^
-The fragile docker container will execute a Jupyter notebook accessible on port 8080 with password: `fragile`
+The fragile docker container will execute a Jupyter notebook accessible on port 8080 with password: ``fragile``
 
 Pulling the Docker image from Docker Hub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,6 +82,7 @@ After cloning the repository run:
 
 
 You can also run the tests inside the docker container
+
 .. code-block:: bash
 
     make docker-test

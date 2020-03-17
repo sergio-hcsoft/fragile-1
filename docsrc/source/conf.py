@@ -26,8 +26,7 @@ class Mock(MagicMock):
 
 sys.path.insert(0, os.path.abspath("../../"))
 sys.setrecursionlimit(1500)
-MOCK_MODULES = ["pandas", "holoviews.streams",
-                "holoviews", "PIL", "numba", "pyarrow"]
+MOCK_MODULES = ["pandas", "holoviews.streams", "holoviews", "PIL", "numba", "pyarrow"]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # -- Project information -----------------------------------------------------
 
@@ -37,6 +36,7 @@ author = "Guillem Duran, Sergio Hernandez"
 
 # The short X.Y version
 from fragile import __version__
+
 version = __version__
 # The full version, including alpha/beta/rc tags
 release = __version__

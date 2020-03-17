@@ -3,26 +3,46 @@
 
 Environments
 ------------
-.. automodule:: fragile.distributed.env
+
+:class:`ParallelEnvironment`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.distributed.env.ParallelEnvironment
+    :members:
+
+:class:`ParallelFunction`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.distributed.env.ParallelFunction
+    :members:
+
+:class:`RayEnv`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.distributed.env.RayEnv
+    :members:
+
+:class:`RayFunction`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.distributed.env.RayFunction
     :members:
 
 Distributed Swarm
 -----------------
-.. automodule:: fragile.distributed.distributed_export
+
+:class:`DistributedExport`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.distributed.distributed_export.DistributedExport
     :members:
 
-.. automodule:: fragile.distributed.export_swarm
+:class:`ExportSwarm`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.distributed.export_swarm.ExportSwarm
     :members:
 
-Ray remote classes
-------------------
-
-Swarm
-^^^^^^^^^^^^
-.. automodule:: fragile.distributed.ray.export_swarm
+:class:`ExportedWalkers`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.distributed.export_swarm.ExportedWalkers
     :members:
 
-Environments
-^^^^^^^^^^^^
-.. automodule:: fragile.distributed.ray.env
+:class:`BestWalker`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.distributed.export_swarm.BestWalker
     :members:
