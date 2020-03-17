@@ -84,6 +84,7 @@ def resize_frame(
 
     """
     from PIL import Image
+
     frame = Image.fromarray(frame)
     frame = frame.convert(mode).resize(size=(width, height))
     return numpy.array(frame)

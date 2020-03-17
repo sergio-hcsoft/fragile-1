@@ -10,7 +10,7 @@ Welcome to Fragile's documentation!
    :maxdepth: 5
    :caption: Getting started:
 
-   resources/examples/00_installation.rst
+   resources/installation.rst
    resources/architecture.rst
    resources/examples/01_getting_started.rst
 
