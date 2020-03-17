@@ -1,6 +1,6 @@
 .. include:: ../color_roles.rst
 Function minimization example
------------------------------
+=============================
 .. note::
     The notebook version of this example is available in the
     `examples <https://github.com/FragileTech/fragile/tree/master/examples>`_
@@ -13,8 +13,8 @@ use case. It provide environments and models that help explore function
 landscapes in order to find points that meet a desired Min/Max
 condition.
 
-Testing a ``FunctionMapper`` on a benchmark function
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Testing a :swarm:`FunctionMapper` on a benchmark function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :swarm:`FunctionMapper` is a :class:`Swarm` with updated default parameters
 for solving minimization problems. It should be used with a
@@ -192,7 +192,7 @@ supports.
 This significantly increases the performance of the algorithm at the
 expense of using more computational resources.
 
-Defining a new problem using a :class:`Function`
+Defining a new problem using a :env:`Function`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The objective function

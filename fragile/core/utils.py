@@ -1,7 +1,6 @@
 from typing import Any, Callable, Dict, Generator, Tuple, Union
 
 import numpy
-from PIL import Image
 from plangym.env import Environment, ParallelEnvironment
 
 try:
@@ -84,6 +83,8 @@ def resize_frame(
         The resized frame that matches the provided width and height.
 
     """
+    from PIL import Image
+
     frame = Image.fromarray(frame)
     frame = frame.convert(mode).resize(size=(width, height))
     return numpy.array(frame)

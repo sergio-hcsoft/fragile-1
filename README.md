@@ -1,19 +1,20 @@
 # Fragile
 [![Travis build status](https://travis-ci.com/FragileTech/fragile.svg)](https://travis-ci.com/FragileTech/fragile)
+[![Documentation Status](https://readthedocs.org/projects/fragile/badge/?version=latest)](https://fragile.readthedocs.io/en/latest/?badge=latest)
 [![Code coverage](https://codecov.io/github/FragileTech/fragile/coverage.svg)](https://codecov.io/github/FragileTech/fragile)
 [![PyPI package](https://badgen.net/pypi/v/fragile)](https://pypi.org/project/fragile/)
 [![Latest docker image](https://badgen.net/docker/pulls/fragiletech/fragile)](https://hub.docker.com/r/fragiletech/fragile/tags)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![license: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![unstable](https://badgen.net/badge/stability/unstable/E5AE13)](http://github.com/badges/stability-badges)
+[![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
-Fragile is a framework for developing algorithms inspired by the Fractal AI theory and testing them at scale.
+Fragile is a framework for developing optimization algorithms inspired by Fractal AI and running them at scale.
 
 ## Features
 
 - Provides classes and an API for easily developing planning algorithms
 - Provides an classes and an API for function optimization
-- Build in visuzalizations of the sampling process
+- Build in visualizations of the sampling process
 - Fully documented and tested
 - Support for parallelization and distributed search processes
 
@@ -32,59 +33,31 @@ mathematical tools for efficiently exploring state spaces.
 
 ## Getting started 
 
-Check out the [Getting started with Atari games](https://fragiletech.github.io/fragile/resources/examples/examples_index.html#getting-started) 
+Check out the [Getting started with Atari games](https://fragile.readthedocs.io/en/latest/resources/examples/01_getting_started.html) 
 section of the docs, or check out the examples folder.
 
 ## Running in docker
-The docker container will execute a Jupyter notebook accessible on port 8080 with password: `fragile`
+The fragile docker container will execute a Jupyter notebook accessible on port 8080 with password: `fragile`
+
+You can pull a docker image from Docker Hub running:
 
 ```bash
-   make docker build
-   docker run -d -p 8080:8080 -v PATH_TO_REPO/fragile fragile 
+    docker pull fragiletech/fragile:version-tag
 ```
 
-You can also run the tests inside the docker container
-```bash
-    make docker-test
-```
+Where version-tag corresponds to the fragile version that will be installed in the pulled image.
 
 ## Installation
 This framework has been tested in Ubuntu 18.04 and supports Python 3.6, 3.7 and 3.8. 
 If you find any problems running it in a different OS or Python version please open an issue.
 
-It can be install with `pip install fragile`.
+It can be installed with `pip install fragile["all"]`.
 
-### Building from source
-
-Please take a look at the Dockerfile to find out about all the dependencies, and the detailed 
-installation process.
-
-```bash
-   git clone https://github.com/FragileTech/fragile.git
-   cd fragile
-   pip3 install -r requirements.txt
-   pip3 install -r requirements-viz.txt
-   pip3 install -e .
-```
+Detailed installation instructions can be found in the [docs](https://fragile.readthedocs.io/en/latest/resources/installation.html).
 
 ## Documentation
 
-You can access the documentation on [GitHub Pages](https://fragiletech.github.io/fragile/).
-
-* Building the documentation:
-    
-```bash
-  cd fragile/docs
-  make html
-``` 
-
-* Accessing the documentation locally:
-    - Launch an http server:
-    ```bash
-      cd build/html # assuming you are inside fragile/docs
-      python3 -m http.server      
-    ```
-    - Visit [http://0.0.0.0:8000](http://0.0.0.0:8000) to display the documentation.
+You can access the documentation on [Read The docs](https://fragile.readthedocs.io/en/latest/).
     
 ## Roadmap
 
@@ -117,4 +90,4 @@ If you use this framework in your research please cite us as:
 This project is currently licensed under AGPLv3.0. 
 
 However, if you are considering using it for applications that require a more permissive license, 
-please let me know in this [Issue](https://github.com/Guillemdb/fragile/issues/5)
+please let me know in this [Issue](https://github.com/Guillemdb/fragile/issues/5).

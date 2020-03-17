@@ -1,5 +1,5 @@
-Visualizing a ``Swarm``
------------------------
+Visualizing a Swarm
+=======================
 
 .. note::
     The notebook version of this example is available in the `examples` as  ``03_visualizing_a_swarm.ipynb``

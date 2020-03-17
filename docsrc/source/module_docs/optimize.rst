@@ -1,6 +1,3 @@
-Function Optimization
-=====================
-
 Environments
 ------------
 

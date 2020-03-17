@@ -8,15 +8,47 @@ Welcome to Fragile's documentation!
 
 .. toctree::
    :maxdepth: 5
-   :caption: Contents:
+   :caption: Getting started:
 
+   resources/installation.rst
    resources/architecture.rst
+   resources/examples/01_getting_started.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Examples:
+
    resources/examples/examples_index.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Fragile Core:
+
    module_docs/core.rst
-   module_docs/atari.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Optimize module:
+
    module_docs/optimize.rst
-   module_docs/distributed.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Data visualization:
+
    module_docs/dataviz.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Distributed module:
+
+   module_docs/distributed.rst
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Atari games:
+
+   module_docs/atari.rst
 
 
 Indices and tables

@@ -1,6 +1,6 @@
 .. include:: ../color_roles.rst
-Getting started
----------------
+Introduction to fragile
+========================
 .. note::
     The notebook version of this example is available in the
     `examples <https://github.com/FragileTech/fragile/tree/master/examples>`_
@@ -8,11 +8,11 @@ Getting started
 
 This is a tutorial that explains how to crate a :swarm:`Swarm` to sample
 Atari games from the `OpenAI gym <https://gym.openai.com>`_ library. It covers how to
-instantiate a :swarm:`Swarm` and the most important parameters needed to
+instantiate a :class:`Swarm` and the most important parameters needed to
 control the sampling process.
 
-Structure of a ``Swarm``
-^^^^^^^^^^^^^^^^^^^^^^^^
+Structure of a :swarm:`Swarm`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :swarm:`Swarm` is the class that implements the algorithm’s evolution
 loop, and controls all the other classes involved in solving a given
@@ -43,8 +43,8 @@ Choosing to pass callables to the :swarm:`Swarm` instead of instances is a
 design decision that simplifies the deployment at scale in a cluster,
 because it avoids writing tricky serialization code for all the classes.
 
-Defining the ``Environment``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Defining the :env:`Environment`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For playing Atari games we will use the interface provided by the
 `plangym <https://github.com/Guillemdb/plangym>`__ package. It is a
@@ -84,8 +84,8 @@ an instance of :env:`fragile.BaseEnvironment`.
     from fragile.atari.env import AtariEnv
     env_callable = lambda: AtariEnv(env=env)
 
-Defining the ``Model``
-^^^^^^^^^^^^^^^^^^^^^^
+Defining the :model:`Model`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :model:`Model` defines the policy that will be used to sample the :env:`Environment`. In this tutorial we will be using a random sampling strategy over a discrete uniform distribution. This means that every time we sample an action, the :model:`Model` will return an integer in the range \[0, N_actions\] for each state.
 
@@ -101,8 +101,8 @@ The model callable passed to the :swarm:`Swarm` takes as a parameter the :env:`E
     dt = GaussianDt(min_dt=3, max_dt=1000, loc_dt=4, scale_dt=2)
     model_callable = lambda env: DiscreteUniform(env=env, critic=dt)
 
-Storing the sampled data inside a ``HistoryTree``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Storing the sampled data inside a :tree:`HistoryTree`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is possible to keep track of the sampled data by using a
 :tree:`HistoryTree`. This data structure will construct a directed acyclic
@@ -121,8 +121,8 @@ In order to save memory we will be setting it to ``True``.
     from fragile.core import HistoryTree
     prune_tree = True
 
-Initializing a ``Swarm``
-^^^^^^^^^^^^^^^^^^^^^^^^
+Initializing a Swarm
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once we have defined the problem-specific callables for the :model:`Model`
 and the :env:`Environment`, we need to define the parameters used by the
@@ -532,13 +532,13 @@ refer to the ``dataviz`` module tutorial.
 .. image::
     ../images/01_pacman_output.gif
 
-Running the ``Swarm``
-^^^^^^^^^^^^^^^^^^^^^
+Running the Swarm
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order to execute the algorithm we only need to call ``run_swarm``. It
-is possible to display the internal data of the :swarm:`Swarm` by using the
+is possible to display the internal data of the :class:`Swarm` by using the
 ``print_every`` parameter. This parameter indicates the number of
-iterations that will pass before printing the :swarm:`Swarm`.
+iterations that will pass before printing the :class:`Swarm`.
 
 .. code:: ipython3
 
