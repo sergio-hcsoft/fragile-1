@@ -1,9 +1,10 @@
 matplotlib==3.2.0
 param==1.9.3
-pandas==1.0.1
-panel==0.8.0
+pandas==1.0.3
+panel==0.9.1
 holoviews==1.12.7
 bokeh==1.4.0
 hvplot==0.5.2
-plotly==4.5.3
+plotly==4.5.4
 streamz==0.5.2
+selenium==3.141.0

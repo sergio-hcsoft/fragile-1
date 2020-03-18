@@ -142,6 +142,7 @@ class SwarmViz(BaseWrapper):
             None.
 
         """
+        report_interval = self.report_interval if report_interval is None else report_interval
         self.swarm.reset(
             model_states=model_states, env_states=env_states, walkers_states=walkers_states
         )

@@ -24,6 +24,7 @@ extras = {
         "plotly",
         "streamz",
         "param",
+        "selenium",
     ],
     "test": ["pytest>=5.3.5", "hypothesis==5.6.0"],
     "ray": ["ray", "setproctitle"],
@@ -57,6 +58,8 @@ setup(
         "pyarrow",
         "scikit-learn",
         "numba",
+        "xxhash",
+        "PyYAML",
     ],
     package_data={"": ["README.md"]},
     classifiers=[
