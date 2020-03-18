@@ -183,7 +183,7 @@ class Table(StreamingPlot):
         """
         default_bokeh_opts = {
             "height": 350,
-            "width": 400,
+            "width": 350,
         }
         default_mpl_opts = {}
         mpl_opts, bokeh_opts = self.update_default_opts(

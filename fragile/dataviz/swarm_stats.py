@@ -74,7 +74,7 @@ class SummaryTable(Table):
             clones = float(swarm.walkers.states.will_clone.sum()) / len(swarm)
             data = pandas.DataFrame(
                 {
-                    "Epoch": [int(swarm.walkers.n_iters)],
+                    "Epoch": [int(swarm.walkers.epoch)],
                     "Best Reward": ["{:.4f}".format(float(swarm.best_reward))],
                     "Deaths": ["{:.2f}%".format(100 * deaths)],
                     "Clones": ["{:.2f}%".format(100 * clones)],
@@ -105,7 +105,7 @@ class AtariBestFrame(RGB):
             *args: Passed to :class:`RGB`.__init__
             **kwargs: Passed to :class:`RGB`.__init__
         """
-        default_bokeh_opts = {"width": 320, "height": 210}
+        default_bokeh_opts = {"width": 160, "height": 210}
         default_mpl_opts = {}
         mpl_opts, bokeh_opts = self.update_default_opts(
             default_mpl_opts, mpl_opts, default_bokeh_opts, bokeh_opts
@@ -181,7 +181,7 @@ class BestReward(Curve):
             data = pandas.DataFrame({"x": [], "best_val": []}, columns=["x", "best_val"])
         else:
             data = pandas.DataFrame(
-                {"x": [int(swarm.walkers.n_iters)], "best_val": [float(swarm.best_reward)]},
+                {"x": [int(swarm.walkers.epoch)], "best_val": [float(swarm.best_reward)]},
                 columns=["x", "best_val"],
             )
         return data

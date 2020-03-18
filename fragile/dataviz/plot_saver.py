@@ -3,6 +3,8 @@ import os
 import holoviews
 
 from fragile.core.base_classes import BaseWrapper
+from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
+from fragile.core.utils import clear_output
 from fragile.dataviz.swarm_viz import SwarmViz
 
 
@@ -37,31 +39,33 @@ class PlotSaver(BaseWrapper):
         if not isinstance(swarm, SwarmViz):
             raise TypeError("swarm must be an instance of SwarmViz. Got %s instead" % type(swarm))
         super(PlotSaver, self).__init__(data=swarm, name="__swarm")
-        self._swarm_viz = swarm
+        # self._swarm_viz = swarm
         self.output_path = output_path
         self._save_kwargs = kwargs
         self._fmt = fmt
-        self._wrapped_plot = self.plot()
+        self.swarm_plot = self.plot()
 
-    def __getattr__(self, item):
+    def ____getattr__(self, item):
         try:
-            return getattr(self._swarm_viz, item)
-        except AttributeError:
-            return getattr(self._swarm_viz.swarm, item)
+            return self.unwrapped.__getattribute__(item)
+        except AttributeError as e:
+            if not isinstance(self.unwrapped, BaseWrapper):
+                raise e
+            return getattr(self.unwrapped, item)
 
     def run_step(self):
         """
         Compute one iteration of the :class:`Swarm` evolution process and \
         update all the data structures, and stream the data to the created plots.
         """
-        self._swarm_viz.run_step()
-        if self._swarm_viz.epoch % self.stream_interval == 0:
-            self._swarm_viz.stream_plots()
+        self.unwrapped.run_step()
+        if self.unwrapped.epoch % self.stream_interval == 0:
+            self.stream_plots()
             self.save_plot()
 
     def _get_file_name(self) -> str:
-        swarmviz_name = self._swarm_viz.__class__.__name__.lower()
-        filename = "%s_%s.%s" % (swarmviz_name, self.swarm.epoch, self._fmt)
+        swarmviz_name = self.unwrapped.__class__.__name__.lower()
+        filename = "%s_%05d.%s" % (swarmviz_name, self.swarm.epoch, self._fmt)
         return filename
 
     def save_plot(self):
@@ -69,9 +73,39 @@ class PlotSaver(BaseWrapper):
         filename = self._get_file_name()
         filepath = os.path.join(self.output_path, filename)
         holoviews.save(
-            self._wrapped_plot,
+            self.swarm_plot,
             filename=filepath,
             fmt=self._fmt,
             **self._save_kwargs,
             backend=holoviews.Store.current_backend
         )
+
+    def run(
+        self,
+        env_states: StatesEnv = None,
+        model_states: StatesModel = None,
+        walkers_states: StatesWalkers = None,
+        print_every: int = 1e100,
+    ):
+        """
+        Run a new search process.
+
+        Args:
+            env_states: :class:`StatesEnv` that define the initial state of the model.
+            model_states: :class:`StatesEModel that define the initial state of the environment.
+            walkers_states: :class:`StatesWalkers` that define the internal states of the walkers.
+            print_every: Display the algorithm progress every `print_every` epochs.
+        Returns:
+            None.
+
+        """
+        self.reset(model_states=model_states, env_states=env_states, walkers_states=walkers_states)
+        while not self.calculate_end_condition():
+            try:
+                self.run_step()
+                if self.epoch % print_every == 0 and self.epoch > 0:
+                    print(self)
+                    clear_output(True)
+                self.increase_epoch()
+            except KeyboardInterrupt:
+                break

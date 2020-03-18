@@ -21,7 +21,7 @@ def create_eggholder_swarm():
         return NormalContinuous(scale=10, loc=0.0, bounds=env.bounds)
 
     swarm = FunctionMapper(
-        env=EggHolder, model=gaussian_model, n_walkers=20, max_iters=10, start_same_pos=True,
+        env=EggHolder, model=gaussian_model, n_walkers=20, max_epochs=10, start_same_pos=True,
     )
     return swarm
 
@@ -33,7 +33,7 @@ def create_atari_swarm():
         model=lambda x: DiscreteUniform(env=x, critic=dt),
         env=lambda: DiscreteEnv(env),
         n_walkers=10,
-        max_iters=20,
+        max_epochs=20,
         reward_scale=2,
         reward_limit=200,
     )

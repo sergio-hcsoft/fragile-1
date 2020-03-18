@@ -13,12 +13,14 @@ from tests.dataviz.test_swarm_viz import swarm_dict, swarm_names, backends
 class TestPlotSaver:
     @pytest.fixture(params=tuple(product(swarm_names, backends)), scope="class")
     def plot_saver(self, request):
-        swarm_name, backend = request.param
-        holoviews.extension(backend)
-        swarm_viz = swarm_dict.get(swarm_name)()
-        swarm_viz.stream_interval = 1
-        plot_saver = PlotSaver(swarm_viz, output_path="Miau_db")
-        return plot_saver
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            swarm_name, backend = request.param
+            holoviews.extension(backend)
+            swarm_viz = swarm_dict.get(swarm_name)()
+            swarm_viz.stream_interval = 1
+            plot_saver = PlotSaver(swarm_viz, output_path="Miau_db")
+            return plot_saver
 
     def test_get_file_name(self, plot_saver):
         with warnings.catch_warnings():
@@ -28,7 +30,8 @@ class TestPlotSaver:
             name, extension = filename.split(".")
             assert extension == plot_saver._fmt
             class_name, epoch = name.split("_")
-            assert class_name == plot_saver._swarm_viz.__class__.__name__.lower()
+            assert class_name == plot_saver.unwrapped.__class__.__name__.lower()
+            assert len(epoch) == 5
             assert int(epoch) == plot_saver.epoch
 
     def test_run_step(self, plot_saver):

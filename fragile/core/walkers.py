@@ -33,6 +33,7 @@ class SimpleWalkers(BaseWalkers):
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
         accumulate_rewards: bool = True,
+        max_epochs: int = None,
         distance_function: Optional[
             Callable[[numpy.ndarray, numpy.ndarray], numpy.ndarray]
         ] = None,
@@ -64,6 +65,8 @@ class SimpleWalkers(BaseWalkers):
                           "model", to reference the `env_states` and the \
                           `model_states`. Its values are a set of strings with \
                           the names of the attributes that will not be cloned.
+            max_epochs: Maximum number of iterations that the walkers are allowed \
+                       to perform.
             kwargs: Additional attributes stored in the :class:`StatesWalkers`.
 
         """
@@ -72,6 +75,7 @@ class SimpleWalkers(BaseWalkers):
             env_state_params=env_state_params,
             model_state_params=model_state_params,
             accumulate_rewards=accumulate_rewards,
+            max_epochs=max_epochs,
         )
 
         def l2_norm(x: numpy.ndarray, y: numpy.ndarray) -> numpy.ndarray:
