@@ -104,10 +104,10 @@ class TestWalkers:
         assert walkers.calculate_end_condition()
         walkers.env_states.update(oobs=numpy.zeros(walkers.n))
         assert not walkers.calculate_end_condition()
-        walkers.max_iters = 10
-        walkers.n_iters = 8
+        walkers.max_epochs = 10
+        walkers._epoch = 8
         assert not walkers.calculate_end_condition()
-        walkers.n_iters = 11
+        walkers._epoch = 11
         assert walkers.calculate_end_condition()
 
     def test_alive_compas(self, walkers):

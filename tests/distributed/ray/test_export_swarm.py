@@ -16,7 +16,7 @@ def create_cartpole_swarm():
         env=lambda: DiscreteEnv(ClassicControl()),
         reward_limit=51,
         n_walkers=50,
-        max_iters=100,
+        max_epochs=100,
         reward_scale=2,
     )
     return swarm

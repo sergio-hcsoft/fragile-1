@@ -1,4 +1,6 @@
 """Wrappers to visualize the internal data of the :class:`Swarm`."""
+import holoviews
+
 from fragile.core.base_classes import BaseWrapper
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
 from fragile.core.swarm import Swarm
@@ -99,9 +101,6 @@ class SwarmViz(BaseWrapper):
         self.stream_interval = stream_interval
         self.columns = columns
 
-    def __getattr__(self, item):
-        return getattr(self.swarm, item)
-
     def __repr__(self):
         return self.swarm.__repr__()
 
@@ -145,16 +144,18 @@ class SwarmViz(BaseWrapper):
         self.swarm.reset(
             model_states=model_states, env_states=env_states, walkers_states=walkers_states
         )
-        self.swarm.epoch = 0
         while not self.calculate_end_condition():
             try:
                 self.run_step()
-                if self.swarm.epoch % print_every == 0 and self.epoch > 0:
+                if self.epoch % print_every == 0 and self.epoch > 0:
                     print(self)
                     clear_output(True)
-                self.swarm.epoch += 1
+                self.increase_epoch()
             except KeyboardInterrupt:
                 break
+        # Stream the last step if it was not streamed
+        if not self.epoch - 1 % self.stream_interval == 0:
+            self.stream_plots()
 
     def run_step(self):
         """
@@ -162,7 +163,7 @@ class SwarmViz(BaseWrapper):
         update all the data structures, and stream the data to the created plots.
         """
         self.swarm.run_step()
-        if self.walkers.n_iters % self.stream_interval == 0:
+        if self.epoch % self.stream_interval == 0:
             self.stream_plots()
 
     def stream_plots(self):
@@ -177,6 +178,8 @@ class SwarmViz(BaseWrapper):
         plot = plots[0]
         for p in plots[1:]:
             plot = plot + p
+        if holoviews.Store.current_backend == "matplotlib":
+            return plot.cols(self.columns).opts(fig_size=125)
         return plot.cols(self.columns)
 
 

@@ -396,6 +396,7 @@ class BaseWalkers(StatesOwner):
         env_state_params: dict,
         model_state_params: dict,
         accumulate_rewards: bool = True,
+        max_epochs: int = None,
     ):
         """
         Initialize a `BaseWalkers`.
@@ -409,9 +410,13 @@ class BaseWalkers(StatesOwner):
              of a :class:`Model`.
             accumulate_rewards: If `True` accumulate the rewards after each step
                 of the environment.
+            max_epochs: Maximum number of iterations that the walkers are allowed \
+                       to perform.
 
         """
         super(BaseWalkers, self).__init__()
+        self.max_epochs = max_epochs if max_epochs is not None else 1e12
+        self._epoch = 0
         self.n_walkers = n_walkers
         self.id_walkers = None
         self.death_cond = None
@@ -427,6 +432,11 @@ class BaseWalkers(StatesOwner):
     def n(self) -> int:
         """Return the number of walkers."""
         return self.n_walkers
+
+    @property
+    def epoch(self) -> int:
+        """Return the current epoch of the algorithm."""
+        return self._epoch
 
     @property
     def env_states(self) -> StatesEnv:
@@ -552,7 +562,7 @@ class BaseSwarm:
         self._model = None
         self._env = None
         self.tree = None
-        self.epoch = 0
+        self._epoch = 0
 
         self.init_swarm(
             env_callable=env,
@@ -564,6 +574,21 @@ class BaseSwarm:
             *args,
             **kwargs
         )
+
+    @property
+    def epoch(self) -> int:
+        """Return the current epoch of the search algorithm."""
+        return self._epoch
+
+    @property
+    def max_epochs(self) -> int:
+        """Return the maximum number allowed of epochs the algorithm."""
+        return self.walkers.max_epochs
+
+    @max_epochs.setter
+    def max_epochs(self, val) -> None:
+        """Set the maximum number allowed of epochs the algorithm."""
+        self.walkers.max_epochs = val
 
     @property
     def env(self) -> BaseEnvironment:
@@ -585,6 +610,11 @@ class BaseSwarm:
         evolution process.
         """
         return self._walkers
+
+    def increase_epoch(self) -> None:
+        """Increment the current epoch of the algorithm."""
+        self._epoch += 1
+        self.walkers._epoch += 1
 
     def reset(
         self,
@@ -703,13 +733,7 @@ class BaseWrapper:
         return self.unwrapped.__len__()
 
     def __getattr__(self, attr):
-        orig_attr = self.unwrapped.__getattribute__(attr)
-        if callable(orig_attr):
-
-            def hooked(*args, **kwargs):
-                result = orig_attr(*args, **kwargs)
-                return result
-
-            return hooked
-        else:
-            return orig_attr
+        # If a BaseWrapper is being wrapped forward the attribute to it
+        if isinstance(self.unwrapped, BaseWrapper):
+            return getattr(self.unwrapped, attr)
+        return self.unwrapped.__getattribute__(attr)

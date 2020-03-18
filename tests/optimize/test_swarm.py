@@ -32,7 +32,7 @@ def mapper():
 def finished_swarm(mapper):
     mapper.walkers.reset()
     mapper.reset()
-    mapper.walkers.max_iters = 500
+    mapper.walkers.max_epochs = 500
     mapper.run()
     return mapper
 
@@ -44,7 +44,7 @@ class TestFunctionMapper:
     def test_score_gets_higher(self, finished_swarm):
         reward = finished_swarm.walkers.states.cum_rewards.max().item()
         assert reward <= 60, "Iters: {}, rewards: {}".format(
-            finished_swarm.walkers.n_iters, finished_swarm.walkers.cum_rewards
+            finished_swarm.walkers.epoch, finished_swarm.walkers.cum_rewards
         )
 
     def test_start_same_pos(self, mapper):

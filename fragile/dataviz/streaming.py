@@ -2,6 +2,7 @@
 from typing import Any, Callable, Tuple, Union
 
 import holoviews
+from holoviews import Store
 from holoviews.streams import Buffer, Pipe
 import numpy
 from scipy.interpolate import griddata
@@ -14,7 +15,15 @@ class Plot:
 
     name = ""
 
-    def __init__(self, plot: Callable, data: Any = None, *args, **kwargs):
+    def __init__(
+        self,
+        plot: Callable,
+        data: Any = None,
+        bokeh_opts: dict = None,
+        mpl_opts: dict = None,
+        *args,
+        **kwargs
+    ):
         """
         Initialize a :class:`Plot`.
 
@@ -22,11 +31,33 @@ class Plot:
             plot: Callable that returns an holoviews plot.
             data: Passed to :class:`Plot`.``get_plot_data``. Contains the necessary data to \
                   initialize the plot.
+            bokeh_opts: Default options for the plot when rendered using the \
+                       "bokeh" backend.
+            mpl_opts: Default options for the plot when rendered using the \
+                    "matplotlib" backend.
             args: Passed to ``opts``.
             kwargs: Passed to ``opts``.
         """
         self.plot = None
+        self.bokeh_opts = bokeh_opts if bokeh_opts is not None else {}
+        self.mpl_opts = mpl_opts if mpl_opts is not None else {}
         self.init_plot(plot, data, *args, **kwargs)
+
+    @staticmethod
+    def update_default_opts(mpl_default, passed_mpl, bokeh_default, passed_bokeh):
+        """Update the backend specific parameter default values with external supplied defaults."""
+        if passed_bokeh is None:
+            bokeh_opts = bokeh_default
+        else:
+            bokeh_default.update(passed_bokeh)
+            bokeh_opts = bokeh_default
+
+        if passed_mpl is None:
+            mpl_opts = mpl_default
+        else:
+            mpl_default.update(passed_mpl)
+            mpl_opts = mpl_default
+        return mpl_opts, bokeh_opts
 
     def get_plot_data(self, data: Any):
         """Perform the necessary data wrangling for plotting the data."""
@@ -46,13 +77,26 @@ class Plot:
         """
         data = self.get_plot_data(data)
         self.plot = plot(data)
-        self.opts(*args, **kwargs)
+        opt_dict = self.update_kwargs(**kwargs)
+        self.opts(*args, **opt_dict)
+
+    def update_kwargs(self, **kwargs):
+        """Update the supplied options kwargs with backend specific parameters."""
+        if Store.current_backend == "bokeh":
+            opt_dict = dict(self.bokeh_opts)
+        elif Store.current_backend == "matplotlib":
+            opt_dict = dict(self.mpl_opts)
+        else:
+            opt_dict = {}
+        opt_dict.update(kwargs)
+        return opt_dict
 
     def opts(self, *args, **kwargs):
         """Update the plot parameters. Same as ``holoviews`` ``opts``."""
         if self.plot is None:
             return
-        self.plot = self.plot.opts(*args, **kwargs)
+        opt_dict = self.update_kwargs(**kwargs)
+        self.plot = self.plot.opts(*args, **opt_dict)
 
 
 class StreamingPlot(Plot):
@@ -114,19 +158,45 @@ class Table(StreamingPlot):
 
     name = "table"
 
-    def __init__(self, data=None, stream=Pipe, *args, **kwargs):
+    def __init__(
+        self,
+        data=None,
+        stream=Pipe,
+        bokeh_opts: dict = None,
+        mpl_opts: dict = None,
+        *args,
+        **kwargs
+    ):
         """
         Initialize a :class:`Table`.
 
         Args:
             data: Data to initialize the stream.
             stream: :class:`holoviews.stream` type. Defaults to :class:`Pipe`.
+            bokeh_opts: Default options for the plot when rendered using the \
+                       "bokeh" backend.
+            mpl_opts: Default options for the plot when rendered using the \
+                    "matplotlib" backend.
             *args: Passed to :class:`StreamingPlot`.
             **kwargs: Passed to :class:`StreamingPlot`.
 
         """
+        default_bokeh_opts = {
+            "height": 350,
+            "width": 350,
+        }
+        default_mpl_opts = {}
+        mpl_opts, bokeh_opts = self.update_default_opts(
+            default_mpl_opts, mpl_opts, default_bokeh_opts, bokeh_opts
+        )
         super(Table, self).__init__(
-            stream=stream, plot=holoviews.Table, data=data, *args, **kwargs
+            stream=stream,
+            plot=holoviews.Table,
+            data=data,
+            mpl_opts=mpl_opts,
+            bokeh_opts=bokeh_opts,
+            *args,
+            **kwargs
         )
 
     def opts(self, *args, **kwargs):
@@ -136,7 +206,8 @@ class Table(StreamingPlot):
         The default values updates the plot axes independently when being \
         displayed in a :class:`Holomap`.
         """
-        self.plot = self.plot.opts(holoviews.opts.Table(*args, **kwargs))
+        plot_opts = self.update_kwargs(**kwargs)
+        self.plot = self.plot.opts(holoviews.opts.Table(*args, **plot_opts))
 
 
 class RGB(StreamingPlot):
@@ -157,7 +228,10 @@ class RGB(StreamingPlot):
         The default values updates the plot axes independently when being \
         displayed in a :class:`Holomap`.
         """
-        self.plot = self.plot.opts(holoviews.opts.RGB(xaxis=xaxis, yaxis=yaxis, *args, **kwargs))
+        plot_opts = self.update_kwargs(**kwargs)
+        self.plot = self.plot.opts(
+            holoviews.opts.RGB(xaxis=xaxis, yaxis=yaxis, *args, **plot_opts)
+        )
 
 
 class Curve(StreamingPlot):
@@ -170,7 +244,12 @@ class Curve(StreamingPlot):
     name = "curve"
 
     def __init__(
-        self, buffer_length: int = 10000, index: bool = False, data=None,
+        self,
+        buffer_length: int = 10000,
+        index: bool = False,
+        data=None,
+        bokeh_opts: dict = None,
+        mpl_opts: dict = None,
     ):
         """
         Initialize a :class:`Curve`.
@@ -180,20 +259,39 @@ class Curve(StreamingPlot):
             index: Passed to the :class:`Buffer` that streams data to the plot.
             data: Passed to :class:`Plot`.``get_plot_data``. Contains the necessary data to \
                   initialize the plot.
+            bokeh_opts: Default options for the plot when rendered using the \
+                       "bokeh" backend.
+            mpl_opts: Default options for the plot when rendered using the \
+                    "matplotlib" backend.
         """
 
         def get_stream(data):
             return Buffer(data, length=buffer_length, index=index)
 
-        super(Curve, self).__init__(stream=get_stream, plot=holoviews.Curve, data=data)
+        default_bokeh_opts = {
+            "height": 350,
+            "width": 400,
+            "shared_axes": False,
+            "tools": ["hover"],
+        }
+        default_mpl_opts = {}
+        mpl_opts, bokeh_opts = self.update_default_opts(
+            default_mpl_opts, mpl_opts, default_bokeh_opts, bokeh_opts
+        )
+
+        super(Curve, self).__init__(
+            stream=get_stream,
+            plot=holoviews.Curve,
+            data=data,
+            mpl_opts=mpl_opts,
+            bokeh_opts=bokeh_opts,
+        )
 
     def opts(
         self,
         title="",
-        tools="default",
         xlabel: str = "x",
         ylabel: str = "y",
-        shared_axes: bool = False,
         framewise: bool = True,
         axiswise: bool = True,
         normalize: bool = True,
@@ -206,26 +304,19 @@ class Curve(StreamingPlot):
         The default values updates the plot axes independently when being \
         displayed in a :class:`Holomap`.
         """
-        tools = tools if tools != "default" else ["hover"]
+        kwargs = self.update_kwargs(**kwargs)
         self.plot = self.plot.opts(
             holoviews.opts.Curve(
-                tools=tools,
                 title=title,
                 xlabel=xlabel,
                 ylabel=ylabel,
-                shared_axes=shared_axes,
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
                 *args,
-                *kwargs
+                **kwargs
             ),
-            holoviews.opts.NdOverlay(
-                normalize=normalize,
-                framewise=framewise,
-                axiswise=axiswise,
-                shared_axes=shared_axes,
-            ),
+            holoviews.opts.NdOverlay(normalize=normalize, framewise=framewise, axiswise=axiswise,),
         )
 
 
@@ -238,17 +329,34 @@ class Histogram(StreamingPlot):
 
     name = "histogram"
 
-    def __init__(self, n_bins: int = 20, data=None):
+    def __init__(
+        self, n_bins: int = 20, data=None, bokeh_opts: dict = None, mpl_opts: dict = None,
+    ):
         """
         Initialize a :class:`Histogram`.
 
         Args:
             n_bins: Number of bins of the histogram that will be plotted.
             data: Used to initialize the plot.
+            bokeh_opts: Default options for the plot when rendered using the \
+                       "bokeh" backend.
+            mpl_opts: Default options for the plot when rendered using the \
+                    "matplotlib" backend.
         """
         self.n_bins = n_bins
         self.xlim = (None, None)
-        super(Histogram, self).__init__(stream=Pipe, plot=self.plot_histogram, data=data)
+        default_bokeh_opts = {"shared_axes": False, "tools": ["hover"]}
+        default_mpl_opts = {}
+        mpl_opts, bokeh_opts = self.update_default_opts(
+            default_mpl_opts, mpl_opts, default_bokeh_opts, bokeh_opts
+        )
+        super(Histogram, self).__init__(
+            stream=Pipe,
+            plot=self.plot_histogram,
+            data=data,
+            mpl_opts=mpl_opts,
+            bokeh_opts=bokeh_opts,
+        )
 
     @staticmethod
     def plot_histogram(data):
@@ -263,17 +371,15 @@ class Histogram(StreamingPlot):
         Returns:
             Histogram plot.
 
-        """ ""
+        """
         plot_data, xlim = data
         return holoviews.Histogram(plot_data).redim(x=holoviews.Dimension("x", range=xlim))
 
     def opts(
         self,
         title="",
-        tools="default",
         xlabel: str = "x",
         ylabel: str = "count",
-        shared_axes: bool = False,
         framewise: bool = True,
         axiswise: bool = True,
         normalize: bool = True,
@@ -286,26 +392,19 @@ class Histogram(StreamingPlot):
         The default values updates the plot axes independently when being \
         displayed in a :class:`Holomap`.
         """
-        tools = tools if tools != "default" else ["hover"]
+        kwargs = self.update_kwargs(**kwargs)
         self.plot = self.plot.opts(
             holoviews.opts.Histogram(
-                tools=tools,
                 title=title,
                 xlabel=xlabel,
                 ylabel=ylabel,
-                shared_axes=shared_axes,
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
                 *args,
-                *kwargs
+                **kwargs
             ),
-            holoviews.opts.NdOverlay(
-                normalize=normalize,
-                framewise=framewise,
-                axiswise=axiswise,
-                shared_axes=shared_axes,
-            ),
+            holoviews.opts.NdOverlay(normalize=normalize, framewise=framewise, axiswise=axiswise,),
         )
 
     def get_plot_data(
@@ -340,12 +439,16 @@ class Bivariate(StreamingPlot):
 
     name = "bivariate"
 
-    def __init__(self, data=None, *args, **kwargs):
+    def __init__(self, data=None, bokeh_opts=None, mpl_opts=None, *args, **kwargs):
         """
         Initialize a :class:`Bivariate`.
 
         Args:
             data: Passed to ``holoviews.Bivariate``.
+            bokeh_opts: Default options for the plot when rendered using the \
+                       "bokeh" backend.
+            mpl_opts: Default options for the plot when rendered using the \
+                    "matplotlib" backend.
             *args: Passed to ``holoviews.Bivariate``.
             **kwargs: Passed to ``holoviews.Bivariate``.
         """
@@ -353,20 +456,28 @@ class Bivariate(StreamingPlot):
         def bivariate(data):
             return holoviews.Bivariate(data, *args, **kwargs)
 
-        super(Bivariate, self).__init__(stream=Pipe, plot=bivariate, data=data)
+        default_bokeh_opts = {
+            "height": 350,
+            "width": 400,
+            "tools": ["hover"],
+            "shared_axes": False,
+        }
+        default_mpl_opts = {}
+        mpl_opts, bokeh_opts = self.update_default_opts(
+            default_mpl_opts, mpl_opts, default_bokeh_opts, bokeh_opts
+        )
+        super(Bivariate, self).__init__(
+            stream=Pipe, plot=bivariate, data=data, bokeh_opts=bokeh_opts, mpl_opts=mpl_opts
+        )
 
     def opts(
         self,
         title="",
-        tools="default",
         xlabel: str = "x",
         ylabel: str = "y",
-        shared_axes: bool = False,
         framewise: bool = True,
         axiswise: bool = True,
         normalize: bool = True,
-        height: int = 350,
-        width: int = 400,
         *args,
         **kwargs
     ):
@@ -376,45 +487,35 @@ class Bivariate(StreamingPlot):
         The default values updates the plot axes independently when being \
         displayed in a :class:`Holomap`.
         """
-
-        tools = tools if tools != "default" else ["hover"]
+        kwargs = self.update_kwargs(**kwargs)
+        # Add specific defaults to Scatter
+        scatter_kwargs = dict(kwargs)
+        if Store.current_backend == "bokeh":
+            scatter_kwargs["size"] = scatter_kwargs.get("size", 3.5)
+        elif Store.current_backend == "matplotlib":
+            scatter_kwargs["s"] = scatter_kwargs.get("s", 15)
         self.plot = self.plot.opts(
             holoviews.opts.Bivariate(
-                tools=tools,
                 title=title,
                 xlabel=xlabel,
                 ylabel=ylabel,
-                shared_axes=shared_axes,
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
-                height=height,
-                width=width,
                 *args,
                 **kwargs
             ),
             holoviews.opts.Scatter(
-                fill_color="red",
                 alpha=0.7,
-                size=3.5,
-                tools=tools,
                 xlabel=xlabel,
                 ylabel=ylabel,
-                shared_axes=shared_axes,
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
-                height=height,
-                width=width,
                 *args,
-                **kwargs
+                **scatter_kwargs
             ),
-            holoviews.opts.NdOverlay(
-                normalize=normalize,
-                framewise=framewise,
-                axiswise=axiswise,
-                shared_axes=shared_axes,
-            ),
+            holoviews.opts.NdOverlay(normalize=normalize, framewise=framewise, axiswise=axiswise,),
         )
 
 
@@ -429,7 +530,14 @@ class Landscape2D(StreamingPlot):
 
     name = "landscape"
 
-    def __init__(self, n_points: int = 50, data=None, invert_cmap: bool = False):
+    def __init__(
+        self,
+        n_points: int = 50,
+        data=None,
+        invert_cmap: bool = False,
+        mpl_opts: dict = None,
+        bokeh_opts: dict = None,
+    ):
         """
         Initialize a :class:`Landscape2d`.
 
@@ -437,6 +545,10 @@ class Landscape2D(StreamingPlot):
             n_points: Number of points per dimension used to create the \
                       meshgrid grid that will be used to interpolate the data.
             data: Initial data for the plot.
+            bokeh_opts: Default options for the plot when rendered using the \
+                       "bokeh" backend.
+            mpl_opts: Default options for the plot when rendered using the \
+                    "matplotlib" backend.
             invert_cmap: If ``True``, invert the colormap to assign high value \
                          colors to the lowest values.
 
@@ -445,7 +557,24 @@ class Landscape2D(StreamingPlot):
         self.invert_cmap = invert_cmap
         self.xlim = (None, None)
         self.ylim = (None, None)
-        super(Landscape2D, self).__init__(stream=Pipe, plot=self.plot_landscape, data=data)
+        default_bokeh_opts = {
+            "height": 350,
+            "width": 400,
+            "tools": ["hover"],
+            "shared_axes": False,
+        }
+        default_mpl_opts = {}
+
+        mpl_opts, bokeh_opts = self.update_default_opts(
+            default_mpl_opts, mpl_opts, default_bokeh_opts, bokeh_opts
+        )
+        super(Landscape2D, self).__init__(
+            stream=Pipe,
+            plot=self.plot_landscape,
+            data=data,
+            mpl_opts=mpl_opts,
+            bokeh_opts=bokeh_opts,
+        )
 
     @staticmethod
     def plot_landscape(data):
@@ -484,16 +613,12 @@ class Landscape2D(StreamingPlot):
     def opts(
         self,
         title="Distribution landscape",
-        tools="default",
         xlabel: str = "x",
         ylabel: str = "y",
-        shared_axes: bool = False,
         framewise: bool = True,
         axiswise: bool = True,
         normalize: bool = True,
         cmap: str = "default",
-        height: int = 350,
-        width: int = 350,
         *args,
         **kwargs
     ):
@@ -503,60 +628,60 @@ class Landscape2D(StreamingPlot):
         The default values updates the plot axes independently when being \
         displayed in a :class:`Holomap`.
         """
-        tools = tools if tools != "default" else ["hover"]
+        kwargs = self.update_kwargs(**kwargs)
         cmap = cmap if cmap != "default" else ("viridis_r" if self.invert_cmap else "viridis")
+        # Add specific defaults to Contours
+        contours_kwargs = dict(kwargs)
+        if Store.current_backend == "bokeh":
+            contours_kwargs["line_width"] = contours_kwargs.get("line_width", 1)
+        elif Store.current_backend == "matplotlib":
+            contours_kwargs["linewidth"] = contours_kwargs.get("linewidth", 1)
+
+        # Add specific defaults to Scatter
+        scatter_kwargs = dict(kwargs)
+        if Store.current_backend == "bokeh":
+            scatter_kwargs["fill_color"] = scatter_kwargs.get("fill_color", "red")
+            scatter_kwargs["size"] = scatter_kwargs.get("size", 3.5)
+        elif Store.current_backend == "matplotlib":
+            scatter_kwargs["color"] = scatter_kwargs.get("color", "red")
+            scatter_kwargs["s"] = scatter_kwargs.get("s", 15)
+
         self.plot = self.plot.opts(
             holoviews.opts.QuadMesh(
                 cmap=cmap,
                 colorbar=True,
                 title=title,
                 bgcolor="lightgray",
-                tools=tools,
                 xlabel=xlabel,
                 ylabel=ylabel,
-                shared_axes=shared_axes,
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
-                height=height,
-                width=width,
                 *args,
                 **kwargs
             ),
             holoviews.opts.Contours(
                 cmap=["black"],
-                line_width=1,
                 alpha=0.9,
-                tools=tools,
                 title=title,
                 xlabel=xlabel,
                 ylabel=ylabel,
                 show_legend=False,
-                shared_axes=shared_axes,
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
                 *args,
-                **kwargs
+                **contours_kwargs
             ),
             holoviews.opts.Scatter(
-                fill_color="red",
                 alpha=0.7,
-                size=3.5,
-                tools=tools,
                 xlabel=xlabel,
                 ylabel=ylabel,
-                shared_axes=shared_axes,
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
                 *args,
-                **kwargs
+                **scatter_kwargs
             ),
-            holoviews.opts.NdOverlay(
-                normalize=normalize,
-                framewise=framewise,
-                axiswise=axiswise,
-                shared_axes=shared_axes,
-            ),
+            holoviews.opts.NdOverlay(normalize=normalize, framewise=framewise, axiswise=axiswise,),
         )

@@ -32,8 +32,8 @@ class SimpleWalkers(BaseWalkers):
         model_state_params: StateDict,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
-        max_iters: int = None,
         accumulate_rewards: bool = True,
+        max_epochs: int = None,
         distance_function: Optional[
             Callable[[numpy.ndarray, numpy.ndarray], numpy.ndarray]
         ] = None,
@@ -53,8 +53,6 @@ class SimpleWalkers(BaseWalkers):
             dist_scale: Regulates the importance of the distance. Recommended to \
                           keep in the [0, 5] range. Higher values correspond to \
                           higher importance.
-            max_iters: Maximum number of iterations that the walkers are allowed \
-                       to perform.
             accumulate_rewards: If ``True`` the rewards obtained after transitioning \
                                 to a new state will accumulate. If ``False`` only the last \
                                 reward will be taken into account.
@@ -67,6 +65,8 @@ class SimpleWalkers(BaseWalkers):
                           "model", to reference the `env_states` and the \
                           `model_states`. Its values are a set of strings with \
                           the names of the attributes that will not be cloned.
+            max_epochs: Maximum number of iterations that the walkers are allowed \
+                       to perform.
             kwargs: Additional attributes stored in the :class:`StatesWalkers`.
 
         """
@@ -75,6 +75,7 @@ class SimpleWalkers(BaseWalkers):
             env_state_params=env_state_params,
             model_state_params=model_state_params,
             accumulate_rewards=accumulate_rewards,
+            max_epochs=max_epochs,
         )
 
         def l2_norm(x: numpy.ndarray, y: numpy.ndarray) -> numpy.ndarray:
@@ -86,8 +87,6 @@ class SimpleWalkers(BaseWalkers):
         self.distance_function = distance_function if distance_function is not None else l2_norm
         self.reward_scale = reward_scale
         self.dist_scale = dist_scale
-        self.n_iters = 0
-        self.max_iters = max_iters if max_iters is not None else 1e12
         self._id_counter = 0
         self.ignore_clone = ignore_clone if ignore_clone is not None else {}
 
@@ -106,7 +105,7 @@ class SimpleWalkers(BaseWalkers):
         """Print several statistics of the current state of the swarm."""
         text = "{} iteration {} Out of bounds walkers: {:.2f}% Cloned: {:.2f}%\n\n".format(
             self.__class__.__name__,
-            self.n_iters,
+            self.epoch,
             100 * self.env_states.oobs.sum() / self.n,
             100 * self.states.will_clone.sum() / self.n,
         )
@@ -176,9 +175,9 @@ class SimpleWalkers(BaseWalkers):
         """
         non_terminal_states = numpy.logical_not(self.env_states.terminals)
         all_non_terminal_out_of_bounds = self.env_states.oobs[non_terminal_states].all()
-        max_iters_reached = self.n_iters >= self.max_iters
+        max_epochs_reached = self.epoch >= self.max_epochs
         all_in_bounds_are_terminal = self.env_states.terminals[self.states.in_bounds].all()
-        return max_iters_reached or all_non_terminal_out_of_bounds or all_in_bounds_are_terminal
+        return max_epochs_reached or all_non_terminal_out_of_bounds or all_in_bounds_are_terminal
 
     def calculate_distances(self) -> None:
         """Calculate the corresponding distance function for each observation with \
@@ -299,7 +298,7 @@ class SimpleWalkers(BaseWalkers):
         else:
             self.states.reset()
         self.update_states(env_states=env_states, model_states=model_states)
-        self.n_iters = 0
+        self._epoch = 0
 
     def update_states(
         self, env_states: StatesEnv = None, model_states: StatesModel = None, **kwargs
@@ -376,7 +375,7 @@ class Walkers(SimpleWalkers):
         model_state_params: StateDict,
         reward_scale: float = 1.0,
         dist_scale: float = 1.0,
-        max_iters: int = None,
+        max_epochs: int = None,
         accumulate_rewards: bool = True,
         distance_function: Optional[DistanceFunction] = None,
         ignore_clone: Optional[Dict[str, Set[str]]] = None,
@@ -399,7 +398,7 @@ class Walkers(SimpleWalkers):
             dist_scale: Regulates the importance of the distance. Recommended to \
                           keep in the [0, 5] range. Higher values correspond to \
                           higher importance.
-            max_iters: Maximum number of iterations that the walkers are allowed \
+            max_epochs: Maximum number of iterations that the walkers are allowed \
                        to perform.
             accumulate_rewards: If ``True`` the rewards obtained after transitioning \
                                 to a new state will accumulate. If ``False`` only the last \
@@ -441,7 +440,7 @@ class Walkers(SimpleWalkers):
             model_state_params=model_state_params,
             reward_scale=reward_scale,
             dist_scale=dist_scale,
-            max_iters=max_iters,
+            max_epochs=max_epochs,
             accumulate_rewards=accumulate_rewards,
             distance_function=distance_function,
             ignore_clone=ignore_clone,

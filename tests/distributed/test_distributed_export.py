@@ -15,7 +15,7 @@ def create_cartpole_swarm():
         env=lambda: DiscreteEnv(ClassicControl()),
         reward_limit=51,
         n_walkers=50,
-        max_iters=100,
+        max_epochs=100,
         reward_scale=2,
     )
     return swarm
@@ -71,5 +71,5 @@ class TestExportInterface:
         swarm.run(print_every=25)
         reward = swarm.get_best().rewards
         assert reward > target_score, "Iters: {}, rewards: {}".format(
-            swarm.walkers.n_iters, swarm.walkers.states.cum_rewards
+            swarm.walkers.epoch, swarm.walkers.states.cum_rewards
         )

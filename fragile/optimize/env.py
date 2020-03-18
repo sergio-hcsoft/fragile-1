@@ -43,9 +43,13 @@ class Function(Environment):
             raise TypeError("Bounds needs to be an instance of Bounds, found {}".format(bounds))
         self.function = function
         self.bounds = bounds
-        self.shape = self.bounds.shape
         self.custom_domain_check = custom_domain_check
         super(Function, self).__init__(observs_shape=self.shape, states_shape=self.shape)
+
+    @property
+    def shape(self) -> Tuple[int, ...]:
+        """Return the shape of the environment."""
+        return self.bounds.shape
 
     @classmethod
     def from_bounds_params(
@@ -299,8 +303,28 @@ class MinimizerWrapper(Function):
         self.env = function
         self.minimizer = Minimizer(function=self.env, *args, **kwargs)
 
+    @property
+    def shape(self) -> Tuple[int, ...]:
+        """Return the shape of the wrapped environment."""
+        return self.env.shape
+
+    @property
+    def function(self) -> Callable:
+        """Return the function of the wrapped environment."""
+        return self.env.function
+
+    @property
+    def bounds(self) -> Bounds:
+        """Return the bounds of the wrapped environment."""
+        return self.env.bounds
+
+    @property
+    def custom_domain_check(self) -> Callable:
+        """Return the custom_domain_check of the wrapped environment."""
+        return self.env.custom_domain_check
+
     def __getattr__(self, item):
-        return getattr(self.env, item)
+        return self.env.__getattribute__(item)
 
     def __repr__(self):
         return self.env.__repr__()

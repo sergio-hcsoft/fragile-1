@@ -18,7 +18,7 @@ def swarm_with_tree():
         env=lambda: DiscreteEnv(ClassicControl()),
         reward_limit=200,
         n_walkers=150,
-        max_iters=300,
+        max_epochs=300,
         reward_scale=2,
         tree=HistoryTree,
         prune_tree=True,

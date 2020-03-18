@@ -18,7 +18,7 @@ def create_cartpole_swarm():
         env=lambda: DiscreteEnv(ClassicControl()),
         reward_limit=121,
         n_walkers=150,
-        max_iters=300,
+        max_epochs=300,
         reward_scale=2,
     )
     return swarm
@@ -32,7 +32,7 @@ def create_atari_swarm():
         walkers=Walkers,
         env=lambda: DiscreteEnv(env),
         n_walkers=67,
-        max_iters=20,
+        max_epochs=20,
         reward_scale=2,
         reward_limit=751,
     )
@@ -45,7 +45,7 @@ def create_function_swarm():
         model=lambda x: NormalContinuous(bounds=env.bounds),
         env=lambda: env,
         n_walkers=5,
-        max_iters=5,
+        max_epochs=5,
         prune_tree=True,
         reward_scale=2,
         minimize=False,
@@ -100,16 +100,16 @@ class TestSwarm:
 
     def test_run(self, swarm):
         swarm.reset()
-        swarm.walkers.max_iters = 5
+        swarm.walkers.max_epochs = 5
         swarm.run()
 
     def test_score_gets_higher(self, swarm_with_score):
         swarm, target_score = swarm_with_score
         swarm.walkers.seed()
         swarm.reset()
-        swarm.walkers.max_iters = 500
+        swarm.walkers.max_epochs = 500
         swarm.run()
         reward = swarm.walkers.states.cum_rewards.max()
         assert reward > target_score, "Iters: {}, rewards: {}".format(
-            swarm.walkers.n_iters, swarm.walkers.states.cum_rewards
+            swarm.walkers.epoch, swarm.walkers.states.cum_rewards
         )

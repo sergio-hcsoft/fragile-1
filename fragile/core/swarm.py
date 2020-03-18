@@ -57,6 +57,7 @@ class Swarm(BaseSwarm):
         """
         self._use_tree = False
         self._prune_tree = False
+        self._epoch = 0
         super(Swarm, self).__init__(
             walkers=walkers,
             env=env,
@@ -186,7 +187,7 @@ class Swarm(BaseSwarm):
         self._use_tree = tree is not None
         self.tree: BaseStateTree = tree() if self._use_tree else None
         self._prune_tree = prune_tree
-        self.epoch = 0
+        self._epoch = 0
 
     def reset(
         self,
@@ -206,6 +207,7 @@ class Swarm(BaseSwarm):
             walkers_states: :class:`StatesWalkers` that define the internal \
                             states of the :class:`Walkers`.
         """
+        self._epoch = 0
         env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
         model_states = (
             self.model.reset(batch_size=self.walkers.n, env_states=env_states)
@@ -249,14 +251,13 @@ class Swarm(BaseSwarm):
 
         """
         self.reset(model_states=model_states, env_states=env_states, walkers_states=walkers_states)
-        self.epoch = 0
         while not self.calculate_end_condition():
             try:
                 self.run_step()
                 if self.epoch % print_every == 0 and self.epoch > 0:
                     print(self)
                     clear_output(True)
-                self.epoch += 1
+                self.increase_epoch()
             except KeyboardInterrupt:
                 break
 
@@ -300,7 +301,6 @@ class Swarm(BaseSwarm):
         Make the walkers evolve to their next state sampling an action from the \
         :class:`Model` and applying it to the :class:`Environment`.
         """
-        self.walkers.n_iters += 1
         model_states = self.walkers.model_states
         env_states = self.walkers.env_states
 
@@ -333,7 +333,7 @@ class Swarm(BaseSwarm):
                 env_states=self.walkers.env_states,
                 model_states=self.walkers.model_states,
                 walkers_states=self.walkers.states,
-                n_iter=int(self.walkers.n_iters),
+                n_iter=int(self.walkers.epoch),
             )
 
     def prune_tree(self, leaf_nodes) -> None:
@@ -357,4 +357,4 @@ class NoBalance(Swarm):
 
     def calculate_end_condition(self):
         """Finish after reaching the maximum number of epochs."""
-        return self.epoch > self.walkers.max_iters
+        return self.epoch > self.walkers.max_epochs
