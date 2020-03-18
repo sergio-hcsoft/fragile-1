@@ -5,7 +5,7 @@
 [![PyPI package](https://badgen.net/pypi/v/fragile)](https://pypi.org/project/fragile/)
 [![Latest docker image](https://badgen.net/docker/pulls/fragiletech/fragile)](https://hub.docker.com/r/fragiletech/fragile/tags)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![license: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 Fragile is a framework for developing optimization algorithms inspired by Fractal AI and running them at scale.
@@ -21,10 +21,9 @@ Fragile is a framework for developing optimization algorithms inspired by Fracta
 
 ## About FractalAI
 
-FractalAI is based on the framework of non-equilibrium thermodynamics, and It allows to derive new 
-mathematical tools for efficiently exploring state spaces.
+FractalAI is based on the framework of [non-equilibrium thermodynamics](https://en.wikipedia.org/wiki/Non-equilibrium_thermodynamics), and can be used to derive new mathematical tools for efficiently exploring state spaces.
  
- The principles of our work are accessible online:
+The principles of our work are accessible online:
 
 - [Arxiv](https://arxiv.org/abs/1803.05049) manuscript describing the fundamental principles of our work.
 - [Blog](http://entropicai.blogspot.com) that describes our early research process.
@@ -34,7 +33,7 @@ mathematical tools for efficiently exploring state spaces.
 ## Getting started 
 
 Check out the [getting started](https://fragile.readthedocs.io/en/latest/resources/examples/01_getting_started.html) 
-section of the docs, or check out the [examples](https://github.com/FragileTech/fragile/tree/master/examples) folder.
+section of the docs, or the [examples](https://github.com/FragileTech/fragile/tree/master/examples) folder.
 
 ## Running in docker
 The fragile docker container will execute a Jupyter notebook accessible on port 8080 with password: `fragile`
@@ -61,7 +60,7 @@ You can access the documentation on [Read The Docs](https://fragile.readthedocs.
     
 ## Roadmap
 
-Upcoming features: (Not necessary in order)
+Upcoming features: _(not necessarily in order)_
 - Add support for saving visualizations.
 - Fix documentation and add examples for the `distributed` module
 - Upload Montezuma solver
@@ -83,11 +82,8 @@ If you use this framework in your research please cite us as:
         Title = {Fractal AI: A fragile theory of intelligence},
         Year = {2018},
         Eprint = {arXiv:1803.05049},
-      }
+    }
       
 ## License
 
-This project is currently licensed under AGPLv3.0. 
-
-However, if you are considering using it for applications that require a more permissive license, 
-please let me know in this [Issue](https://github.com/Guillemdb/fragile/issues/5).
+This project is MIT licensed. See `LICENSE.md` for the complete text.
