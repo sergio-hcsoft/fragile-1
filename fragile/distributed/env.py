@@ -6,6 +6,7 @@ from typing import Callable, List
 
 import numpy
 
+from fragile.core.base_classes import BaseWrapper
 from fragile.core.env import Environment
 from fragile.core.states import StatesEnv, StatesModel
 from fragile.core.utils import split_similar_chunks, StateDict
@@ -142,7 +143,9 @@ class RayFunction(Function):
         self._sequential_function = env_callable(**env_kwargs)
 
     def __getattr__(self, item):
-        return getattr(self._sequential_function, item)
+        if isinstance(self._sequential_function, BaseWrapper):
+            return getattr(self._sequential_function, item)
+        return self._sequential_function.__getattribute__(item)
 
     def function(self, points: numpy.ndarray) -> numpy.ndarray:
         """
