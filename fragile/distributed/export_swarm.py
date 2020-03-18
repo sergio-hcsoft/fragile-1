@@ -333,7 +333,7 @@ class ExportSwarm(BaseWrapper):
             host_oobs=local_oobs,
             ext_observs=import_obs,
             ext_rewards=import_rewards,
-            dist_coef=self.swarm.walkers.dist_scale,
+            dist_coef=self.swarm.walkers.distance_scale,
             reward_coef=self.swarm.walkers.reward_scale,
             distance_function=self.swarm.walkers.distance_function,
         )

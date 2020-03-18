@@ -83,7 +83,7 @@ parameters to the :swarm:`FunctionMapper`.
 
 .. code:: ipython3
 
-    swarm.run(print_every=50)
+    swarm.run(report_interval=50)
 
 
 .. parsed-literal::
@@ -152,7 +152,7 @@ supports.
 
 .. code:: ipython3
 
-    swarm.run(print_every=25)
+    swarm.run(report_interval=25)
 
 
 .. parsed-literal::
@@ -298,7 +298,7 @@ are outside the defined ``custom_domain_check``.
 
 .. code:: ipython3
 
-    swarm.run(print_every=25)
+    swarm.run(report_interval=25)
 
 We can see how the optimization was successful in finding the global optima of -156.66468
 
@@ -364,7 +364,7 @@ particles, which is a 12-dimensional function with a global minima at
 
 .. code:: ipython3
 
-    swarm.run(print_every=25)
+    swarm.run(report_interval=25)
 
 
 .. parsed-literal::

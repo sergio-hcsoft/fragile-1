@@ -540,7 +540,7 @@ class BaseSwarm:
         walkers: Callable[..., BaseWalkers],
         n_walkers: int,
         reward_scale: float = 1.0,
-        dist_scale: float = 1.0,
+        distance_scale: float = 1.0,
         *args,
         **kwargs
     ):
@@ -553,7 +553,7 @@ class BaseSwarm:
             walkers: A callable that returns an instance of BaseWalkers.
             n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.
-            dist_scale:Virtual reward exponent for the distance score.
+            distance_scale:Virtual reward exponent for the distance score.
             *args: Additional args passed to init_swarm.
             **kwargs: Additional kwargs passed to init_swarm.
 
@@ -570,7 +570,7 @@ class BaseSwarm:
             walkers_callable=walkers,
             n_walkers=n_walkers,
             reward_scale=reward_scale,
-            dist_scale=dist_scale,
+            distance_scale=distance_scale,
             *args,
             **kwargs
         )
@@ -669,7 +669,7 @@ class BaseSwarm:
         walkers_callable: Callable,
         n_walkers: int,
         reward_scale: float = 1.0,
-        dist_scale: float = 1.0,
+        distance_scale: float = 1.0,
         *args,
         **kwargs
     ):
@@ -688,7 +688,7 @@ class BaseSwarm:
                 :class:`fragile.Walkers`.
             n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.
-            dist_scale:Virtual reward exponent for the distance score.
+            distance_scale: Virtual reward exponent for the distance score.
             args: Additional arguments passed to reset.
             kwargs: Additional keyword arguments passed to reset.
 

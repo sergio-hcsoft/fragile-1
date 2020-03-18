@@ -1,7 +1,9 @@
 import copy
-from typing import Callable, List
+import logging
+from typing import Callable, Iterable, List
 
 import numpy
+from tqdm.autonotebook import trange
 
 from fragile.core.base_classes import (
     BaseCritic,
@@ -11,7 +13,7 @@ from fragile.core.base_classes import (
     BaseSwarm,
 )
 from fragile.core.states import StatesEnv, StatesModel
-from fragile.core.utils import clear_output, Scalar
+from fragile.core.utils import running_in_ipython, Scalar
 from fragile.core.walkers import StatesWalkers, Walkers
 
 
@@ -23,6 +25,8 @@ class Swarm(BaseSwarm):
     Walkers instance to run the Swarm evolution algorithm.
     """
 
+    _log = logging.getLogger("Swarm")
+
     def __init__(
         self,
         n_walkers: int,
@@ -30,9 +34,11 @@ class Swarm(BaseSwarm):
         model: Callable[[BaseEnvironment], BaseModel],
         walkers: Callable[..., Walkers] = Walkers,
         reward_scale: float = 1.0,
-        dist_scale: float = 1.0,
+        distance_scale: float = 1.0,
         tree: Callable[[], BaseStateTree] = None,
         prune_tree: bool = True,
+        report_interval: int = numpy.inf,
+        show_pbar: bool = True,
         *args,
         **kwargs
     ):
@@ -45,12 +51,14 @@ class Swarm(BaseSwarm):
             model: A callable that returns an instance of a Model.
             walkers: A callable that returns an instance of BaseWalkers.
             reward_scale: Virtual reward exponent for the reward score.
-            dist_scale:Virtual reward exponent for the distance score.
+            distance_scale: Virtual reward exponent for the distance score.
             tree: class:`StatesTree` that keeps track of the visited states.
             prune_tree: If `tree` is `None` it has no effect. If true, \
                        store in the :class:`Tree` only the past history of alive \
                         walkers, and discard the branches with leaves that have \
                         no walkers.
+            report_interval: Display the algorithm progress every ``log_interval`` epochs.
+            show_pbar: A progress bar will display the progress of the algorithm run.
             *args: Additional args passed to init_swarm.
             **kwargs: Additional kwargs passed to init_swarm.
 
@@ -58,18 +66,23 @@ class Swarm(BaseSwarm):
         self._use_tree = False
         self._prune_tree = False
         self._epoch = 0
+        self.show_pbar = show_pbar
+        self.report_interval = report_interval
         super(Swarm, self).__init__(
             walkers=walkers,
             env=env,
             model=model,
             n_walkers=n_walkers,
             reward_scale=reward_scale,
-            dist_scale=dist_scale,
+            distance_scale=distance_scale,
             tree=tree,
             prune_tree=prune_tree,
             *args,
             **kwargs
         )
+        # self._log.setLevel(logging_level)
+        self._notebook_container = None
+        self.setup_notebook_container()
 
     def __len__(self) -> int:
         return self.walkers.n
@@ -136,7 +149,7 @@ class Swarm(BaseSwarm):
         walkers_callable: Callable[..., Walkers],
         n_walkers: int,
         reward_scale: float = 1.0,
-        dist_scale: float = 1.0,
+        distance_scale: float = 1.0,
         tree: Callable[[], BaseStateTree] = None,
         prune_tree: bool = True,
         *args,
@@ -157,7 +170,7 @@ class Swarm(BaseSwarm):
                 :class:`fragile.Walkers`.
             n_walkers: Number of walkers of the swarm.
             reward_scale: Virtual reward exponent for the reward score.
-            dist_scale: Virtual reward exponent for the distance score.
+            distance_scale: Virtual reward exponent for the distance score.
             tree: class:`StatesTree` that keeps track of the visited states.
             prune_tree: If `tree` is `None` it has no effect. If true, \
                        store in the :class:`Tree` only the past history of alive \
@@ -180,7 +193,7 @@ class Swarm(BaseSwarm):
             model_state_params=model_params,
             n_walkers=n_walkers,
             reward_scale=reward_scale,
-            dist_scale=dist_scale,
+            distance_scale=distance_scale,
             *args,
             **kwargs
         )
@@ -232,7 +245,8 @@ class Swarm(BaseSwarm):
         model_states: StatesModel = None,
         env_states: StatesEnv = None,
         walkers_states: StatesWalkers = None,
-        print_every: int = 1e100,
+        report_interval: int = None,
+        show_pbar: bool = None,
     ):
         """
         Run a new search process.
@@ -244,22 +258,80 @@ class Swarm(BaseSwarm):
                         the :class:`Function`.
             walkers_states: :class:`StatesWalkers` that define the internal \
                             states of the :class:`Walkers`.
-            print_every: Display the algorithm progress every ``print_every`` epochs.
+            report_interval: Display the algorithm progress every ``log_interval`` epochs.
+            show_pbar: A progress bar will display the progress of the algorithm run.
 
         Returns:
             None.
 
         """
+        report_interval = self.report_interval if report_interval is None else report_interval
         self.reset(model_states=model_states, env_states=env_states, walkers_states=walkers_states)
-        while not self.calculate_end_condition():
+        for _ in self.get_run_loop(show_pbar=show_pbar):
+            if self.calculate_end_condition():
+                break
             try:
                 self.run_step()
-                if self.epoch % print_every == 0 and self.epoch > 0:
-                    print(self)
-                    clear_output(True)
+                if self.epoch % report_interval == 0 and self.epoch > 0:
+                    self.report_progress()
                 self.increase_epoch()
             except KeyboardInterrupt:
                 break
+
+    def get_run_loop(self, show_pbar: bool = None) -> Iterable[int]:
+        """
+        Return a tqdm progress bar or a regular range iterator.
+
+        If the code is running in an IPython kernel it will also display the \
+        internal ``_notebook_container``.
+
+        Args:
+            show_pbar: If ``False`` the progress bar will not be displayed.
+
+        Returns:
+            A Progressbar if ``show_pbar`` is ``True`` and the code is running \
+            in an IPython kernel. If the code is running in a terminal the logging \
+            level must be set at least to "INFO". Otherwise return a range iterator \
+            for ``self.max_range`` iteration.
+
+        """
+        show_pbar = show_pbar if show_pbar is not None else self.show_pbar
+        use_tqdm = (
+            show_pbar if running_in_ipython() else self._log.level < logging.WARNING and show_pbar
+        )
+        loop_iterable = (
+            trange(self.max_epochs, desc="%s" % self.__class__.__name__)
+            if use_tqdm
+            else range(self.max_epochs)
+        )
+        if running_in_ipython():
+            from IPython.core.display import display
+
+            display(self._notebook_container)
+        return loop_iterable
+
+    def setup_notebook_container(self):
+        """Display the display widgets if the Swarm is running in an IPython kernel."""
+        if running_in_ipython():
+            from ipywidgets import HTML
+            from IPython.core.display import display, HTML as cell_html
+
+            # Set font weight of tqdm progressbar
+            display(cell_html("<style> .widget-label {font-weight: bold !important;} </style>"))
+            self._notebook_container = HTML()
+
+    def report_progress(self):
+        """Report information of the current run."""
+        if running_in_ipython():
+            line_break = '<br style="line-height:1px; content: "  ";>'
+            html = str(self).replace("\n\n", "\n").replace("\n", line_break)
+            # Add strong formatting for headers
+            html = html.replace("Walkers States", "<strong>Walkers States</strong>")
+            html = html.replace("Model States", "<strong>Model States</strong>")
+            html = html.replace("Environment States", "<strong>Environment Model</strong>")
+            self._notebook_container.value = "%s" % html
+        else:
+            self._log.info(repr(self))
 
     def calculate_end_condition(self) -> bool:
         """Implement the logic for deciding if the algorithm has finished. \

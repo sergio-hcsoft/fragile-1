@@ -1,5 +1,6 @@
 from typing import Callable
 
+import numpy
 
 from fragile.distributed.export_swarm import BestWalker
 from fragile.distributed.ray import ray
@@ -28,6 +29,7 @@ class DistributedExport:
         max_len: int = 20,
         add_global_best: bool = True,
         swarm_kwargs: dict = None,
+        report_interval: int = numpy.inf,
     ):
         """
         Initialize a :class:`DistributedExport`.
@@ -51,8 +53,10 @@ class DistributedExport:
                              the exported walkers that the :class:`ParamServer` \
                              returns.
             swarm_kwargs: Dictionary containing keyword that will be passed to ``swarm``.
+            report_interval: Display the algorithm progress every ``log_interval`` epochs.
 
         """
+        self.report_interval = report_interval
         self.swarms = [
             RemoteExportSwarm.remote(
                 swarm=swarm,
@@ -93,8 +97,9 @@ class DistributedExport:
         ray.get(reset_param_server)
         ray.get(reset_swarms)
 
-    def run(self, print_every=1e10):
+    def run(self, report_interval=None):
         """Run the distributed search algorithm asynchronously."""
+        report_interval = self.report_interval if report_interval is None else report_interval
         self.reset()
         current_import_walkers = self.swarms[0].get_empty_export_walkers.remote()
         steps = {}
@@ -113,7 +118,7 @@ class DistributedExport:
             )
             steps[swarm.run_exchange_step.remote(current_import_walkers)] = swarm
 
-            if self.epoch % print_every == 0 and self.epoch > 0:
+            if self.epoch % report_interval == 0 and self.epoch > 0:
                 # Evaluate the current model after every 10 updates.
                 best = self.get_best()
                 print("iter {} best_reward: {:.3f}".format(i, best.rewards))

@@ -3,14 +3,6 @@ from typing import Any, Callable, Dict, Generator, Tuple, Union
 import numpy
 from plangym.env import Environment, ParallelEnvironment
 
-try:
-    from IPython.core.display import clear_output
-except ImportError:
-
-    def clear_output(*args, **kwargs):
-        """If not using jupyter notebook do nothing."""
-        pass
-
 
 RANDOM_SEED = 160290
 random_state = numpy.random.RandomState(seed=RANDOM_SEED)
@@ -26,6 +18,16 @@ NUMPY_IGNORE_WARNINGS_PARAMS = {
     "under": "ignore",
     "invalid": "ignore",
 }
+
+
+def running_in_ipython() -> bool:
+    """Return ``True`` if the code is this function is being called from an IPython kernel."""
+    try:
+        from IPython import get_ipython
+
+        return get_ipython() is not None
+    except ImportError:
+        return False
 
 
 def get_plangym_env(swarm: "Swarm") -> Environment:
