@@ -78,7 +78,7 @@ parameters to the :swarm:`FunctionMapper`.
     swarm = FunctionMapper(env=EggHolder,
                            model=gaussian_model,
                            n_walkers=100,
-                           max_iters=500,
+                           max_epochs=500,
                           )
 
 .. code:: ipython3
@@ -147,7 +147,7 @@ supports.
     swarm = FunctionMapper(env=optimize_eggholder,
                            model=gaussian_model,
                            n_walkers=50,
-                           max_iters=201,
+                           max_epochs=201,
                           )
 
 .. code:: ipython3
@@ -285,7 +285,7 @@ perform the optimization process.
                            model=lambda env: NormalContinuous(scale=1, loc=0.,
                                                               bounds=env.bounds),
                            n_walkers=50,
-                           max_iters=101)
+                           max_epochs=101)
 
 Please be aware that if you use a :env:`MinimizerWrapper` with a
 :class:`Function` that has a ``custom_domain_check`` defined you can run into
@@ -335,7 +335,7 @@ It is possible to use the ``fragile`` framework to implement
 optimization algorithms that do not rely on a cloning process, such as
 Evolutionary Strategies.
 
-If the cloning process is not needed the :swarm:`NoBalance`` :class:`Swarm` is the
+If the cloning process is not needed the :swarm:`NoBalance` :class:`Swarm` is the
 recommended choice. It has the same features of a regular :swarm:`Swarm`, but
 it does not perform the cloning process.
 
@@ -359,7 +359,7 @@ particles, which is a 12-dimensional function with a global minima at
                       accumulate_rewards=False,
                       minimize=True,
                       n_walkers=10,
-                      max_iters=5000,
+                      max_epochs=5000,
                      )
 
 .. code:: ipython3

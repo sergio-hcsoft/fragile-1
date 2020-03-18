@@ -134,7 +134,7 @@ algorithm:
    ``batch_size`` of the :states:`States` (size of the first dimension of the
    data they store).
 
--  ``max_iters``: Maximum number of iterations that the :swarm:`Swarm` will
+-  ``max_epochs``: Maximum number of iterations that the :swarm:`Swarm` will
    execute. The algorithm will stop either when all the walkers reached
    a death condition, or when the maximum number of iterations is
    reached.
@@ -152,7 +152,7 @@ algorithm:
 .. code:: ipython3
 
     n_walkers = 64  # A bigger number will increase the quality of the trajectories sampled.
-    max_iters = 500  # Increase to sample longer games.
+    max_epochs = 500  # Increase to sample longer games.
     reward_scale = 2  # Rewards are more important than diversity.
     distance_scale = 1
     minimize = False  # We want to get the maximum score possible.
@@ -165,7 +165,7 @@ algorithm:
         env=env_callable,
         tree=HistoryTree,
         n_walkers=n_walkers,
-        max_iters=max_iters,
+        max_epochs=max_epochs,
         prune_tree=prune_tree,
         reward_scale=reward_scale,
         distance_scale=distance_scale,
