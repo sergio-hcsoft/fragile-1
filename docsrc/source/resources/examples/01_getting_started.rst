@@ -542,7 +542,7 @@ iterations that will pass before printing the :class:`Swarm`.
 
 .. code:: ipython3
 
-    _ = swarm_viz.run(print_every=50)
+    _ = swarm_viz.run(report_interval=50)
 
 
 .. parsed-literal::

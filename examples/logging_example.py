@@ -8,7 +8,7 @@ from fragile.optimize.benchmarks import EggHolder
 
 def main():
 
-    setup_logging(level=25, structured=False)
+    setup_logging(level="INFO", structured=False)
 
     def gaussian_model(env):
         # Gaussian of mean 0 and std of 10, adapted to the environment bounds
@@ -16,7 +16,7 @@ def main():
 
     swarm = FunctionMapper(env=EggHolder, model=gaussian_model, n_walkers=100, max_epochs=5000,)
 
-    swarm.run(report_interval=500, show_pbar=False)
+    swarm.run(report_interval=500, show_pbar=True)
 
 
 if __name__ == "__main__":
