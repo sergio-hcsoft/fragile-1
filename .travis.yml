@@ -14,7 +14,7 @@ stages:
 before_install:
   - env
 _install: &_install
-  - pip install --upgrade pip cython codecov pytest ipython
+  - pip install --upgrade pip cython codecov pytest ipython selenium
   - pip install ray
   - pip install -r requirements.txt --no-use-pep517
   - pip install -r requirements-viz.txt --no-use-pep517
@@ -56,7 +56,7 @@ matrix:
       script: *_coverage
       install:
         # ray is not yet supported in Python 3.8
-        - pip install --upgrade pip cython codecov pytest ipython
+        - pip install --upgrade pip cython codecov pytest ipython selenium
         - pip install -r requirements.txt --no-use-pep517
         - pip install -r requirements-viz.txt --no-use-pep517
         - pip install . --no-use-pep517
