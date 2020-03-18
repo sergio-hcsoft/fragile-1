@@ -21,7 +21,7 @@ Fragile is a framework for developing optimization algorithms inspired by Fracta
 
 ## About FractalAI
 
-FractalAI is based on the framework of [non-equilibrium thermodynamics](https://en.wikipedia.org/wiki/Non-equilibrium_thermodynamics), that can be used to derive new mathematical tools for efficiently exploring state spaces.
+FractalAI is based on the framework of [non-equilibrium thermodynamics](https://en.wikipedia.org/wiki/Non-equilibrium_thermodynamics), and can be used to derive new mathematical tools for efficiently exploring state spaces.
  
 The principles of our work are accessible online:
 
