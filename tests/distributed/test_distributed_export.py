@@ -68,7 +68,7 @@ class TestExportInterface:
     def test_score_gets_higher(self, swarm_with_score):
         swarm, target_score = swarm_with_score
         swarm.reset()
-        swarm.run(print_every=25)
+        swarm.run(report_interval=25)
         reward = swarm.get_best().rewards
         assert reward > target_score, "Iters: {}, rewards: {}".format(
             swarm.walkers.epoch, swarm.walkers.states.cum_rewards

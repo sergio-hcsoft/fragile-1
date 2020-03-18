@@ -4,7 +4,6 @@ import holoviews
 from fragile.core.base_classes import BaseWrapper
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
 from fragile.core.swarm import Swarm
-from fragile.core.utils import clear_output
 from fragile.dataviz.swarm_stats import (
     AtariBestFrame,
     BestReward,
@@ -127,7 +126,8 @@ class SwarmViz(BaseWrapper):
         env_states: StatesEnv = None,
         model_states: StatesModel = None,
         walkers_states: StatesWalkers = None,
-        print_every: int = 1e100,
+        report_interval: int = None,
+        show_pbar: bool = None,
     ):
         """
         Run a new search process.
@@ -136,7 +136,8 @@ class SwarmViz(BaseWrapper):
             env_states: :class:`StatesEnv` that define the initial state of the model.
             model_states: :class:`StatesEModel that define the initial state of the environment.
             walkers_states: :class:`StatesWalkers` that define the internal states of the walkers.
-            print_every: Display the algorithm progress every `print_every` epochs.
+            report_interval: Display the algorithm progress every ``report_interval`` epochs.
+            show_pbar: A progress bar will display the progress of the algorithm run.
         Returns:
             None.
 
@@ -144,12 +145,13 @@ class SwarmViz(BaseWrapper):
         self.swarm.reset(
             model_states=model_states, env_states=env_states, walkers_states=walkers_states
         )
-        while not self.calculate_end_condition():
+        for _ in self.get_run_loop(show_pbar=show_pbar):
+            if self.calculate_end_condition():
+                break
             try:
                 self.run_step()
-                if self.epoch % print_every == 0 and self.epoch > 0:
-                    print(self)
-                    clear_output(True)
+                if self.epoch % report_interval == 0 and self.epoch > 0:
+                    self.report_progress()
                 self.increase_epoch()
             except KeyboardInterrupt:
                 break

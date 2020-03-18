@@ -31,7 +31,7 @@ class SimpleWalkers(BaseWalkers):
         env_state_params: StateDict,
         model_state_params: StateDict,
         reward_scale: float = 1.0,
-        dist_scale: float = 1.0,
+        distance_scale: float = 1.0,
         accumulate_rewards: bool = True,
         max_epochs: int = None,
         distance_function: Optional[
@@ -50,9 +50,9 @@ class SimpleWalkers(BaseWalkers):
             reward_scale: Regulates the importance of the reward. Recommended to \
                           keep in the [0, 5] range. Higher values correspond to \
                           higher importance.
-            dist_scale: Regulates the importance of the distance. Recommended to \
-                          keep in the [0, 5] range. Higher values correspond to \
-                          higher importance.
+            distance_scale: Regulates the importance of the distance. Recommended to \
+                            keep in the [0, 5] range. Higher values correspond to \
+                            higher importance.
             accumulate_rewards: If ``True`` the rewards obtained after transitioning \
                                 to a new state will accumulate. If ``False`` only the last \
                                 reward will be taken into account.
@@ -86,20 +86,21 @@ class SimpleWalkers(BaseWalkers):
         self._states = self.STATE_CLASS(batch_size=n_walkers, **kwargs)
         self.distance_function = distance_function if distance_function is not None else l2_norm
         self.reward_scale = reward_scale
-        self.dist_scale = dist_scale
+        self.distance_scale = distance_scale
         self._id_counter = 0
         self.ignore_clone = ignore_clone if ignore_clone is not None else {}
 
     def __repr__(self) -> str:
         """Print all the data involved in the current run of the algorithm."""
-        try:
-            text = self._print_stats()
-            text += "Walkers States: {}\n".format(self._repr_state(self._states))
-            text += "Env States: {}\n".format(self._repr_state(self._env_states))
-            text += "Model States: {}\n".format(self._repr_state(self._model_states))
-            return text
-        except Exception:
-            return super(SimpleWalkers, self).__repr__()
+        with numpy.printoptions(linewidth=100, threshold=200, edgeitems=9):
+            try:
+                text = self._print_stats()
+                text += "Walkers States: {}\n".format(self._repr_state(self._states))
+                text += "Environment States: {}\n".format(self._repr_state(self._env_states))
+                text += "Model States: {}\n".format(self._repr_state(self._model_states))
+                return text
+            except Exception:
+                return super(SimpleWalkers, self).__repr__()
 
     def _print_stats(self) -> str:
         """Print several statistics of the current state of the swarm."""
@@ -200,7 +201,9 @@ class SimpleWalkers(BaseWalkers):
         The distances stored in the :class:`StatesWalkers` are already transformed.
         """
         processed_rewards = relativize(self.states.cum_rewards)
-        virt_rw = processed_rewards ** self.reward_scale * self.states.distances ** self.dist_scale
+        virt_rw = (
+            processed_rewards ** self.reward_scale * self.states.distances ** self.distance_scale
+        )
         self.update_states(virtual_rewards=virt_rw, processed_rewards=processed_rewards)
 
     def get_in_bounds_compas(self) -> numpy.ndarray:
@@ -347,11 +350,15 @@ class SimpleWalkers(BaseWalkers):
     def _repr_state(state):
         string = "\n"
         for k, v in state.items():
-            if k in ["observs", "states" "id_walkers"]:
+            if k in ["observs", "states", "id_walkers", "best_id"]:
                 continue
             shape = v.shape if hasattr(v, "shape") else None
-            new_str = "{} shape {} Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(
-                k, shape, *statistics_from_array(v)
+            new_str = (
+                "{}: shape {} Mean: {:.3f}, Std: {:.3f}, Max: {:.3f} Min: {:.3f}\n".format(
+                    k, shape, *statistics_from_array(v)
+                )
+                if isinstance(v, numpy.ndarray) and "best" not in k
+                else ("%s %s\n" % (k, v if not isinstance(v, numpy.ndarray) else v.flatten()))
             )
             string += new_str
         return string
@@ -374,7 +381,7 @@ class Walkers(SimpleWalkers):
         env_state_params: StateDict,
         model_state_params: StateDict,
         reward_scale: float = 1.0,
-        dist_scale: float = 1.0,
+        distance_scale: float = 1.0,
         max_epochs: int = None,
         accumulate_rewards: bool = True,
         distance_function: Optional[DistanceFunction] = None,
@@ -395,9 +402,9 @@ class Walkers(SimpleWalkers):
             reward_scale: Regulates the importance of the reward. Recommended to \
                           keep in the [0, 5] range. Higher values correspond to \
                           higher importance.
-            dist_scale: Regulates the importance of the distance. Recommended to \
-                          keep in the [0, 5] range. Higher values correspond to \
-                          higher importance.
+            distance_scale: Regulates the importance of the distance. Recommended to \
+                            keep in the [0, 5] range. Higher values correspond to \
+                            higher importance.
             max_epochs: Maximum number of iterations that the walkers are allowed \
                        to perform.
             accumulate_rewards: If ``True`` the rewards obtained after transitioning \
@@ -439,7 +446,7 @@ class Walkers(SimpleWalkers):
             env_state_params=env_state_params,
             model_state_params=model_state_params,
             reward_scale=reward_scale,
-            dist_scale=dist_scale,
+            distance_scale=distance_scale,
             max_epochs=max_epochs,
             accumulate_rewards=accumulate_rewards,
             distance_function=distance_function,
@@ -486,7 +493,7 @@ class Walkers(SimpleWalkers):
         rewards = -1 * self.states.cum_rewards if self.minimize else self.states.cum_rewards
         processed_rewards = relativize(rewards)
         score_reward = processed_rewards ** self.reward_scale
-        score_dist = self.states.distances ** self.dist_scale
+        score_dist = self.states.distances ** self.distance_scale
         virt_rw = score_reward * score_dist
         dist_prob = score_dist / score_dist.sum()
         reward_prob = score_reward / score_reward.sum()

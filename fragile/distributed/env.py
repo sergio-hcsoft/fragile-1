@@ -631,11 +631,8 @@ class _BatchFunction(_BatchEnv):
 
         """
         rewards = self._make_transitions(points)
-        try:
-            rewards = numpy.stack(rewards)
-        except BaseException as e:  # Lets be overconfident for once TODO: remove this.
-            for obs in rewards:
-                print(obs.shape)
+
+        rewards = numpy.stack(rewards)
         return numpy.concatenate([r.flatten() for r in rewards])
 
     def _make_transitions(self, points):
