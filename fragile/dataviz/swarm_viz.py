@@ -1,4 +1,6 @@
 """Wrappers to visualize the internal data of the :class:`Swarm`."""
+import holoviews
+
 from fragile.core.base_classes import BaseWrapper
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
 from fragile.core.swarm import Swarm
@@ -99,9 +101,6 @@ class SwarmViz(BaseWrapper):
         self.stream_interval = stream_interval
         self.columns = columns
 
-    def __getattr__(self, item):
-        return getattr(self.swarm, item)
-
     def __repr__(self):
         return self.swarm.__repr__()
 
@@ -177,6 +176,8 @@ class SwarmViz(BaseWrapper):
         plot = plots[0]
         for p in plots[1:]:
             plot = plot + p
+        if holoviews.Store.current_backend == "matplotlib":
+            return plot.cols(self.columns).opts(fig_size=125)
         return plot.cols(self.columns)
 
 

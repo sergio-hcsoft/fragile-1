@@ -1,7 +1,9 @@
 """Contains streaming plots that visualize the internal data of a :class:`Swarm`."""
 from typing import Tuple
+import warnings
 
 import holoviews
+from holoviews import Store
 import numpy
 import pandas
 
@@ -28,14 +30,36 @@ class SummaryTable(Table):
 
     name = "summary_table"
 
-    def opts(self, title="Run summary", width=350, *args, **kwargs):
+    def __init__(self, mpl_opts: dict = None, bokeh_opts: dict = None, *args, **kwargs):
+        """
+        Initialize a :class:`SummaryTable`.
+
+        Args:
+            bokeh_opts: Default options for the plot when rendered using the \
+                       "bokeh" backend.
+            mpl_opts: Default options for the plot when rendered using the \
+                    "matplotlib" backend.
+            *args: Passed to :class:`Table`.__init__
+            **kwargs: Passed to :class:`Table`.__init__
+        """
+        default_bokeh_opts = {"width": 350}
+        default_mpl_opts = {}
+        mpl_opts, bokeh_opts = self.update_default_opts(
+            default_mpl_opts, mpl_opts, default_bokeh_opts, bokeh_opts
+        )
+        super(SummaryTable, self).__init__(
+            mpl_opts=mpl_opts, bokeh_opts=bokeh_opts, *args, **kwargs
+        )
+
+    def opts(self, title="Run summary", *args, **kwargs):
         """
         Update the plot parameters. Same as ``holoviews`` ``opts``.
 
         The default values updates the plot axes independently when being \
         displayed in a :class:`Holomap`.
         """
-        super(SummaryTable, self).opts(title=title, width=width, *args, **kwargs)
+        plot_opts = self.update_kwargs(**kwargs)
+        super(SummaryTable, self).opts(title=title, *args, **plot_opts)
 
     def get_plot_data(self, swarm: Swarm = None):
         """Extract the best reward found by the swarm and create a \
@@ -69,6 +93,27 @@ class AtariBestFrame(RGB):
 
     name = "best_frame"
 
+    def __init__(self, mpl_opts: dict = None, bokeh_opts: dict = None, *args, **kwargs):
+        """
+        Initialize a :class:`AtariBestFrame`.
+
+        Args:
+            bokeh_opts: Default options for the plot when rendered using the \
+                       "bokeh" backend.
+            mpl_opts: Default options for the plot when rendered using the \
+                    "matplotlib" backend.
+            *args: Passed to :class:`RGB`.__init__
+            **kwargs: Passed to :class:`RGB`.__init__
+        """
+        default_bokeh_opts = {"width": 320, "height": 210}
+        default_mpl_opts = {}
+        mpl_opts, bokeh_opts = self.update_default_opts(
+            default_mpl_opts, mpl_opts, default_bokeh_opts, bokeh_opts
+        )
+        super(AtariBestFrame, self).__init__(
+            mpl_opts=mpl_opts, bokeh_opts=bokeh_opts, *args, **kwargs
+        )
+
     @staticmethod
     def image_from_state(swarm: Swarm, state: numpy.ndarray) -> numpy.ndarray:
         """
@@ -97,14 +142,15 @@ class AtariBestFrame(RGB):
         state = swarm.walkers.env_states.states[best_ix]
         return self.image_from_state(swarm=swarm, state=state)
 
-    def opts(self, title="Best state sampled", width=160, height=210, *args, **kwargs):
+    def opts(self, title="Best state sampled", *args, **kwargs):
         """
         Update the plot parameters. Same as ``holoviews`` ``opts``.
 
         The default values updates the plot axes independently when being \
         displayed in a :class:`Holomap`.
         """
-        super(AtariBestFrame, self).opts(title=title, width=width, height=height, *args, **kwargs)
+        kwargs = self.update_kwargs(**kwargs)
+        super(AtariBestFrame, self).opts(title=title, *args, **kwargs)
 
 
 class BestReward(Curve):
@@ -427,17 +473,40 @@ class WalkersDensity(SwarmLandscape):
 
     name = "walkers_density"
 
-    def __init__(self, use_embeddings: bool = True, *args, **kwargs):
+    def __init__(
+        self,
+        use_embeddings: bool = True,
+        mpl_opts: dict = None,
+        bokeh_opts: dict = None,
+        *args,
+        **kwargs
+    ):
         """
         Initialize a :class:`WalkersDensity`.
 
         Args:
             use_embeddings: Use embeddings to represent the observations if available.
+            bokeh_opts: Default options for the plot when rendered using the \
+                       "bokeh" backend.
+            mpl_opts: Default options for the plot when rendered using the \
+                    "matplotlib" backend.
             *args: Passed to :class:`SwarmLandscape`.
             **kwargs: Passed to :class:`SwarmLandscape`.
         """
         self.use_embeddings = use_embeddings
-        super(WalkersDensity, self).__init__(*args, **kwargs)
+        default_bokeh_opts = {
+            "height": 350,
+            "width": 400,
+            "shared_axes": False,
+            "tools": ["hover"],
+        }
+        default_mpl_opts = {}
+        mpl_opts, bokeh_opts = self.update_default_opts(
+            default_mpl_opts, mpl_opts, default_bokeh_opts, bokeh_opts
+        )
+        super(WalkersDensity, self).__init__(
+            mpl_opts=mpl_opts, bokeh_opts=bokeh_opts, *args, **kwargs
+        )
 
     def get_z_coords(self, swarm: Swarm, X: numpy.ndarray):
         """Do nothing."""
@@ -446,10 +515,8 @@ class WalkersDensity(SwarmLandscape):
     def opts(
         self,
         title="Walkers density distribution",
-        tools="default",
         xlabel: str = "x",
         ylabel: str = "y",
-        shared_axes: bool = False,
         framewise: bool = True,
         axiswise: bool = True,
         normalize: bool = True,
@@ -462,14 +529,20 @@ class WalkersDensity(SwarmLandscape):
         The default values updates the plot axes independently when being \
         displayed in a :class:`Holomap`.
         """
-        tools = tools if tools != "default" else ["hover"]
+        kwargs = self.update_kwargs(**kwargs)
+        # Add specific defaults to Scatter
+        scatter_kwargs = dict(kwargs)
+        if Store.current_backend == "bokeh":
+            scatter_kwargs["fill_color"] = scatter_kwargs.get("fill_color", "red")
+            scatter_kwargs["size"] = scatter_kwargs.get("size", 3.5)
+        elif Store.current_backend == "matplotlib":
+            scatter_kwargs["color"] = scatter_kwargs.get("color", "red")
+            scatter_kwargs["s"] = scatter_kwargs.get("s", 15)
         self.plot = self.plot.opts(
             holoviews.opts.Bivariate(
-                tools=tools,
                 title=title,
                 xlabel=xlabel,
                 ylabel=ylabel,
-                shared_axes=shared_axes,
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
@@ -480,25 +553,16 @@ class WalkersDensity(SwarmLandscape):
                 **kwargs
             ),
             holoviews.opts.Scatter(
-                fill_color="red",
                 alpha=0.7,
-                size=3.5,
-                tools=tools,
                 xlabel=xlabel,
                 ylabel=ylabel,
-                shared_axes=shared_axes,
                 framewise=framewise,
                 axiswise=axiswise,
                 normalize=normalize,
                 *args,
-                **kwargs
+                **scatter_kwargs
             ),
-            holoviews.opts.NdOverlay(
-                normalize=normalize,
-                framewise=framewise,
-                axiswise=axiswise,
-                shared_axes=shared_axes,
-            ),
+            holoviews.opts.NdOverlay(normalize=normalize, framewise=framewise, axiswise=axiswise,),
         )
 
     def get_plot_data(self, swarm: Swarm) -> Tuple:
@@ -540,8 +604,10 @@ class GridLandscape(SwarmLandscape):
             memory_vals = z.reshape(xx.shape)
         except ValueError:  # Avoid errors when initializing the plot.
             memory_vals = numpy.ones_like(xx)
-        mesh = holoviews.QuadMesh((xx, yy, memory_vals))
-        plot = (mesh * holoviews.Scatter((x, y))).opts(xlim=xlim, ylim=ylim)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            mesh = holoviews.QuadMesh((xx, yy, memory_vals))
+            plot = (mesh * holoviews.Scatter((x, y))).opts(xlim=xlim, ylim=ylim)
         return plot
 
     def get_z_coords(self, swarm: Swarm, X: numpy.ndarray = None) -> numpy.ndarray:
@@ -591,7 +657,9 @@ class KDELandscape(SwarmLandscape):
             memory_vals = z.reshape(xx.shape)
         except ValueError:  # Avoid errors when initializing the plot.
             memory_vals = numpy.ones_like(xx)
-        mesh = holoviews.QuadMesh((xx, yy, memory_vals))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            mesh = holoviews.QuadMesh((xx, yy, memory_vals))
         plot = (mesh * holoviews.Scatter((x, y))).opts(xlim=xlim, ylim=ylim)
         return plot
 
