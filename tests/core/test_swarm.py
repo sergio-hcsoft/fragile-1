@@ -1,3 +1,4 @@
+import numpy
 from plangym import AtariEnvironment
 from plangym.minimal import ClassicControl
 import pytest
@@ -5,6 +6,7 @@ import pytest
 from fragile.core.dt_samplers import GaussianDt
 from fragile.core.env import BaseEnvironment, DiscreteEnv
 from fragile.core.models import BaseModel, DiscreteUniform, NormalContinuous
+from fragile.core.states import OneWalker
 from fragile.core.swarm import Swarm
 from fragile.core.walkers import BaseWalkers, Walkers
 from fragile.optimize.benchmarks import Rastrigin
@@ -94,6 +96,27 @@ class TestSwarm:
     def test_reset_no_params(self, swarm):
         swarm.reset()
 
+    def test_reset_with_root_walker(self, swarm):
+        swarm.reset()
+        param_dict = swarm.walkers.env_states.get_params_dict()
+        obs_dict = param_dict["observs"]
+        state_dict = param_dict["states"]
+        obs_size = obs_dict.get("size", obs_dict["shape"][1:])
+        state_size = state_dict.get("size", state_dict["shape"][1:])
+        obs = numpy.random.random(obs_size).astype(obs_dict["dtype"])
+        state = numpy.random.random(state_size).astype(state_dict["dtype"])
+        reward = 160290
+        root_walker = OneWalker(observ=obs, reward=reward, state=state)
+        swarm.reset(root_walker=root_walker)
+        assert (swarm.best_obs == obs).all()
+        assert (swarm.best_state == state).all()
+        assert swarm.best_reward == reward
+        assert swarm.best_id == root_walker.id_walkers
+        assert (swarm.walkers.env_states.observs == obs).all()
+        assert (swarm.walkers.env_states.states == state).all()
+        assert (swarm.walkers.env_states.rewards == reward).all()
+        assert (swarm.walkers.states.id_walkers == root_walker.id_walkers).all()
+
     def test_step_does_not_crashes(self, swarm):
         swarm.reset()
         swarm.step_walkers()
@@ -110,6 +133,6 @@ class TestSwarm:
         swarm.walkers.max_epochs = 500
         swarm.run()
         reward = swarm.walkers.states.cum_rewards.max()
-        assert reward > target_score, "Iters: {}, rewards: {}".format(
+        assert reward >= target_score, "Iters: {}, rewards: {}".format(
             swarm.walkers.epoch, swarm.walkers.states.cum_rewards
         )

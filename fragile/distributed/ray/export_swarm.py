@@ -56,9 +56,9 @@ class ExportSwarm:
             export_best=export_best,
         )
 
-    def reset(self):
+    def reset(self, *args, **kwargs):
         """Reset the internal :class:`ExportSwarm`."""
-        self.swarm.reset()
+        self.swarm.reset(*args, **kwargs)
 
     # Ray does not allow to implement static methods in remote classes.
     def get_empty_export_walkers(self) -> ExportedWalkers:

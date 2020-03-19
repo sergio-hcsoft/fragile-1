@@ -30,7 +30,7 @@ def running_in_ipython() -> bool:
         return False
 
 
-def get_plangym_env(swarm: "Swarm") -> Environment:
+def get_plangym_env(swarm: "Swarm") -> Environment:  # noqa: F821
     """Return the :class:`plangym.Environment` of the target Swarm."""
     from fragile import core
     from fragile.atari import env

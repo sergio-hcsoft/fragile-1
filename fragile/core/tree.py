@@ -7,26 +7,36 @@ from fragile.core.base_classes import BaseStateTree
 from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
 
 
-class _BaseNetworkxTree(BaseStateTree):
+class BaseNetworkxTree(BaseStateTree):
     """
     This is a tree data structure that stores the paths followed by the walkers. \
     It can be pruned to delete paths that are longer be needed. It uses a \
     networkx DiGraph to keep track of the states relationships.
     """
 
-    def __init__(self):
-        """Initialize a :class:`_BaseNetworkxTree`."""
+    def __init__(self, root_id: int = 0, root_hash: int = 0):
+        """
+        Initialize a :class:`BaseNetworkxTree`.
+
+        Args:
+            root_id: The node id of the root node.
+            root_hash: The hash of the root node.
+
+        """
+        super(BaseNetworkxTree, self).__init__(root_id=root_id, root_hash=root_hash)
         self.data: nx.DiGraph = nx.DiGraph()
-        self.data.add_node(self.ROOT_ID, state=None, n_iter=-1)
-        self.root_id = self.ROOT_ID
-        self.ids_to_hash = {self.ROOT_ID: self.ROOT_HASH}
-        self.hash_to_ids = {self.ROOT_HASH: self.ROOT_ID}
+        self.data.add_node(self.root_id, state=None, n_iter=-1)
+        self.root_id = self.root_id
+        self.ids_to_hash = {self.root_id: self.root_hash}
+        self.hash_to_ids = {self.root_hash: self.root_id}
         self._node_count = 0
-        self.leafs = {self.ROOT_ID}
-        self.parents = {self.ROOT_ID}
+        self.leafs = {self.root_id}
+        self.parents = {self.root_id}
 
     def reset(
         self,
+        root_id: int = 0,
+        root_hash: int = 0,
         env_states: StatesEnv = None,
         model_states: StatesModel = None,
         walkers_states: StatesWalkers = None,
@@ -36,6 +46,8 @@ class _BaseNetworkxTree(BaseStateTree):
         the tree .
 
         Args:
+            root_id: The node id of the root node.
+            root_hash: The hash of the root node.
             env_states: Ignored. Only to implement interface.
             model_states: Ignored. Only to implement interface.
             walkers_states: Ignored. Only to implement interface.
@@ -44,14 +56,16 @@ class _BaseNetworkxTree(BaseStateTree):
             None.
 
         """
+        self.root_id = root_id
+        self.root_hash = root_hash
         self.data: nx.DiGraph = nx.DiGraph()
-        self.data.add_node(self.ROOT_ID, state=None, n_iter=-1)
-        self.root_id = self.ROOT_ID
-        self.ids_to_hash = {self.ROOT_ID: self.ROOT_HASH}
-        self.hash_to_ids = {self.ROOT_HASH: self.ROOT_ID}
+        self.data.add_node(self.root_id, state=None, n_iter=-1)
+        self.root_id = self.root_id
+        self.ids_to_hash = {self.root_id: self.root_hash}
+        self.hash_to_ids = {self.root_hash: self.root_id}
         self._node_count = 0
-        self.leafs = {self.ROOT_ID}
-        self.parents = {self.ROOT_ID}
+        self.leafs = {self.root_id}
+        self.parents = {self.root_id}
 
     def add_new_hash(self, node_hash: int) -> int:
         """
@@ -144,7 +158,7 @@ class _BaseNetworkxTree(BaseStateTree):
             self.prune_branch(leaf, alive_leafs, from_hash=from_hash)
         return
 
-    def get_branch(self, leaf_id, from_hash: bool = False, root=BaseStateTree.ROOT_ID) -> tuple:
+    def get_branch(self, leaf_id, from_hash: bool = False, root=None) -> tuple:
         """
         Get the data of the branch ended at leaf_id.
 
@@ -166,6 +180,7 @@ class _BaseNetworkxTree(BaseStateTree):
             ``dts`` the :class:`StatesModel`.dt of each state.
 
         """
+        root = root if root is not None else self.root_id
         leaf_name = self.hash_to_ids[leaf_id] if from_hash else leaf_id
         nodes = nx.shortest_path(self.data, root, leaf_name)
         states = [self.data.nodes[n]["state"] for n in nodes]
@@ -196,7 +211,7 @@ class _BaseNetworkxTree(BaseStateTree):
 
         if (
             is_not_a_leaf
-            or leaf == self.ROOT_ID
+            or leaf == self.root_id
             or leaf not in self.data.nodes
             or leaf in self.parents
         ):
@@ -209,7 +224,7 @@ class _BaseNetworkxTree(BaseStateTree):
         # Remove the node if it is a leaf and is not alive
         parents = list(self.data.in_edges([leaf]))
         parent = parents[0][0]
-        if parent == self.ROOT_ID or parent in alive_leafs or parent in self.parents:
+        if parent == self.root_id or parent in alive_leafs or parent in self.parents:
             return
         self.data.remove_node(leaf)
         self.leafs.discard(leaf)
@@ -233,7 +248,7 @@ class _BaseNetworkxTree(BaseStateTree):
         return leafs
 
 
-class HistoryTree(_BaseNetworkxTree):
+class HistoryTree(BaseNetworkxTree):
     """Keep track of the history of trajectories generated bu the :class:`Swarm`."""
 
     def add_states(

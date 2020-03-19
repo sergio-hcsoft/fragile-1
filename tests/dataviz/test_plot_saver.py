@@ -19,7 +19,7 @@ class TestPlotSaver:
             holoviews.extension(backend)
             swarm_viz = swarm_dict.get(swarm_name)()
             swarm_viz.stream_interval = 1
-            plot_saver = PlotSaver(swarm_viz, output_path="Miau_db")
+            plot_saver = PlotSaver(swarm_viz, output_path="Miau_db", fmt="png")
             return plot_saver
 
     def test_get_file_name(self, plot_saver):

@@ -2,6 +2,7 @@ from typing import Callable
 
 import numpy
 
+from fragile.core.states import OneWalker
 from fragile.distributed.export_swarm import BestWalker
 from fragile.distributed.ray import ray
 from fragile.distributed.ray.export_swarm import (
@@ -89,18 +90,27 @@ class DistributedExport:
         """Return the best walkers found during the algorithm run."""
         return ray.get(self.param_server.get_data.remote("best"))
 
-    def reset(self):
+    def reset(self, root_walker: OneWalker = None):
         """Reset the internal data of the swarms and parameter server."""
         self._epoch = 0
         reset_param_server = self.param_server.reset.remote()
-        reset_swarms = [swarm.reset.remote() for swarm in self.swarms]
+        reset_swarms = [swarm.reset.remote(root_walker=root_walker) for swarm in self.swarms]
         ray.get(reset_param_server)
         ray.get(reset_swarms)
 
-    def run(self, report_interval=None):
-        """Run the distributed search algorithm asynchronously."""
+    def run(self, root_walker: OneWalker = None, report_interval=None):
+        """
+        Run the distributed search algorithm asynchronously.
+
+        Args:
+            root_walker: Walker representing the initial state of the search. \
+                         The walkers will be reset to this walker, and it will \
+                         be added to the root of the :class:`StateTree` if any.
+            report_interval: Display the algorithm progress every ``report_interval`` epochs.
+
+        """
         report_interval = self.report_interval if report_interval is None else report_interval
-        self.reset()
+        self.reset(root_walker=root_walker)
         current_import_walkers = self.swarms[0].get_empty_export_walkers.remote()
         steps = {}
         for swarm in self.swarms:

@@ -2,7 +2,7 @@
 import holoviews
 
 from fragile.core.base_classes import BaseWrapper
-from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
+from fragile.core.states import OneWalker, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.swarm import Swarm
 from fragile.dataviz.swarm_stats import (
     AtariBestFrame,
@@ -99,6 +99,7 @@ class SwarmViz(BaseWrapper):
         )
         self.stream_interval = stream_interval
         self.columns = columns
+        self.current_plot = None
 
     def __repr__(self):
         return self.swarm.__repr__()
@@ -123,6 +124,7 @@ class SwarmViz(BaseWrapper):
 
     def run(
         self,
+        root_walker: OneWalker = None,
         env_states: StatesEnv = None,
         model_states: StatesModel = None,
         walkers_states: StatesWalkers = None,
@@ -133,6 +135,9 @@ class SwarmViz(BaseWrapper):
         Run a new search process.
 
         Args:
+            root_walker: Walker representing the initial state of the search. \
+                         The walkers will be reset to this walker, and it will \
+                         be added to the root of the :class:`StateTree` if any.
             env_states: :class:`StatesEnv` that define the initial state of the model.
             model_states: :class:`StatesEModel that define the initial state of the environment.
             walkers_states: :class:`StatesWalkers` that define the internal states of the walkers.
@@ -144,7 +149,10 @@ class SwarmViz(BaseWrapper):
         """
         report_interval = self.report_interval if report_interval is None else report_interval
         self.swarm.reset(
-            model_states=model_states, env_states=env_states, walkers_states=walkers_states
+            root_walker=root_walker,
+            model_states=model_states,
+            env_states=env_states,
+            walkers_states=walkers_states,
         )
         for _ in self.get_run_loop(show_pbar=show_pbar):
             if self.calculate_end_condition():
@@ -182,8 +190,10 @@ class SwarmViz(BaseWrapper):
         for p in plots[1:]:
             plot = plot + p
         if holoviews.Store.current_backend == "matplotlib":
-            return plot.cols(self.columns).opts(fig_size=125)
-        return plot.cols(self.columns)
+            self.current_plot = plot.cols(self.columns).opts(fig_size=125)
+        else:
+            self.current_plot = plot.cols(self.columns)
+        return self.current_plot
 
 
 class Summary(SwarmViz):
