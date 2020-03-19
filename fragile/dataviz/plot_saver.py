@@ -3,7 +3,7 @@ import os
 import holoviews
 
 from fragile.core.base_classes import BaseWrapper
-from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
+from fragile.core.states import OneWalker, StatesEnv, StatesModel, StatesWalkers
 from fragile.dataviz.swarm_viz import SwarmViz
 
 
@@ -42,7 +42,7 @@ class PlotSaver(BaseWrapper):
         self.output_path = output_path
         self._save_kwargs = kwargs
         self._fmt = fmt
-        self.swarm_plot = self.plot()
+        self.plot()
 
     def ____getattr__(self, item):
         try:
@@ -72,7 +72,7 @@ class PlotSaver(BaseWrapper):
         filename = self._get_file_name()
         filepath = os.path.join(self.output_path, filename)
         holoviews.save(
-            self.swarm_plot,
+            self.current_plot,
             filename=filepath,
             fmt=self._fmt,
             **self._save_kwargs,
@@ -81,6 +81,7 @@ class PlotSaver(BaseWrapper):
 
     def run(
         self,
+        root_walker: OneWalker = None,
         env_states: StatesEnv = None,
         model_states: StatesModel = None,
         walkers_states: StatesWalkers = None,
@@ -91,6 +92,9 @@ class PlotSaver(BaseWrapper):
         Run a new search process.
 
         Args:
+            root_walker: Walker representing the initial state of the search. \
+                         The walkers will be reset to this walker, and it will \
+                         be added to the root of the :class:`StateTree` if any.
             env_states: :class:`StatesEnv` that define the initial state of the model.
             model_states: :class:`StatesEModel that define the initial state of the environment.
             walkers_states: :class:`StatesWalkers` that define the internal states of the walkers.
@@ -101,7 +105,12 @@ class PlotSaver(BaseWrapper):
 
         """
         report_interval = self.report_interval if report_interval is None else report_interval
-        self.reset(model_states=model_states, env_states=env_states, walkers_states=walkers_states)
+        self.reset(
+            root_walker=root_walker,
+            model_states=model_states,
+            env_states=env_states,
+            walkers_states=walkers_states,
+        )
         for _ in self.get_run_loop(show_pbar=show_pbar):
             if self.calculate_end_condition():
                 break

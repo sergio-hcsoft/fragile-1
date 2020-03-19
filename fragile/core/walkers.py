@@ -327,6 +327,7 @@ class SimpleWalkers(BaseWalkers):
                 self._accumulate_and_update_rewards(env_states.rewards)
         if isinstance(model_states, StatesModel):
             self._model_states.update(model_states)
+        self.update_ids()
 
     def _accumulate_and_update_rewards(self, rewards: numpy.ndarray):
         """
@@ -591,12 +592,14 @@ class Walkers(SimpleWalkers):
         super(Walkers, self).reset(
             env_states=env_states, model_states=model_states, walkers_states=walkers_states
         )
-        rewards = self.env_states.rewards
-        ix = rewards.argmin() if self.minimize else rewards.argmax()
+        best_ix = (
+            self.env_states.rewards.argmin() if self.minimize else self.env_states.rewards.argmax()
+        )
         self.states.update(
-            best_reward=numpy.inf if self.minimize else -numpy.inf,
-            best_obs=copy.deepcopy(self.env_states.observs[ix]),
-            best_state=copy.deepcopy(self.env_states.states[ix]),
+            best_reward=copy.deepcopy(self.env_states.rewards[best_ix]),
+            best_obs=copy.deepcopy(self.env_states.observs[best_ix]),
+            best_state=copy.deepcopy(self.env_states.states[best_ix]),
+            best_id=hash_numpy(self.env_states.states[best_ix]),
         )
         if self.critic is not None:
             critic_score = self.critic.reset(

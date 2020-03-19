@@ -3,7 +3,7 @@ from plangym.minimal import ClassicControl
 import pytest
 
 from fragile.core import DiscreteEnv, DiscreteUniform, Swarm
-from fragile.core.tree import _BaseNetworkxTree, HistoryTree
+from fragile.core.tree import BaseNetworkxTree, HistoryTree
 
 
 @pytest.fixture()
@@ -28,18 +28,23 @@ def swarm_with_tree():
 
 class TestBaseNetworkxTree:
 
-    networkx_trees = [_BaseNetworkxTree, HistoryTree]
+    networkx_trees = [BaseNetworkxTree, HistoryTree]
 
     @pytest.mark.parametrize("networkx_tree", networkx_trees, indirect=True)
     def test_init(self, networkx_tree):
-        tree = _BaseNetworkxTree()
+        tree = networkx_tree
         assert isinstance(tree.data, networkx.DiGraph)
-        assert tree.ROOT_ID in tree.data.nodes
-        assert tree.ROOT_ID in tree.leafs
+        assert tree.root_id in tree.data.nodes
+        assert tree.root_id in tree.leafs
 
     @staticmethod
     def test_tree_with_integration_test(swarm_with_tree):
-        swarm_with_tree.run()
+        try:
+            swarm_with_tree.run()
+        except:
+            hashes = swarm_with_tree.tree.hash_to_ids
+            epoch = swarm_with_tree.epoch
+            raise ValueError("%s epoch: %s" % (hashes, epoch))
         assert networkx.is_tree(swarm_with_tree.tree.data)
 
         best_ix = swarm_with_tree.walkers.states.cum_rewards.argmax()

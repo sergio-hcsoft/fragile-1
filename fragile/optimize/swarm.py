@@ -1,7 +1,7 @@
 from typing import Callable
 
 from fragile.core.models import Bounds, NormalContinuous
-from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
+from fragile.core.states import OneWalker, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.swarm import Swarm
 from fragile.optimize.env import Function
 
@@ -64,6 +64,7 @@ class FunctionMapper(Swarm):
 
     def reset(
         self,
+        root_walker: OneWalker = None,
         walkers_states: StatesWalkers = None,
         model_states: StatesModel = None,
         env_states: StatesEnv = None,
@@ -73,6 +74,9 @@ class FunctionMapper(Swarm):
         :class:`Model` and clear the internal data to start a new search process.
 
         Args:
+            root_walker: Walker representing the initial state of the search. \
+                         The walkers will be reset to this walker, and it will \
+                         be added to the root of the :class:`StateTree` if any.
             model_states: :class:`StatesModel` that define the initial state of \
                           the :class:`Model`.
             env_states: :class:`StatesEnv` that define the initial state of \
@@ -82,7 +86,10 @@ class FunctionMapper(Swarm):
 
         """
         super(FunctionMapper, self).reset(
-            walkers_states=walkers_states, model_states=model_states, env_states=env_states
+            root_walker=root_walker,
+            walkers_states=walkers_states,
+            model_states=model_states,
+            env_states=env_states,
         )
         if self.start_same_pos:
             self.walkers.env_states.observs[:] = self.walkers.env_states.observs[0]

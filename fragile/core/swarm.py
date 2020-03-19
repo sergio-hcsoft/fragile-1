@@ -12,9 +12,9 @@ from fragile.core.base_classes import (
     BaseStateTree,
     BaseSwarm,
 )
-from fragile.core.states import StatesEnv, StatesModel
+from fragile.core.states import OneWalker, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.utils import running_in_ipython, Scalar
-from fragile.core.walkers import StatesWalkers, Walkers
+from fragile.core.walkers import Walkers
 
 
 class Swarm(BaseSwarm):
@@ -80,7 +80,6 @@ class Swarm(BaseSwarm):
             *args,
             **kwargs
         )
-        # self._log.setLevel(logging_level)
         self._notebook_container = None
         self.setup_notebook_container()
 
@@ -204,6 +203,7 @@ class Swarm(BaseSwarm):
 
     def reset(
         self,
+        root_walker: OneWalker = None,
         walkers_states: StatesWalkers = None,
         model_states: StatesModel = None,
         env_states: StatesEnv = None,
@@ -213,26 +213,43 @@ class Swarm(BaseSwarm):
         :class:`Model` and clear the internal data to start a new search process.
 
         Args:
+            root_walker: Walker representing the initial state of the search. \
+                         The walkers will be reset to this walker, and it will \
+                         be added to the root of the :class:`StateTree` if any.
             model_states: :class:`StatesModel` that define the initial state of \
                           the :class:`Model`.
             env_states: :class:`StatesEnv` that define the initial state of \
                         the :class:`Environment`.
             walkers_states: :class:`StatesWalkers` that define the internal \
                             states of the :class:`Walkers`.
+
         """
         self._epoch = 0
-        env_sates = self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
+        env_states = (
+            self.env.reset(batch_size=self.walkers.n) if env_states is None else env_states
+        )
+        # Add corresponding root_walkers data to env_states
+        if root_walker is not None:
+            if not isinstance(root_walker, OneWalker):
+                raise ValueError(
+                    "Root walker needs to be an "
+                    "instance of OneWalker, got %s instead." % type(root_walker)
+                )
+            env_states = self._update_env_with_root(root_walker=root_walker, env_states=env_states)
+
         model_states = (
             self.model.reset(batch_size=self.walkers.n, env_states=env_states)
             if model_states is None
             else model_states
         )
         model_states.update(init_actions=model_states.actions)
-        self.walkers.reset(env_states=env_sates, model_states=model_states)
+        self.walkers.reset(env_states=env_states, model_states=model_states)
         if self._use_tree:
-            root_ids = numpy.array([self.tree.ROOT_HASH] * self.walkers.n)
-            self.walkers.states.id_walkers = root_ids
+            if root_walker is not None:
+                self.tree.reset(root_hash=int(root_walker.id_walkers))
+            root_ids = numpy.array([self.tree.root_hash] * self.walkers.n)
             self.tree.reset(
+                root_hash=int(self.tree.root_hash),
                 env_states=self.walkers.env_states,
                 model_states=self.walkers.model_states,
                 walkers_states=walkers_states,
@@ -242,6 +259,7 @@ class Swarm(BaseSwarm):
 
     def run(
         self,
+        root_walker: OneWalker = None,
         model_states: StatesModel = None,
         env_states: StatesEnv = None,
         walkers_states: StatesWalkers = None,
@@ -252,6 +270,9 @@ class Swarm(BaseSwarm):
         Run a new search process.
 
         Args:
+            root_walker: Walker representing the initial state of the search. \
+                         The walkers will be reset to this walker, and it will \
+                         be added to the root of the :class:`StateTree` if any.
             model_states: :class:`StatesModel` that define the initial state of \
                           the :class:`Model`.
             env_states: :class:`StatesEnv` that define the initial state of \
@@ -266,7 +287,12 @@ class Swarm(BaseSwarm):
 
         """
         report_interval = self.report_interval if report_interval is None else report_interval
-        self.reset(model_states=model_states, env_states=env_states, walkers_states=walkers_states)
+        self.reset(
+            root_walker=root_walker,
+            model_states=model_states,
+            env_states=env_states,
+            walkers_states=walkers_states,
+        )
         for _ in self.get_run_loop(show_pbar=show_pbar):
             if self.calculate_end_condition():
                 break
@@ -389,7 +415,6 @@ class Swarm(BaseSwarm):
         self.walkers.update_states(
             env_states=env_states, model_states=model_states,
         )
-        self.walkers.update_ids()
         self.update_tree(states_ids)
 
     def update_tree(self, states_ids: List[int]) -> None:
@@ -418,6 +443,12 @@ class Swarm(BaseSwarm):
         """
         if self._prune_tree and self._use_tree:
             self.tree.prune_tree(alive_leafs=leaf_nodes, from_hash=True)
+
+    def _update_env_with_root(self, root_walker, env_states) -> StatesEnv:
+        env_states.rewards[:] = copy.deepcopy(root_walker.rewards.flatten())
+        env_states.observs[:] = copy.deepcopy(root_walker.observs.flatten())
+        env_states.states[:] = copy.deepcopy(root_walker.states.flatten())
+        return env_states
 
 
 class NoBalance(Swarm):

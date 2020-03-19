@@ -2,7 +2,7 @@ from typing import Callable, List, Union
 
 import numpy as np
 
-from fragile.core.states import States, StatesEnv, StatesModel, StatesWalkers
+from fragile.core.states import OneWalker, States, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.utils import RANDOM_SEED, random_state, StateDict
 
 
@@ -65,8 +65,17 @@ class StatesOwner:
 class BaseStateTree:
     """Data structure in charge of storing the history of visited states of an algorithm run."""
 
-    ROOT_ID = 0
-    ROOT_HASH = 0
+    def __init__(self, root_id: int = 0, root_hash: int = 0):
+        """
+        Initialize a :class:`BaseNetworkxTree`.
+
+        Args:
+            root_id: The node id of the root node.
+            root_hash: The hash of the root node.
+
+        """
+        self.root_id = root_id
+        self.root_hash = root_hash
 
     def add_states(
         self,
@@ -99,6 +108,8 @@ class BaseStateTree:
 
     def reset(
         self,
+        root_id: int = 0,
+        root_hash: int = 0,
         env_states: States = None,
         model_states: States = None,
         walkers_states: States = None,
@@ -635,6 +646,7 @@ class BaseSwarm:
 
     def run(
         self,
+        root_walker: OneWalker = None,
         model_states: StatesModel = None,
         env_states: StatesEnv = None,
         walkers_states: StatesWalkers = None,
@@ -643,6 +655,9 @@ class BaseSwarm:
         Run a new search process until the stop condition is met.
 
         Args:
+            root_walker: Walker representing the initial state of the search. \
+                         The walkers will be reset to this walker, and it will \
+                         be added to the root of the :class:`StateTree` if any.
             model_states: States that define the initial state of the environment.
             env_states: States that define the initial state of the model.
             walkers_states: States that define the internal states of the walkers.
