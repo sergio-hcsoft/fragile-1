@@ -55,15 +55,15 @@ class TestExportInterface:
         assert reset is None
 
     def test_get_data(self, export_swarm):
-        states_attr = ray.get(export_swarm.get_data.remote("cum_rewards"))
+        states_attr = ray.get(export_swarm.get.remote("cum_rewards"))
         assert isinstance(states_attr, numpy.ndarray)
-        env_attr = ray.get(export_swarm.get_data.remote("observs"))
+        env_attr = ray.get(export_swarm.get.remote("observs"))
         assert isinstance(env_attr, numpy.ndarray)
-        model_attr = ray.get(export_swarm.get_data.remote("actions"))
+        model_attr = ray.get(export_swarm.get.remote("actions"))
         assert isinstance(model_attr, numpy.ndarray)
-        walkers_attr = ray.get(export_swarm.get_data.remote("minimize"))
+        walkers_attr = ray.get(export_swarm.get.remote("minimize"))
         assert isinstance(walkers_attr, bool)
-        swarm_attr = ray.get(export_swarm.get_data.remote("n_import"))
+        swarm_attr = ray.get(export_swarm.get.remote("n_import"))
         assert isinstance(swarm_attr, int)
 
     def test_get_empty_walkers(self, export_swarm):
@@ -86,6 +86,6 @@ class TestExportInterface:
         )
         ray.get(export_swarm.reset.remote())
         exported = ray.get(export_swarm.run_exchange_step.remote(walkers))
-        best_found = ray.get(export_swarm.get_data.remote("best_reward"))
-        assert len(exported) == ray.get(export_swarm.get_data.remote("n_export"))
+        best_found = ray.get(export_swarm.get.remote("best_reward"))
+        assert len(exported) == ray.get(export_swarm.get.remote("n_export"))
         assert best_found == 999

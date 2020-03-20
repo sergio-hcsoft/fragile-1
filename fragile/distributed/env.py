@@ -44,13 +44,13 @@ class RayEnv(Environment):
     @property
     def states_shape(self) -> tuple:
         """Return the shape of the internal state of the :class:`Environment`."""
-        shape = self.envs[0].get_data.remote("states_shape")
+        shape = self.envs[0].get.remote("states_shape")
         return ray.get(shape)
 
     @property
     def observs_shape(self) -> tuple:
         """Return the shape of the observations state of the :class:`Environment`."""
-        shape = self.envs[0].get_data.remote("observs_shape")
+        shape = self.envs[0].get.remote("observs_shape")
         return ray.get(shape)
 
     def get_params_dict(self) -> StateDict:

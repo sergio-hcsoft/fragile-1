@@ -32,7 +32,7 @@ class Environment(Environment):
     def __getattr__(self, item):
         return getattr(self.env, item)
 
-    def get_data(self, name: str):
+    def get(self, name: str, default=None):
         """
         Get an attribute from the wrapped environment.
 
@@ -43,7 +43,10 @@ class Environment(Environment):
             Attribute from the wrapped :class:`fragile.Environment`.
 
         """
-        return getattr(self.env, name)
+        try:
+            return getattr(self.env, name)
+        except Exception:
+            return default
 
     def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """

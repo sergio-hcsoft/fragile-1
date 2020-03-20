@@ -70,16 +70,16 @@ class DistributedExport:
             for _ in range(n_swarms)
         ]
         self.n_swarms = n_swarms
-        self.minimize = ray.get(self.swarms[0].get_data.remote("minimize"))
-        self.max_epochs = ray.get(self.swarms[0].get_data.remote("max_epochs"))
-        self.reward_limit = ray.get(self.swarms[0].get_data.remote("reward_limit"))
+        self.minimize = ray.get(self.swarms[0].get.remote("minimize"))
+        self.max_epochs = ray.get(self.swarms[0].get.remote("max_epochs"))
+        self.reward_limit = ray.get(self.swarms[0].get.remote("reward_limit"))
         self.param_server = RemoteParamServer.remote(
             max_len=max_len, minimize=self.minimize, add_global_best=add_global_best
         )
         self._epoch = 0
 
     def __getattr__(self, item):
-        return ray.get(self.swarms[0].get_data.remote(item))
+        return ray.get(self.swarms[0].get.remote(item))
 
     @property
     def epoch(self) -> int:
@@ -88,7 +88,7 @@ class DistributedExport:
 
     def get_best(self) -> BestWalker:
         """Return the best walkers found during the algorithm run."""
-        return ray.get(self.param_server.get_data.remote("best"))
+        return ray.get(self.param_server.get.remote("best"))
 
     def reset(self, root_walker: OneWalker = None):
         """Reset the internal data of the swarms and parameter server."""

@@ -12,4 +12,5 @@ per-file-ignores=
     **/__init__.py: F401
     **/tests/**:D
     **/tests/**:F811
+    ./fragile/core/wrappers.py:D
     ./fragile/optimize/benchmarks.py:D

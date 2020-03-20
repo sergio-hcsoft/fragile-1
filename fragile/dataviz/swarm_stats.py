@@ -70,12 +70,16 @@ class SummaryTable(Table):
                 {"Epoch": [], "Best Reward": [], "Deaths": [], "Clones": []}, columns=columns
             )
         else:
-            deaths = float(swarm.walkers.env_states.oobs.sum()) / len(swarm)
-            clones = float(swarm.walkers.states.will_clone.sum()) / len(swarm)
+            oobs = swarm.get("oobs")
+            will_clone = swarm.get("will_clone")
+            best_reward = swarm.get("best_reward")
+            epoch = swarm.get("epoch")
+            deaths = float(oobs.sum()) / len(swarm)
+            clones = float(will_clone.sum()) / len(swarm)
             data = pandas.DataFrame(
                 {
-                    "Epoch": [int(swarm.walkers.epoch)],
-                    "Best Reward": ["{:.4f}".format(float(swarm.best_reward))],
+                    "Epoch": [int(epoch)],
+                    "Best Reward": ["{:.4f}".format(float(best_reward))],
                     "Deaths": ["{:.2f}%".format(100 * deaths)],
                     "Clones": ["{:.2f}%".format(100 * clones)],
                 },
@@ -138,8 +142,7 @@ class AtariBestFrame(RGB):
         :class:`Swarm` contains."""
         if swarm is None:
             return numpy.zeros((210, 160, 3))
-        best_ix = swarm.walkers.states.cum_rewards.argmax()
-        state = swarm.walkers.env_states.states[best_ix]
+        state = swarm.get("best_state")
         return self.image_from_state(swarm=swarm, state=state)
 
     def opts(self, title="Best state sampled", *args, **kwargs):
@@ -180,8 +183,9 @@ class BestReward(Curve):
         if swarm is None:
             data = pandas.DataFrame({"x": [], "best_val": []}, columns=["x", "best_val"])
         else:
+
             data = pandas.DataFrame(
-                {"x": [int(swarm.walkers.epoch)], "best_val": [float(swarm.best_reward)]},
+                {"x": [int(swarm.get("epoch"))], "best_val": [float(swarm.get("best_reward"))]},
                 columns=["x", "best_val"],
             )
         return data
@@ -219,7 +223,7 @@ class SwarmHistogram(Histogram):
         """Update the x axis boundaries to match the values of the plotted distribution."""
         self.xlim = (X.min(), X.max())
 
-    def get_plot_data(self, swarm: Swarm, attr: str, states: str = "states"):
+    def get_plot_data(self, swarm: Swarm, attr: str):
         """
         Extract the data of the attribute of the :class:`Swarm` that will be \
         represented as a histogram.
@@ -227,16 +231,14 @@ class SwarmHistogram(Histogram):
         Args:
             swarm: Target :class:`Swarm`.
             attr: Attribute of the target :class:`States` that will be plotted.
-            states: States class that contains the data to be plotted. Accepts \
-                    {"states", "env_states", "model_states"}
+
         Returns:
             Histogram containing the target data.
 
         """
         if swarm is None:
             return super(SwarmHistogram, self).get_plot_data(swarm)
-        states_class = getattr(swarm.walkers, states)
-        data = getattr(states_class, attr) if swarm is not None else numpy.arange(10)
+        data = swarm.get(attr) if swarm is not None else numpy.arange(10)
         self._update_lims(data)
         return super(SwarmHistogram, self).get_plot_data(data)
 
@@ -424,7 +426,7 @@ class RewardLandscape(SwarmLandscape):
 
     def get_z_coords(self, swarm: Swarm, X: numpy.ndarray = None):
         """Return the normalized ``cum_rewards`` of the walkers."""
-        rewards: numpy.ndarray = relativize(swarm.walkers.states.cum_rewards)
+        rewards: numpy.ndarray = relativize(swarm.get("cum_rewards"))
         return rewards
 
 
@@ -444,7 +446,7 @@ class VirtualRewardLandscape(SwarmLandscape):
 
     def get_z_coords(self, swarm: Swarm, X: numpy.ndarray = None):
         """Return the normalized ``virtual_rewards`` of the walkers."""
-        virtual_rewards: numpy.ndarray = swarm.walkers.states.virtual_rewards
+        virtual_rewards: numpy.ndarray = swarm.get("virtual_rewards")
         return virtual_rewards
 
 
@@ -464,7 +466,7 @@ class DistanceLandscape(SwarmLandscape):
 
     def get_z_coords(self, swarm: Swarm, X: numpy.ndarray = None):
         """Return the normalized ``distances`` of the walkers."""
-        distances: numpy.ndarray = swarm.walkers.states.distances
+        distances: numpy.ndarray = swarm.get("distances")
         return distances
 
 

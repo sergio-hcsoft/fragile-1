@@ -61,7 +61,9 @@ class States:
         """Length is equal to n_walkers."""
         return self.n
 
-    def __getitem__(self, item: str) -> Union[numpy.ndarray, List[numpy.ndarray]]:
+    def __getitem__(
+        self, item: Union[str, int]
+    ) -> Union[numpy.ndarray, List[numpy.ndarray], "States"]:
         """
         Query an attribute of the class as if it was a dictionary.
 
@@ -77,8 +79,20 @@ class States:
                 return getattr(self, item)
             except AttributeError:
                 raise TypeError("Tried to get a non existing attribute with key {}".format(item))
+        elif isinstance(item, int):
+            return self._ix(item)
         else:
-            raise TypeError("item must be an instance of str, got {} instead".format(item))
+            raise TypeError(
+                "item must be an instance of str, got {} of type instead".format(item, type(item))
+            )
+
+    def _ix(self, index: int):
+        # TODO(guillemdb): Allow slicing
+        data = {
+            k: numpy.array([v[index]]) if isinstance(v, numpy.ndarray) else v
+            for k, v in self.items()
+        }
+        return self.__class__(batch_size=1, **data)
 
     def __setitem__(self, key, value: Union[Tuple, List, numpy.ndarray]):
         """
@@ -569,6 +583,14 @@ class StatesWalkers(States):
             in_bounds=numpy.ones(self.n, dtype=numpy.bool_),
         )
 
+    def _ix(self, index: int):
+        # TODO(guillemdb): Allow slicing
+        data = {
+            k: numpy.array([v[index]]) if isinstance(v, numpy.ndarray) and "best" not in k else v
+            for k, v in self.items()
+        }
+        return self.__class__(batch_size=1, **data)
+
 
 class OneWalker(States):
     """
@@ -636,6 +658,22 @@ class OneWalker(States):
             copy.deepcopy(id_walker) if id_walker is not None else hash_numpy(state)
         )
         self.update(**kwargs)
+
+    def __repr__(self):
+        with numpy.printoptions(linewidth=100, threshold=200, edgeitems=9):
+            string = (
+                "reward: %s\n"
+                "observ: %s\n"
+                "state: %s\n"
+                "id: %s"
+                % (
+                    self.rewards[0],
+                    self.observs[0].flatten(),
+                    self.states[0].flatten(),
+                    self.id_walkers[0],
+                )
+            )
+            return string
 
     def get_params_dict(self) -> StateDict:
         """Return a dictionary containing the param_dict to build an instance \

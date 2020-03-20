@@ -5,6 +5,7 @@ import holoviews
 from plangym import AtariEnvironment
 import pytest
 
+from fragile.core.base_classes import BaseSwarm
 from fragile.core.dt_samplers import GaussianDt
 from fragile.core.env import DiscreteEnv
 from fragile.core.models import DiscreteUniform, NormalContinuous
@@ -100,3 +101,6 @@ class TestSwarmVisualizations(TestSwarm):
 
     def test_score_gets_higher(self, swarm_with_score):
         pass
+
+    def test_class_inheritance(self, swarm):
+        assert isinstance(swarm, Swarm)

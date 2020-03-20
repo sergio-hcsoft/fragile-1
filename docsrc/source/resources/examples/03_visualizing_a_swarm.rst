@@ -310,6 +310,6 @@ The exported images can be found in the target ``output_path``.
     Image(image)
 
 .. image::
-    ../images/03_saved_plot.gif
+    ../images/03_saved_plot.png
 
 

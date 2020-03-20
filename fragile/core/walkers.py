@@ -1,5 +1,5 @@
 import copy
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import numpy
 
@@ -111,6 +111,18 @@ class SimpleWalkers(BaseWalkers):
             100 * self.states.will_clone.sum() / self.n,
         )
         return text
+
+    def get(self, name: str, default: Any = None) -> Any:
+        """Access attributes of the :class:`Swarm` and its children."""
+        if hasattr(self.states, name):
+            return getattr(self.states, name)
+        elif hasattr(self.env_states, name):
+            return getattr(self.env_states, name)
+        elif hasattr(self.model_states, name):
+            return getattr(self.model_states, name)
+        elif hasattr(self, name):
+            return getattr(self, name)
+        return default
 
     def ids(self) -> List[int]:
         """
@@ -425,7 +437,7 @@ class Walkers(SimpleWalkers):
                       process. If ``False`` it will be a maximization process.
             best_walker: Tuple containing the best state and reward that will \
                         be used as the initial best values found.
-            reward_limit: The iteration process will stop after reaching this \
+            reward_limit: The algorithm run will stop after reaching this \
                           reward value. If you are running a minimization process \
                           it will be considered the minimum reward possible, and \
                           if you are maximizing a reward it will be the maximum \

@@ -12,9 +12,12 @@ from fragile.distributed.ray import ray
 class ExportParamServer(ParamServer):
     """:class:`ParamServer` that can be used with ray."""
 
-    def get_data(self, name: str):
+    def get(self, name: str, default=None):
         """Access attributes of :class:`ParamServer`."""
-        return getattr(self, name)
+        try:
+            return getattr(self, name)
+        except Exception:
+            return default
 
 
 @ray.remote
@@ -73,7 +76,7 @@ class ExportSwarm:
         """Run a the walkers import/export process of the internal :class:`ExportSwarm`."""
         return self.swarm.run_exchange_step(walkers)
 
-    def get_data(self, name: str):
+    def get(self, name: str):
         """Access attributes of the underlying :class:`ExportSwarm`."""
         if hasattr(self.swarm.walkers.states, name):
             return getattr(self.swarm.walkers.states, name)

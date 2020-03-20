@@ -4,7 +4,7 @@ from typing import Tuple
 
 import numpy
 
-from fragile.core.base_classes import BaseWrapper
+from fragile.core import SwarmWrapper
 from fragile.core.functions import cross_fai_iteration
 from fragile.core.states import States
 from fragile.core.swarm import Swarm
@@ -117,7 +117,7 @@ class BestWalker(ExportedWalkers):
             self.id_walkers = copy.deepcopy(walkers.id_walkers[ix])
 
 
-class ExportSwarm(BaseWrapper):
+class ExportSwarm(SwarmWrapper):
     """Wrapper that allows to import and export data from :class:`ExportedWalkers`."""
 
     def __init__(
@@ -147,7 +147,7 @@ class ExportSwarm(BaseWrapper):
         self.n_export = n_export
         self._export_best = export_best
         self._import_best = import_best
-        super(ExportSwarm, self).__init__(data=swarm, name="swarm")
+        super(ExportSwarm, self).__init__(swarm, name="swarm")
 
     def run_exchange_step(self, walkers: ExportedWalkers) -> ExportedWalkers:
         """

@@ -1,9 +1,10 @@
 """Wrappers to visualize the internal data of the :class:`Swarm`."""
 import holoviews
 
-from fragile.core.base_classes import BaseWrapper
+# from fragile.core.base_classes import BaseWrapper
 from fragile.core.states import OneWalker, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.swarm import Swarm
+from fragile.core.wrappers import SwarmWrapper
 from fragile.dataviz.swarm_stats import (
     AtariBestFrame,
     BestReward,
@@ -39,7 +40,7 @@ ALL_PLOT_NAMES = tuple([plot.name for plot in ALL_SWARM_TYPES])
 ALL_SWARM_PLOTS = dict(zip(ALL_PLOT_NAMES, ALL_SWARM_TYPES))
 
 
-class SwarmViz(BaseWrapper):
+class SwarmViz(SwarmWrapper):
     """Wrap a :class:`Swarm` to incorporate visualizations."""
 
     SWARM_STATS_TYPES = (
@@ -88,7 +89,7 @@ class SwarmViz(BaseWrapper):
             columns: Number of columns of the generated grid of visualizations.
 
         """
-        super(SwarmViz, self).__init__(data=swarm, name="swarm")
+        super(SwarmViz, self).__init__(swarm=swarm, name="swarm")
         display_plots = self.DEFAULT_PLOTS if display_plots == "default" else display_plots
         self.display_plots = self.PLOT_NAMES if display_plots == "all" else display_plots
         self.plots = self._init_plots(
@@ -147,23 +148,15 @@ class SwarmViz(BaseWrapper):
             None.
 
         """
-        report_interval = self.report_interval if report_interval is None else report_interval
-        self.swarm.reset(
+        self.unwrapped.__class__.run(
+            self,
             root_walker=root_walker,
-            model_states=model_states,
             env_states=env_states,
+            model_states=model_states,
             walkers_states=walkers_states,
+            report_interval=report_interval,
+            show_pbar=show_pbar,
         )
-        for _ in self.get_run_loop(show_pbar=show_pbar):
-            if self.calculate_end_condition():
-                break
-            try:
-                self.run_step()
-                if self.epoch % report_interval == 0 and self.epoch > 0:
-                    self.report_progress()
-                self.increase_epoch()
-            except KeyboardInterrupt:
-                break
         # Stream the last step if it was not streamed
         if not self.epoch - 1 % self.stream_interval == 0:
             self.stream_plots()

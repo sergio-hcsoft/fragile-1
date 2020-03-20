@@ -46,6 +46,12 @@ Welcome to Fragile's documentation!
 
 .. toctree::
    :maxdepth: 5
+   :caption: Algorithms:
+
+   module_docs/algorithms.rst
+
+.. toctree::
+   :maxdepth: 5
    :caption: Atari games:
 
    module_docs/atari.rst

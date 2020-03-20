@@ -138,7 +138,7 @@ class TestWalkers:
         with numpy.errstate(**NUMPY_IGNORE_WARNINGS_PARAMS):
             walkers.reset()
             walkers.balance()
-            assert walkers.states.will_clone.sum() == 0
+            assert walkers.env_states.oobs.sum() == 0
 
     def test_accumulate_rewards(self, walkers):
         walkers.reset()
