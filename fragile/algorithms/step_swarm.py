@@ -4,7 +4,7 @@ from typing import Any, Callable, List, Tuple
 import numpy
 
 from fragile.core import Swarm, SwarmWrapper, Walkers
-from fragile.core.base_classes import BaseModel, BaseStateTree
+from fragile.core.base_classes import BaseModel, BaseTree
 from fragile.core.states import OneWalker, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.utils import float_type, hash_numpy, Scalar, StateDict
 
@@ -229,11 +229,7 @@ class FollowBestModel(RootModel):
 
         """
         init_actions = walkers.states.init_actions.flatten().astype(int)
-        best_ix = (
-            walkers.states.cum_rewards.argmin()
-            if walkers.minimize
-            else walkers.states.cum_rewards.argmax()
-        )
+        best_ix = walkers.get_best_index()
         root_model_states = StatesModel(
             batch_size=1, state_dict={"actions": {"dtype": int}, "dt": {"dtype": int}}
         )
@@ -280,7 +276,7 @@ class StepSwarm(Swarm):
         n_walkers: int,
         step_epochs: int = None,
         root_model: Callable[[], RootModel] = MajorityDiscreteModel,
-        tree: Callable[[], BaseStateTree] = None,
+        tree: Callable[[], BaseTree] = None,
         prune_tree: bool = True,
         report_interval: int = numpy.inf,
         show_pbar: bool = True,
@@ -365,8 +361,6 @@ class StepSwarm(Swarm):
         self.show_pbar = show_pbar
         self.report_interval = report_interval
         self.tree = tree() if tree is not None else tree
-        self._prune_tree = prune_tree
-        self._use_tree = tree is not None
         self._epoch = 0
         self._walkers: StepWalkers = self.internal_swarm.walkers
         self._model = self.internal_swarm.model
@@ -466,28 +460,23 @@ class StepSwarm(Swarm):
             env_states=env_states,
             model_states=model_states,
         )
-        if self._use_tree:
-            if root_walker is not None:
-                self.tree.reset(root_hash=int(root_walker.id_walkers[0]))
-            root_ids = numpy.array([self.tree.root_hash] * self.walkers.n)
-            if root_walker is None:  # Otherwise the ids are already updated inside walkers.reset
-                self.internal_swarm.walkers.states.id_walkers = root_ids
-            self.tree.reset(
-                env_states=self.internal_swarm.walkers.env_states[0],
-                model_states=self.internal_swarm.walkers.model_states[0],
-                walkers_states=self.internal_swarm.walkers.states[0],
-            )
-            ids: List[int] = [self.internal_swarm.walkers.states.id_walkers[0]]
-            self.update_tree(states_ids=ids)
         # Reset root data
-        self.root_model_states = self.walkers.model_states[0]
-        self.root_env_states = self.walkers.env_states[0]
-        self.root_walkers_states = self.walkers.states[0]
+        best_index = self.walkers.get_best_index()
+        self.root_model_states = self.walkers.model_states[best_index]
+        self.root_env_states = self.walkers.env_states[best_index]
+        self.root_walkers_states = self.walkers.states[best_index]
         self.root_walker = OneWalker(
-            reward=self.root_env_states.rewards[0],
-            observ=self.root_env_states.observs[0],
-            state=self.root_env_states.states[0],
+            reward=self.root_env_states.rewards[best_index],
+            observ=self.root_env_states.observs[best_index],
+            state=self.root_env_states.states[best_index],
         )
+        if self.tree is not None:
+            self.tree.reset(
+                root_id=self.best_id,
+                env_states=self.root_env_states[0],
+                model_states=self.root_model_states[0],
+                walkers_states=self.root_walkers_states[0],
+            )
 
     def calculate_end_condition(self) -> bool:
         """Implement the logic for deciding if the algorithm has finished. \
@@ -508,12 +497,12 @@ class StepSwarm(Swarm):
         Args:
             states_ids: list containing the ids of the new states added.
         """
-        if False:  # self._use_tree:
+        if self.tree is not None:
             self.tree.add_states(
                 parent_ids=states_ids,
-                env_states=self.env_states,
-                model_states=self.model_states,
-                walkers_states=self.walkers_states,
+                env_states=self.root_env_states,
+                model_states=self.root_model_states,
+                walkers_states=self.root_walkers_states,
                 n_iter=int(self.epoch),
             )
 
@@ -535,17 +524,18 @@ class StepSwarm(Swarm):
 
     def step_root_state(self):
         """Make the state transition of the root state."""
-        parent_id = int(self.best_id)
         model_states = self.root_model.predict(
             root_env_states=self.root_env_states, walkers=self.walkers
         )
+        parent_id = copy.copy(self.best_id)
         new_env_states = self.env.step(model_states=model_states, env_states=self.root_env_states)
-        self.root_env_states.update(other=new_env_states)
-        self.update_states()
-        self.update_tree([parent_id])
+        self.update_states(new_env_states, model_states)
+        self.update_tree(states_ids=[parent_id])
 
-    def update_states(self):
+    def update_states(self, env_states, model_states):
         """Update the data of the root state."""
+        self.root_env_states.update(other=env_states)
+        self.root_model_states.update(other=model_states)
         if self.accumulate_rewards:
             cum_rewards = self.root_walkers_states.cum_rewards
             cum_rewards = cum_rewards + self.root_env_states.rewards

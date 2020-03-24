@@ -15,7 +15,7 @@ from fragile.core import (
     Swarm,
     Walkers,
 )
-from fragile.core.base_classes import BaseStateTree
+from fragile.core.base_classes import BaseTree
 from fragile.core.utils import StateDict
 
 
@@ -273,8 +273,8 @@ class SwarmWrapper(BaseWrapper, Swarm):
     def __repr__(self):
         return self.unwrapped.__class__.__repr__(self.unwrapped)
 
-    def get(self, name: str) -> Any:
-        return self.unwrapped.__class__.get(self.unwrapped, name)
+    def get(self, name: str, default: Any = None) -> Any:
+        return self.unwrapped.__class__.get(self.unwrapped, name, default)
 
     def increase_epoch(self) -> None:
         return self.unwrapped.__class__.increase_epoch(self.unwrapped)
@@ -326,7 +326,7 @@ class SwarmWrapper(BaseWrapper, Swarm):
         n_walkers: int,
         reward_scale: float = 1.0,
         distance_scale: float = 1.0,
-        tree: Callable[[], BaseStateTree] = None,
+        tree: Callable[[], BaseTree] = None,
         prune_tree: bool = True,
         *args,
         **kwargs
@@ -378,8 +378,8 @@ class SwarmWrapper(BaseWrapper, Swarm):
         )
 
 
-class TreeWrapper(BaseWrapper, BaseStateTree):
-    def __init__(self, tree: BaseStateTree, name: str = "_tree"):
+class TreeWrapper(BaseWrapper, BaseTree):
+    def __init__(self, tree: BaseTree, name: str = "_tree"):
         BaseWrapper.__init__(self, tree, name=name)
 
     def add_states(

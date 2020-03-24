@@ -1,5 +1,5 @@
 import copy
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, Optional, Set, Tuple
 
 import numpy
 
@@ -124,13 +124,13 @@ class SimpleWalkers(BaseWalkers):
             return getattr(self, name)
         return default
 
-    def ids(self) -> List[int]:
+    def ids(self) -> numpy.ndarray:
         """
         Return a list of unique ids for each walker state.
 
         The returned ids are integers representing the hash of the different states.
         """
-        return self.env_states.hash_values("states")
+        return numpy.array(self.env_states.hash_values("states"))
 
     def update_ids(self):
         """Update the unique id of each walker and store it in the :class:`StatesWalkers`."""
@@ -552,7 +552,7 @@ class Walkers(SimpleWalkers):
         best = rewards.argmin() if self.minimize else rewards.argmax()
         idx = (self.states.cum_rewards == best).astype(int)
         ix = idx.argmax()
-        return ix
+        return int(ix)
 
     def update_best(self):
         """Keep track of the best state found and its reward."""
@@ -571,7 +571,7 @@ class Walkers(SimpleWalkers):
                 best_reward=best_reward,
                 best_state=best_state,
                 best_obs=best_obs,
-                best_id=int(self.states.id_walkers[ix]),
+                best_id=copy.copy(self.states.id_walkers[ix]),
             )
 
     def fix_best(self):
@@ -611,7 +611,7 @@ class Walkers(SimpleWalkers):
             best_reward=copy.deepcopy(self.env_states.rewards[best_ix]),
             best_obs=copy.deepcopy(self.env_states.observs[best_ix]),
             best_state=copy.deepcopy(self.env_states.states[best_ix]),
-            best_id=hash_numpy(self.env_states.states[best_ix]),
+            best_id=copy.deepcopy(self.states.id_walkers[best_ix]),
         )
         if self.critic is not None:
             critic_score = self.critic.reset(

@@ -21,9 +21,9 @@ API abstract classes
 .. autoclass:: fragile.core.base_classes.BaseModel
    :members:
 
-:class:`BaseStateTree`
+:class:`BaseTree`
 ^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.core.base_classes.BaseStateTree
+.. autoclass:: fragile.core.base_classes.BaseTree
    :members:
 
 :class:`BaseCritic`
@@ -157,6 +157,11 @@ StateTree
 :class:`HistoryTree`
 ^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: fragile.core.tree.HistoryTree
+   :members:
+
+:class:`NetworkxTree`
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: fragile.core.tree.NetworkxTree
    :members:
 
 Bounds

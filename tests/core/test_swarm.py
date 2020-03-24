@@ -108,10 +108,12 @@ class TestSwarm:
         reward = 160290
         root_walker = OneWalker(observ=obs, reward=reward, state=state)
         swarm.reset(root_walker=root_walker)
+        swarm_best_id = swarm.best_id
+        root_walker_id = root_walker.id_walkers
         assert (swarm.best_obs == obs).all()
         assert (swarm.best_state == state).all()
         assert swarm.best_reward == reward
-        assert swarm.best_id == root_walker.id_walkers
+        assert swarm_best_id == root_walker_id
         assert (swarm.walkers.env_states.observs == obs).all()
         assert (swarm.walkers.env_states.states == state).all()
         assert (swarm.walkers.env_states.rewards == reward).all()
