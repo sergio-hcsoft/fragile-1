@@ -2,11 +2,13 @@ from typing import Any, Callable, Dict, Generator, Tuple, Union
 
 import numpy
 from plangym.env import Environment, ParallelEnvironment
+import xxhash
 
 
 RANDOM_SEED = 160290
 random_state = numpy.random.RandomState(seed=RANDOM_SEED)
 
+hash_type = "<U64"
 float_type = numpy.float32
 Scalar = Union[int, numpy.int, float, numpy.float]
 StateDict = Dict[str, Dict[str, Any]]
@@ -34,14 +36,18 @@ def get_plangym_env(swarm: "Swarm") -> Environment:  # noqa: F821
     """Return the :class:`plangym.Environment` of the target Swarm."""
     from fragile import core
     from fragile.atari import env
+    from fragile.distributed import ParallelEnvironment as FragileParallelEnv, RayEnv
 
     valid_env_types = (core.DiscreteEnv, env.AtariEnv)
-    if isinstance(swarm.env, valid_env_types):
-        if not isinstance(swarm.env._env, Environment):
+    env = swarm.env
+    if isinstance(env, (FragileParallelEnv, RayEnv)):
+        env = env._local_env
+    if isinstance(env, valid_env_types):
+        if not isinstance(env._env, Environment):
             raise TypeError("swarm.env needs to represent a `plangym.Environment`.")
-    elif not isinstance(swarm.env, valid_env_types):
+    elif not isinstance(env, valid_env_types):
         raise TypeError("swarm.env needs to represent a `plangym.Environment`")
-    plangym_env = swarm.env._env
+    plangym_env = env._env
     if isinstance(plangym_env, ParallelEnvironment):
         return plangym_env._env
     else:
@@ -66,7 +72,7 @@ def remove_notebook_margin(output_width_pct: int = 80):
 
 def hash_numpy(x: numpy.ndarray) -> int:
     """Return a value that uniquely identifies a numpy array."""
-    return hash(x.tostring())
+    return xxhash.xxh64_hexdigest(x.tobytes())
 
 
 def resize_frame(

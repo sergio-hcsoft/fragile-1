@@ -62,20 +62,18 @@ class StatesOwner:
         return state
 
 
-class BaseStateTree:
+class BaseTree:
     """Data structure in charge of storing the history of visited states of an algorithm run."""
 
-    def __init__(self, root_id: int = 0, root_hash: int = 0):
+    def __init__(self, root_id):
         """
-        Initialize a :class:`BaseNetworkxTree`.
+        Initialize a :class:`BaseTree`.
 
         Args:
             root_id: The node id of the root node.
-            root_hash: The hash of the root node.
 
         """
         self.root_id = root_id
-        self.root_hash = root_hash
 
     def add_states(
         self,
@@ -106,35 +104,15 @@ class BaseStateTree:
         """
         pass
 
-    def reset(
-        self,
-        root_id: int = 0,
-        root_hash: int = 0,
-        env_states: States = None,
-        model_states: States = None,
-        walkers_states: States = None,
-    ) -> None:
+    def reset(self, *args, **kwargs) -> None:
         """
         Delete all the data currently stored and reset the internal state of \
         the tree.
         """
         pass
 
-    def prune_tree(self, alive_leafs: set, from_hash: bool = False) -> None:
-        """
-        Remove the branches that do not have a walker in their leaves.
-
-        Args:
-            alive_leafs: Contains the ids  of the leaf nodes that are being \
-                         expanded by the walkers.
-            from_hash: from_hash: If ``True`` ``alive_leafs`` will be \
-                      considered a set of hashes of states. If ``False`` it \
-                      will be considered a set of node ids.
-
-        Returns:
-            None.
-
-        """
+    def prune_tree(self, *args, **kwargs) -> None:
+        """Remove branches of the tree."""
         pass
 
 

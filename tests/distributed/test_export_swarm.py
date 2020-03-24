@@ -138,7 +138,6 @@ class TestExportedSwarm:
             walkers=walkers,
         )
         assert export_swarm.walkers.states.cum_rewards[0] == 999
-        assert export_swarm.walkers.states.id_walkers[0] == 999
         assert export_swarm.walkers.env_states.states[0] == 999
         assert (export_swarm.walkers.env_states.observs[0] == numpy.ones(4) * 999).all()
 

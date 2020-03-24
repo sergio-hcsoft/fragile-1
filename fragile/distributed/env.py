@@ -40,6 +40,7 @@ class RayEnv(Environment):
             RemoteEnvironment.remote(env_callable=env_callable, env_kwargs=env_kwargs)
             for _ in range(n_workers)
         ]
+        self._local_env = env_callable()
 
     @property
     def states_shape(self) -> tuple:
