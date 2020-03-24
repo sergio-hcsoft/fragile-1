@@ -56,19 +56,6 @@ The following code will initialize a ``plangym.Environment`` for an
 OpenAI ``gym`` Atari game. The game names use the same convention as the
 OpenAI ``gym`` library.
 
-.. code:: ipython3
-
-    from plangym import AtariEnvironment, ParallelEnvironment
-    
-    game_name = "MsPacman-ram-v0"
-    env = ParallelEnvironment(
-            env_class=AtariEnvironment,
-            name=game_name,
-            clone_seeds=True,
-            autoreset=True,
-            blocking=False,
-        )
-
 In order to use a ``plangym.Environment`` in a :swarm:`Swarm` we will need to
 define the appropriate Callable object to pass as a parameter.
 
@@ -81,8 +68,17 @@ an instance of :env:`fragile.BaseEnvironment`.
 
 .. code:: ipython3
 
-    from fragile.atari.env import AtariEnv
-    env_callable = lambda: AtariEnv(env=env)
+    from plangym import AtariEnvironment, ParallelEnvironment
+    from fragile.atari import AtariEnv
+    def atari_environment():
+        game_name = "MsPacman-v0"
+        plangym_env = ParallelEnvironment(
+            env_class=AtariEnvironment,
+            name=game_name,
+            clone_seeds=True,
+            autoreset=True,
+            )
+        return AtariEnv(env=plangym_env)
 
 Defining the :model:`Model`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -108,7 +104,7 @@ It is possible to keep track of the sampled data by using a
 :tree:`HistoryTree`. This data structure will construct a directed acyclic
 graph that will contain the sampled states and their transitions.
 
-Passing the ``prune_tree`` parameter to the :class:`Swarm` we can choose to
+Passing the ``prune_tree`` parameter to the :class:`HistoryTree` we can choose to
 store only the branches of the :tree:`HistoryTree` that are being explored.
 If ``prune_tree`` is ``True`` all the branches of the graph with no
 walkers will be removed after every iteration, and if it is ``False``
@@ -116,10 +112,13 @@ all the visited states will be kept in memory.
 
 In order to save memory we will be setting it to ``True``.
 
+With the ``names`` attribute, we can control the data that is stored in the search tree.
+In this example we will be saving the state of the atari emulator, the actions and the number of times the actions have been applied at every environment step.
+
 .. code:: ipython3
 
-    from fragile.core import HistoryTree
-    prune_tree = True
+    from fragile.core.tree import HistoryTree
+    tree_callable = lambda: HistoryTree(names=["states", "actions", "dt"], prune=True)
 
 Initializing a Swarm
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -162,8 +161,8 @@ algorithm:
     from fragile.core import Swarm
     swarm = Swarm(
         model=model_callable,
-        env=env_callable,
-        tree=HistoryTree,
+        env=atari_environment,
+        tree=tree_callable,
         n_walkers=n_walkers,
         max_epochs=max_epochs,
         prune_tree=prune_tree,
@@ -589,14 +588,16 @@ maximum reward and use its states and actions in the
 ``plangym.Environment``. This way we can render all the trajectory using
 the ``render`` method provided by the OpenAI gym API.
 
+The ``iterate_branch`` method of the :class:`HistoryTree` takes the id of an state.
+It returns the data stored for the path that starts at the root node of the search
+tree and finishes at the state with the provided id.
+
 .. code:: ipython3
 
-    best_ix = swarm.walkers.states.cum_rewards.argmax()
-    best_id = swarm.walkers.states.id_walkers[best_ix]
-    path = swarm.tree.get_branch(best_id, from_hash=True)
-    
     import time
-    for s, a in zip(path[0][1:], path[1]):
-        env.step(state=s, action=a)
+    from fragile.core.utils import get_plangym_env
+    env = get_plangym_env(swarm) # Get the plangym environment used by the Swarm
+    for s, a, dt in swarm.tree.iterate_branch(swarm.best_id):
+        env.step(state=s, action=a, n_repeat_action=dt)
         env.render()
         time.sleep(0.05)
