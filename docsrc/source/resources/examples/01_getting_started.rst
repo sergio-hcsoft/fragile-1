@@ -68,17 +68,23 @@ an instance of :env:`fragile.BaseEnvironment`.
 
 .. code:: ipython3
 
-    from plangym import AtariEnvironment, ParallelEnvironment
+    from plangym import AtariEnvironment
     from fragile.atari import AtariEnv
     def atari_environment():
-        game_name = "MsPacman-v0"
-        plangym_env = ParallelEnvironment(
-            env_class=AtariEnvironment,
+        game_name = "MsPacman-ram-v0"
+        plangym_env = AtariEnvironment(
             name=game_name,
             clone_seeds=True,
             autoreset=True,
             )
         return AtariEnv(env=plangym_env)
+
+Using the ``ParallelEnv`` located in the `distributed` module. It is a wrapper that allows any `Environment` to be run in parallel using the `multiprocessing` module. It takes a Callable object that returns an `Environment` and it spawns the target number of processed to run the `make_transitions` function of the `Environment` in parallel.
+
+.. code:: ipython3
+
+    from fragile.distributed import ParallelEnv
+    env_callable = lambda: ParallelEnv(atari_environment, n_workers=4)
 
 Defining the :model:`Model`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -161,7 +167,7 @@ algorithm:
     from fragile.core import Swarm
     swarm = Swarm(
         model=model_callable,
-        env=atari_environment,
+        env=env_callable,
         tree=tree_callable,
         n_walkers=n_walkers,
         max_epochs=max_epochs,

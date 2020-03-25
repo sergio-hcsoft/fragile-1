@@ -4,14 +4,9 @@
 Environments
 ------------
 
-:class:`ParallelEnvironment`
+:class:`ParallelEnv`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.distributed.env.ParallelEnvironment
-    :members:
-
-:class:`ParallelFunction`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.distributed.env.ParallelFunction
+.. autoclass:: fragile.distributed.env.ParallelEnv
     :members:
 
 :class:`RayEnv`
@@ -19,10 +14,6 @@ Environments
 .. autoclass:: fragile.distributed.env.RayEnv
     :members:
 
-:class:`RayFunction`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: fragile.distributed.env.RayFunction
-    :members:
 
 Distributed Swarm
 -----------------

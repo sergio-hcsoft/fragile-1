@@ -62,11 +62,11 @@ class States:
         self._names = list(attr_dict.keys())
         self._attr_dict = attr_dict
         self.update(**self._attr_dict)
-        self._n_walkers = batch_size
+        self._batch_size = batch_size
 
     def __len__(self):
         """Length is equal to n_walkers."""
-        return self.n
+        return self._batch_size
 
     def __getitem__(
         self, item: Union[str, int, numpy.int64]
@@ -214,7 +214,7 @@ class States:
     @property
     def n(self) -> int:
         """Return the batch_size of the vectors, which is equivalent to the number of walkers."""
-        return self._n_walkers
+        return self._batch_size
 
     def get(self, key: str, default=None):
         """

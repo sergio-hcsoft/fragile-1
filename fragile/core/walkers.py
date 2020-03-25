@@ -79,7 +79,7 @@ class SimpleWalkers(BaseWalkers):
         )
 
         def l2_norm(x: numpy.ndarray, y: numpy.ndarray) -> numpy.ndarray:
-            return numpy.linalg.norm(x - y, axis=1)
+            return numpy.sqrt(numpy.sum((x - y) ** 2, axis=1))
 
         self._model_states = StatesModel(state_dict=model_state_params, batch_size=n_walkers)
         self._env_states = StatesEnv(state_dict=env_state_params, batch_size=n_walkers)

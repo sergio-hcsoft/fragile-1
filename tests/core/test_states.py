@@ -19,7 +19,7 @@ class TestStates:
     def test_init_kwargs(self, states_class):
         name = "miau"
         new_states = states_class(batch_size=2, miau=name)
-        assert new_states._n_walkers == 2
+        assert new_states._batch_size == 2
         assert name in new_states.keys()
         assert getattr(new_states, name) == name, type(new_states)
 
@@ -50,7 +50,7 @@ class TestStates:
     @pytest.mark.parametrize("states_class", state_classes)
     def test_n(self, states_class):
         new_states = states_class(batch_size=2)
-        assert new_states.n == new_states._n_walkers == 2
+        assert new_states.n == new_states._batch_size == 2
 
     @pytest.mark.parametrize("states_class", state_classes)
     def test_get(self, states_class):

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Iterable, List, Union
+from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
 
 import numpy
 
@@ -186,6 +186,16 @@ class EnvWrapper(BaseWrapper, Environment):
             self.unwrapped, model_states=model_states, env_states=env_states
         )
 
+    def make_transitions(self, *args, **kwargs) -> Dict[str, numpy.ndarray]:
+        return self.unwrapped.__class__.make_transitions(self.unwrapped, *args, **kwargs)
+
+    def states_to_data(
+        self, model_states: StatesModel, env_states: StatesEnv
+    ) -> Union[Dict[str, numpy.ndarray], Tuple[numpy.ndarray, ...]]:
+        return self.unwrapped.__class__.states_to_data(
+            self.unwrapped, model_states=model_states, env_states=env_states
+        )
+
 
 class WalkersWrapper(BaseWrapper, Walkers):
     def __init__(self, walkers: Walkers, name: str = "_walkers"):
@@ -369,8 +379,8 @@ class SwarmWrapper(BaseWrapper, Swarm):
     def update_tree(self, states_ids: List[int]) -> None:
         return self.unwrapped.__class__.update_tree(self.unwrapped, states_ids=states_ids)
 
-    def prune_tree(self, leaf_nodes) -> None:
-        return self.unwrapped.__class__.prune_tree(self.unwrapped, leaf_nodes=leaf_nodes)
+    def prune_tree(self) -> None:
+        return self.unwrapped.__class__.prune_tree(self.unwrapped)
 
     def _update_env_with_root(self, root_walker, env_states) -> StatesEnv:
         return self.unwrapped.__class__._update_env_with_root(

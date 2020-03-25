@@ -1,7 +1,8 @@
 import copy
+from typing import Dict, Union
 
 import numpy
-from plangym.env import Environment as PlangymEnv
+from plangym.env import Environment as PlangymEnvironment
 
 from fragile.core.base_classes import BaseEnvironment
 from fragile.core.states import StateDict, StatesEnv, StatesModel
@@ -53,7 +54,7 @@ class Environment(BaseEnvironment):
         return params
 
     def states_from_data(
-        self, batch_size, states, observs, rewards, oobs, terminals=None, **kwargs
+        self, batch_size: int, states, observs, rewards, oobs, terminals=None, **kwargs
     ) -> StatesEnv:
         """Return a new :class:`StatesEnv` object containing the data generated \
         by the environment."""
@@ -85,7 +86,7 @@ class DiscreteEnv(Environment):
     follows the interface of `plangym`.
     """
 
-    def __init__(self, env: PlangymEnv):
+    def __init__(self, env: PlangymEnvironment):
         """
         Initialize a :class:`DiscreteEnv`.
 
@@ -104,33 +105,53 @@ class DiscreteEnv(Environment):
         """Return the number of different discrete actions that can be taken in the environment."""
         return self._n_actions
 
-    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
+    def states_to_data(
+        self, model_states: StatesModel, env_states: StatesEnv
+    ) -> Dict[str, numpy.ndarray]:
         """
-        Set the environment to the target states by applying the specified \
-        actions an arbitrary number of time steps.
+        Extract the data that will be used to make the state transitions.
 
         Args:
-            model_states: States representing the data to be used to act on the environment..
-            env_states: States representing the data to be set in the environment.
+            model_states: :class:`StatesModel` representing the data to be used \
+                         to act on the environment.
+            env_states: :class:`StatesEnv` representing the data to be set in \
+                       the environment.
 
         Returns:
-            States containing the information that describes the new state of the Environment.
+            Dictionary containing:
+
+            ``{"states": np.array, "actions": np.array, "dt": np.array/int}``
 
         """
         actions = model_states.actions.astype(numpy.int32)
-        n_repeat_actions = model_states.dt if hasattr(model_states, "dt") else 1
+        dt = model_states.dt if hasattr(model_states, "dt") else 1
+        data = {"states": env_states.states, "actions": actions, "dt": dt}
+        return data
+
+    def make_transitions(
+        self, states: numpy.ndarray, actions: numpy.ndarray, dt: Union[numpy.ndarray, int]
+    ) -> Dict[str, numpy.ndarray]:
+        """
+        Step the underlying :class:`plangym.Environment` using the ``step_batch`` \
+        method of the ``plangym`` interface.
+        """
         new_states, observs, rewards, ends, infos = self._env.step_batch(
-            actions=actions, states=env_states.states, n_repeat_action=n_repeat_actions
+            actions=actions, states=states, n_repeat_action=dt
         )
+        game_ends = [inf.get("game_end", False) for inf in infos]
+        data = {
+            "states": numpy.array(new_states),
+            "observs": numpy.array(observs),
+            "rewards": numpy.array(rewards),
+            "oobs": numpy.array(ends),
+            "terminals": numpy.array(game_ends),
+        }
+        return data
 
-        new_state = self.states_from_data(len(actions), new_states, observs, rewards, ends)
-        return new_state
-
-    # @profile
     def reset(self, batch_size: int = 1, **kwargs) -> StatesEnv:
         """
-        Reset the environment to the start of a new episode and returns a new \
-        States instance describing the state of the Environment.
+        Reset the environment to the start of a new episode and return a new \
+        :class:`StatesEnv` instance describing the state of the :env:`Environment`.
 
         Args:
             batch_size: Number of walkers that the returned state will have.

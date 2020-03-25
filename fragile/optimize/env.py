@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, Union
+from typing import Callable, Dict, Tuple, Union
 
 import numpy
 from scipy.optimize import Bounds as ScipyBounds
@@ -101,33 +101,51 @@ class Function(Environment):
         )
         return text
 
-    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
+    def states_to_data(
+        self, model_states: StatesModel, env_states: StatesEnv
+    ) -> Dict[str, numpy.ndarray]:
         """
-        Set the :class:`Function` to the target states and sums the actions \
-        provided by the :class:`StatesEnv`.
+        Extract the data that will be used to make the state transitions.
 
         Args:
-            model_states: :class:`StatesModel` corresponding to the :class:`Model` data.
-            env_states: :class:`StatesEnv` containing the data where the function \
-             will be evaluated.
+            model_states: :class:`StatesModel` representing the data to be used \
+                         to act on the environment.
+            env_states: :class:`StatesEnv` representing the data to be set in \
+                       the environment.
 
         Returns:
-            :class:`StatesEnv` containing the information that describes the \
-            new states sampled.
+            Dictionary containing:
+
+            ``{"observs": np.array, "actions": np.array}``
 
         """
-        new_points = model_states.actions + env_states.observs
+        data = {"observs": env_states.states, "actions": model_states.actions}
+        return data
+
+    def make_transitions(
+        self, observs: numpy.ndarray, actions: numpy.ndarray
+    ) -> Dict[str, numpy.ndarray]:
+        """
+
+        Sum the target action to the observations to obtain the new points, and \
+        evaluate the reward and boundary conditions.
+
+        Args:
+            observs: Batch of points returned in the last step.
+            actions: Perturbation that will be applied to ``observs``.
+
+        Returns:
+            Dictionary containing the information of the new points evaluated.
+
+             ``{"states": new_points, "observs": new_points, "rewards": scalar array, \
+             "oobs": boolean array}``
+
+        """
+        new_points = actions + observs
         oobs = self.calculate_oobs(points=new_points)
         rewards = self.function(new_points).flatten()
-
-        updated_states = self.states_from_data(
-            states=new_points,
-            observs=new_points,
-            rewards=rewards,
-            oobs=oobs,
-            batch_size=model_states.n,
-        )
-        return updated_states
+        data = {"states": new_points, "observs": new_points, "rewards": rewards, "oobs": oobs}
+        return data
 
     def reset(self, batch_size: int = 1, **kwargs) -> StatesEnv:
         """
