@@ -6,7 +6,7 @@ from typing import Callable, Dict, List, Tuple, Union
 
 import numpy
 
-from fragile.core.env import Environment
+from fragile.core.env import Environment as CoreEnv
 from fragile.core.states import StatesEnv, StatesModel
 from fragile.core.utils import similiar_chunks_indexes
 from fragile.core.wrappers import BaseWrapper, EnvWrapper
@@ -376,7 +376,7 @@ class ParallelEnv(EnvWrapper):
     """
 
     def __init__(
-        self, env_callable: Callable[..., Environment], n_workers: int = 8, blocking: bool = False
+        self, env_callable: Callable[..., CoreEnv], n_workers: int = 8, blocking: bool = False
     ):
         """
         Initialize a :class:`ParallelEnv`.
@@ -417,7 +417,9 @@ class ParallelEnv(EnvWrapper):
             States containing the information that describes the new state of the Environment.
 
         """
-        return Environment.step(self, model_states=model_states, env_states=env_states)
+        return self._local_env.__class__.step(
+            self, model_states=model_states, env_states=env_states
+        )
 
     def make_transitions(self, *args, **kwargs) -> Dict[str, numpy.ndarray]:
         """Use the underlying parallel environment to calculate the state transitions."""
@@ -457,7 +459,7 @@ class RayEnv(EnvWrapper):
     """Step an :class:`Environment` in parallel using ``ray``."""
 
     def __init__(
-        self, env_callable: Callable[[dict], Environment], n_workers: int, env_kwargs: dict = None,
+        self, env_callable: Callable[[dict], CoreEnv], n_workers: int, env_kwargs: dict = None,
     ):
         """
         Initialize a :class:`RayEnv`.
@@ -495,9 +497,22 @@ class RayEnv(EnvWrapper):
             new state of the Environment.
 
         """
-        return self._local_env.__class__.step(
-            self, model_states=model_states, env_states=env_states
+        transition_data = self._local_env.states_to_data(
+            model_states=model_states, env_states=env_states
         )
+        if not isinstance(transition_data, (dict, tuple)):
+            raise ValueError(
+                "The returned values from states_to_data need to "
+                "be an instance of dict or tuple. "
+                "Got %s instead" % type(transition_data)
+            )
+        new_data = (
+            self.make_transitions(*transition_data)
+            if isinstance(transition_data, tuple)
+            else self.make_transitions(**transition_data)
+        )
+        new_env_state = self._local_env.states_from_data(len(env_states), **new_data)
+        return new_env_state
 
     def make_transitions(self, *args, **kwargs):
         """

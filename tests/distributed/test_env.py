@@ -4,7 +4,7 @@ from typing import Callable, Tuple
 import numpy as numpy
 import pytest
 
-from fragile.core.env import Environment
+from fragile.core.env import Environment as CoreEnv
 from fragile.core.states import StatesModel
 from fragile.distributed.env import ParallelEnv, RayEnv
 from fragile.optimize.benchmarks import Rastrigin
@@ -73,12 +73,14 @@ def create_env_and_model_states(name="classic") -> Callable:
         return _parallel_environment
 
 
-env_fixture_params = ["parallel_function", "parallel_environment"]
+env_fixture_params = (
+    ["ray_env", "parallel_environment"] if sys.version_info < (3, 8) else ["parallel_environment"]
+)
 
 
 class TestDistributedEnvironment(TestEnvironment):
     @pytest.fixture(params=env_fixture_params, scope="class")
-    def env_data(self, request) -> Tuple[Environment, StatesModel]:
+    def env_data(self, request) -> Tuple[CoreEnv, StatesModel]:
         if request.param in env_fixture_params:
             env, model_states = create_env_and_model_states(request.param)()
             if "ray" in request.param:
@@ -105,11 +107,12 @@ class TestDistributedEnvironment(TestEnvironment):
         return env, model_states
 
 
-ray_env_fixture_params = ["ray_env", "ray_function"]
+ray_env_fixture_params = (
+    ["parallel_function", "ray_function"] if sys.version_info < (3, 8) else ["parallel_function"]
+)
 
 
-@pytest.mark.skipif(sys.version_info >= (3, 8), reason="Requires python3.7 or lower")
-class TestDistributedFunction(TestFunction):
+class TestRemoteEnvironment(TestFunction):
     @pytest.fixture(params=ray_env_fixture_params)
     def env_data(self, request):
         if request.param in ray_env_fixture_params:

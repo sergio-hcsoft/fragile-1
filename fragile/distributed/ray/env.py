@@ -1,22 +1,23 @@
 from typing import Callable, Dict
 
-import numpy
-
-from fragile.core.env import BaseEnvironment, Environment
 from fragile.core.states import StatesEnv, StatesModel
 from fragile.core.utils import StateDict
+from fragile.core.wrappers import BaseWrapper
 from fragile.distributed.ray import ray
+
+# The type hints of the base class are not supported by cloudpickle
+# and will raise errors in Python3.6
 
 
 @ray.remote
-class Environment(Environment):
+class Environment:
     """
     :class:`fragile.Environment` remote interface to be used with ray.
 
     Wraps a :class:`fragile.Environment` passed as a callable.
     """
 
-    def __init__(self, env_callable: Callable[[dict], Environment], env_kwargs: dict = None):
+    def __init__(self, env_callable: Callable, env_kwargs: dict = None):
         """
         Initialize a :class:`Environment`.
 
@@ -29,7 +30,9 @@ class Environment(Environment):
         self.env = env_callable(**env_kwargs)
 
     def __getattr__(self, item):
-        return getattr(self.env, item)
+        if isinstance(self.env, BaseWrapper):
+            return getattr(self.env, item)
+        return self.env.__getattribute__(item)
 
     def get(self, name: str, default=None):
         """
@@ -60,7 +63,7 @@ class Environment(Environment):
             the needed information.
 
         """
-        return BaseEnvironment.step(self, model_states=model_states, env_states=env_states)
+        return self.env.step(model_states=model_states, env_states=env_states)
 
     def states_from_data(self, batch_size: int, **kwargs) -> StatesEnv:
         """
@@ -78,7 +81,7 @@ class Environment(Environment):
         """
         return self.env.states_from_data(batch_size=batch_size, **kwargs)
 
-    def make_transitions(self, *args, **kwargs) -> Dict[str, numpy.ndarray]:
+    def make_transitions(self, *args, **kwargs) -> Dict:
         """
         Return the data corresponding to the new state of the environment after \
         using the input data to make the corresponding state transition.
@@ -101,9 +104,26 @@ class Environment(Environment):
         """
         return self.env.make_transitions(*args, **kwargs)
 
-    def reset(
-        self, batch_size: int = 1, env_states: StatesEnv = None, *args, **kwargs
-    ) -> StatesEnv:
+    def states_to_data(self, model_states: StatesModel, env_states: StatesEnv):
+        """
+        Extract the data from the :class:`StatesEnv` and the :class:`StatesModel` \
+        and return the values that will be passed to ``make_transitions``.
+
+        Args:
+            model_states: :class:`StatesModel` representing the data to be used \
+                         to act on the environment.
+            env_states: :class:`StatesEnv` representing the data to be set in \
+                       the environment.
+
+        Returns:
+            Tuple of arrays or dictionary of arrays. If the returned value is a \
+            tuple it will be passed as *args to ``make_transitions``. If the returned \
+            value is a dictionary it will be passed as **kwargs to ``make_transitions``.
+
+        """
+        return self.env.states_to_data(model_states=model_states, env_states=env_states)
+
+    def reset(self, batch_size: int = 1, env_states: StatesEnv = None, **kwargs) -> StatesEnv:
         """
         Reset the wrapped :class:`fragile.Environment` and return an States class \
         with batch_size copies of the initial state.
@@ -112,7 +132,6 @@ class Environment(Environment):
            batch_size: Number of walkers that the resulting state will have.
            env_states: States class used to set the environment to an arbitrary \
                        state.
-           args: Additional arguments not related to environment data.
            kwargs: Additional keyword arguments not related to environment data.
 
         Returns:
@@ -120,7 +139,7 @@ class Environment(Environment):
             reset.
 
         """
-        return self.env.reset(batch_size=batch_size, env_states=env_states, *args, **kwargs)
+        return self.env.reset(batch_size=batch_size, env_states=env_states, **kwargs)
 
     def get_params_dict(self) -> StateDict:
         """Return the parameter dictionary of the wrapped :class:`fragile.Environment`."""
