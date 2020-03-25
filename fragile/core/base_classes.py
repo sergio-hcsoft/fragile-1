@@ -1,6 +1,6 @@
-from typing import Callable, List, Union
+from typing import Callable, Dict, List, Tuple, Union
 
-import numpy as np
+import numpy
 
 from fragile.core.states import OneWalker, States, StatesEnv, StatesModel, StatesWalkers
 from fragile.core.utils import RANDOM_SEED, random_state, StateDict
@@ -142,7 +142,7 @@ class BaseCritic(StatesOwner):
         will be accessed using the name_1 attribute of the class.
         """
         state_dict = {
-            "critic_score": {"size": tuple([1]), "dtype": np.float32},
+            "critic_score": {"size": tuple([1]), "dtype": numpy.float32},
         }
         return state_dict
 
@@ -239,6 +239,97 @@ class BaseEnvironment(StatesOwner):
 
     STATE_CLASS = StatesEnv
 
+    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
+        """
+        Step the environment for a batch of walkers.
+
+        Args:
+            model_states: :class:`StatesModel` representing the data to be used \
+                         to act on the environment.
+            env_states: :class:`StatesEnv` representing the data to be set in \
+                       the environment.
+
+        Returns:
+            States representing the next state of the environment and all \
+            the needed information.
+
+        """
+        transition_data = self.states_to_data(model_states=model_states, env_states=env_states)
+        if not isinstance(transition_data, (dict, tuple)):
+            raise ValueError(
+                "The returned values from states_to_data need to "
+                "be an instance of dict or tuple. "
+                "Got %s instead" % type(transition_data)
+            )
+
+        new_data = (
+            self.make_transitions(*transition_data)
+            if isinstance(transition_data, tuple)
+            else self.make_transitions(**transition_data)
+        )
+        new_env_state = self.states_from_data(len(env_states), **new_data)
+        return new_env_state
+
+    def states_from_data(self, batch_size: int, **kwargs) -> StatesEnv:
+        """
+        Initialize a :class:`StatesEnv` with the data provided as kwargs.
+
+        Args:
+            batch_size: Number of elements in the first dimension of the \
+                       :class:`State` attributes.
+            **kwargs: Attributes that will be added to the returned :class:`States`.
+
+        Returns:
+            A new :class:`StatesEmv` created with the ``params_dict``, and \
+            updated with the attributes passed as keyword arguments.
+
+        """
+        return super(BaseEnvironment, self).states_from_data(batch_size=batch_size, **kwargs)
+
+    def states_to_data(
+        self, model_states: StatesModel, env_states: StatesEnv
+    ) -> Union[Dict[str, numpy.ndarray], Tuple[numpy.ndarray, ...]]:
+        """
+        Extract the data from the :class:`StatesEnv` and the :class:`StatesModel` \
+        and return the values that will be passed to ``make_transitions``.
+
+        Args:
+            model_states: :class:`StatesModel` representing the data to be used \
+                         to act on the environment.
+            env_states: :class:`StatesEnv` representing the data to be set in \
+                       the environment.
+
+        Returns:
+            Tuple of arrays or dictionary of arrays. If the returned value is a \
+            tuple it will be passed as *args to ``make_transitions``. If the returned \
+            value is a dictionary it will be passed as **kwargs to ``make_transitions``.
+
+        """
+        raise NotImplementedError
+
+    def make_transitions(self, *args, **kwargs) -> Dict[str, numpy.ndarray]:
+        """
+        Return the data corresponding to the new state of the environment after \
+        using the input data to make the corresponding state transition.
+
+        Args:
+            *args: List of arguments passed if the returned value from the \
+                  ``states_to_data`` function of the class was a tuple.
+            **kwargs: Keyword arguments passed if the returned value from the \
+                  ``states_to_data`` function of the class was a dictionary.
+
+        Returns:
+            Dictionary containing the data representing the state of the environment \
+            after the state transition. The keys of the dictionary are the names of \
+            the data attributes and its values are arrays representing a batch of \
+            new values for that attribute.
+
+            The :class:`StatesEnv` returned by ``step`` will contain the returned \
+            data.
+
+        """
+        raise NotImplementedError
+
     def get_params_dict(self) -> StateDict:
         """
         Return an state_dict to be used for instantiating the states containing \
@@ -256,21 +347,6 @@ class BaseEnvironment(StatesOwner):
                 "oobs": {"dtype": numpy.bool_},
                 "terminals": {"dtype": numpy.bool_},
             }
-
-        """
-        raise NotImplementedError
-
-    def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
-        """
-        Step the environment for a batch of walkers.
-
-        Args:
-            model_states: States representing the data to be used to act on the environment.
-            env_states: States representing the data to be set in the environment.
-
-        Returns:
-            States representing the next state of the environment and all \
-            the needed information.
 
         """
         raise NotImplementedError
@@ -506,7 +582,7 @@ class BaseWalkers(StatesOwner):
         """Sample the clone probability distribution and clone the walkers accordingly."""
         raise NotImplementedError
 
-    def get_in_bounds_compas(self) -> np.ndarray:
+    def get_in_bounds_compas(self) -> numpy.ndarray:
         """
         Return an array of indexes corresponding to an alive walker chosen \
         at random.

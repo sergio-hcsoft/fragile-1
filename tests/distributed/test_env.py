@@ -6,7 +6,7 @@ import pytest
 
 from fragile.core.env import Environment
 from fragile.core.states import StatesModel
-from fragile.distributed.env import ParallelEnvironment, ParallelFunction, RayEnv, RayFunction
+from fragile.distributed.env import ParallelEnv, RayEnv
 from fragile.optimize.benchmarks import Rastrigin
 from tests.core.test_env import discrete_atari_env, classic_control_env, TestEnvironment
 from tests.distributed.ray import init_ray, ray
@@ -21,15 +21,15 @@ def ray_env():
 
 
 def ray_function():
-    return RayFunction(local_minimizer, n_workers=2)
+    return RayEnv(local_minimizer, n_workers=2)
 
 
 def parallel_environment():
-    return ParallelEnvironment(discrete_atari_env, n_workers=2)
+    return ParallelEnv(discrete_atari_env, n_workers=2)
 
 
 def parallel_function():
-    return ParallelFunction(env_callable=lambda: Rastrigin(dims=2), n_workers=2)
+    return ParallelEnv(env_callable=lambda: Rastrigin(dims=2), n_workers=2)
 
 
 def create_env_and_model_states(name="classic") -> Callable:

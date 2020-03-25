@@ -36,7 +36,7 @@ def get_plangym_env(swarm: "Swarm") -> Environment:  # noqa: F821
     """Return the :class:`plangym.Environment` of the target Swarm."""
     from fragile import core
     from fragile.atari import env
-    from fragile.distributed import ParallelEnvironment as FragileParallelEnv, RayEnv
+    from fragile.distributed import ParallelEnv as FragileParallelEnv, RayEnv
 
     valid_env_types = (core.DiscreteEnv, env.AtariEnv)
     env = swarm.env
