@@ -32,7 +32,6 @@ RUN pip3 install --no-cache-dir cython && \
          h5py Pillow-simd PyOpenGL && \
     pip3 install -U https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-0.9.0.dev0-cp37-cp37m-manylinux1_x86_64.whl && \
     pip3 install git+https://github.com/FragileTech/atari-py#egg=atari-py && \
-    pip3 install git+https://github.com/FragileTech/plangym#egg=plangym && \
     cd fragile && \
     pip3 install --no-cache-dir -r requirements.txt --no-use-pep517&& \
     pip3 install --no-cache-dir -r requirements-viz.txt --no-use-pep517&& \

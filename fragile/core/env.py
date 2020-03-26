@@ -2,7 +2,7 @@ import copy
 from typing import Dict, Union
 
 import numpy
-from plangym.env import Environment as PlangymEnvironment
+from plangym import BaseEnvironment as PlangymEnvironment
 
 from fragile.core.base_classes import BaseEnvironment
 from fragile.core.states import StateDict, StatesEnv, StatesModel
@@ -136,9 +136,9 @@ class DiscreteEnv(Environment):
         method of the ``plangym`` interface.
         """
         new_states, observs, rewards, ends, infos = self._env.step_batch(
-            actions=actions, states=states, n_repeat_action=dt
+            actions=actions, states=states, dt=dt
         )
-        game_ends = [inf.get("game_end", False) for inf in infos]
+        game_ends = [inf.get("win", False) for inf in infos]
         data = {
             "states": numpy.array(new_states),
             "observs": numpy.array(observs),

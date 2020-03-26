@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict, Generator, Tuple, Union
 
 import numpy
-from plangym.env import Environment, ParallelEnvironment
+from plangym import BaseEnvironment as PlangymEnv, ParallelEnvironment as PlangymParallelEnv
 import xxhash
 
 
@@ -32,24 +32,22 @@ def running_in_ipython() -> bool:
         return False
 
 
-def get_plangym_env(swarm: "Swarm") -> Environment:  # noqa: F821
+def get_plangym_env(swarm: "Swarm") -> PlangymEnv:  # noqa: F821
     """Return the :class:`plangym.Environment` of the target Swarm."""
     from fragile import core
-    from fragile.atari import env
     from fragile.distributed import ParallelEnv as FragileParallelEnv, RayEnv
 
-    valid_env_types = (core.DiscreteEnv, env.AtariEnv)
-    env = swarm.env
-    if isinstance(env, (FragileParallelEnv, RayEnv)):
-        env = env._local_env
-    if isinstance(env, valid_env_types):
-        if not isinstance(env._env, Environment):
+    fragile_env = swarm.env
+    if isinstance(fragile_env, (FragileParallelEnv, RayEnv)):
+        fragile_env = fragile_env._local_env
+    if isinstance(fragile_env, core.DiscreteEnv):
+        if not isinstance(fragile_env._env, PlangymEnv):
             raise TypeError("swarm.env needs to represent a `plangym.Environment`.")
-    elif not isinstance(env, valid_env_types):
+    elif not isinstance(fragile_env, core.DiscreteEnv):
         raise TypeError("swarm.env needs to represent a `plangym.Environment`")
-    plangym_env = env._env
-    if isinstance(plangym_env, ParallelEnvironment):
-        return plangym_env._env
+    plangym_env = fragile_env._env
+    if isinstance(plangym_env, PlangymParallelEnv):
+        return plangym_env.plangym_env
     else:
         return plangym_env
 

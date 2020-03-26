@@ -184,8 +184,7 @@ We will use the game **Qbert** to show how the :class:`AtariViz` works.
 .. code:: ipython3
 
     from plangym import AtariEnvironment, ParallelEnvironment
-    from fragile.atari import AtariEnv
-    from fragile.core import DiscreteUniform, GaussianDt, Swarm
+    from fragile.core import DiscreteEnv, DiscreteUniform, GaussianDt, Swarm
 
     game_name = "Qbert-ram-v0"
     env = ParallelEnvironment(
@@ -199,7 +198,7 @@ We will use the game **Qbert** to show how the :class:`AtariViz` works.
     
     swarm = Swarm(
         model=lambda env: DiscreteUniform(env=env, critic=dt),
-        env=lambda: AtariEnv(env=env),
+        env=lambda: DiscreteEnv(env=env),
         tree=None,
         n_walkers=64,
         max_epochs=400,

@@ -20,7 +20,7 @@ def discrete_atari_env():
 
 
 def classic_control_env():
-    env = ClassicControl()
+    env = ClassicControl("CartPole-v0")
     env.reset()
     env = DiscreteEnv(env)
     return env
