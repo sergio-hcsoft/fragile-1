@@ -28,13 +28,14 @@ def small_tree():
     return g
 
 
-class TestNetworkxTree:
-    @pytest.fixture(params=[random_powerlaw, small_tree], scope="function")
-    def tree(self, request):
-        tree = HistoryTree()
-        tree.data = request.param()
-        return tree
+@pytest.fixture(params=[random_powerlaw, small_tree], scope="function")
+def tree(request):
+    tree = HistoryTree()
+    tree.data = request.param()
+    return tree
 
+
+class TestNetworkxTree:
     def test_init(self, tree):
         pass
 

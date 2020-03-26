@@ -7,7 +7,7 @@ import numpy
 import pytest
 
 from fragile.atari.walkers import AtariWalkers
-from tests.core.test_walkers import TestWalkers
+from tests.core import test_walkers
 from fragile.core.utils import NUMPY_IGNORE_WARNINGS_PARAMS
 
 
@@ -38,11 +38,12 @@ walkers_config = {"discrete-atari-gym": get_atari_walkers_discrete_gym}
 walkers_fixture_params = ["discrete-atari-gym"]
 
 
-class TestAtariWalkers(TestWalkers):
-    @pytest.fixture(params=walkers_fixture_params, scope="class")
-    def walkers(self, request):
-        return walkers_config.get(request.param)()
+@pytest.fixture(params=walkers_fixture_params, scope="class")
+def walkers(request):
+    return walkers_config.get(request.param)()
 
+
+class TestAtariWalkers(test_walkers.TestWalkers):
     def test_calculate_end_condition(self, walkers):
         walkers.reset()
         walkers.states.update(oobs=numpy.ones(walkers.n))

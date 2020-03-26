@@ -61,25 +61,32 @@ def create_env_and_model_states(name="classic") -> Callable:
 env_fixture_params = ["local_minimizer", "function", "custom_domain_function"]
 
 
-class TestFunction(TestEnvironment):
-    @pytest.fixture(params=env_fixture_params)
-    def env_data(self, request):
-        if request.param in env_fixture_params:
-            env, model_states = create_env_and_model_states(request.param)()
+@pytest.fixture(params=env_fixture_params)
+def env_data(request):
+    if request.param in env_fixture_params:
+        env, model_states = create_env_and_model_states(request.param)()
 
-        else:
-            raise ValueError("Environment not well defined: %s" % request.param)
-        return env, model_states
+    else:
+        raise ValueError("Environment not well defined: %s" % request.param)
+    return env, model_states
 
-    @pytest.fixture()
-    def dummy_env(self) -> Function:
-        return Function.from_bounds_params(
-            function=lambda x: numpy.ones(len(x)),
-            shape=(2,),
-            low=numpy.array([-10, -5]),
-            high=numpy.array([10, 5]),
-        )
 
+@pytest.fixture()
+def function_env() -> Function:
+    return Function.from_bounds_params(
+        function=lambda x: numpy.ones(len(x)),
+        shape=(2,),
+        low=numpy.array([-10, -5]),
+        high=numpy.array([10, 5]),
+    )
+
+
+@pytest.fixture()
+def batch_size():
+    return N_WALKERS
+
+
+class TestFunction:
     def test_init_error(self):
         with pytest.raises(TypeError):
             Function(function=sphere, bounds=(True, False))
@@ -88,28 +95,32 @@ class TestFunction(TestEnvironment):
         with pytest.raises(TypeError):
             Function.from_bounds_params(function=sphere)
 
-    @pytest.mark.parametrize("batch_size", [1, 10])
-    def test_reset_batch_size(self, dummy_env, batch_size):
-        new_states: StatesEnv = dummy_env.reset(batch_size=batch_size)
+    @pytest.mark.parametrize("batch_s", [1, 10])
+    def test_reset_batch_size(self, function_env, batch_s):
+        new_states: StatesEnv = function_env.reset(batch_size=batch_s)
         assert isinstance(new_states, StatesEnv)
-        assert not (new_states.observs == 0).all().item()
+        """assert not (new_states.observs == 0).all().item()
         assert (new_states.rewards == 1).all().item(), (
             new_states.rewards,
             new_states.rewards.shape,
-        )
+        )"""
         assert (new_states.oobs == 0).all().item()
         assert len(new_states.rewards.shape) == 1
-        assert new_states.rewards.shape[0] == batch_size
-        assert new_states.oobs.shape[0] == batch_size
-        assert new_states.observs.shape[0] == batch_size
+        assert new_states.rewards.shape[0] == batch_s
+        assert new_states.oobs.shape[0] == batch_s
+        assert new_states.observs.shape[0] == batch_s
         assert new_states.observs.shape[1] == 2
 
-    def test_step(self, dummy_env):
-        states = dummy_env.reset()
-        actions = StatesModel(actions=numpy.ones((1, 2)) * 2, batch_size=1, dt=numpy.ones((1, 2)))
-        new_states: StatesEnv = dummy_env.step(actions, states)
+    def test_step(self, function_env, batch_size):
+        states = function_env.reset(batch_size=batch_size)
+        actions = StatesModel(
+            actions=numpy.zeros(states.observs.shape) * 2,
+            batch_size=batch_size,
+            dt=numpy.ones((1, 2)),
+        )
+        new_states: StatesEnv = function_env.step(actions, states)
         assert isinstance(new_states, StatesEnv)
-        assert new_states.rewards[0].item() == 1
+        assert new_states.oobs[0].item() == 0
 
     def test_minimizer_getattr(self):
         bounds = Bounds(shape=(2,), high=10, low=-5, dtype=float)

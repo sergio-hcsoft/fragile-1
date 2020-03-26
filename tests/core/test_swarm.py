@@ -34,7 +34,7 @@ def create_atari_swarm():
         walkers=Walkers,
         env=lambda: DiscreteEnv(env),
         n_walkers=67,
-        max_epochs=20,
+        max_epochs=500,
         reward_scale=2,
         reward_limit=751,
     )
@@ -68,17 +68,19 @@ test_scores = {
 }
 
 
+@pytest.fixture(params=swarm_names, scope="class")
+def swarm(request):
+    return swarm_dict.get(request.param, create_cartpole_swarm)()
+
+
+@pytest.fixture(params=swarm_names, scope="class")
+def swarm_with_score(request):
+    swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
+    score = test_scores[request.param]
+    return swarm, score
+
+
 class TestSwarm:
-    @pytest.fixture(params=swarm_names, scope="class")
-    def swarm(self, request):
-        return swarm_dict.get(request.param, create_cartpole_swarm)()
-
-    @pytest.fixture(params=swarm_names, scope="class")
-    def swarm_with_score(self, request):
-        swarm = swarm_dict.get(request.param, create_cartpole_swarm)()
-        score = test_scores[request.param]
-        return swarm, score
-
     def test_repr(self, swarm):
         assert isinstance(swarm.__repr__(), str)
 
@@ -123,18 +125,12 @@ class TestSwarm:
         swarm.reset()
         swarm.step_walkers()
 
-    def test_run(self, swarm):
-        swarm.reset()
-        swarm.walkers.max_epochs = 5
-        swarm.run()
-
     def test_score_gets_higher(self, swarm_with_score):
         swarm, target_score = swarm_with_score
-        swarm.walkers.seed()
+        swarm.walkers.seed(160290)
         swarm.reset()
-        swarm.walkers.max_epochs = 500
         swarm.run()
         reward = swarm.walkers.states.cum_rewards.max()
-        assert reward >= target_score, "Iters: {}, rewards: {}".format(
-            swarm.walkers.epoch, swarm.walkers.states.cum_rewards
-        )
+        assert (
+            reward <= target_score if swarm.walkers.minimize else reward >= target_score
+        ), "Iters: {}, rewards: {}".format(swarm.walkers.epoch, swarm.walkers.states.cum_rewards)
