@@ -39,19 +39,21 @@ def create_model_states(model: BaseModel, batch_size: int = 10):
 model_fixture_params = ["discrete", "continuous", "random_normal", "discrete_with_critic"]
 
 
+@pytest.fixture(scope="class", params=model_fixture_params)
+def model(request):
+    return create_model(request.param)()
+
+
+@pytest.fixture()
+def batch_size():
+    return 7
+
+
 class TestModel:
-    BATCH_SIZE = 7
-
-    @pytest.fixture(scope="class", params=model_fixture_params)
-    def model(self, request):
-        return create_model(request.param)()
-
     def create_model_states(self, model: BaseModel, batch_size: int = None):
-        batch_size = self.BATCH_SIZE if batch_size is None else batch_size
         return StatesModel(batch_size=batch_size, state_dict=model.get_params_dict())
 
     def create_env_states(self, model: BaseModel, batch_size: int = None):
-        batch_size = self.BATCH_SIZE if batch_size is None else batch_size
         return StatesEnv(batch_size=batch_size, state_dict=model.get_params_dict())
 
     def test_get_params_dict(self, model):
@@ -63,31 +65,31 @@ class TestModel:
             for ki, _vi in v.items():
                 assert isinstance(ki, str)
 
-    def test_reset(self, model):
-        states = model.reset(batch_size=self.BATCH_SIZE)
+    def test_reset(self, model, batch_size):
+        states = model.reset(batch_size=batch_size)
         assert isinstance(states, model.STATE_CLASS)
-        model_states = self.create_model_states(model=model, batch_size=self.BATCH_SIZE)
-        env_states = self.create_env_states(model, batch_size=self.BATCH_SIZE)
+        model_states = self.create_model_states(model=model, batch_size=batch_size)
+        env_states = self.create_env_states(model, batch_size=batch_size)
         states = model.reset(
-            batch_size=self.BATCH_SIZE, model_states=model_states, env_states=env_states
+            batch_size=batch_size, model_states=model_states, env_states=env_states
         )
         assert isinstance(states, model.STATE_CLASS), (
             type(states),
             model.STATE_CLASS,
         )
-        assert len(model_states.actions) == self.BATCH_SIZE
+        assert len(model_states.actions) == batch_size
 
-    def test_predict(self, model):
-        states = self.create_model_states(model=model, batch_size=self.BATCH_SIZE)
-        env_states = self.create_env_states(model, batch_size=self.BATCH_SIZE)
+    def test_predict(self, model, batch_size):
+        states = self.create_model_states(model=model, batch_size=batch_size)
+        env_states = self.create_env_states(model, batch_size=batch_size)
         updated_states = model.predict(model_states=states, env_states=env_states)
         assert isinstance(updated_states, model.STATE_CLASS)
-        assert len(updated_states) == self.BATCH_SIZE
+        assert len(updated_states) == batch_size
         updated_states = model.predict(
-            model_states=states, env_states=env_states, batch_size=self.BATCH_SIZE
+            model_states=states, env_states=env_states, batch_size=batch_size
         )
         assert isinstance(updated_states, model.STATE_CLASS)
-        assert len(updated_states) == self.BATCH_SIZE
+        assert len(updated_states) == batch_size
         if hasattr(model, "bounds"):
             assert model.bounds.points_in_bounds(updated_states.actions).all()
         with pytest.raises(ValueError):

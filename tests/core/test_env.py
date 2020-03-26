@@ -50,16 +50,22 @@ def create_env_and_model_states(name="classic") -> Callable:
 env_fixture_params = ["classic", "pacman"]
 
 
+@pytest.fixture(params=env_fixture_params, scope="class")
+def env_data(request) -> Tuple[Environment, StatesModel]:
+    if request.param in env_fixture_params:
+        env, model_states = create_env_and_model_states(request.param)()
+
+    else:
+        raise ValueError("Environment not well defined: %s" % request.param)
+    return env, model_states
+
+
+@pytest.fixture()
+def batch_size():
+    return 10
+
+
 class TestEnvironment:
-    @pytest.fixture(params=env_fixture_params, scope="class")
-    def env_data(self, request) -> Tuple[Environment, StatesModel]:
-        if request.param in env_fixture_params:
-            env, model_states = create_env_and_model_states(request.param)()
-
-        else:
-            raise ValueError("Environment not well defined: %s" % request.param)
-        return env, model_states
-
     def test_repr(self, env_data):
         env, model_states = env_data
         repr_env = env.__repr__()
@@ -86,8 +92,7 @@ class TestEnvironment:
             for ki in v.keys():
                 assert isinstance(ki, str)
 
-    def test_step(self, env_data):
-        batch_size = 10
+    def test_step(self, env_data, batch_size):
         env, model_states = env_data
         states = env.reset(batch_size=batch_size)
         new_states = env.step(model_states=model_states, env_states=states)
@@ -104,9 +109,8 @@ class TestEnvironment:
         assert hasattr(env, "observs_shape")
         assert isinstance(env.observs_shape, tuple)
 
-    def test_states_from_data(self, env_data):
+    def test_states_from_data(self, env_data, batch_size):
         env, model_states = env_data
-        batch_size = 10
         states = numpy.zeros((batch_size, 5)).tolist()
         observs = numpy.ones((batch_size, 5)).tolist()
         rewards = numpy.arange(batch_size).tolist()

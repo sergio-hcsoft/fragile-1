@@ -22,7 +22,7 @@ def create_eggholder_swarm():
         return NormalContinuous(scale=10, loc=0.0, bounds=env.bounds)
 
     swarm = FunctionMapper(
-        env=EggHolder, model=gaussian_model, n_walkers=20, max_epochs=10, start_same_pos=True,
+        env=EggHolder, model=gaussian_model, n_walkers=20, max_epochs=6, start_same_pos=True,
     )
     return swarm
 
@@ -33,10 +33,10 @@ def create_atari_swarm():
     swarm = Swarm(
         model=lambda x: DiscreteUniform(env=x, critic=dt),
         env=lambda: DiscreteEnv(env),
-        n_walkers=10,
+        n_walkers=6,
         max_epochs=20,
         reward_scale=2,
-        reward_limit=200,
+        reward_limit=100,
     )
     return swarm
 
@@ -82,25 +82,34 @@ swarm_dict = {
 }
 swarm_names = list(swarm_dict.keys())
 backends = ["matplotlib", "bokeh"]
+test_scores = {
+    "summary": 0,
+    "swarm_viz_1d": 0,
+    "create_landscape_viz": 0,
+    "atari_viz_default": 0,
+    "atari_viz_all": 0,
+    "swarm_viz": 0,
+}
 
 
-class TestSwarmVisualizations(TestSwarm):
-    @pytest.fixture(params=tuple(product(swarm_names, backends)), scope="class")
-    def swarm(self, request):
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            swarm_name, backend = request.param
-            holoviews.extension(backend)
-            swarm_viz = swarm_dict.get(swarm_name)()
-            PLOTS[request.param] = swarm_viz.plot()
-            return swarm_viz
+@pytest.fixture(params=tuple(product(swarm_names, backends)), scope="class")
+def swarm(request):
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        swarm_name, backend = request.param
+        holoviews.extension(backend)
+        swarm_viz = swarm_dict.get(swarm_name)()
+        PLOTS[request.param] = swarm_viz.plot()
+        return swarm_viz
 
-    @pytest.fixture()
-    def swarm_with_score(self):
-        return None
 
-    def test_score_gets_higher(self, swarm_with_score):
-        pass
+@pytest.fixture(params=swarm_names, scope="class")
+def swarm_with_score(request):
+    swarm = swarm_dict.get(request.param)()
+    score = test_scores[request.param]
+    return swarm, score
 
+
+class TestSwarmVisualizations:
     def test_class_inheritance(self, swarm):
         assert isinstance(swarm, Swarm)

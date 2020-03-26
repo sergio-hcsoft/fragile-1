@@ -15,6 +15,11 @@ from tests.optimize.test_env import Function, TestFunction, local_minimizer
 N_WALKERS = 10
 
 
+@pytest.fixture()
+def batch_size():
+    return N_WALKERS
+
+
 def ray_env():
     env = RayEnv(classic_control_env, n_workers=1)
     return env
@@ -78,55 +83,39 @@ env_fixture_params = (
 )
 
 
-class TestDistributedEnvironment(TestEnvironment):
-    @pytest.fixture(params=env_fixture_params, scope="class")
-    def env_data(self, request) -> Tuple[CoreEnv, StatesModel]:
-        if request.param in env_fixture_params:
-            env, model_states = create_env_and_model_states(request.param)()
-            if "ray" in request.param:
+@pytest.fixture(params=env_fixture_params, scope="class")
+def env_data(request) -> Tuple[CoreEnv, StatesModel]:
+    if request.param in env_fixture_params:
+        env, model_states = create_env_and_model_states(request.param)()
+        if "ray" in request.param:
 
-                def kill_ray_env():
-                    try:
-                        for e in env.envs:
-                            e.__ray_terminate__.remote()
-                    except AttributeError:
-                        pass
-                    ray.shutdown()
+            def kill_ray_env():
+                try:
+                    for e in env.envs:
+                        e.__ray_terminate__.remote()
+                except AttributeError:
+                    pass
+                ray.shutdown()
 
-                request.addfinalizer(kill_ray_env)
+            request.addfinalizer(kill_ray_env)
 
-            elif "parallel" in request.param:
+        elif "parallel" in request.param:
 
-                def kill_parallel_env():
-                    env.close()
+            def kill_parallel_env():
+                env.close()
 
-                request.addfinalizer(kill_parallel_env)
+            request.addfinalizer(kill_parallel_env)
 
-        else:
-            raise ValueError("Environment not well defined: %s" % request.param)
-        return env, model_states
+    else:
+        raise ValueError("Environment not well defined: %s" % request.param)
+    return env, model_states
 
 
-ray_env_fixture_params = (
+ray_function_fixture_params = (
     ["parallel_function", "ray_function"] if sys.version_info < (3, 8) else ["parallel_function"]
 )
 
 
-class TestRemoteEnvironment(TestFunction):
-    @pytest.fixture(params=ray_env_fixture_params)
-    def env_data(self, request):
-        if request.param in ray_env_fixture_params:
-            env, model_states = create_env_and_model_states(request.param)()
-
-        else:
-            raise ValueError("Environment not well defined: %s" % request.param)
-        return env, model_states
-
-    @pytest.fixture()
-    def dummy_env(self) -> Function:
-        return Function.from_bounds_params(
-            function=lambda x: numpy.ones(len(x)),
-            shape=(2,),
-            low=numpy.array([-10, -5]),
-            high=numpy.array([10, 5]),
-        )
+@pytest.fixture(params=ray_function_fixture_params)
+def function_env(request):
+    return create_env_and_model_states(request.param)()[0]

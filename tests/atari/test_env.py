@@ -6,7 +6,7 @@ import pytest
 
 from fragile.atari import AtariEnv
 from fragile.core.states import StatesEnv, StatesModel
-from tests.core.test_env import TestEnvironment
+from tests.core.test_env import TestEnvironment, batch_size
 
 
 N_WALKERS = 10
@@ -50,12 +50,11 @@ def create_env_and_model_states(name="classic") -> Callable:
 env_fixture_params = ["qbert_rgb", "pacman_ram"]
 
 
-class TestAtari(TestEnvironment):
-    @pytest.fixture(params=env_fixture_params)
-    def env_data(self, request) -> Tuple[AtariEnv, StatesModel]:
-        if request.param in env_fixture_params:
-            env, model_states = create_env_and_model_states(request.param)()
+@pytest.fixture(params=env_fixture_params)
+def env_data(request) -> Tuple[AtariEnv, StatesModel]:
+    if request.param in env_fixture_params:
+        env, model_states = create_env_and_model_states(request.param)()
 
-        else:
-            raise ValueError("Environment not well defined: %s" % request.param)
-        return env, model_states
+    else:
+        raise ValueError("Environment not well defined: %s" % request.param)
+    return env, model_states

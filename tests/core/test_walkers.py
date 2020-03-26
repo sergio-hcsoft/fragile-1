@@ -82,11 +82,12 @@ class TestStatesWalkers:
         assert (states_walkers.distances == test_vals).all()
 
 
-class TestWalkers:
-    @pytest.fixture(params=walkers_fixture_params, scope="class")
-    def walkers(self, request):
-        return walkers_config.get(request.param, get_walkers_discrete_gym)()
+@pytest.fixture(params=walkers_fixture_params, scope="class")
+def walkers(request):
+    return walkers_config.get(request.param, get_walkers_discrete_gym)()
 
+
+class TestWalkers:
     def test_repr_not_crashes(self, walkers):
         assert isinstance(walkers.__repr__(), str)
 
