@@ -1,6 +1,6 @@
 Cython>=0.28,<1.0; python_version == '3.7'
 git+https://github.com/FragileTech/atari-py.git#egg=atari-py
-git+https://github.com/FragileTech/plangym.git#egg=plangym
+plangym==0.0.3
 pytest==5.4.1
 attrs>=19.3.0
 hypothesis==5.6.0
