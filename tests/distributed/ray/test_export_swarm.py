@@ -9,11 +9,11 @@ from tests.distributed.ray import init_ray, ray
 
 def create_cartpole_swarm():
     from fragile.core import DiscreteEnv, DiscreteUniform, Swarm
-    from plangym.minimal import ClassicControl
+    from plangym import ClassicControl
 
     swarm = Swarm(
         model=lambda x: DiscreteUniform(env=x),
-        env=lambda: DiscreteEnv(ClassicControl()),
+        env=lambda: DiscreteEnv(ClassicControl("CartPole-v0")),
         reward_limit=51,
         n_walkers=50,
         max_epochs=100,

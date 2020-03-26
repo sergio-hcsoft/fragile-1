@@ -1,6 +1,5 @@
 import numpy
-from plangym import AtariEnvironment
-from plangym.minimal import ClassicControl
+from plangym import AtariEnvironment, ClassicControl
 import pytest
 
 from fragile.core.dt_samplers import GaussianDt
@@ -17,7 +16,7 @@ def create_cartpole_swarm():
     swarm = Swarm(
         model=lambda x: DiscreteUniform(env=x),
         walkers=Walkers,
-        env=lambda: DiscreteEnv(ClassicControl()),
+        env=lambda: DiscreteEnv(ClassicControl("CartPole-v0")),
         reward_limit=121,
         n_walkers=150,
         max_epochs=300,
@@ -130,7 +129,11 @@ class TestSwarm:
         swarm.walkers.seed(160290)
         swarm.reset()
         swarm.run()
-        reward = swarm.walkers.states.cum_rewards.max()
+        reward = (
+            swarm.get("cum_rewards").min()
+            if swarm.walkers.minimize
+            else swarm.get("cum_rewards").max()
+        )
         assert (
             reward <= target_score if swarm.walkers.minimize else reward >= target_score
         ), "Iters: {}, rewards: {}".format(swarm.walkers.epoch, swarm.walkers.states.cum_rewards)
