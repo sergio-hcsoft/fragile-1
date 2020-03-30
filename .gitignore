@@ -120,3 +120,6 @@ ENV/
 *.ipynb
 
 data/
+
+docs/
+examples/

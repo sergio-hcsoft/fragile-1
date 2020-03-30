@@ -12,6 +12,7 @@ check:
 
 .PHONY: test
 test:
+	find -name "*.pyc" -delete
 	pytest -s
 
 .PHONY: docker-test
@@ -27,4 +28,3 @@ docker-build:
 .PHONY: docker-push
 docker-push:
 	docker push fragiletech/fragile:${VERSION}
-
