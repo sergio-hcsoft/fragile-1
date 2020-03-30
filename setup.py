@@ -13,7 +13,7 @@ with open(Path(__file__).with_name("README.md"), encoding="utf-8") as f:
 
 # Module-specific dependencies.
 extras = {
-    "atari": ["atari-py==0.1.1", "Pillow", "opencv-python", "gym"],
+    "atari": ["atari-py==0.1.1", "opencv-python", "gym"],
     "dataviz": [
         "matplotlib",
         "bokeh<2.0.0",
@@ -46,21 +46,21 @@ setup(
     url="https://github.com/FragileTech/fragile",
     download_url="https://github.com/FragileTech/fragile",
     keywords=["reinforcement learning", "artificial intelligence", "monte carlo", "planning"],
-    tests_require=["pytest", "hypothesis"],
+    tests_require=["pytest>=5.3.5", "hypothesis>=5.6.0"],
     extras_require=extras,
     install_requires=[
         "attrs",
+        "networkx",
+        "numba",
         "numpy",
         "scipy",
-        "networkx",
         "pillow-simd",
+        "plangym>=0.0.6",
         "psycopg2-binary",
         "pyarrow",
-        "scikit-learn",
-        "numba",
-        "xxhash",
         "PyYAML",
-        "plangym>=0.0.5",
+        "scikit-learn",
+        "xxhash",
     ],
     package_data={"": ["README.md"]},
     classifiers=[
