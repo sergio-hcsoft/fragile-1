@@ -61,6 +61,7 @@ setup(
         "PyYAML",
         "scikit-learn",
         "xxhash",
+        "tqdm",
     ],
     package_data={"": ["README.md"]},
     classifiers=[
