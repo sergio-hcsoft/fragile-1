@@ -550,9 +550,7 @@ class Walkers(SimpleWalkers):
         if len(rewards) == 0:
             return self.n - 1
         best = rewards.argmin() if self.minimize else rewards.argmax()
-        idx = (self.states.cum_rewards == best).astype(int)
-        ix = idx.argmax()
-        return int(ix)
+        return int(best)
 
     def update_best(self):
         """Keep track of the best state found and its reward."""
