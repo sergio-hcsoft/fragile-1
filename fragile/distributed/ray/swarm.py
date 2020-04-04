@@ -3,9 +3,9 @@ from typing import Callable
 
 import ray
 
-from fragile.core import OneWalker, Swarm as CoreSwarm, Walkers as CoreWalkers
 from fragile.core.base_classes import BaseEnvironment, BaseModel, BaseTree
-from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
+from fragile.core.states import OneWalker, StatesEnv, StatesModel, StatesWalkers
+from fragile.core.swarm import Swarm as CoreSwarm, Walkers as CoreWalkers
 from fragile.distributed.ray.env import RayEnv
 
 

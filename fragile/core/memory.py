@@ -3,7 +3,7 @@ from typing import Iterable, List, Tuple, Union
 
 import numpy
 
-from fragile.core import Swarm
+from fragile.core.swarm import Swarm
 
 
 class ReplayMemory:
