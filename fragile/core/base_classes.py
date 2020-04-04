@@ -518,6 +518,10 @@ class BaseWalkers(StatesOwner):
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
 
+    def increment_epoch(self):
+        """Increment the current epoch counter."""
+        self._epoch += 1
+
     def get_params_dict(self) -> StateDict:
         """Return the params_dict of the internal StateOwners."""
         state_dict = {
@@ -676,10 +680,10 @@ class BaseSwarm:
         """
         return self._walkers
 
-    def increase_epoch(self) -> None:
+    def increment_epoch(self) -> None:
         """Increment the current epoch of the algorithm."""
         self._epoch += 1
-        self.walkers._epoch += 1
+        self.walkers.increment_epoch()
 
     def reset(
         self,

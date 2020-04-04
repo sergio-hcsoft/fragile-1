@@ -13,7 +13,7 @@ with open(Path(__file__).with_name("README.md"), encoding="utf-8") as f:
 
 # Module-specific dependencies.
 extras = {
-    "atari": ["atari-py==0.1.1", "opencv-python", "gym"],
+    "atari": ["atari-py==0.1.1", "opencv-python", "gym", "pillow-simd"],
     "dataviz": [
         "matplotlib",
         "bokeh<2.0.0",
@@ -54,8 +54,7 @@ setup(
         "numba",
         "numpy",
         "scipy",
-        "pillow-simd",
-        "plangym>=0.0.6",
+        "plangym>=0.0.7",
         "psycopg2-binary",
         "pyarrow",
         "PyYAML",

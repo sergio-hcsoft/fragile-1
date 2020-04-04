@@ -20,7 +20,7 @@ pandas==1.0.3
 panel==0.8.1
 param==1.9.3
 pillow-simd==7.0.0.post3
-plangym==0.0.6
+plangym==0.0.7
 plotly==4.5.4
 psutil==5.7.0
 psycopg2-binary==2.8.4

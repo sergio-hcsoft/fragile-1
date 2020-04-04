@@ -7,7 +7,7 @@ numba==0.48.0
 numpy==1.18.2
 opencv-python==4.2.0.32
 pillow-simd==7.0.0.post3
-plangym==0.0.6
+plangym==0.0.7
 psycopg2-binary==2.8.4
 pyarrow==0.16.0
 pytest==5.4.1

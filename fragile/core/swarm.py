@@ -3,16 +3,15 @@ import logging
 from typing import Any, Callable, Iterable, List
 
 import numpy
-from tqdm.auto import trange
 
 from fragile.core.base_classes import (
     BaseCritic,
     BaseEnvironment,
     BaseModel,
     BaseSwarm,
-    BaseTree,
 )
 from fragile.core.states import OneWalker, StatesEnv, StatesModel, StatesWalkers
+from fragile.core.tree import HistoryTree
 from fragile.core.utils import running_in_ipython, Scalar
 from fragile.core.walkers import Walkers
 
@@ -35,11 +34,11 @@ class Swarm(BaseSwarm):
         walkers: Callable[..., Walkers] = Walkers,
         reward_scale: float = 1.0,
         distance_scale: float = 1.0,
-        tree: Callable[[], BaseTree] = None,
-        prune_tree: bool = True,
+        tree: Callable[[], HistoryTree] = None,
         report_interval: int = numpy.inf,
         show_pbar: bool = True,
         use_notebook_widget: bool = True,
+        force_logging: bool = False,
         *args,
         **kwargs
     ):
@@ -54,16 +53,13 @@ class Swarm(BaseSwarm):
             reward_scale: Virtual reward exponent for the reward score.
             distance_scale: Virtual reward exponent for the distance score.
             tree: class:`StatesTree` that keeps track of the visited states.
-            prune_tree: If `tree` is `None` it has no effect. If true, \
-                       store in the :class:`Tree` only the past history of alive \
-                       walkers, and discard the branches with leaves that have \
-                       no walkers.
             report_interval: Display the algorithm progress every ``report_interval`` epochs.
             show_pbar: If ``True`` A progress bar will display the progress of \
                        the algorithm run.
             use_notebook_widget: If ``True`` and the class is running in an IPython \
                                 kernel it will display the evolution of the swarm \
                                 in a widget.
+            force_logging: If ``True``, disable al ``ipython`` related behaviour.
             *args: Additional args passed to init_swarm.
             **kwargs: Additional kwargs passed to init_swarm.
 
@@ -80,12 +76,12 @@ class Swarm(BaseSwarm):
             reward_scale=reward_scale,
             distance_scale=distance_scale,
             tree=tree,
-            prune_tree=prune_tree,
             *args,
             **kwargs
         )
         self._notebook_container = None
         self._use_notebook_widget = use_notebook_widget
+        self._ipython_mode = running_in_ipython() and not force_logging
         self.setup_notebook_container()
 
     def __len__(self) -> int:
@@ -170,7 +166,7 @@ class Swarm(BaseSwarm):
         n_walkers: int,
         reward_scale: float = 1.0,
         distance_scale: float = 1.0,
-        tree: Callable[[], BaseTree] = None,
+        tree: Callable[[], HistoryTree] = None,
         prune_tree: bool = True,
         *args,
         **kwargs
@@ -217,7 +213,7 @@ class Swarm(BaseSwarm):
             *args,
             **kwargs
         )
-        self.tree: BaseTree = tree() if tree is not None else None
+        self.tree: HistoryTree = tree() if tree is not None else None
         self._prune_tree = prune_tree
         self._epoch = 0
 
@@ -313,6 +309,7 @@ class Swarm(BaseSwarm):
             env_states=env_states,
             walkers_states=walkers_states,
         )
+
         for _ in self.get_run_loop(show_pbar=show_pbar):
             if self.calculate_end_condition():
                 break
@@ -320,7 +317,7 @@ class Swarm(BaseSwarm):
                 self.run_step()
                 if self.epoch % report_interval == 0 and self.epoch > 0:
                     self.report_progress()
-                self.increase_epoch()
+                self.increment_epoch()
             except KeyboardInterrupt:
                 break
 
@@ -342,15 +339,19 @@ class Swarm(BaseSwarm):
 
         """
         show_pbar = show_pbar if show_pbar is not None else self.show_pbar
-        use_tqdm = (
-            show_pbar if running_in_ipython() else self._log.level < logging.WARNING and show_pbar
+        no_tqdm = not (
+            show_pbar if self._ipython_mode else self._log.level < logging.WARNING and show_pbar
         )
-        loop_iterable = (
-            trange(self.max_epochs, desc="%s" % self.__class__.__name__)
-            if use_tqdm
-            else range(self.max_epochs)
+        if self._ipython_mode:
+            from tqdm.notebook import trange
+        else:
+            from tqdm import trange
+
+        loop_iterable = trange(
+            self.max_epochs, desc="%s" % self.__class__.__name__, disable=no_tqdm
         )
-        if running_in_ipython() and self._use_notebook_widget:
+
+        if self._ipython_mode and self._use_notebook_widget:
             from IPython.core.display import display
 
             display(self._notebook_container)
@@ -358,7 +359,7 @@ class Swarm(BaseSwarm):
 
     def setup_notebook_container(self):
         """Display the display widgets if the Swarm is running in an IPython kernel."""
-        if running_in_ipython() and self._use_notebook_widget:
+        if self._ipython_mode and self._use_notebook_widget:
             from ipywidgets import HTML
             from IPython.core.display import display, HTML as cell_html
 
@@ -368,7 +369,7 @@ class Swarm(BaseSwarm):
 
     def report_progress(self):
         """Report information of the current run."""
-        if running_in_ipython() and self._use_notebook_widget:
+        if self._ipython_mode and self._use_notebook_widget:
             line_break = '<br style="line-height:1px; content: "  ";>'
             html = str(self).replace("\n\n", "\n").replace("\n", line_break)
             # Add strong formatting for headers
@@ -379,7 +380,7 @@ class Swarm(BaseSwarm):
                 tree_name = self.tree.__class__.__name__
                 html = html.replace(tree_name, "<strong>%s</strong>" % tree_name)
             self._notebook_container.value = "%s" % html
-        elif not running_in_ipython():
+        elif not self._ipython_mode:
             self._log.info(repr(self))
 
     def calculate_end_condition(self) -> bool:
