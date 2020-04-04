@@ -57,6 +57,7 @@ setup(
         "plangym>=0.0.7",
         "PyYAML",
         "xxhash",
+        "tqdm",
     ],
     package_data={"": ["README.md"]},
     classifiers=[
