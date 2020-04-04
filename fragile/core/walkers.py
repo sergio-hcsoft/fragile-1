@@ -549,7 +549,7 @@ class Walkers(SimpleWalkers):
         rewards = self.states.cum_rewards[self.states.in_bounds]
         if len(rewards) == 0:
             return self.n - 1
-        best = rewards.argmin() if self.minimize else rewards.argmax()
+        best = rewards.min() if self.minimize else rewards.max()
         return int(best)
 
     def update_best(self):
