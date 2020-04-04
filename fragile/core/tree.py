@@ -4,8 +4,8 @@ from typing import Any, Dict, Generator, List, Set, Tuple, Union
 import networkx as nx
 import numpy
 
-from fragile.core import StatesEnv, StatesModel, StatesWalkers
 from fragile.core.base_classes import BaseTree
+from fragile.core.states import StatesEnv, StatesModel, StatesWalkers
 from fragile.core.utils import random_state
 
 

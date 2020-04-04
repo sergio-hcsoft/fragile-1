@@ -1,19 +1,9 @@
 Cython>=0.29.16,<1.0; python_version == '3.7'
-git+https://github.com/FragileTech/atari-py.git#egg=atari-py
-attrs==19.3.0
-hypothesis==5.8.0
 networkx==2.4
 numba==0.48.0
 numpy==1.18.2
-opencv-python==4.2.0.32
-pillow-simd==7.0.0.post3
-plangym==0.0.6
-psycopg2-binary==2.8.4
-pyarrow==0.16.0
-pytest==5.4.1
-PyYAML==5.3.1
-scikit-learn==0.22.2.post1
+plangym==0.0.7
+PyYAML
 scipy==1.4.1
-setproctitle==1.1.10
 xxhash==1.4.3
 

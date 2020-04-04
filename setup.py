@@ -13,7 +13,7 @@ with open(Path(__file__).with_name("README.md"), encoding="utf-8") as f:
 
 # Module-specific dependencies.
 extras = {
-    "atari": ["atari-py==0.1.1", "opencv-python", "gym"],
+    "atari": ["atari-py==0.1.1", "opencv-python", "gym", "pillow-simd"],
     "dataviz": [
         "matplotlib",
         "bokeh<2.0.0",
@@ -25,6 +25,7 @@ extras = {
         "streamz",
         "param",
         "selenium",
+        "pyarrow",
     ],
     "test": ["pytest>=5.3.5", "hypothesis==5.6.0"],
     "ray": ["ray", "setproctitle"],
@@ -49,17 +50,12 @@ setup(
     tests_require=["pytest>=5.3.5", "hypothesis>=5.6.0"],
     extras_require=extras,
     install_requires=[
-        "attrs",
         "networkx",
         "numba",
         "numpy",
         "scipy",
-        "pillow-simd",
-        "plangym>=0.0.6",
-        "psycopg2-binary",
-        "pyarrow",
+        "plangym>=0.0.7",
         "PyYAML",
-        "scikit-learn",
         "xxhash",
     ],
     package_data={"": ["README.md"]},

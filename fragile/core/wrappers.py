@@ -286,8 +286,8 @@ class SwarmWrapper(BaseWrapper, Swarm):
     def get(self, name: str, default: Any = None) -> Any:
         return self.unwrapped.__class__.get(self.unwrapped, name, default)
 
-    def increase_epoch(self) -> None:
-        return self.unwrapped.__class__.increase_epoch(self.unwrapped)
+    def increment_epoch(self) -> None:
+        return self.unwrapped.__class__.increment_epoch(self.unwrapped)
 
     def reset(
         self,

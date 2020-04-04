@@ -6,7 +6,7 @@ import numpy
 from fragile.core import Swarm, SwarmWrapper, Walkers
 from fragile.core.base_classes import BaseModel, BaseTree
 from fragile.core.states import OneWalker, StatesEnv, StatesModel, StatesWalkers
-from fragile.core.utils import float_type, hash_numpy, Scalar, StateDict
+from fragile.core.utils import float_type, hash_numpy, running_in_ipython, Scalar, StateDict
 
 
 class StepStatesWalkers(StatesWalkers):
@@ -277,7 +277,6 @@ class StepSwarm(Swarm):
         step_epochs: int = None,
         root_model: Callable[[], RootModel] = MajorityDiscreteModel,
         tree: Callable[[], BaseTree] = None,
-        prune_tree: bool = True,
         report_interval: int = numpy.inf,
         show_pbar: bool = True,
         walkers: Callable[..., StepWalkers] = StepWalkers,
@@ -287,6 +286,7 @@ class StepSwarm(Swarm):
         accumulate_rewards: bool = True,
         minimize: bool = False,
         use_notebook_widget: bool = True,
+        force_logging: bool = False,
         *args,
         **kwargs
     ):
@@ -307,7 +307,6 @@ class StepSwarm(Swarm):
             root_model: Callable that returns a :class:`RootModel` that will be \
                         used to sample the actions and dt of the root walker.
             tree: Disabled for now. It will be used by the root walker.
-            prune_tree: Disabled for now.
             report_interval: Display the algorithm progress every \
                             ``report_interval`` epochs.
             show_pbar: If ``True`` A progress bar will display the progress of \
@@ -332,6 +331,7 @@ class StepSwarm(Swarm):
             use_notebook_widget: If ``True`` and the class is running in an IPython \
                                 kernel it will display the evolution of the swarm \
                                 in a widget.
+            force_logging: If ``True``, disable al ``ipython`` related behaviour.
             *args: Passed to ``swarm``.
             **kwargs: Passed to ``swarm``.
 
@@ -377,6 +377,7 @@ class StepSwarm(Swarm):
         )
         self._notebook_container = None
         self._use_notebook_widget = use_notebook_widget
+        self._ipython_mode = running_in_ipython() and not force_logging
         self.setup_notebook_container()
 
     def __repr__(self):
