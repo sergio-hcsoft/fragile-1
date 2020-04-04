@@ -99,6 +99,37 @@ class TestWalkers:
         with pytest.raises(AttributeError):
             assert isinstance(walkers.moco, numpy.ndarray)
 
+    def test_get_best_index(self, walkers):
+        # Rewards = [1,1,...] InBounds = [0,0,...]
+        walkers.states.update(cum_rewards=numpy.ones(walkers.n), in_bounds=numpy.zeros(walkers.n))
+        best_idx = walkers.get_best_index()
+        # If there are no in_bound rewards, the last walker is returned
+        assert best_idx == walkers.n - 1
+
+        # Some OOB rewards
+        #
+        # Rewards = [0,1,0,...] InBounds = [0,1,...]
+        oobs_best_idx = 1
+        oobs_rewards = numpy.zeros(walkers.n)
+        oobs_rewards[oobs_best_idx] = 1
+        some_oobs = numpy.zeros(walkers.n)
+        some_oobs[oobs_best_idx] = 1
+        walkers.states.update(cum_rewards=oobs_rewards, in_bounds=some_oobs)
+        best_idx = walkers.get_best_index()
+        assert best_idx == oobs_best_idx
+
+        # If the walkers are minimizing, set all but one reward to 1.0
+        # If the walkers are maximizing, set all but one reward to 0.0
+        positive_val = 0.0 if walkers.minimize else 1.0
+        negative_val = 1.0 if walkers.minimize else 0.0
+        # Rewards = [-,+,-,-,-,...] InBounds = [1,...]
+        mixed_rewards = numpy.full(walkers.n, fill_value=negative_val)
+        mixed_best = 1  # could be any index
+        mixed_rewards[mixed_best] = positive_val
+        walkers.states.update(cum_rewards=mixed_rewards, in_bounds=numpy.ones(walkers.n))
+        best_idx = walkers.get_best_index()
+        assert best_idx == mixed_best
+
     def test_calculate_end_condition(self, walkers):
         walkers.reset()
         walkers.env_states.update(oobs=numpy.ones(walkers.n))
