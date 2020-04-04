@@ -480,7 +480,7 @@ class BaseWalkers(StatesOwner):
 
         """
         super(BaseWalkers, self).__init__()
-        self.max_epochs = max_epochs if max_epochs is not None else 1e12
+        self.max_epochs = max_epochs if max_epochs is not None else int(1e12)
         self._epoch = 0
         self.n_walkers = n_walkers
         self.id_walkers = None
