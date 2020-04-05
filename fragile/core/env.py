@@ -2,7 +2,6 @@ import copy
 from typing import Dict, Union
 
 import numpy
-from plangym.core import GymEnvironment as PlangymEnvironment
 
 from fragile.core.base_classes import BaseEnvironment
 from fragile.core.states import StateDict, StatesEnv, StatesModel
@@ -86,7 +85,7 @@ class DiscreteEnv(Environment):
     follows the interface of `plangym`.
     """
 
-    def __init__(self, env: PlangymEnvironment):
+    def __init__(self, env: "plangym.core.GymEnvironment"):
         """
         Initialize a :class:`DiscreteEnv`.
 
