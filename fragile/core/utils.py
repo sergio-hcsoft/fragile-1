@@ -1,7 +1,6 @@
 from typing import Any, Callable, Dict, Generator, Tuple, Union
 
 import numpy
-from plangym import BaseEnvironment as PlangymEnv, ParallelEnvironment as PlangymParallelEnv
 import xxhash
 
 
@@ -32,8 +31,12 @@ def running_in_ipython() -> bool:
         return False
 
 
-def get_plangym_env(swarm: "Swarm") -> PlangymEnv:  # noqa: F821
+def get_plangym_env(swarm: "Swarm") -> "plangym.BaseEnvironment":  # noqa: F821
     """Return the :class:`plangym.Environment` of the target Swarm."""
+    from plangym import (
+        BaseEnvironment as PlangymEnv,
+        ParallelEnvironment as PlangymParallelEnv,
+    )
     from fragile import core
     from fragile.distributed import ParallelEnv as FragileParallelEnv, RayEnv
 
