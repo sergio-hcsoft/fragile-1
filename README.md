@@ -52,6 +52,9 @@ If you find any problems running it in a different OS or Python version please o
 
 It can be installed with `pip install fragile["all"]`.
 
+You can find the pinned versions of the minimum requirements to install the core module in `requirements.txt`,
+and the pinned versions of all the optional requirements in `requirements-all.txt`.
+
 Detailed installation instructions can be found in the [docs](https://fragile.readthedocs.io/en/latest/resources/installation.html).
 
 ## Documentation
@@ -61,11 +64,9 @@ You can access the documentation on [Read The Docs](https://fragile.readthedocs.
 ## Roadmap
 
 Upcoming features: _(not necessarily in order)_
-- Add support for saving visualizations.
 - Fix documentation and add examples for the `distributed` module
 - Upload Montezuma solver
 - Add new algorithms to sample different state spaces.
-- Add a module to generate data for training deep learning models
 - Add a benchmarking module
 - Add deep learning API
 

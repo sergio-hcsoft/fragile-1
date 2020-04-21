@@ -75,6 +75,18 @@ class BaseTree:
         """
         self.root_id = root_id
 
+    def __call__(self, *args, **kwargs) -> "BaseTree":
+        """
+        Return the current instance of :class:`BaseTree`.
+
+        This is used to avoid defining a ``tree_callable `` as \
+        ``lambda: tree_instance`` when initializing a :class:`Swarm`. If the \
+        :class:`BaseTree` needs is passed to a remote process, you may need \
+        to write custom serialization for it, or resort to creating an appropriate \
+        ``tree_callable``.
+        """
+        return self
+
     def add_states(
         self,
         parent_ids: List[int],
@@ -239,6 +251,18 @@ class BaseEnvironment(StatesOwner):
 
     STATE_CLASS = StatesEnv
 
+    def __call__(self, *args, **kwargs) -> "BaseEnvironment":
+        """
+        Return the current instance of :class:`BaseEnvironment`.
+
+        This is used to avoid defining a ``environment_callable `` as \
+        ``lambda: environment_instance`` when initializing a :class:`Swarm`. If the \
+        :class:`Environment` needs is passed to a remote process, you may need \
+        to write custom serialization for it, or resort to creating an appropriate \
+        ``environment_callable``.
+        """
+        return self
+
     def step(self, model_states: StatesModel, env_states: StatesEnv) -> StatesEnv:
         """
         Step the environment for a batch of walkers.
@@ -378,6 +402,18 @@ class BaseModel(StatesOwner):
 
     STATE_CLASS = StatesModel
 
+    def __call__(self, *args, **kwargs) -> "BaseModel":
+        """
+        Return the current instance of :class:`BaseModel`.
+
+        This is used to avoid defining a ``model_callable `` as \
+        ``lambda: model_instance`` when initializing a :class:`Swarm`. If a \
+        :class:`Model` is passed to a remote process, you may need to write custom \
+        serialization for it, or resort to creating an appropriate \
+        ``model_callable``.
+        """
+        return self
+
     def get_params_dict(self) -> StateDict:
         """
         Return an state_dict to be used for instantiating the states containing \
@@ -480,7 +516,7 @@ class BaseWalkers(StatesOwner):
 
         """
         super(BaseWalkers, self).__init__()
-        self.max_epochs = max_epochs if max_epochs is not None else 1e12
+        self.max_epochs = max_epochs if max_epochs is not None else int(1e12)
         self._epoch = 0
         self.n_walkers = n_walkers
         self.id_walkers = None
@@ -488,6 +524,18 @@ class BaseWalkers(StatesOwner):
         self._accumulate_rewards = accumulate_rewards
         self.env_states_params = env_state_params
         self.model_states_params = model_state_params
+
+    def __call__(self, *args, **kwargs) -> "BaseWalkers":
+        """
+        Return the current instance of :class:`BaseWalkers`.
+
+        This is used to avoid defining a ``walkers_callable `` as \
+        ``lambda: walkers_instance`` when initializing a :class:`Swarm`. If the \
+        :class:`Walkers` needs is passed to a remote process, you may need \
+        to write custom serialization for it, or resort to creating an appropriate \
+        ``walkers_callable``.
+        """
+        return self
 
     def __len__(self) -> int:
         """Return length is the number of walkers."""
@@ -517,6 +565,10 @@ class BaseWalkers(StatesOwner):
     def states(self) -> StatesWalkers:
         """Return the States class where all the model information is stored."""
         raise NotImplementedError
+
+    def increment_epoch(self):
+        """Increment the current epoch counter."""
+        self._epoch += 1
 
     def get_params_dict(self) -> StateDict:
         """Return the params_dict of the internal StateOwners."""
@@ -676,10 +728,10 @@ class BaseSwarm:
         """
         return self._walkers
 
-    def increase_epoch(self) -> None:
+    def increment_epoch(self) -> None:
         """Increment the current epoch of the algorithm."""
         self._epoch += 1
-        self.walkers._epoch += 1
+        self.walkers.increment_epoch()
 
     def reset(
         self,

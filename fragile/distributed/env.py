@@ -8,38 +8,8 @@ import numpy
 
 from fragile.core.env import Environment as CoreEnv
 from fragile.core.states import StatesEnv, StatesModel
-from fragile.core.utils import similiar_chunks_indexes
+from fragile.core.utils import split_args_in_chunks, split_kwargs_in_chunks
 from fragile.core.wrappers import BaseWrapper, EnvWrapper
-from fragile.distributed.ray import ray
-from fragile.distributed.ray.env import Environment as RemoteEnvironment
-
-
-def split_kwargs_in_chunks(kwargs, n_chunks):
-    """Split the kwargs passed to ``make_transitions`` in similar batches."""
-    n_values = len(next(iter(kwargs.values())))  # Assumes all data have the same len
-    chunk_size = int(numpy.ceil(n_values / n_chunks))
-    for start, end in similiar_chunks_indexes(n_values, n_chunks):
-        if start + chunk_size >= n_values - 2:  # Do not allow the last chunk to have size 1
-            yield {
-                k: v[start:n_values] if isinstance(v, numpy.ndarray) else v
-                for k, v in kwargs.items()
-            }
-            break
-        else:
-            yield {
-                k: v[start:end] if isinstance(v, numpy.ndarray) else v for k, v in kwargs.items()
-            }
-
-
-def split_args_in_chunks(args, n_chunks):
-    """Split the args passed to ``make_transitions`` in similar batches."""
-    n_values = len(args[0])
-    chunk_size = int(numpy.ceil(n_values / n_chunks))
-    for start, end in similiar_chunks_indexes(n_values, n_chunks):
-        if start + chunk_size >= n_values - 2:
-            yield tuple(v[start:n_values] for v in args)
-            break
-        yield tuple(v[start:end] for v in args)
 
 
 class _ExternalProcess:
@@ -471,6 +441,8 @@ class RayEnv(EnvWrapper):
             env_kwargs: Passed to ``env_callable``.
 
         """
+        from fragile.distributed.ray.env import Environment as RemoteEnvironment
+
         env_kwargs = {} if env_kwargs is None else env_kwargs
         self.n_workers = n_workers
         self.envs: List[RemoteEnvironment] = [
@@ -551,6 +523,8 @@ class RayEnv(EnvWrapper):
             return split_args_in_chunks(args, len(self.envs))
 
     def _make_transitions(self, split_results):
+        from fragile.distributed.ray import ray
+
         results = [
             env.make_transitions.remote(**chunk)
             if self.kwargs_mode
@@ -580,6 +554,8 @@ class RayEnv(EnvWrapper):
             batch_size.
 
         """
+        from fragile.distributed.ray import ray
+
         reset = [
             env.reset.remote(batch_size=batch_size, env_states=env_states, *args, **kwargs)
             for env in self.envs

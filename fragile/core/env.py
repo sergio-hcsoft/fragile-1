@@ -2,7 +2,6 @@ import copy
 from typing import Dict, Union
 
 import numpy
-from plangym import BaseEnvironment as PlangymEnvironment
 
 from fragile.core.base_classes import BaseEnvironment
 from fragile.core.states import StateDict, StatesEnv, StatesModel
@@ -86,7 +85,7 @@ class DiscreteEnv(Environment):
     follows the interface of `plangym`.
     """
 
-    def __init__(self, env: PlangymEnvironment):
+    def __init__(self, env: "plangym.core.GymEnvironment"):
         """
         Initialize a :class:`DiscreteEnv`.
 
@@ -99,6 +98,16 @@ class DiscreteEnv(Environment):
             states_shape=self._env.get_state().shape,
             observs_shape=self._env.observation_space.shape,
         )
+
+    @property
+    def action_space(self):
+        """Return the ``action_space`` of the wrapped :class:`plangym.GymEnvironment`."""
+        return self._env.action_space
+
+    @property
+    def observation_space(self):
+        """Return the ``action_space`` of the wrapped :class:`plangym.GymEnvironment`."""
+        return self._env.observation_space
 
     @property
     def n_actions(self) -> int:

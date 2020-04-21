@@ -1,7 +1,6 @@
 from typing import Any, Callable, Dict, Generator, Tuple, Union
 
 import numpy
-from plangym import BaseEnvironment as PlangymEnv, ParallelEnvironment as PlangymParallelEnv
 import xxhash
 
 
@@ -32,8 +31,12 @@ def running_in_ipython() -> bool:
         return False
 
 
-def get_plangym_env(swarm: "Swarm") -> PlangymEnv:  # noqa: F821
+def get_plangym_env(swarm: "Swarm") -> "plangym.BaseEnvironment":  # noqa: F821
     """Return the :class:`plangym.Environment` of the target Swarm."""
+    from plangym import (
+        BaseEnvironment as PlangymEnv,
+        ParallelEnvironment as PlangymParallelEnv,
+    )
     from fragile import core
     from fragile.distributed import ParallelEnv as FragileParallelEnv, RayEnv
 
@@ -137,3 +140,31 @@ def split_similar_chunks(
     """
     for start, end in similiar_chunks_indexes(len(vector), n_chunks):
         yield vector[start:end]
+
+
+def split_kwargs_in_chunks(kwargs, n_chunks):
+    """Split the kwargs passed to ``make_transitions`` in similar batches."""
+    n_values = len(next(iter(kwargs.values())))  # Assumes all data have the same len
+    chunk_size = int(numpy.ceil(n_values / n_chunks))
+    for start, end in similiar_chunks_indexes(n_values, n_chunks):
+        if start + chunk_size >= n_values - 2:  # Do not allow the last chunk to have size 1
+            yield {
+                k: v[start:n_values] if isinstance(v, numpy.ndarray) else v
+                for k, v in kwargs.items()
+            }
+            break
+        else:
+            yield {
+                k: v[start:end] if isinstance(v, numpy.ndarray) else v for k, v in kwargs.items()
+            }
+
+
+def split_args_in_chunks(args, n_chunks):
+    """Split the args passed to ``make_transitions`` in similar batches."""
+    n_values = len(args[0])
+    chunk_size = int(numpy.ceil(n_values / n_chunks))
+    for start, end in similiar_chunks_indexes(n_values, n_chunks):
+        if start + chunk_size >= n_values - 2:
+            yield tuple(v[start:n_values] for v in args)
+            break
+        yield tuple(v[start:end] for v in args)
